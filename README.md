@@ -1,4 +1,4 @@
-# Juneeth
+# Jun Jam
 
 A jazz piano trainer with two sides:
 
@@ -27,7 +27,7 @@ js/ears/questions.js  ear-training question generators
 js/ears/levels.js     worlds and levels as data (edit here to add levels)
 js/ears/session.js    Ears game loop, stars, drill, Ears menu
 js/menu.js            start menu, progress map, boot
-tools/bundle.py       builds dist/juneeth.html, a single self-contained file
+tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tests/theory.test.js  checks for the theory core and generators
 ```
 Files are plain scripts sharing one global scope (not ES modules), so the page also works
@@ -36,5 +36,5 @@ when opened straight from disk.
 ## Commands
 ```
 node tests/theory.test.js     # run checks
-python3 tools/bundle.py       # rebuild dist/juneeth.html
+python3 tools/bundle.py       # rebuild dist/junjam.html
 ```

@@ -1,4 +1,4 @@
-/* Juneeth: music theory core. Pure functions, no DOM. Tested by tests/theory.test.js */
+/* Jun Jam: music theory core. Pure functions, no DOM. Tested by tests/theory.test.js */
 // THEORY-START
 const LETTERS=['C','D','E','F','G','A','B'];
 const LETTER_PC=[0,2,4,5,7,9,11];

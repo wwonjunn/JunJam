@@ -1,5 +1,5 @@
 #!/bin/bash
-# Double-click in Finder (or run ./run.command) to open Juneeth in Chrome, where Web MIDI works.
+# Double-click in Finder (or run ./run.command) to open Jun Jam in Chrome, where Web MIDI works.
 cd "$(dirname "$0")"
 if open -Ra "Google Chrome" 2>/dev/null; then
   open -a "Google Chrome" index.html
