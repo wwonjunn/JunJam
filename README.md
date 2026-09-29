@@ -10,7 +10,8 @@ A jazz piano trainer with two sides:
 Both sides share the sound engine, MIDI input, the chord rules, and XP.
 
 ## Run it
-Open `index.html` in Chrome or Edge (Web MIDI only works there). No server or build step needed.
+Double-click `run.command` (or run `./run.command`) to open it in Chrome. Or open `index.html` in
+Chrome or Edge yourself (Web MIDI only works there). No server or build step needed.
 
 ## Project layout
 ```
