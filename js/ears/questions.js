@@ -14,6 +14,9 @@ const MAJOR=[0,2,4,5,7,9,11], MINOR=[0,2,3,5,7,8,10];
 const pcName=(m,minor)=>rootName(defaultRoot(mod12(m),minor));
 
 function timbreFor(p){ return p.timbre==='random'?pickOne(TIMBRES):'epiano'; }
+// A key (pitch class) for the question, leaning on the keys you're shakiest in.
+// Squared, because unlike Hands there's no per chord-in-key weight stacked on top.
+function pickKeyPc(){ return weightedPick([...Array(12).keys()].map(pc=>({pc,w:keyWeight(pc,'ears')**2}))).pc; }
 function answerFrom(opts,prefix,force){
   if(force && force.answer!==undefined) return String(force.answer);
   return String(weightedPick(opts.map(o=>({o,w:earWeight(prefix+o)}))).o);
@@ -51,7 +54,7 @@ const GEN={
       answer:key,item:null,play:run,compare:run,reveal:{notes,text:`The shape was ${key}.`}};
   },
   degree(p,ctx,force){
-    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ ctx.key=rint(55,66); ctx.keyLeft=5; }
+    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ ctx.key=55+mod12(pickKeyPc()-55); ctx.keyLeft=5; }
     ctx.keyLeft--;
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force);
@@ -59,7 +62,7 @@ const GEN={
     const base=m-ans, key=pcName(T,minor)+(minor?' minor':' major');
     const scale=minor?MINOR:MAJOR;
     return {prompt:'Which scale degree?',sub:`Key of ${key}. Play it on your keyboard or pick below.`,
-      options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,
+      options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,keyPc:mod12(T),
       play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb); tone(m,e,1.1,96,tb,bus); return e+1.1;},
       compare:(pk,bus,t)=>{ if(pk!=null&&pk!=='timeout') tone(base+(+pk),t,0.8,90,tb,bus); tone(m,t+1.0,0.9,96,tb,bus); return t+2; },
       resolve:(bus,t)=>{
@@ -88,12 +91,12 @@ const GEN={
   },
   inversion(p,ctx,force){
     const ans=force&&force.answer!==undefined?String(force.answer):String(rint(0,2));
-    const minor=Math.random()<0.5, third=minor?3:4, r=rint(48,57), tb=timbreFor(p);
+    const minor=Math.random()<0.5, third=minor?3:4, r=48+mod12(pickKeyPc()-48), tb=timbreFor(p);
     const shapes={0:[0,third,7],1:[third,7,12],2:[7,12,12+third]};
     const v=inv=>shapes[inv].map(x=>r+x);
     const q=Q[minor?'min':'maj'];
     return {prompt:'Which note is in the bass?',sub:`A ${minor?'minor':'major'} triad`,
-      options:[{id:'0',label:'Root'},{id:'1',label:'3rd'},{id:'2',label:'5th'}],answer:ans,item:`inv:${ans}`,
+      options:[{id:'0',label:'Root'},{id:'1',label:'3rd'},{id:'2',label:'5th'}],answer:ans,item:`inv:${ans}`,keyPc:mod12(r),
       play:(bus,t)=>{playChord(v(+ans),t,1.4,tb,bus); return t+1.6;},
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'){playChord(v(+pk),t,1.2,tb,bus); e=t+1.5;} playChord(v(+ans),e,1.4,tb,bus); return e+1.6;},
       reveal:{notes:v(+ans),target:{root:defaultRoot(r%12,minor),q},text:['Root position','First inversion, 3rd in the bass','Second inversion, 5th in the bass'][+ans]+'.'}};
@@ -101,12 +104,12 @@ const GEN={
   chord(p,ctx,force){
     const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
     const ans=answerFrom(set,'chord:',force);
-    const pc=rint(0,11), style=p.style==='mixed'?pickOne(['close','open','rootless']):(p.style||'close');
+    const pc=pickKeyPc(), style=p.style==='mixed'?pickOne(['close','open','rootless']):(p.style||'close');
     const v=id=>voiceChord(Q[id],pc,style);
     const notes=v(ans), q=Q[ans];
     const styleName={close:'close',open:'open',rootless:'rootless'}[style];
     return {prompt:'What kind of chord?',sub:p.style==='mixed'||p.style==='rootless'?`Voiced ${styleName}, any register`:'',
-      options:set.map(id=>({id,label:QNAME(id)})),answer:ans,item:`chord:${ans}`,
+      options:set.map(id=>({id,label:QNAME(id)})),answer:ans,item:`chord:${ans}`,keyPc:pc,
       play:(bus,t)=>{playChord(notes,t,1.6,tb,bus); return t+1.8;},
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'&&Q[pk]){playChord(v(pk),t,1.4,tb,bus); e=t+1.7;} playChord(notes,e,1.6,tb,bus); return e+1.8;},
       reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q})}, ${styleName} voicing.`}};

@@ -16,13 +16,9 @@ function renderMenu(){
     const sub=open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
-  const giant=mode==='game'&&tierOf(tierId).stage===8;
-  $('giantNote').classList.toggle('hide',!giant);
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    const dis=giant&&s.n!==8;
-    const pressed=giant?s.n===8:s.n===stageN;
-    return `<button class="stage" data-n="${s.n}" aria-pressed="${pressed}" ${dis?'disabled':''}><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
@@ -58,13 +54,20 @@ function renderProgress(){
   const weak=[];
   QUALS.forEach(q=>CIRCLE.forEach(pc=>{const f=fluency(q.id,pc); if(f!==null) weak.push({sym:symText({root:defaultRoot(pc,q.minor),q}),f});}));
   weak.sort((a,b)=>a.f-b.f);
-  const keyAvg=CIRCLE.map(pc=>{const fs=QUALS.map(q=>fluency(q.id,pc)).filter(f=>f!==null);return {pc,f:fs.length?fs.reduce((a,b)=>a+b,0)/fs.length:null,n:fs.length};}).filter(k=>k.n>=3).sort((a,b)=>a.f-b.f);
   let sum=`You have played ${seen} of ${total} chord and key combinations.`;
   if(weak.length) sum+=` Weakest right now: ${weak.slice(0,5).map(w=>w.sym).join(', ')}.`;
-  if(keyAvg.length>=4) sum+=` Your shakiest key overall is ${rootName(defaultRoot(keyAvg[0].pc,false))}.`;
-  if(!seen) sum='Nothing here yet. Play a few runs and each chord in each key fills in as you go.';
+  const pushed=pushedKeys();
+  if(pushed) sum+=` Keys getting the biggest push: ${pushed}.`;
+  if(!seen) sum='Nothing here yet. Play a few runs and each chord in each key fills in as you go.'+(pushed?` Keys getting the biggest push: ${pushed}.`:'');
   $('progSum').textContent=sum;
   let h='<thead><tr><th></th>'+CIRCLE.map(pc=>`<th>${rootName(defaultRoot(pc,false))}</th>`).join('')+'</tr></thead><tbody>';
+  // Key row: colour from the raw data of both sides (no prior), so it shows what you've actually done
+  h+='<tr class="grp"><td colspan="13">Keys, from Hands and Ears together</td></tr><tr><th>overall</th>'+CIRCLE.map(pc=>{
+    const hk=handsKeyStat(pc), ek=earsKeyStat(pc), n=hk.n+ek.n, name=rootName(defaultRoot(pc,false));
+    const f=n?1-(hk.n*hk.weak+ek.n*ek.weak)/n:null, cls=f===null?'u':f>=0.7?'g':f>=0.4?'m':'b';
+    const part=(s,label,unit)=>s.n?`${label} ${Math.round(100*(1-s.weak))}% fluent over ${s.n} ${unit}`:`${label} not seen yet`;
+    return `<td class="${cls}" title="${name}: ${part(hk,'Hands','chords')}; ${part(ek,'Ears','answers')}"></td>`;
+  }).join('')+'</tr>';
   let lastStage=0;
   QUALS.forEach(q=>{
     if(q.stage!==lastStage){ lastStage=q.stage; h+=`<tr class="grp"><td colspan="13">${STAGES[q.stage-1].t}</td></tr>`; }

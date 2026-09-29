@@ -158,18 +158,14 @@ const STAGES=[
   {n:5,t:'Altered dominants and ♯11s'},
   {n:6,t:'ii–V–I in every key'},
   {n:7,t:'Everything'},
-  {n:8,t:'Giant Steps changes'},
 ];
 const TIERS=[
   {id:'misty',   name:'Misty',           bpm:60, step:3, cap:1,lives:5,mult:1},
   {id:'autumn',  name:'Autumn Leaves',   bpm:120,step:5, cap:1,lives:3,mult:1.25},
   {id:'atrain',  name:'Take the A Train',bpm:160,step:6, cap:2,lives:3,mult:1.5},
   {id:'cherokee',name:'Cherokee',        bpm:240,step:8, cap:3,lives:3,mult:2},
-  {id:'giant',   name:'Giant Steps',     bpm:290,step:10,cap:3,lives:1,mult:3,stage:8,unlock:{tier:'cherokee',score:3000}},
+  {id:'giant',   name:'Giant Steps',     bpm:290,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
 ];
-// Coltrane, "Giant Steps": the 16-bar form in order
-const GIANT=[[6,0,'maj7'],[1,0,'dom7'],[4,0,'maj7'],[6,-1,'dom7'],[2,-1,'maj7'],[5,0,'min7'],[1,0,'dom7'],[4,0,'maj7'],[6,-1,'dom7'],[2,-1,'maj7'],[3,1,'dom7'],[6,0,'maj7'],[3,0,'min7'],[6,-1,'dom7'],[2,-1,'maj7'],[5,0,'min7'],[1,0,'dom7'],[4,0,'maj7'],[0,1,'min7'],[3,1,'dom7'],[6,0,'maj7'],[3,0,'min7'],[6,-1,'dom7'],[2,-1,'maj7'],[0,1,'min7'],[3,1,'dom7']]
-  .map(([l,a,q])=>({root:mkRoot(l,a),q:Q[q]}));
 function iiVI(keyPc){
   const minor=Math.random()<0.4;
   const kpc=keyPc===undefined?Math.floor(Math.random()*12):keyPc;

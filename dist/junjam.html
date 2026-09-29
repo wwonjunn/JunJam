@@ -280,7 +280,6 @@ body.earsmode .ahead{display:none}
         <div id="tierBox"><div class="sec">Tempo</div><div class="stages" id="tiers"></div></div>
         <div class="sec">Chords</div>
         <div class="stages" id="stages"></div>
-        <p class="fine hide" id="giantNote" style="margin-top:-6px">Giant Steps always uses the tune's own changes.</p>
         <div class="opts">
           <label><input type="checkbox" id="optRootless" checked> Accept rootless voicings on seventh chords</label>
           <label><input type="checkbox" id="optWeird"> Unusual spellings, like B♯maj7 or F♭7</label>
@@ -507,18 +506,14 @@ const STAGES=[
   {n:5,t:'Altered dominants and ♯11s'},
   {n:6,t:'ii–V–I in every key'},
   {n:7,t:'Everything'},
-  {n:8,t:'Giant Steps changes'},
 ];
 const TIERS=[
   {id:'misty',   name:'Misty',           bpm:60, step:3, cap:1,lives:5,mult:1},
   {id:'autumn',  name:'Autumn Leaves',   bpm:120,step:5, cap:1,lives:3,mult:1.25},
   {id:'atrain',  name:'Take the A Train',bpm:160,step:6, cap:2,lives:3,mult:1.5},
   {id:'cherokee',name:'Cherokee',        bpm:240,step:8, cap:3,lives:3,mult:2},
-  {id:'giant',   name:'Giant Steps',     bpm:290,step:10,cap:3,lives:1,mult:3,stage:8,unlock:{tier:'cherokee',score:3000}},
+  {id:'giant',   name:'Giant Steps',     bpm:290,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
 ];
-// Coltrane, "Giant Steps": the 16-bar form in order
-const GIANT=[[6,0,'maj7'],[1,0,'dom7'],[4,0,'maj7'],[6,-1,'dom7'],[2,-1,'maj7'],[5,0,'min7'],[1,0,'dom7'],[4,0,'maj7'],[6,-1,'dom7'],[2,-1,'maj7'],[3,1,'dom7'],[6,0,'maj7'],[3,0,'min7'],[6,-1,'dom7'],[2,-1,'maj7'],[5,0,'min7'],[1,0,'dom7'],[4,0,'maj7'],[0,1,'min7'],[3,1,'dom7'],[6,0,'maj7'],[3,0,'min7'],[6,-1,'dom7'],[2,-1,'maj7'],[0,1,'min7'],[3,1,'dom7']]
-  .map(([l,a,q])=>({root:mkRoot(l,a),q:Q[q]}));
 function iiVI(keyPc){
   const minor=Math.random()<0.4;
   const kpc=keyPc===undefined?Math.floor(Math.random()*12):keyPc;
@@ -591,7 +586,7 @@ function meetsRequest(kind,ev,t,prev){
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem('mtc:'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('mtc:'+k,JSON.stringify(v));}catch(e){}}};
 const opts={rootless:store.get('rootless',true),weird:store.get('weird',false),sound:store.get('sound',true),metro:store.get('metro',false)};
-let stageN=store.get('stage',2);
+let stageN=Math.min(STAGES.length,store.get('stage',2)); // saves from before stage 8 was removed
 let G=null; // running game
 opts.smart=store.get('smart',true);
 let STATS=store.get('stats',{});
@@ -611,6 +606,33 @@ function recordStat(t,kind,secs,firstTry){
 }
 function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; }
 let lastTarget=null;
+
+/* ---------------- key profile (shared by Hands and Ears) ----------------
+   How shaky each of the 12 keys is, 0 solid to 1 shaky. Hands: fluency of every chord played in that key.
+   Ears: accuracy and speed of answers in that key (EARDATA.keys, times scaled by the world's target). */
+function handsKeyStat(pc){
+  let n=0, w=0;
+  QUALS.forEach(q=>{ const f=fluency(q.id,pc); if(f!==null){ const s=STATS[statKey(q.id,pc)]; n+=s.n; w+=s.n*(1-f); } });
+  return {n,weak:n?w/n:0.5};
+}
+function earsKeyStat(pc){
+  const s=(EARDATA.keys||{})[pc]; if(!s||!s.n) return {n:0,weak:0.5};
+  const speed=s.t==null?0:Math.min(1,Math.max(0,(2-s.t)/1.5));
+  return {n:s.n,weak:1-(0.6*s.ok/s.n+0.4*speed)};
+}
+// Blend both sides. The side asking trusts its own data twice as much; a neutral prior fills in until there is data.
+function keyWeak(pc,side){
+  const h=handsKeyStat(pc), e=earsKeyStat(pc), c=n=>n/(n+5);
+  const wh=c(h.n)*(side==='hands'?2:1), we=c(e.n)*(side==='ears'?2:1), wp=0.5;
+  return (wh*h.weak+we*e.weak+wp*0.5)/(wh+we+wp);
+}
+const keyWeight=(pc,side)=>1+3*keyWeak(pc,side);
+// The keys getting the biggest push right now, for display. Null until anything has been recorded.
+function pushedKeys(n=3){
+  const pcs=[...Array(12).keys()];
+  if(!pcs.some(pc=>handsKeyStat(pc).n||earsKeyStat(pc).n)) return null;
+  return pcs.map(pc=>({pc,w:keyWeak(pc)})).sort((a,b)=>b.w-a.w).slice(0,n).map(k=>rootName(defaultRoot(k.pc,false))).join(', ');
+}
 
 
 /* ---------------- shared XP and rank (both Hands and Ears feed it) ---------------- */
@@ -918,20 +940,19 @@ function tierUnlocked(t){
   const bests=store.get('best2',{});
   return Object.entries(bests).some(([k,v])=>k.startsWith(t.unlock.tier+':')&&v>=t.unlock.score);
 }
-function effStage(){ return (mode==='game'&&tierOf(tierId).stage)||stageN; }
-
 function nextChords(){
-  const st=effStage();
-  if(st===8){ const c=GIANT[G.gsIdx%GIANT.length]; G.gsIdx++; return [c]; }
+  const st=stageN;
+  // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
+  const kw=opts.smart?[...Array(12).keys()].map(p=>keyWeight(p,'hands')):null;
   if(st===6){
     if(!opts.smart) return iiVI();
-    const keys=[...Array(12).keys()].map(k=>({k,w:(weightOf('min7',(k+2)%12)+weightOf('dom7',(k+7)%12)+weightOf('maj7',k))/3}));
+    const keys=[...Array(12).keys()].map(k=>({k,w:kw[k]*(weightOf('min7',(k+2)%12)+weightOf('dom7',(k+7)%12)+weightOf('maj7',k))/3}));
     return iiVI(weightedPick(keys).k);
   }
   const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
   let q, pc, tries=0;
   if(opts.smart){
-    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p) items.push({q:qq,pc:p,w:weightOf(qq.id,p)});});
+    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p) items.push({q:qq,pc:p,w:weightOf(qq.id,p)*kw[p]});});
     const pick=weightedPick(items); q=pick.q; pc=pick.pc;
   } else {
     do{ q=pool[Math.floor(Math.random()*pool.length)]; pc=Math.floor(Math.random()*12); tries++; }
@@ -945,7 +966,7 @@ function nextChords(){
 function withReq(c){
   const t={root:c.root,q:c.q,req:null};
   if(Math.random()<0.25){
-    const list=requestsFor(t,{rootless:opts.rootless,sequence:[6,8].includes(effStage())});
+    const list=requestsFor(t,{rootless:opts.rootless,sequence:stageN===6});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
     t.req=list[Math.floor(Math.random()*list.length)];
   }
@@ -970,7 +991,7 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,gsIdx:0,raf:0,last:0,id:0};
+     lastSym:null,raf:0,last:0,id:0};
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -1141,7 +1162,7 @@ function gameOver(){
   const avg=G.times.length?(G.times.reduce((a,b)=>a+b,0)/G.times.length).toFixed(1):'–';
   let newBest=false;
   if(!G.practice){
-    const bests=store.get('best2',{}), k=bestKey(G.tier.id,effStage()), prevBest=bests[k]||0;
+    const bests=store.get('best2',{}), k=bestKey(G.tier.id,stageN), prevBest=bests[k]||0;
     if(G.score>prevBest){bests[k]=G.score; store.set('best2',bests); newBest=G.score>0;}
   }
   $('overTitle').textContent=G.practice?'Practice session':newBest?'New best':'Run over';
@@ -1180,6 +1201,9 @@ const MAJOR=[0,2,4,5,7,9,11], MINOR=[0,2,3,5,7,8,10];
 const pcName=(m,minor)=>rootName(defaultRoot(mod12(m),minor));
 
 function timbreFor(p){ return p.timbre==='random'?pickOne(TIMBRES):'epiano'; }
+// A key (pitch class) for the question, leaning on the keys you're shakiest in.
+// Squared, because unlike Hands there's no per chord-in-key weight stacked on top.
+function pickKeyPc(){ return weightedPick([...Array(12).keys()].map(pc=>({pc,w:keyWeight(pc,'ears')**2}))).pc; }
 function answerFrom(opts,prefix,force){
   if(force && force.answer!==undefined) return String(force.answer);
   return String(weightedPick(opts.map(o=>({o,w:earWeight(prefix+o)}))).o);
@@ -1217,7 +1241,7 @@ const GEN={
       answer:key,item:null,play:run,compare:run,reveal:{notes,text:`The shape was ${key}.`}};
   },
   degree(p,ctx,force){
-    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ ctx.key=rint(55,66); ctx.keyLeft=5; }
+    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ ctx.key=55+mod12(pickKeyPc()-55); ctx.keyLeft=5; }
     ctx.keyLeft--;
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force);
@@ -1225,7 +1249,7 @@ const GEN={
     const base=m-ans, key=pcName(T,minor)+(minor?' minor':' major');
     const scale=minor?MINOR:MAJOR;
     return {prompt:'Which scale degree?',sub:`Key of ${key}. Play it on your keyboard or pick below.`,
-      options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,
+      options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,keyPc:mod12(T),
       play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb); tone(m,e,1.1,96,tb,bus); return e+1.1;},
       compare:(pk,bus,t)=>{ if(pk!=null&&pk!=='timeout') tone(base+(+pk),t,0.8,90,tb,bus); tone(m,t+1.0,0.9,96,tb,bus); return t+2; },
       resolve:(bus,t)=>{
@@ -1254,12 +1278,12 @@ const GEN={
   },
   inversion(p,ctx,force){
     const ans=force&&force.answer!==undefined?String(force.answer):String(rint(0,2));
-    const minor=Math.random()<0.5, third=minor?3:4, r=rint(48,57), tb=timbreFor(p);
+    const minor=Math.random()<0.5, third=minor?3:4, r=48+mod12(pickKeyPc()-48), tb=timbreFor(p);
     const shapes={0:[0,third,7],1:[third,7,12],2:[7,12,12+third]};
     const v=inv=>shapes[inv].map(x=>r+x);
     const q=Q[minor?'min':'maj'];
     return {prompt:'Which note is in the bass?',sub:`A ${minor?'minor':'major'} triad`,
-      options:[{id:'0',label:'Root'},{id:'1',label:'3rd'},{id:'2',label:'5th'}],answer:ans,item:`inv:${ans}`,
+      options:[{id:'0',label:'Root'},{id:'1',label:'3rd'},{id:'2',label:'5th'}],answer:ans,item:`inv:${ans}`,keyPc:mod12(r),
       play:(bus,t)=>{playChord(v(+ans),t,1.4,tb,bus); return t+1.6;},
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'){playChord(v(+pk),t,1.2,tb,bus); e=t+1.5;} playChord(v(+ans),e,1.4,tb,bus); return e+1.6;},
       reveal:{notes:v(+ans),target:{root:defaultRoot(r%12,minor),q},text:['Root position','First inversion, 3rd in the bass','Second inversion, 5th in the bass'][+ans]+'.'}};
@@ -1267,12 +1291,12 @@ const GEN={
   chord(p,ctx,force){
     const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
     const ans=answerFrom(set,'chord:',force);
-    const pc=rint(0,11), style=p.style==='mixed'?pickOne(['close','open','rootless']):(p.style||'close');
+    const pc=pickKeyPc(), style=p.style==='mixed'?pickOne(['close','open','rootless']):(p.style||'close');
     const v=id=>voiceChord(Q[id],pc,style);
     const notes=v(ans), q=Q[ans];
     const styleName={close:'close',open:'open',rootless:'rootless'}[style];
     return {prompt:'What kind of chord?',sub:p.style==='mixed'||p.style==='rootless'?`Voiced ${styleName}, any register`:'',
-      options:set.map(id=>({id,label:QNAME(id)})),answer:ans,item:`chord:${ans}`,
+      options:set.map(id=>({id,label:QNAME(id)})),answer:ans,item:`chord:${ans}`,keyPc:pc,
       play:(bus,t)=>{playChord(notes,t,1.6,tb,bus); return t+1.8;},
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'&&Q[pk]){playChord(v(pk),t,1.4,tb,bus); e=t+1.7;} playChord(notes,e,1.6,tb,bus); return e+1.8;},
       reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q})}, ${styleName} voicing.`}};
@@ -1349,9 +1373,11 @@ const LEVELS=Object.fromEntries(WORLDS.flatMap(w=>w.levels.map((l,i)=>[l.id,{...
 <script>
 /* Ears: session loop, scoring, stats, weakness drill, and the Ears menu pane. */
 let EARDATA=store.get('ears',{items:{},conf:{},stars:{},best:{}});
+EARDATA.keys=EARDATA.keys||{}; // per key: {n, ok, t}; t is answer time divided by the world's target time
 const saveEars=()=>store.set('ears',EARDATA);
 function earWeight(key){ const s=EARDATA.items[key]; if(!s||!s.n) return 1.5; return 1+2*(1-s.ok/s.n); }
 function earRecord(key,ok,secs){ if(!key) return; const s=EARDATA.items[key]||(EARDATA.items[key]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(secs!=null) s.t=s.t==null?secs:s.t*0.7+secs*0.3; }
+function keyRecord(pc,ok,tn){ const s=EARDATA.keys[pc]||(EARDATA.keys[pc]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(tn!=null) s.t=s.t==null?tn:s.t*0.7+tn*0.3; }
 function levelUnlocked(l){ return l.index===0 || (EARDATA.stars[l.world.levels[l.index-1].id]||0)>=1; }
 const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 
@@ -1423,6 +1449,7 @@ function earsAnswer(id,via){
   const q=EARS.q, ok=String(id)===String(q.answer);
   const secs=Math.max(0,(performance.now()-EARS.readyAt)/1000);
   earRecord(q.item,ok,ok?secs:null);
+  if(q.keyPc!=null) keyRecord(q.keyPc,ok,ok?secs/LEVELS[q.levelId].world.rt:null);
   document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.disabled=true; });
   const label=id==='timeout'?'Out of time':(q.options.find(o=>o.id===String(id))||{label:id}).label;
   const right=q.options.find(o=>o.id===String(q.answer)).label;
@@ -1533,6 +1560,8 @@ function renderEarsPane(){
   const conf=topConfusions(3);
   let h=`<p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
     <div class="drill"><button class="ghost" id="drillBtn" style="margin-left:0">Weakness drill</button><span id="earsNote">${conf.length?`Your biggest mix-ups: ${conf.map(confLabel).join(', ')}.`:'The drill builds itself from your mix-ups once you have some.'}</span></div>`;
+  const pushed=pushedKeys();
+  if(pushed) h+=`<p class="fine" style="margin:-6px 0 14px">Scale degrees and chords lean on your shakiest keys, from Hands and Ears together. Right now: ${pushed}.</p>`;
   WORLDS.forEach(w=>{
     const got=w.levels.reduce((a,l)=>a+(EARDATA.stars[l.id]||0),0);
     h+=`<div class="world"><div class="wh"><span class="wn">${w.name}</span><span class="wb">${w.blurb}</span><span class="ws">${got} of ${w.levels.length*3} stars</span></div><div class="lvls">`;
@@ -1578,13 +1607,9 @@ function renderMenu(){
     const sub=open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
-  const giant=mode==='game'&&tierOf(tierId).stage===8;
-  $('giantNote').classList.toggle('hide',!giant);
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    const dis=giant&&s.n!==8;
-    const pressed=giant?s.n===8:s.n===stageN;
-    return `<button class="stage" data-n="${s.n}" aria-pressed="${pressed}" ${dis?'disabled':''}><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
@@ -1620,13 +1645,20 @@ function renderProgress(){
   const weak=[];
   QUALS.forEach(q=>CIRCLE.forEach(pc=>{const f=fluency(q.id,pc); if(f!==null) weak.push({sym:symText({root:defaultRoot(pc,q.minor),q}),f});}));
   weak.sort((a,b)=>a.f-b.f);
-  const keyAvg=CIRCLE.map(pc=>{const fs=QUALS.map(q=>fluency(q.id,pc)).filter(f=>f!==null);return {pc,f:fs.length?fs.reduce((a,b)=>a+b,0)/fs.length:null,n:fs.length};}).filter(k=>k.n>=3).sort((a,b)=>a.f-b.f);
   let sum=`You have played ${seen} of ${total} chord and key combinations.`;
   if(weak.length) sum+=` Weakest right now: ${weak.slice(0,5).map(w=>w.sym).join(', ')}.`;
-  if(keyAvg.length>=4) sum+=` Your shakiest key overall is ${rootName(defaultRoot(keyAvg[0].pc,false))}.`;
-  if(!seen) sum='Nothing here yet. Play a few runs and each chord in each key fills in as you go.';
+  const pushed=pushedKeys();
+  if(pushed) sum+=` Keys getting the biggest push: ${pushed}.`;
+  if(!seen) sum='Nothing here yet. Play a few runs and each chord in each key fills in as you go.'+(pushed?` Keys getting the biggest push: ${pushed}.`:'');
   $('progSum').textContent=sum;
   let h='<thead><tr><th></th>'+CIRCLE.map(pc=>`<th>${rootName(defaultRoot(pc,false))}</th>`).join('')+'</tr></thead><tbody>';
+  // Key row: colour from the raw data of both sides (no prior), so it shows what you've actually done
+  h+='<tr class="grp"><td colspan="13">Keys, from Hands and Ears together</td></tr><tr><th>overall</th>'+CIRCLE.map(pc=>{
+    const hk=handsKeyStat(pc), ek=earsKeyStat(pc), n=hk.n+ek.n, name=rootName(defaultRoot(pc,false));
+    const f=n?1-(hk.n*hk.weak+ek.n*ek.weak)/n:null, cls=f===null?'u':f>=0.7?'g':f>=0.4?'m':'b';
+    const part=(s,label,unit)=>s.n?`${label} ${Math.round(100*(1-s.weak))}% fluent over ${s.n} ${unit}`:`${label} not seen yet`;
+    return `<td class="${cls}" title="${name}: ${part(hk,'Hands','chords')}; ${part(ek,'Ears','answers')}"></td>`;
+  }).join('')+'</tr>';
   let lastStage=0;
   QUALS.forEach(q=>{
     if(q.stage!==lastStage){ lastStage=q.stage; h+=`<tr class="grp"><td colspan="13">${STAGES[q.stage-1].t}</td></tr>`; }

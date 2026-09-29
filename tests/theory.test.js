@@ -4,7 +4,7 @@ const ctx={console,store:{get:(k,d)=>d,set(){}},localStorage:null};
 vm.createContext(ctx);
 const load=f=>vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx,{filename:f});
 load('js/theory.js');
-vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;}",ctx);
+vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
 load('js/ears/questions.js'); load('js/ears/levels.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
 const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12})',ctx);

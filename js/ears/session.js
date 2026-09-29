@@ -1,8 +1,10 @@
 /* Ears: session loop, scoring, stats, weakness drill, and the Ears menu pane. */
 let EARDATA=store.get('ears',{items:{},conf:{},stars:{},best:{}});
+EARDATA.keys=EARDATA.keys||{}; // per key: {n, ok, t}; t is answer time divided by the world's target time
 const saveEars=()=>store.set('ears',EARDATA);
 function earWeight(key){ const s=EARDATA.items[key]; if(!s||!s.n) return 1.5; return 1+2*(1-s.ok/s.n); }
 function earRecord(key,ok,secs){ if(!key) return; const s=EARDATA.items[key]||(EARDATA.items[key]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(secs!=null) s.t=s.t==null?secs:s.t*0.7+secs*0.3; }
+function keyRecord(pc,ok,tn){ const s=EARDATA.keys[pc]||(EARDATA.keys[pc]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(tn!=null) s.t=s.t==null?tn:s.t*0.7+tn*0.3; }
 function levelUnlocked(l){ return l.index===0 || (EARDATA.stars[l.world.levels[l.index-1].id]||0)>=1; }
 const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 
@@ -74,6 +76,7 @@ function earsAnswer(id,via){
   const q=EARS.q, ok=String(id)===String(q.answer);
   const secs=Math.max(0,(performance.now()-EARS.readyAt)/1000);
   earRecord(q.item,ok,ok?secs:null);
+  if(q.keyPc!=null) keyRecord(q.keyPc,ok,ok?secs/LEVELS[q.levelId].world.rt:null);
   document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.disabled=true; });
   const label=id==='timeout'?'Out of time':(q.options.find(o=>o.id===String(id))||{label:id}).label;
   const right=q.options.find(o=>o.id===String(q.answer)).label;
@@ -184,6 +187,8 @@ function renderEarsPane(){
   const conf=topConfusions(3);
   let h=`<p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
     <div class="drill"><button class="ghost" id="drillBtn" style="margin-left:0">Weakness drill</button><span id="earsNote">${conf.length?`Your biggest mix-ups: ${conf.map(confLabel).join(', ')}.`:'The drill builds itself from your mix-ups once you have some.'}</span></div>`;
+  const pushed=pushedKeys();
+  if(pushed) h+=`<p class="fine" style="margin:-6px 0 14px">Scale degrees and chords lean on your shakiest keys, from Hands and Ears together. Right now: ${pushed}.</p>`;
   WORLDS.forEach(w=>{
     const got=w.levels.reduce((a,l)=>a+(EARDATA.stars[l.id]||0),0);
     h+=`<div class="world"><div class="wh"><span class="wn">${w.name}</span><span class="wb">${w.blurb}</span><span class="ws">${got} of ${w.levels.length*3} stars</span></div><div class="lvls">`;

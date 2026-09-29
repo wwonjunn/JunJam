@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem('mtc:'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('mtc:'+k,JSON.stringify(v));}catch(e){}}};
 const opts={rootless:store.get('rootless',true),weird:store.get('weird',false),sound:store.get('sound',true),metro:store.get('metro',false)};
-let stageN=store.get('stage',2);
+let stageN=Math.min(STAGES.length,store.get('stage',2)); // saves from before stage 8 was removed
 let G=null; // running game
 opts.smart=store.get('smart',true);
 let STATS=store.get('stats',{});
@@ -22,6 +22,33 @@ function recordStat(t,kind,secs,firstTry){
 }
 function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; }
 let lastTarget=null;
+
+/* ---------------- key profile (shared by Hands and Ears) ----------------
+   How shaky each of the 12 keys is, 0 solid to 1 shaky. Hands: fluency of every chord played in that key.
+   Ears: accuracy and speed of answers in that key (EARDATA.keys, times scaled by the world's target). */
+function handsKeyStat(pc){
+  let n=0, w=0;
+  QUALS.forEach(q=>{ const f=fluency(q.id,pc); if(f!==null){ const s=STATS[statKey(q.id,pc)]; n+=s.n; w+=s.n*(1-f); } });
+  return {n,weak:n?w/n:0.5};
+}
+function earsKeyStat(pc){
+  const s=(EARDATA.keys||{})[pc]; if(!s||!s.n) return {n:0,weak:0.5};
+  const speed=s.t==null?0:Math.min(1,Math.max(0,(2-s.t)/1.5));
+  return {n:s.n,weak:1-(0.6*s.ok/s.n+0.4*speed)};
+}
+// Blend both sides. The side asking trusts its own data twice as much; a neutral prior fills in until there is data.
+function keyWeak(pc,side){
+  const h=handsKeyStat(pc), e=earsKeyStat(pc), c=n=>n/(n+5);
+  const wh=c(h.n)*(side==='hands'?2:1), we=c(e.n)*(side==='ears'?2:1), wp=0.5;
+  return (wh*h.weak+we*e.weak+wp*0.5)/(wh+we+wp);
+}
+const keyWeight=(pc,side)=>1+3*keyWeak(pc,side);
+// The keys getting the biggest push right now, for display. Null until anything has been recorded.
+function pushedKeys(n=3){
+  const pcs=[...Array(12).keys()];
+  if(!pcs.some(pc=>handsKeyStat(pc).n||earsKeyStat(pc).n)) return null;
+  return pcs.map(pc=>({pc,w:keyWeak(pc)})).sort((a,b)=>b.w-a.w).slice(0,n).map(k=>rootName(defaultRoot(k.pc,false))).join(', ');
+}
 
 
 /* ---------------- shared XP and rank (both Hands and Ears feed it) ---------------- */

@@ -11,20 +11,19 @@ function tierUnlocked(t){
   const bests=store.get('best2',{});
   return Object.entries(bests).some(([k,v])=>k.startsWith(t.unlock.tier+':')&&v>=t.unlock.score);
 }
-function effStage(){ return (mode==='game'&&tierOf(tierId).stage)||stageN; }
-
 function nextChords(){
-  const st=effStage();
-  if(st===8){ const c=GIANT[G.gsIdx%GIANT.length]; G.gsIdx++; return [c]; }
+  const st=stageN;
+  // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
+  const kw=opts.smart?[...Array(12).keys()].map(p=>keyWeight(p,'hands')):null;
   if(st===6){
     if(!opts.smart) return iiVI();
-    const keys=[...Array(12).keys()].map(k=>({k,w:(weightOf('min7',(k+2)%12)+weightOf('dom7',(k+7)%12)+weightOf('maj7',k))/3}));
+    const keys=[...Array(12).keys()].map(k=>({k,w:kw[k]*(weightOf('min7',(k+2)%12)+weightOf('dom7',(k+7)%12)+weightOf('maj7',k))/3}));
     return iiVI(weightedPick(keys).k);
   }
   const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
   let q, pc, tries=0;
   if(opts.smart){
-    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p) items.push({q:qq,pc:p,w:weightOf(qq.id,p)});});
+    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p) items.push({q:qq,pc:p,w:weightOf(qq.id,p)*kw[p]});});
     const pick=weightedPick(items); q=pick.q; pc=pick.pc;
   } else {
     do{ q=pool[Math.floor(Math.random()*pool.length)]; pc=Math.floor(Math.random()*12); tries++; }
@@ -38,7 +37,7 @@ function nextChords(){
 function withReq(c){
   const t={root:c.root,q:c.q,req:null};
   if(Math.random()<0.25){
-    const list=requestsFor(t,{rootless:opts.rootless,sequence:[6,8].includes(effStage())});
+    const list=requestsFor(t,{rootless:opts.rootless,sequence:stageN===6});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
     t.req=list[Math.floor(Math.random()*list.length)];
   }
@@ -63,7 +62,7 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,gsIdx:0,raf:0,last:0,id:0};
+     lastSym:null,raf:0,last:0,id:0};
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -234,7 +233,7 @@ function gameOver(){
   const avg=G.times.length?(G.times.reduce((a,b)=>a+b,0)/G.times.length).toFixed(1):'–';
   let newBest=false;
   if(!G.practice){
-    const bests=store.get('best2',{}), k=bestKey(G.tier.id,effStage()), prevBest=bests[k]||0;
+    const bests=store.get('best2',{}), k=bestKey(G.tier.id,stageN), prevBest=bests[k]||0;
     if(G.score>prevBest){bests[k]=G.score; store.set('best2',bests); newBest=G.score>0;}
   }
   $('overTitle').textContent=G.practice?'Practice session':newBest?'New best':'Run over';
