@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Juneeth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">Juneeth</div>
+    <div class="stat">Score <b id="score">0</b></div>
+    <div class="stat combo">Combo <b id="combo">0</b></div>
+    <div class="modetag" id="modetag"></div>
+    <div class="stat tempo"><span>♩ =</span><b id="tempo">60</b></div><span class="beat" id="beat"></span>
+    <div class="stat" id="waveStat">Wave <b id="wave">1</b></div>
+    <div class="lives" id="lives" aria-label="Lives"></div>
+    <button class="snd" id="snd" hidden>Sound is off. Click to turn it on.</button>
+    <div class="midi" id="midi">Looking for MIDI…</div>
+  </header>
+
+  <div class="lane" id="lane">
+    <div class="ahead" id="ahead" aria-live="polite"></div>
+    <div class="overlay" id="startOv">
+      <div class="card wide">
+        <h1>Juneeth</h1>
+        <p class="rank" id="rankLine"></p>
+        <div class="seg side" role="group" aria-label="Side"><button id="sHands">Hands: play chords</button><button id="sEars">Ears: hear them</button></div>
+        <div id="earsPane" hidden></div>
+        <div id="handsPane">
+        <p>Chord symbols fall toward your keyboard. Play any correct voicing before one lands. Rootless, extended, open and smoothly voice-led chords score more.</p>
+        <div class="seg" role="group" aria-label="Mode"><button id="mPractice">Practice</button><button id="mGame">Game</button></div>
+        <div id="tierBox"><div class="sec">Tempo</div><div class="stages" id="tiers"></div></div>
+        <div class="sec">Chords</div>
+        <div class="stages" id="stages"></div>
+        <p class="fine hide" id="giantNote" style="margin-top:-6px">Giant Steps always uses the tune's own changes.</p>
+        <div class="opts">
+          <label><input type="checkbox" id="optRootless" checked> Accept rootless voicings on seventh chords</label>
+          <label><input type="checkbox" id="optWeird"> Unusual spellings, like B♯maj7 or F♭7</label>
+          <label><input type="checkbox" id="optSound" checked> Built-in electric piano sound</label>
+          <label><input type="checkbox" id="optMetro"> Hi-hat on beats 2 and 4</label>
+          <label><input type="checkbox" id="optSmart"> Smart mix: serve the chords and keys you are weakest at more often</label>
+        </div>
+        <button class="go" id="startBtn">Start</button><button class="ghost" id="progBtn">Progress</button>
+        <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. Gold "by ear" chords hide their name: press <kbd>R</kbd> to hear them again.</div>
+        </div>
+      </div>
+    </div>
+    <div class="ears" id="earsStage" hidden>
+      <div id="ePlay">
+        <div class="etop"><span class="etitle" id="eTitle"></span><span id="eCount"></span><span class="lives" id="eLives"></span></div>
+        <div class="ebar"><i id="eBar"></i></div>
+        <div class="eprompt" id="ePrompt"></div>
+        <div class="esub" id="eSub"></div>
+        <div class="eopts" id="eOpts"></div>
+        <div class="etimer hide" id="eTimerWrap"><i id="eTimer"></i></div>
+        <div class="erow"><button class="ghost" id="eReplay" style="margin-left:0">Replay (R)</button><button class="go" id="eNext" hidden>Next (Enter)</button><button class="ghost" id="eQuit">End</button></div>
+      </div>
+      <div class="card eresults" id="eResults" hidden></div>
+    </div>
+    <div class="overlay" id="progOv" hidden>
+      <div class="card wide">
+        <h2>Progress</h2>
+        <p id="progSum"></p>
+        <div class="gridwrap"><table class="grid" id="grid"></table></div>
+        <div class="legend" style="margin:8px 0 14px"><span><i style="background:var(--good)"></i>fluent</span><span><i style="background:var(--brass)"></i>getting there</span><span><i style="background:var(--wrong)"></i>shaky</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--line-strong)"></i>not seen yet</span></div>
+        <button class="go" id="progBack">Back</button><button class="ghost" id="progReset">Reset progress</button>
+      </div>
+    </div>
+    <div class="overlay" id="pauseOv" hidden>
+      <div class="card">
+        <h2>Paused</h2>
+        <p>The chords will wait.</p>
+        <button class="go" id="resumeBtn">Resume</button><button class="ghost" id="quitBtn">End</button>
+      </div>
+    </div>
+    <div class="overlay" id="overOv" hidden>
+      <div class="card">
+        <h2 id="overTitle">Run over</h2>
+        <div class="results" id="results"></div>
+        <div class="bestv" id="bestV"></div>
+        <p id="weak"></p>
+        <button class="go" id="againBtn">Play again</button><button class="ghost" id="menuBtn">Change stage</button><button class="ghost" id="progBtn2">Progress</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="staff" id="staff"></div>
+    <div class="analysis" id="analysis">
+      <div class="verdict" id="verdict">Play something.</div>
+      <div class="chips" id="chips"></div>
+      <div class="why" id="why"></div>
+      <div class="tags" id="tags"></div>
+      <div class="legend"><span><i style="background:var(--root)"></i>root</span><span><i style="background:var(--chord)"></i>chord tone</span><span><i style="background:var(--tension)"></i>tension</span><span><i style="background:var(--wrong)"></i>doesn't fit</span></div>
+    </div>
+  </div>
+
+  <div class="kbwrap"><svg class="kb" id="kb" role="group" aria-label="Keyboard"></svg></div>
+</div>
+
+<script src="js/theory.js"></script>
+<script src="js/state.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/views.js"></script>
+<script src="js/input.js"></script>
+<script src="js/hands.js"></script>
+<script src="js/ears/questions.js"></script>
+<script src="js/ears/levels.js"></script>
+<script src="js/ears/session.js"></script>
+<script src="js/menu.js"></script>
+</body>
+</html>
