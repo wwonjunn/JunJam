@@ -7,15 +7,19 @@ function levelUnlocked(l){ return l.index===0 || (EARDATA.stars[l.world.levels[l
 const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 
 const EARS={active:false};
+// Mixed: practice run drawing from every unlocked level of one world. No stars.
+const mixPool=w=>w.levels.filter(l=>levelUnlocked(LEVELS[l.id]));
 function earsStart(levelId){
-  const drill=levelId==='drill';
-  const lv=drill?{id:'drill',name:'Weakness drill',world:{name:'Ears',rt:4},boss:false}:LEVELS[levelId];
-  Object.assign(EARS,{active:true,lv,drill,total:lv.boss?15:20,idx:0,correct:0,lives:3,times:[],ctx:{},q:null,bus:null,
+  const drill=levelId==='drill', mixW=levelId.startsWith('mix:')?WORLDS.find(w=>'mix:'+w.id===levelId):null;
+  const lv=drill?{id:'drill',name:'Weakness drill',world:{name:'Ears',rt:4},boss:false}
+    :mixW?{id:levelId,name:'Mixed',world:mixW,boss:false,mix:true}:LEVELS[levelId];
+  Object.assign(EARS,{active:true,lv,drill,total:lv.boss?15:20,idx:0,correct:0,lives:3,times:[],ctx:{},ctxs:{},q:null,bus:null,
     answered:false,readyAt:0,timerRaf:0,misses:[],xp:0,advanceTimer:0});
   if(drill){ EARS.pairs=topConfusions(12); if(!EARS.pairs.length){ earsMenuNote('No mix-ups recorded yet. Play a few levels first.'); EARS.active=false; return; } }
+  if(mixW) EARS.pool=mixPool(mixW);
   synth.init(); hideOv(); document.body.classList.add('earsmode'); document.body.classList.remove('menu');
   $('earsStage').hidden=false; $('eResults').hidden=true; $('ePlay').hidden=false;
-  $('eTitle').textContent=(lv.boss?'Boss: ':'')+lv.name; $('modetag').textContent='Ears: '+lv.world.name;
+  $('eTitle').textContent=(lv.boss?'Boss: ':'')+(lv.mix?lv.world.name+': ':'')+lv.name; $('modetag').textContent='Ears: '+lv.world.name;
   kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]);
   $('verdict').className='verdict'; $('verdict').textContent='Listen.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
   earsNext();
@@ -28,6 +32,10 @@ function earsGen(){
     const opts=pool?[...new Set([e.a,e.b,pickOne(pool),pickOne(pool)])].map(x=>isNaN(+x)?x:+x):null;
     const q=g(lv.p,EARS.ctx,{answer:pickOne([e.a,e.b]),options:opts?(lv.gen==='chord'?opts.map(String):opts):undefined});
     q.levelId=lv.id; q.sub=`${lv.world.name}: ${lv.name}. `+(q.sub||''); return q;
+  }
+  if(EARS.lv.mix){ // each level keeps its own context, so a degree level's key doesn't leak into another
+    const l=LEVELS[pickOne(EARS.pool).id], c=EARS.ctxs[l.id]||(EARS.ctxs[l.id]={});
+    const q=GEN[l.gen](l.p,c); q.levelId=l.id; q.sub=`${l.name}. `+(q.sub||''); return q;
   }
   const q=GEN[EARS.lv.gen](EARS.lv.p,EARS.ctx); q.levelId=EARS.lv.id; return q;
 }
@@ -132,22 +140,24 @@ function earsFinish(quit){
   if(quit){ title='Session ended'; }
   else if(lv.boss){ const won=EARS.lives>0&&EARS.correct>=EARS.total-2; stars=won?(EARS.lives===3?3:EARS.lives===2?2:1):0; title=won?'Boss beaten':'The boss wins this round'; }
   else if(lv.id==='drill'){ title='Drill done'; }
+  else if(lv.mix){ title='Mix done'; }
   else { stars=acc>=0.9?(acc===1&&fast?3:acc>=0.95&&fast?2:1):0; title=stars?'Level passed':'Not quite 90% yet'; }
-  if(lv.id!=='drill' && !quit){
+  const practice=lv.id==='drill'||lv.mix;
+  if(!practice && !quit){
     const prev=EARDATA.stars[lv.id]||0; if(stars>prev) EARDATA.stars[lv.id]=stars;
     if(stars&&!prev) EARS.xp+=lv.boss?100:50;
   }
   addXP(EARS.xp); saveEars();
-  const next=lv.world&&lv.world.levels?lv.world.levels[lv.index+1]:null;
+  const next=!practice&&lv.world.levels?lv.world.levels[lv.index+1]:null;
   const nextOpen=next&&levelUnlocked(LEVELS[next.id]);
   const mix={}; EARS.misses.forEach(m=>{const k=`${m.right} heard as ${m.said}`; mix[k]=(mix[k]||0)+1;});
   const mixTop=Object.entries(mix).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>v>1?`${k} (${v} times)`:k);
   $('ePlay').hidden=true; $('eResults').hidden=false;
   $('eResults').innerHTML=`<h2>${title}</h2>${stars?`<div class="stars">${starStr(stars)}</div>`:''}
     <div class="results"><div><b>${Math.round(acc*100)}%</b>right</div><div><b>${EARS.correct}</b>of ${done}</div><div><b>${avg===null?'–':avg.toFixed(1)+'s'}</b>average answer</div><div><b>+${EARS.xp}</b>XP</div></div>
-    ${!lv.boss&&lv.id!=='drill'&&!quit?`<p>Pass with 90%. Two stars: 95% and answers averaging under ${lv.world.rt}s. Three stars: every answer right and under ${lv.world.rt}s.</p>`:''}
+    ${!lv.boss&&!practice&&!quit?`<p>Pass with 90%. Two stars: 95% and answers averaging under ${lv.world.rt}s. Three stars: every answer right and under ${lv.world.rt}s.</p>`:''}
     ${mixTop.length?`<p>Mix-ups: ${mixTop.join(', ')}.</p>`:''}
-    <button class="go" id="eAgain">${lv.id==='drill'?'Drill again':'Try again'}</button>${nextOpen?`<button class="ghost" id="eNextLv">Next: ${next.name}</button>`:''}<button class="ghost" id="eMap">Back to map</button>`;
+    <button class="go" id="eAgain">${lv.id==='drill'?'Drill again':lv.mix?'Mix again':'Try again'}</button>${nextOpen?`<button class="ghost" id="eNextLv">Next: ${next.name}</button>`:''}<button class="ghost" id="eMap">Back to map</button>`;
   $('eAgain').onclick=()=>earsStart(lv.id);
   if(nextOpen) $('eNextLv').onclick=()=>earsStart(next.id);
   $('eMap').onclick=earsToMenu;
@@ -181,6 +191,8 @@ function renderEarsPane(){
       const L=LEVELS[l.id], open=levelUnlocked(L), st=EARDATA.stars[l.id]||0;
       h+=`<button class="lvl${l.boss?' boss':''}" data-lv="${l.id}" ${open?'':'disabled'} title="${open?'':'Pass the level before this one first'}"><span class="ln">${l.boss?'Boss':L.index+1}</span><span class="lt">${l.name}</span><span class="lst">${open?starStr(st):'Locked'}</span></button>`;
     });
+    const n=mixPool(w).length;
+    h+=`<button class="lvl mix" data-lv="mix:${w.id}" ${n>=2?'':'disabled'} title="${n>=2?'Random questions from your unlocked levels. Practice only, no stars.':'Unlock a second level to mix'}"><span class="ln">Practice</span><span class="lt">Mixed</span><span class="lst">${n>=2?`${n} level${n>1?'s':''}`:'Locked'}</span></button>`;
     h+='</div></div>';
   });
   $('earsPane').innerHTML=h;

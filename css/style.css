@@ -206,6 +206,8 @@ body.menu .panel{display:none}
 .lvl .lst{display:block;font-size:13px;color:var(--brass);letter-spacing:1px;margin-top:2px}
 .lvl.boss{border-color:color-mix(in srgb, var(--brass) 60%, var(--line-strong))}
 .lvl.boss .ln{color:var(--brass)}
+.lvl.mix{border-style:dashed}
+.lvl.mix .lst{letter-spacing:0;color:var(--muted)}
 .lvl[disabled]{opacity:.4;cursor:not-allowed}
 .lvl[disabled] .lst{color:var(--muted);letter-spacing:0}
 
