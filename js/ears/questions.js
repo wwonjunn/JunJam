@@ -22,10 +22,32 @@ function answerFrom(opts,prefix,force){
   return String(weightedPick(opts.map(o=>({o,w:earWeight(prefix+o)}))).o);
 }
 
-function cadence(bus,t,T,minor,timbre){
-  const I=minor?[0,3,7]:[0,4,7], IV=minor?[0,5,8]:[0,5,9], V=[-1,2,5,7], bass=[0,5,-5,0];
-  [I,IV,V,I].forEach((ch,i)=>{ const at=t+i*0.5; playChord(ch.map(x=>T+x),at,0.46,timbre,bus,62); tone(T-12+bass[i],at,0.46,70,timbre,bus); });
-  return t+4*0.5+0.35;
+// Key-setting cadences: [chord tones above the tonic, bass note above the tonic] per chord.
+// Several of each, so the setup before every scale-degree note doesn't turn into one memorised loop.
+const CADENCES={
+  major:[
+    [[[0,4,7],0],[[0,5,9],5],[[-1,2,5,7],-5],[[0,4,7],0]],   // I IV V7 I
+    [[[0,4,9],-3],[[2,5,9],2],[[-1,2,5,7],-5],[[0,4,7],0]],  // VIm IIm V7 I
+    [[[0,2,5,9],2],[[-1,2,5,9],-5],[[-1,4,7],0]],            // IIm7 V9 Imaj7
+    [[[0,5,9],5],[[-1,2,7],-5],[[0,4,7],0]],                 // IV V I
+  ],
+  minor:[
+    [[[0,3,7],0],[[0,5,8],5],[[-1,2,5,7],-5],[[0,3,7],0]],   // Im IVm V7 Im
+    [[[0,3,8],-4],[[0,5,8],5],[[-1,2,5,7],-5],[[0,3,7],0]],  // ♭VI IVm V7 Im
+    [[[0,2,5,8],2],[[-1,2,5,8],-5],[[0,3,7],0]],             // IIm7♭5 V7♭9 Im
+  ],
+};
+function cadence(bus,t,T,minor,timbre,ctx={}){
+  const list=CADENCES[minor?'minor':'major'];
+  let i; do{ i=Math.floor(Math.random()*list.length); } while(list.length>1&&i===ctx.lastCad);
+  ctx.lastCad=i;
+  const lift=Math.random()<0.5; // sometimes voice it an inversion higher
+  list[i].forEach(([ch,b],j)=>{
+    const at=t+j*0.5, v=ch.map(x=>T+x).sort((x,y)=>x-y);
+    if(lift) v.push(v.shift()+12);
+    playChord(v,at,0.46,timbre,bus,62); tone(T-12+b,at,0.46,70,timbre,bus);
+  });
+  return t+list[i].length*0.5+0.35;
 }
 
 const GEN={
@@ -54,7 +76,10 @@ const GEN={
       answer:key,item:null,play:run,compare:run,reveal:{notes,text:`The shape was ${key}.`}};
   },
   degree(p,ctx,force){
-    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ ctx.key=55+mod12(pickKeyPc()-55); ctx.keyLeft=5; }
+    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ // a new key every 3 questions, never the one you just had
+      let pc, n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20);
+      ctx.key=55+mod12(pc-55); ctx.keyLeft=3;
+    }
     ctx.keyLeft--;
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force);
@@ -63,7 +88,7 @@ const GEN={
     const scale=minor?MINOR:MAJOR;
     return {prompt:'Which scale degree?',sub:`Key of ${key}. Play it on your keyboard or pick below.`,
       options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,keyPc:mod12(T),
-      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb); tone(m,e,1.1,96,tb,bus); return e+1.1;},
+      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb,ctx); tone(m,e,1.1,96,tb,bus); return e+1.1;},
       compare:(pk,bus,t)=>{ if(pk!=null&&pk!=='timeout') tone(base+(+pk),t,0.8,90,tb,bus); tone(m,t+1.0,0.9,96,tb,bus); return t+2; },
       resolve:(bus,t)=>{
         const path=[ans];
