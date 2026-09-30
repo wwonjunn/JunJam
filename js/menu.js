@@ -39,10 +39,10 @@ $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
 $('sHands').onclick=()=>{side='hands';renderMenu();};
 $('sEars').onclick=()=>{side='ears';renderMenu();};
-$('eReplay').onclick=()=>{ if(EARS.active&&!EARS.answered) earsPlay(); };
+$('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);
-$('eOpts').addEventListener('click',e=>{const b=e.target.closest('.eopt'); if(b&&!b.disabled) earsAnswer(b.dataset.id,'click');});
+$('eOpts').addEventListener('click',e=>{const b=e.target.closest('.eopt'); if(!b) return; EARS.answered?earsHear(b.dataset.id):earsAnswer(b.dataset.id,'click');});
 $('mPractice').onclick=()=>{mode='practice';renderMenu();};
 $('mGame').onclick=()=>{mode='game';renderMenu();};
 $('optRootless').checked=opts.rootless; $('optWeird').checked=opts.weird; $('optSound').checked=opts.sound; $('optMetro').checked=opts.metro;

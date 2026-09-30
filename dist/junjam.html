@@ -249,6 +249,8 @@ body.earsmode .ahead{display:none}
 .eopt.right{background:color-mix(in srgb, var(--good) 28%, transparent);border-color:var(--good)}
 .eopt.wrong{background:color-mix(in srgb, var(--wrong) 25%, transparent);border-color:var(--wrong)}
 .eopt[disabled]{cursor:default}
+.eopt.review{cursor:pointer}
+.eopt.review:not(.right):not(.wrong){opacity:.75}
 .etimer{height:4px;background:var(--line);border-radius:2px;margin:0 0 14px;overflow:hidden}
 .etimer i{display:block;height:100%;background:var(--wrong);width:100%}
 .erow{display:flex;gap:8px;flex-wrap:wrap}
@@ -1326,11 +1328,14 @@ const CADENCES={
     [[[0,2,5,8],2],[[-1,2,5,8],-5],[[0,3,7],0]],             // IIm7♭5 V7♭9 Im
   ],
 };
-function cadence(bus,t,T,minor,timbre,ctx={}){
+// Choose a cadence (never the one used last time) and whether to voice it an inversion higher
+function pickCadence(minor,ctx){
   const list=CADENCES[minor?'minor':'major'];
   let i; do{ i=Math.floor(Math.random()*list.length); } while(list.length>1&&i===ctx.lastCad);
-  ctx.lastCad=i;
-  const lift=Math.random()<0.5; // sometimes voice it an inversion higher
+  ctx.lastCad=i; return {i,lift:Math.random()<0.5};
+}
+function cadence(bus,t,T,minor,timbre,{i,lift}){
+  const list=CADENCES[minor?'minor':'major'];
   list[i].forEach(([ch,b],j)=>{
     const at=t+j*0.5, v=ch.map(x=>T+x).sort((x,y)=>x-y);
     if(lift) v.push(v.shift()+12);
@@ -1370,14 +1375,14 @@ const GEN={
       ctx.key=55+mod12(pc-55); ctx.keyLeft=3;
     }
     ctx.keyLeft--;
-    const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p);
+    const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p), cad=pickCadence(minor,ctx);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force,ctx);
     const m=pickOne([T+ans-12,T+ans,T+ans+12].filter(x=>x>=50&&x<=79));
     const base=m-ans, key=pcName(T,minor)+(minor?' minor':' major');
     const scale=minor?MINOR:MAJOR;
     return {prompt:'Which scale degree?',sub:`Key of ${key}. Play it on your keyboard or pick below.`,
       options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,keyPc:mod12(T),
-      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb,ctx); tone(m,e,1.1,96,tb,bus); return e+1.1;},
+      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb,cad); tone(m,e,1.1,96,tb,bus); return e+1.1;},
       compare:(pk,bus,t)=>{ if(pk!=null&&pk!=='timeout') tone(base+(+pk),t,0.8,90,tb,bus); tone(m,t+1.0,0.9,96,tb,bus); return t+2; },
       resolve:(bus,t)=>{
         const path=[ans];
@@ -1597,7 +1602,7 @@ function earsNext(){
   const q=EARS.q;
   $('ePrompt').textContent=q.prompt; $('eSub').textContent=q.sub||'';
   $('eOpts').innerHTML=q.options.map((o,i)=>`<button class="eopt" data-id="${o.id}"><span class="k">${i<9?i+1:''}</span>${o.label}</button>`).join('');
-  $('eNext').hidden=true; $('eReplay').hidden=!!EARS.lv.boss;
+  $('eNext').hidden=true; $('eReplay').hidden=!!EARS.lv.boss; $('eReplay').textContent='Replay (R)';
   earsHud();
   earsPlay();
 }
@@ -1626,7 +1631,9 @@ function earsAnswer(id,via){
   const secs=Math.max(0,(performance.now()-EARS.readyAt)/1000);
   earRecord(q.item,ok,ok?secs:null);
   if(q.keyPc!=null) keyRecord(q.keyPc,ok,ok?secs/LEVELS[q.levelId].world.rt:null);
-  document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.disabled=true; });
+  document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.classList.add('review'); });
+  $('eReplay').hidden=false; $('eReplay').textContent='Replay question (R)';
+  $('eSub').textContent='Tap any answer to hear it next to the right one.';
   const label=id==='timeout'?'Out of time':(q.options.find(o=>o.id===String(id))||{label:id}).label;
   const right=q.options.find(o=>o.id===String(q.answer)).label;
   earsReveal(q,ok);
@@ -1648,6 +1655,18 @@ function earsAnswer(id,via){
     $('eNext').hidden=false; $('eNext').focus();
   }
   saveEars(); earsHud();
+}
+// After answering: replay the question as heard, or hear any option next to the right one.
+// Reviewing a correct answer stops the auto-advance so there's time to listen.
+function earsReview(){ clearTimeout(EARS.advanceTimer); $('eNext').hidden=false; killBus(EARS.bus); EARS.bus=newBus(); return !!EARS.bus; }
+function earsReplay(){
+  if(!EARS.active||!EARS.q) return;
+  if(!EARS.answered){ if(!EARS.lv.boss) earsPlay(); return; }
+  if(earsReview()) EARS.q.play(EARS.bus,now()+0.05);
+}
+function earsHear(id){
+  if(!EARS.active||!EARS.answered||!EARS.q) return;
+  if(earsReview()) EARS.q.compare(String(id)===String(EARS.q.answer)?null:id,EARS.bus,now()+0.05);
 }
 function earsReveal(q,ok){
   const r=q.reveal||{notes:[]};
@@ -1758,8 +1777,8 @@ function earsKey(e){
   if(!EARS.active) return false;
   if(e.key==='Escape'){ earsFinish(true); return true; }
   if(!$('eResults').hidden) return false;
-  if(/^[1-9]$/.test(e.key)){ const b=document.querySelectorAll('.eopt')[+e.key-1]; if(b&&!EARS.answered) earsAnswer(b.dataset.id,'key'); return true; }
-  if(e.key==='r'||e.key==='R'){ if(!EARS.lv.boss&&!EARS.answered) earsPlay(); else if(EARS.answered&&!EARS.lv.boss){ killBus(EARS.bus); EARS.bus=newBus(); EARS.q.compare(null,EARS.bus,now()+0.05);} return true; }
+  if(/^[1-9]$/.test(e.key)){ const b=document.querySelectorAll('.eopt')[+e.key-1]; if(b) EARS.answered?earsHear(b.dataset.id):earsAnswer(b.dataset.id,'key'); return true; }
+  if(e.key==='r'||e.key==='R'){ earsReplay(); return true; }
   if((e.key==='Enter'||e.key===' ')&&EARS.answered){ e.preventDefault(); earsNext(); return true; }
   return e.key===' '||e.key==='Enter';
 }
@@ -1806,10 +1825,10 @@ $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
 $('sHands').onclick=()=>{side='hands';renderMenu();};
 $('sEars').onclick=()=>{side='ears';renderMenu();};
-$('eReplay').onclick=()=>{ if(EARS.active&&!EARS.answered) earsPlay(); };
+$('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);
-$('eOpts').addEventListener('click',e=>{const b=e.target.closest('.eopt'); if(b&&!b.disabled) earsAnswer(b.dataset.id,'click');});
+$('eOpts').addEventListener('click',e=>{const b=e.target.closest('.eopt'); if(!b) return; EARS.answered?earsHear(b.dataset.id):earsAnswer(b.dataset.id,'click');});
 $('mPractice').onclick=()=>{mode='practice';renderMenu();};
 $('mGame').onclick=()=>{mode='game';renderMenu();};
 $('optRootless').checked=opts.rootless; $('optWeird').checked=opts.weird; $('optSound').checked=opts.sound; $('optMetro').checked=opts.metro;

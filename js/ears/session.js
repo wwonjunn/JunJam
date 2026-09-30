@@ -47,7 +47,7 @@ function earsNext(){
   const q=EARS.q;
   $('ePrompt').textContent=q.prompt; $('eSub').textContent=q.sub||'';
   $('eOpts').innerHTML=q.options.map((o,i)=>`<button class="eopt" data-id="${o.id}"><span class="k">${i<9?i+1:''}</span>${o.label}</button>`).join('');
-  $('eNext').hidden=true; $('eReplay').hidden=!!EARS.lv.boss;
+  $('eNext').hidden=true; $('eReplay').hidden=!!EARS.lv.boss; $('eReplay').textContent='Replay (R)';
   earsHud();
   earsPlay();
 }
@@ -76,7 +76,9 @@ function earsAnswer(id,via){
   const secs=Math.max(0,(performance.now()-EARS.readyAt)/1000);
   earRecord(q.item,ok,ok?secs:null);
   if(q.keyPc!=null) keyRecord(q.keyPc,ok,ok?secs/LEVELS[q.levelId].world.rt:null);
-  document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.disabled=true; });
+  document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.classList.add('review'); });
+  $('eReplay').hidden=false; $('eReplay').textContent='Replay question (R)';
+  $('eSub').textContent='Tap any answer to hear it next to the right one.';
   const label=id==='timeout'?'Out of time':(q.options.find(o=>o.id===String(id))||{label:id}).label;
   const right=q.options.find(o=>o.id===String(q.answer)).label;
   earsReveal(q,ok);
@@ -98,6 +100,18 @@ function earsAnswer(id,via){
     $('eNext').hidden=false; $('eNext').focus();
   }
   saveEars(); earsHud();
+}
+// After answering: replay the question as heard, or hear any option next to the right one.
+// Reviewing a correct answer stops the auto-advance so there's time to listen.
+function earsReview(){ clearTimeout(EARS.advanceTimer); $('eNext').hidden=false; killBus(EARS.bus); EARS.bus=newBus(); return !!EARS.bus; }
+function earsReplay(){
+  if(!EARS.active||!EARS.q) return;
+  if(!EARS.answered){ if(!EARS.lv.boss) earsPlay(); return; }
+  if(earsReview()) EARS.q.play(EARS.bus,now()+0.05);
+}
+function earsHear(id){
+  if(!EARS.active||!EARS.answered||!EARS.q) return;
+  if(earsReview()) EARS.q.compare(String(id)===String(EARS.q.answer)?null:id,EARS.bus,now()+0.05);
 }
 function earsReveal(q,ok){
   const r=q.reveal||{notes:[]};
@@ -208,8 +222,8 @@ function earsKey(e){
   if(!EARS.active) return false;
   if(e.key==='Escape'){ earsFinish(true); return true; }
   if(!$('eResults').hidden) return false;
-  if(/^[1-9]$/.test(e.key)){ const b=document.querySelectorAll('.eopt')[+e.key-1]; if(b&&!EARS.answered) earsAnswer(b.dataset.id,'key'); return true; }
-  if(e.key==='r'||e.key==='R'){ if(!EARS.lv.boss&&!EARS.answered) earsPlay(); else if(EARS.answered&&!EARS.lv.boss){ killBus(EARS.bus); EARS.bus=newBus(); EARS.q.compare(null,EARS.bus,now()+0.05);} return true; }
+  if(/^[1-9]$/.test(e.key)){ const b=document.querySelectorAll('.eopt')[+e.key-1]; if(b) EARS.answered?earsHear(b.dataset.id):earsAnswer(b.dataset.id,'key'); return true; }
+  if(e.key==='r'||e.key==='R'){ earsReplay(); return true; }
   if((e.key==='Enter'||e.key===' ')&&EARS.answered){ e.preventDefault(); earsNext(); return true; }
   return e.key===' '||e.key==='Enter';
 }

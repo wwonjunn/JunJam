@@ -239,6 +239,8 @@ body.earsmode .ahead{display:none}
 .eopt.right{background:color-mix(in srgb, var(--good) 28%, transparent);border-color:var(--good)}
 .eopt.wrong{background:color-mix(in srgb, var(--wrong) 25%, transparent);border-color:var(--wrong)}
 .eopt[disabled]{cursor:default}
+.eopt.review{cursor:pointer}
+.eopt.review:not(.right):not(.wrong){opacity:.75}
 .etimer{height:4px;background:var(--line);border-radius:2px;margin:0 0 14px;overflow:hidden}
 .etimer i{display:block;height:100%;background:var(--wrong);width:100%}
 .erow{display:flex;gap:8px;flex-wrap:wrap}

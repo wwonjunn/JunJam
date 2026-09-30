@@ -45,11 +45,14 @@ const CADENCES={
     [[[0,2,5,8],2],[[-1,2,5,8],-5],[[0,3,7],0]],             // IIm7♭5 V7♭9 Im
   ],
 };
-function cadence(bus,t,T,minor,timbre,ctx={}){
+// Choose a cadence (never the one used last time) and whether to voice it an inversion higher
+function pickCadence(minor,ctx){
   const list=CADENCES[minor?'minor':'major'];
   let i; do{ i=Math.floor(Math.random()*list.length); } while(list.length>1&&i===ctx.lastCad);
-  ctx.lastCad=i;
-  const lift=Math.random()<0.5; // sometimes voice it an inversion higher
+  ctx.lastCad=i; return {i,lift:Math.random()<0.5};
+}
+function cadence(bus,t,T,minor,timbre,{i,lift}){
+  const list=CADENCES[minor?'minor':'major'];
   list[i].forEach(([ch,b],j)=>{
     const at=t+j*0.5, v=ch.map(x=>T+x).sort((x,y)=>x-y);
     if(lift) v.push(v.shift()+12);
@@ -89,14 +92,14 @@ const GEN={
       ctx.key=55+mod12(pc-55); ctx.keyLeft=3;
     }
     ctx.keyLeft--;
-    const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p);
+    const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p), cad=pickCadence(minor,ctx);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force,ctx);
     const m=pickOne([T+ans-12,T+ans,T+ans+12].filter(x=>x>=50&&x<=79));
     const base=m-ans, key=pcName(T,minor)+(minor?' minor':' major');
     const scale=minor?MINOR:MAJOR;
     return {prompt:'Which scale degree?',sub:`Key of ${key}. Play it on your keyboard or pick below.`,
       options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,keyPc:mod12(T),
-      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb,ctx); tone(m,e,1.1,96,tb,bus); return e+1.1;},
+      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb,cad); tone(m,e,1.1,96,tb,bus); return e+1.1;},
       compare:(pk,bus,t)=>{ if(pk!=null&&pk!=='timeout') tone(base+(+pk),t,0.8,90,tb,bus); tone(m,t+1.0,0.9,96,tb,bus); return t+2; },
       resolve:(bus,t)=>{
         const path=[ans];
