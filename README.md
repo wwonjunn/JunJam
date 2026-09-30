@@ -3,7 +3,7 @@
 A jazz piano trainer with two sides:
 
 - **Hands**: chord symbols fall toward the keyboard. Play any valid voicing on a MIDI keyboard.
-  Practice mode (waits for you) or Game mode (five tempo tiers, Misty to Giant Steps).
+  Practice mode (waits for you) or Game mode (five tempo tiers, Misty to Donna Lee).
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
