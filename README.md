@@ -12,7 +12,7 @@ A jazz piano trainer with two sides:
 Both sides share the sound engine, MIDI input, the chord rules, and XP.
 
 ## Run it
-Double-click `run.command` (or run `./run.command`) to open it in Chrome. Or open `index.html` in
+Double-click `Jun Jam.app` to open it in Chrome (no Terminal window). Or open `index.html` in
 Chrome or Edge yourself (Web MIDI only works there). No server or build step needed.
 
 ## Project layout
@@ -30,6 +30,7 @@ js/ears/levels.js     worlds and levels as data (edit here to add levels)
 js/ears/session.js    Ears game loop, stars, drill, Ears menu
 js/menu.js            start menu, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
+tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript
 tests/theory.test.js  checks for the theory core and generators
 ```
 Files are plain scripts sharing one global scope (not ES modules), so the page also works
