@@ -1066,8 +1066,20 @@ function withReq(c){
   return t;
 }
 function fillQueue(){ while(G.queue.length<3) nextChords().forEach(c=>G.queue.push(withReq(c))); }
+/* By-ear chords: heard once when they appear, then repeated while they're the target, so your hands can stay on the keys.
+   Game mode repeats on the beat (every 2 beats above 140, every bar from 240); Practice every 1.5 seconds.
+   Both run off the metronome's audio clock so the timing stays steady. */
 let earBus=null;
-function playByEar(t){ killBus(earBus); earBus=newBus(); if(earBus) playChord(voiceChord(t.q,t.root.pc,'close'),now()+0.05,1.6,'epiano',earBus,85); }
+const byEarVoice=t=>t.voice||(t.voice=voiceChord(t.q,t.root.pc,'close')); // same voicing every time
+function playByEar(t){ killBus(earBus); earBus=newBus(); if(earBus) playChord(byEarVoice(t),now()+0.05,1.6,'epiano',earBus,85); }
+function stabByEar(t,when,dur){
+  if(!opts.sound||!synth.ctx) return;
+  if(!earBus) earBus=newBus();
+  if(earBus) playChord(byEarVoice(t),when,dur,'epiano',earBus,72);
+}
+const byEarTarget=()=>{ const e=G&&G.enemies[0]; return e&&e.t.req==='byear'?e:null; };
+const byEarStride=bpm=>bpm<=140?1:bpm<240?2:4;
+function stopByEar(){ killBus(earBus); earBus=null; }
 function symHTML(t){
   const acc=ACC[t.root.a];
   // By ear: the root is shown (naming a root from nothing needs perfect pitch); the chord type is what you hear
@@ -1115,6 +1127,7 @@ function spawn(){
   let x, tries=0;
   do{ x=12+Math.random()*Math.max(10,laneW-w-24); tries++; } while(tries<12 && G.enemies.some(e=>Math.abs(e.x-x)<w*0.9));
   const e={id:++G.id,t,el,x,tf:0,w,h:el.offsetHeight,born:performance.now(),misses:0,req};
+  if(req==='byear') e.earFrom=(synth.ctx?synth.ctx.currentTime:0)+1.4; // beat repeats start after the first playback
   el.style.transform=`translate(${x}px,${STRIP-e.h}px)`;
   G.enemies.push(e); G.sinceSpawn=0;
 }
@@ -1136,7 +1149,7 @@ function tick(now){
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
-    const e=G.enemies.shift(); e.el.remove(); renderAhead();
+    const e=G.enemies.shift(); e.el.remove(); renderAhead(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
@@ -1182,7 +1195,7 @@ function submit(notes){
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
   if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
-  G.enemies.shift(); renderAhead();
+  G.enemies.shift(); renderAhead(); if(e.t.req==='byear') stopByEar();
   G.cool=G.practice?0.5:Math.max(0.4,60/G.bpm);
   fx(e,res);
   showAnalysis(ev,e.t,res); if(reqNote) $('why').textContent=(($('why').textContent||'')+' '+reqNote).trim(); updateHud();
@@ -1218,9 +1231,11 @@ function pulse(b){
   const el=$('beat'); if(!G||!G.running||G.practice) return;
   el.classList.add('on'); setTimeout(()=>el.classList.remove('on'),90);
 }
+// In Practice the clock still runs, at one slow 1.5 s 'beat', only to repeat by-ear chords (no hi-hat, no pulse)
 const metro={timer:null,next:0,beat:0,
+  beatLen(){ return G.practice?1.5:60/G.bpm; },
   start(){
-    this.stop(); if(!G||G.practice) return;
+    this.stop(); if(!G) return;
     const c=synth.ctx; const now=c?c.currentTime:performance.now()/1000;
     this.next=now+0.1; this.beat=0; this.timer=setInterval(()=>this.pump(),25);
   },
@@ -1231,9 +1246,11 @@ const metro={timer:null,next:0,beat:0,
     if(this.next<now-0.5) this.next=now+0.05; // recover after a stall
     while(this.next<now+0.12){
       const b=this.beat%4;
-      if(opts.metro && c && c.state==='running' && (b===1||b===3)) hat(this.next);
+      if(opts.metro && !G.practice && c && c.state==='running' && (b===1||b===3)) hat(this.next);
+      const be=byEarTarget(), st=G.practice?1:byEarStride(G.bpm);
+      if(be && c && c.state==='running' && this.beat%st===0 && this.next>(be.earFrom||0)) stabByEar(be.t,this.next,Math.min(1.2,0.85*st*this.beatLen()));
       setTimeout(()=>pulse(b),Math.max(0,(this.next-now)*1000));
-      this.next+=60/G.bpm; this.beat++;
+      this.next+=this.beatLen(); this.beat++;
     }
   }
 };
@@ -1254,7 +1271,7 @@ function pause(){ G.running=false; G.paused=true; cancelAnimationFrame(G.raf); m
 function resume(){ $('pauseOv').hidden=true; G.paused=false; G.running=true; G.last=performance.now(); G.raf=requestAnimationFrame(tick); metro.start(); }
 function hideOv(){ ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
 function gameOver(){
-  G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop();
+  G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar();
   const acc=G.attempts?Math.round(100*(G.attempts-G.fails)/G.attempts):0;
   const avg=G.times.length?(G.times.reduce((a,b)=>a+b,0)/G.times.length).toFixed(1):'–';
   let newBest=false;
