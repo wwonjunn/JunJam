@@ -1298,9 +1298,17 @@ function timbreFor(p){ return p.timbre==='random'?pickOne(TIMBRES):'epiano'; }
 // A key (pitch class) for the question, leaning on the keys you're shakiest in.
 // Squared, because unlike Hands there's no per chord-in-key weight stacked on top.
 function pickKeyPc(){ return weightedPick([...Array(12).keys()].map(pc=>({pc,w:keyWeight(pc,'ears')**2}))).pc; }
-function answerFrom(opts,prefix,force){
+// Answers come from a shuffled deck: every option once, plus as many extra cards again chosen by weakness.
+// So each option shows up at least once every 2×(number of options) questions, and weak ones more often.
+function answerFrom(opts,prefix,force,ctx={}){
   if(force && force.answer!==undefined) return String(force.answer);
-  return String(weightedPick(opts.map(o=>({o,w:earWeight(prefix+o)}))).o);
+  const decks=ctx.decks||(ctx.decks={}), id=prefix+opts.join(',');
+  if(!decks[id]||!decks[id].length){
+    const deck=[...opts];
+    for(let i=0;i<opts.length;i++) deck.push(weightedPick(opts.map(o=>({o,w:earWeight(prefix+o)}))).o);
+    decks[id]=shuffled(deck);
+  }
+  return String(decks[id].pop());
 }
 
 // Key-setting cadences: [chord tones above the tonic, bass note above the tonic] per chord.
@@ -1363,7 +1371,7 @@ const GEN={
     }
     ctx.keyLeft--;
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p);
-    const ans=+answerFrom(set,`deg${minor?'m':''}:`,force);
+    const ans=+answerFrom(set,`deg${minor?'m':''}:`,force,ctx);
     const m=pickOne([T+ans-12,T+ans,T+ans+12].filter(x=>x>=50&&x<=79));
     const base=m-ans, key=pcName(T,minor)+(minor?' minor':' major');
     const scale=minor?MINOR:MAJOR;
@@ -1382,7 +1390,7 @@ const GEN={
   },
   interval(p,ctx,force){
     const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
-    const ans=+answerFrom(set,`int:${p.dir}:`,force);
+    const ans=+answerFrom(set,`int:${p.dir}:`,force,ctx);
     const dir=p.dir==='mix'?pickOne(['up','down','together']):p.dir;
     const lo=rint(48,64), a=dir==='down'?lo+ans:lo, b=dir==='down'?lo:lo+ans;
     const pair=(iv,bus,t)=>{ const x=dir==='down'?lo+ans:lo, y=dir==='down'?x-iv:x+iv;
@@ -1409,7 +1417,7 @@ const GEN={
   },
   chord(p,ctx,force){
     const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
-    const ans=answerFrom(set,'chord:',force);
+    const ans=answerFrom(set,'chord:',force,ctx);
     const pc=pickKeyPc(), style=p.style==='mixed'?pickOne(['close','open','rootless']):(p.style||'close');
     const v=id=>voiceChord(Q[id],pc,style);
     const notes=v(ans), q=Q[ans];
@@ -1423,7 +1431,7 @@ const GEN={
   },
   prog(p,ctx,force){
     const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
-    const ans=answerFrom(set,'prog:',force), P=PROG[ans], kpc=pickKeyPc();
+    const ans=answerFrom(set,'prog:',force,ctx), P=PROG[ans], kpc=pickKeyPc();
     const chords=progChords(P,kpc), voiced=voiceProg(chords);
     const key=keyName(kpc,!!P.minor), last=chords[chords.length-1];
     return {prompt:'Which progression?',sub:'Listen to the bass line and where the colours go.',
