@@ -7,8 +7,10 @@ const BASE_LABEL={0:'R',1:'♭9',2:'9',3:'♭3',4:'3',5:'11',6:'♯11',7:'5',8:'
 const DOM3={3:'♯9'};
 const mod12=x=>((x%12)+12)%12;
 function Qd(id,suf,stage,ct,req,ext,o={}){
-  return {id,suf,stage,ct,req,ext,imp:o.imp||[],rootless:!!o.rootless,anyOf:o.anyOf||null,minor:!!o.minor,lab:Object.assign({},BASE_LABEL,o.lab||{})};
+  return {id,suf,alt:o.alt||[],stage,ct,req,ext,imp:o.imp||[],rootless:!!o.rootless,anyOf:o.anyOf||null,minor:!!o.minor,lab:Object.assign({},BASE_LABEL,o.lab||{})};
 }
+// Some chords have more than one common spelling on real charts; serve them all so both look familiar
+const pickSuf=q=>{const all=[q.suf,...q.alt]; return all[Math.floor(Math.random()*all.length)];};
 const QUALS=[
   Qd('maj','',1,[0,4,7],[4,7],[]),
   Qd('min','m',1,[0,3,7],[3,7],[],{minor:1}),
@@ -19,7 +21,7 @@ const QUALS=[
   Qd('maj7','maj7',2,[0,4,7,11],[4,11],[2,9,6],{rootless:1}),
   Qd('dom7','7',2,[0,4,7,10],[4,10],[9,2,1,3,6,8],{rootless:1,lab:DOM3}),
   Qd('min7','m7',2,[0,3,7,10],[3,10],[2,5,9],{rootless:1,minor:1}),
-  Qd('hdim','m7♭5',2,[0,3,6,10],[3,6,10],[2,5,8],{rootless:1,minor:1,lab:{6:'♭5'}}),
+  Qd('hdim','m7♭5',2,[0,3,6,10],[3,6,10],[2,5,8],{rootless:1,minor:1,lab:{6:'♭5'},alt:['ø7']}),
   Qd('dim7','°7',2,[0,3,6,9],[3,6,9],[2,5,8],{rootless:1,minor:1,lab:{6:'♭5',9:'°7'}}),
   Qd('six','6',3,[0,4,7,9],[4,9],[2],{rootless:1,lab:{9:'6'}}),
   Qd('min6','m6',3,[0,3,7,9],[3,9],[2,5],{rootless:1,minor:1,lab:{9:'6'}}),
@@ -68,7 +70,7 @@ function spellNote(midi,root,q){
   const oct=Math.floor((midi-a)/12)-1;
   return {l,a,oct,di:oct*7+l,name:LETTERS[l]+ACC[a]};
 }
-function symText(t){return rootName(t.root)+t.q.suf;}
+function symText(t){return rootName(t.root)+(t.suf??t.q.suf);} // t.suf: the spelling this chord was served with
 
 function evaluate(notes,target,opts){
   const {root,q}=target;

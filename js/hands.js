@@ -35,7 +35,7 @@ function nextChords(){
   return [{root,q}];
 }
 function withReq(c){
-  const t={root:c.root,q:c.q,req:null};
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),req:null};
   if(Math.random()<0.25){
     const list=requestsFor(t,{rootless:opts.rootless,sequence:stageN===6});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
@@ -49,7 +49,7 @@ function playByEar(t){ killBus(earBus); earBus=newBus(); if(earBus) playChord(vo
 function symHTML(t){
   if(t.req==='byear') return '<span class="rt q">?</span>';
   const acc=ACC[t.root.a];
-  const suf=t.q.suf.replace(/([♭♯°])/g,'<span class="g">$1</span>');
+  const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
   return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}`;
 }
 function renderAhead(){
@@ -111,7 +111,7 @@ function tick(now){
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove();
-    const key=symText(e.t); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
+    const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
@@ -127,7 +127,7 @@ function submit(notes){
   G.attempts++;
   if(!ev.ok){
     G.fails++; G.combo=0; e.misses++; recordStat(e.t,'miss');
-    const key=symText(e.t); G.missed[key]=(G.missed[key]||0)+1;
+    const key=symText({root:e.t.root,q:e.t.q}); G.missed[key]=(G.missed[key]||0)+1;
     e.el.classList.remove('shake'); void e.el.offsetWidth; e.el.classList.add('shake');
     showAnalysis(ev,e.t,null);
     if(e.t.req==='byear' && e.misses<3){

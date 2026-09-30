@@ -355,8 +355,10 @@ const BASE_LABEL={0:'R',1:'♭9',2:'9',3:'♭3',4:'3',5:'11',6:'♯11',7:'5',8:'
 const DOM3={3:'♯9'};
 const mod12=x=>((x%12)+12)%12;
 function Qd(id,suf,stage,ct,req,ext,o={}){
-  return {id,suf,stage,ct,req,ext,imp:o.imp||[],rootless:!!o.rootless,anyOf:o.anyOf||null,minor:!!o.minor,lab:Object.assign({},BASE_LABEL,o.lab||{})};
+  return {id,suf,alt:o.alt||[],stage,ct,req,ext,imp:o.imp||[],rootless:!!o.rootless,anyOf:o.anyOf||null,minor:!!o.minor,lab:Object.assign({},BASE_LABEL,o.lab||{})};
 }
+// Some chords have more than one common spelling on real charts; serve them all so both look familiar
+const pickSuf=q=>{const all=[q.suf,...q.alt]; return all[Math.floor(Math.random()*all.length)];};
 const QUALS=[
   Qd('maj','',1,[0,4,7],[4,7],[]),
   Qd('min','m',1,[0,3,7],[3,7],[],{minor:1}),
@@ -367,7 +369,7 @@ const QUALS=[
   Qd('maj7','maj7',2,[0,4,7,11],[4,11],[2,9,6],{rootless:1}),
   Qd('dom7','7',2,[0,4,7,10],[4,10],[9,2,1,3,6,8],{rootless:1,lab:DOM3}),
   Qd('min7','m7',2,[0,3,7,10],[3,10],[2,5,9],{rootless:1,minor:1}),
-  Qd('hdim','m7♭5',2,[0,3,6,10],[3,6,10],[2,5,8],{rootless:1,minor:1,lab:{6:'♭5'}}),
+  Qd('hdim','m7♭5',2,[0,3,6,10],[3,6,10],[2,5,8],{rootless:1,minor:1,lab:{6:'♭5'},alt:['ø7']}),
   Qd('dim7','°7',2,[0,3,6,9],[3,6,9],[2,5,8],{rootless:1,minor:1,lab:{6:'♭5',9:'°7'}}),
   Qd('six','6',3,[0,4,7,9],[4,9],[2],{rootless:1,lab:{9:'6'}}),
   Qd('min6','m6',3,[0,3,7,9],[3,9],[2,5],{rootless:1,minor:1,lab:{9:'6'}}),
@@ -416,7 +418,7 @@ function spellNote(midi,root,q){
   const oct=Math.floor((midi-a)/12)-1;
   return {l,a,oct,di:oct*7+l,name:LETTERS[l]+ACC[a]};
 }
-function symText(t){return rootName(t.root)+t.q.suf;}
+function symText(t){return rootName(t.root)+(t.suf??t.q.suf);} // t.suf: the spelling this chord was served with
 
 function evaluate(notes,target,opts){
   const {root,q}=target;
@@ -964,7 +966,7 @@ function nextChords(){
   return [{root,q}];
 }
 function withReq(c){
-  const t={root:c.root,q:c.q,req:null};
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),req:null};
   if(Math.random()<0.25){
     const list=requestsFor(t,{rootless:opts.rootless,sequence:stageN===6});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
@@ -978,7 +980,7 @@ function playByEar(t){ killBus(earBus); earBus=newBus(); if(earBus) playChord(vo
 function symHTML(t){
   if(t.req==='byear') return '<span class="rt q">?</span>';
   const acc=ACC[t.root.a];
-  const suf=t.q.suf.replace(/([♭♯°])/g,'<span class="g">$1</span>');
+  const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
   return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}`;
 }
 function renderAhead(){
@@ -1040,7 +1042,7 @@ function tick(now){
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove();
-    const key=symText(e.t); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
+    const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
@@ -1056,7 +1058,7 @@ function submit(notes){
   G.attempts++;
   if(!ev.ok){
     G.fails++; G.combo=0; e.misses++; recordStat(e.t,'miss');
-    const key=symText(e.t); G.missed[key]=(G.missed[key]||0)+1;
+    const key=symText({root:e.t.root,q:e.t.q}); G.missed[key]=(G.missed[key]||0)+1;
     e.el.classList.remove('shake'); void e.el.offsetWidth; e.el.classList.add('shake');
     showAnalysis(ev,e.t,null);
     if(e.t.req==='byear' && e.misses<3){
@@ -1196,7 +1198,7 @@ const shuffled=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.flo
 const DEG_LABEL={0:'1',1:'♭2',2:'2',3:'♭3',4:'3',5:'4',6:'♯4',7:'5',8:'♭6',9:'6',10:'♭7',11:'7'};
 const INT_LABEL={1:'m2',2:'M2',3:'m3',4:'M3',5:'P4',6:'Tritone',7:'P5',8:'m6',9:'M6',10:'m7',11:'M7',12:'Octave'};
 const INT_LONG={1:'minor 2nd',2:'major 2nd',3:'minor 3rd',4:'major 3rd',5:'perfect 4th',6:'tritone',7:'perfect 5th',8:'minor 6th',9:'major 6th',10:'minor 7th',11:'major 7th',12:'octave'};
-const QNAME=id=>({maj:'major',min:'minor',dim:'diminished',aug:'augmented'})[id]||Q[id].suf;
+const QNAME=(id,suf)=>({maj:'major',min:'minor',dim:'diminished',aug:'augmented'})[id]||suf||Q[id].suf;
 const MAJOR=[0,2,4,5,7,9,11], MINOR=[0,2,3,5,7,8,10];
 const pcName=(m,minor)=>rootName(defaultRoot(mod12(m),minor));
 
@@ -1295,11 +1297,12 @@ const GEN={
     const v=id=>voiceChord(Q[id],pc,style);
     const notes=v(ans), q=Q[ans];
     const styleName={close:'close',open:'open',rootless:'rootless'}[style];
+    const sufs=Object.fromEntries(set.map(id=>[id,pickSuf(Q[id])])); // one spelling per question, e.g. m7♭5 or ø7
     return {prompt:'What kind of chord?',sub:p.style==='mixed'||p.style==='rootless'?`Voiced ${styleName}, any register`:'',
-      options:set.map(id=>({id,label:QNAME(id)})),answer:ans,item:`chord:${ans}`,keyPc:pc,
+      options:set.map(id=>({id,label:QNAME(id,sufs[id])})),answer:ans,item:`chord:${ans}`,keyPc:pc,
       play:(bus,t)=>{playChord(notes,t,1.6,tb,bus); return t+1.8;},
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'&&Q[pk]){playChord(v(pk),t,1.4,tb,bus); e=t+1.7;} playChord(notes,e,1.6,tb,bus); return e+1.8;},
-      reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q})}, ${styleName} voicing.`}};
+      reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q,suf:sufs[ans]})}, ${styleName} voicing.`}};
   },
 };
 

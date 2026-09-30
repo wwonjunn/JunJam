@@ -9,7 +9,7 @@ const shuffled=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.flo
 const DEG_LABEL={0:'1',1:'♭2',2:'2',3:'♭3',4:'3',5:'4',6:'♯4',7:'5',8:'♭6',9:'6',10:'♭7',11:'7'};
 const INT_LABEL={1:'m2',2:'M2',3:'m3',4:'M3',5:'P4',6:'Tritone',7:'P5',8:'m6',9:'M6',10:'m7',11:'M7',12:'Octave'};
 const INT_LONG={1:'minor 2nd',2:'major 2nd',3:'minor 3rd',4:'major 3rd',5:'perfect 4th',6:'tritone',7:'perfect 5th',8:'minor 6th',9:'major 6th',10:'minor 7th',11:'major 7th',12:'octave'};
-const QNAME=id=>({maj:'major',min:'minor',dim:'diminished',aug:'augmented'})[id]||Q[id].suf;
+const QNAME=(id,suf)=>({maj:'major',min:'minor',dim:'diminished',aug:'augmented'})[id]||suf||Q[id].suf;
 const MAJOR=[0,2,4,5,7,9,11], MINOR=[0,2,3,5,7,8,10];
 const pcName=(m,minor)=>rootName(defaultRoot(mod12(m),minor));
 
@@ -108,11 +108,12 @@ const GEN={
     const v=id=>voiceChord(Q[id],pc,style);
     const notes=v(ans), q=Q[ans];
     const styleName={close:'close',open:'open',rootless:'rootless'}[style];
+    const sufs=Object.fromEntries(set.map(id=>[id,pickSuf(Q[id])])); // one spelling per question, e.g. m7♭5 or ø7
     return {prompt:'What kind of chord?',sub:p.style==='mixed'||p.style==='rootless'?`Voiced ${styleName}, any register`:'',
-      options:set.map(id=>({id,label:QNAME(id)})),answer:ans,item:`chord:${ans}`,keyPc:pc,
+      options:set.map(id=>({id,label:QNAME(id,sufs[id])})),answer:ans,item:`chord:${ans}`,keyPc:pc,
       play:(bus,t)=>{playChord(notes,t,1.6,tb,bus); return t+1.8;},
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'&&Q[pk]){playChord(v(pk),t,1.4,tb,bus); e=t+1.7;} playChord(notes,e,1.6,tb,bus); return e+1.8;},
-      reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q})}, ${styleName} voicing.`}};
+      reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q,suf:sufs[ans]})}, ${styleName} voicing.`}};
   },
 };
 
