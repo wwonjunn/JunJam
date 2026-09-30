@@ -20,12 +20,19 @@ function renderMenu(){
     const b=bests[bestKey(tierId,s.n)];
     return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
+  const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
+  $('progs').innerHTML=PROGS.map(p=>{
+    const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
+    const best=bestLine(id);
+    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}</span><span class="t">${p.short}</span><span class="best">${progDegrees(p)}${best?`. ${best}`:''}</span></button>`;
+  }).join('')+`<button class="stage" data-p="p:mix" aria-pressed="${stageN==='p:mix'}"><span class="n">&nbsp;</span><span class="t">All of them, mixed</span><span class="best">A random progression each time${bestLine('p:mix')?`. ${bestLine('p:mix')}`:''}</span></button>`;
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);
   updateHud();
 }
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
+$('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
 $('sHands').onclick=()=>{side='hands';renderMenu();};
 $('sEars').onclick=()=>{side='ears';renderMenu();};
@@ -71,7 +78,7 @@ function renderProgress(){
   let lastStage=0;
   QUALS.forEach(q=>{
     if(q.stage!==lastStage){ lastStage=q.stage; h+=`<tr class="grp"><td colspan="13">${STAGES[q.stage-1].t}</td></tr>`; }
-    h+=`<tr><th>${q.suf||'major'}</th>`+CIRCLE.map(pc=>{
+    h+=`<tr><th>${q.row||q.suf||'major'}</th>`+CIRCLE.map(pc=>{
       const s=STATS[statKey(q.id,pc)], f=fluency(q.id,pc), sym=symText({root:defaultRoot(pc,q.minor),q});
       const cls=f===null?'u':f>=0.7?'g':f>=0.4?'m':'b';
       const tip=f===null?`${sym}: not seen yet`:`${sym}: seen ${s.n}, right first try ${Math.round(100*s.ft/s.n)}%, about ${s.t.toFixed(1)}s`;

@@ -92,11 +92,11 @@ function showAnalysis(ev,target,result,extra){
   ev.per.forEach(p=>kbMarks[p.midi]='k-'+p.role);
   chips.innerHTML=ev.per.map(p=>`<span class="r-${p.role}">${p.spell.name}<em>${p.label==='R'?'root':p.label}</em></span>`).join('');
   if(ev.ok){
-    v.className='verdict ok'; v.textContent=`${symText(target)}, nice.`+(result?`  +${result.total}`:'');
+    v.className='verdict ok'; v.textContent=`${symText(target)}${target.rn?` (${target.rn})`:''}, nice.`+(result?`  +${result.total}`:'');
     why.textContent=result&&result.mult>1?`Combo ×${result.mult.toFixed(1)}`:'';
     tags.innerHTML=result?result.tags.map(t=>`<span class="${t.p<0?'neg':''}">${t.t} ${t.p>0?'+':''}${t.p}</span>`).join(', '):'';
   }else{
-    v.className='verdict no'; v.textContent=`Not ${symText(target)} yet.`;
+    v.className='verdict no'; v.textContent=`Not ${symText(target)}${target.rn?` (${target.rn})`:''} yet.`;
     why.textContent=ev.reasons.join(' '); tags.textContent='';
   }
   paintKeys();

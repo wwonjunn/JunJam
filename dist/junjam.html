@@ -112,13 +112,15 @@ body.menu .panel{display:none}
 .enemy .ac{font-size:32px;font-family:var(--body);font-weight:500;vertical-align:.45em;margin-left:1px}
 .enemy .sf{font-size:26px;vertical-align:.7em;margin-left:2px}
 .enemy .sf .g{font-family:var(--body);font-weight:500;font-size:20px}
+.enemy .sl{font-size:30px;margin-left:1px}
+.ahead .sym .sl{font-size:17px}
 .enemy.target{color:var(--brass)}
 .enemy.target::after{content:"";position:absolute;left:6px;right:6px;bottom:0;height:3px;border-radius:2px;background:currentColor;opacity:.8}
 .enemy.danger .rt,.enemy.danger .ac,.enemy.danger .sf{color:var(--wrong)}
 .enemy.shake{animation:shake .32s}
 @keyframes shake{20%{margin-left:-7px}40%{margin-left:7px}60%{margin-left:-4px}80%{margin-left:3px}}
 .enemy.dead{transition:opacity .35s, filter .35s;opacity:0;filter:blur(6px)}
-.enemy .prog{display:block;font-family:var(--cond);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin-top:2px;text-align:left}
+.enemy .prog{display:block;font-family:var(--cond);font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin:2px 0 6px;text-align:left}
 
 .shot{position:absolute;width:2px;background:var(--brass);transform-origin:bottom center;bottom:0;opacity:.9;transition:opacity .3s}
 .pop{position:absolute;font-family:var(--cond);font-weight:700;color:var(--brass);pointer-events:none;text-align:center;transform:translateX(-50%);animation:rise 1.3s ease-out forwards}
@@ -280,6 +282,8 @@ body.earsmode .ahead{display:none}
         <div id="tierBox"><div class="sec">Tempo</div><div class="stages" id="tiers"></div></div>
         <div class="sec">Chords</div>
         <div class="stages" id="stages"></div>
+        <div class="sec">Progressions: J-pop, city pop and jazz moves in every key</div>
+        <div class="stages" id="progs"></div>
         <div class="opts">
           <label><input type="checkbox" id="optRootless" checked> Accept rootless voicings on seventh chords</label>
           <label><input type="checkbox" id="optWeird"> Unusual spellings, like B♯maj7 or F♭7</label>
@@ -354,8 +358,11 @@ const ACC={'-2':'𝄫','-1':'♭','0':'','1':'♯','2':'𝄪'};
 const BASE_LABEL={0:'R',1:'♭9',2:'9',3:'♭3',4:'3',5:'11',6:'♯11',7:'5',8:'♭13',9:'13',10:'♭7',11:'7'};
 const DOM3={3:'♯9'};
 const mod12=x=>((x%12)+12)%12;
+// o.bass: slash chords, the interval of the required lowest note above the root (C/E has bass 4)
+// o.row: label for the Progress grid when the suffix alone isn't clear
 function Qd(id,suf,stage,ct,req,ext,o={}){
-  return {id,suf,alt:o.alt||[],stage,ct,req,ext,imp:o.imp||[],rootless:!!o.rootless,anyOf:o.anyOf||null,minor:!!o.minor,lab:Object.assign({},BASE_LABEL,o.lab||{})};
+  return {id,suf,alt:o.alt||[],stage,ct,req,ext,imp:o.imp||[],rootless:!!o.rootless,anyOf:o.anyOf||null,minor:!!o.minor,
+    bass:o.bass??null,row:o.row||null,lab:Object.assign({},BASE_LABEL,o.lab||{})};
 }
 // Some chords have more than one common spelling on real charts; serve them all so both look familiar
 const pickSuf=q=>{const all=[q.suf,...q.alt]; return all[Math.floor(Math.random()*all.length)];};
@@ -387,6 +394,15 @@ const QUALS=[
   Qd('d7s11','7♯11',5,[0,4,7,10],[4,10,6],[2,9],{rootless:1}),
   Qd('mj7s11','maj7♯11',5,[0,4,7,11],[4,11,6],[2,9],{rootless:1}),
   Qd('mj7s5','maj7♯5',5,[0,4,8,11],[4,8,11],[2,6],{rootless:1,lab:{8:'♯5'}}),
+  // Pop colours: the add9s, 6/9 and slash chords all over J-pop charts
+  Qd('add9','add9',6,[0,4,7],[4,2],[]),
+  Qd('madd9','m(add9)',6,[0,3,7],[3,2],[],{minor:1}),
+  Qd('six9','6/9',6,[0,4,7,9],[4,9,2],[],{rootless:1,lab:{9:'6'}}),
+  Qd('maj_3','',6,[0,4,7],[4,7],[],{bass:4,row:'major / 3rd'}),
+  Qd('maj_5','',6,[0,4,7],[4,7],[],{bass:7,row:'major / 5th'}),
+  Qd('min_3','m',6,[0,3,7],[3,7],[],{minor:1,bass:3,row:'m / ♭3rd'}),
+  Qd('dom7_3','7',6,[0,4,7,10],[4,10],[],{bass:4,row:'7 / 3rd'}),
+  Qd('maj_2','',6,[0,4,7],[4,7],[],{bass:2,row:'major / 2nd',lab:{2:'9'}}), // F/G: IV over V, the J-pop "sus" dominant
 ];
 const Q=Object.fromEntries(QUALS.map(q=>[q.id,q]));
 
@@ -418,16 +434,19 @@ function spellNote(midi,root,q){
   const oct=Math.floor((midi-a)/12)-1;
   return {l,a,oct,di:oct*7+l,name:LETTERS[l]+ACC[a]};
 }
-function symText(t){return rootName(t.root)+(t.suf??t.q.suf);} // t.suf: the spelling this chord was served with
+const bassNote=t=>spellNote(60+mod12(t.root.pc+t.q.bass),t.root,t.q).name;
+// t.suf: the spelling this chord was served with; slash chords add their bass note
+function symText(t){return rootName(t.root)+(t.suf??t.q.suf)+(t.q.bass!=null?'/'+bassNote(t):'');}
 
 function evaluate(notes,target,opts){
   const {root,q}=target;
   const sorted=[...new Set(notes)].sort((a,b)=>a-b);
   const per=sorted.map(m=>{
     const iv=mod12(m-root.pc);
-    const allowed=q.ct.includes(iv)||q.req.includes(iv)||q.ext.includes(iv);
-    const role=!allowed?'wrong':iv===0?'root':q.ct.includes(iv)?'chord':'tension';
-    return {midi:m,iv,label:q.lab[iv],role,spell:spellNote(m,root,q)};
+    const isBass=iv===q.bass&&!q.ct.includes(iv);
+    const allowed=q.ct.includes(iv)||q.req.includes(iv)||q.ext.includes(iv)||isBass;
+    const role=!allowed?'wrong':iv===0?'root':q.ct.includes(iv)||isBass?'chord':'tension';
+    return {midi:m,iv,label:isBass?'bass':q.lab[iv],role,spell:spellNote(m,root,q)};
   });
   const set=new Set(per.map(p=>p.iv));
   const reasons=[];
@@ -444,6 +463,7 @@ function evaluate(notes,target,opts){
   const missing=req.filter(r=>!set.has(r));
   if(missing.length) reasons.push('Missing the '+missing.map(r=>q.lab[r]==='R'?'root':q.lab[r]).join(', ')+'.');
   if(q.anyOf && !q.anyOf.some(x=>set.has(x))) reasons.push('Needs at least one alteration: ♭9, ♯9, ♯11 or ♭13.');
+  if(q.bass!=null && per.length && per[0].iv!==q.bass) reasons.push(`The lowest note has to be ${bassNote(target)}, the note after the slash.`);
   return {ok:reasons.length===0,per,set,reasons,missing};
 }
 
@@ -497,6 +517,10 @@ function hintVoicing(target,opts){
   // pull whole voicing into a nice middle register
   while(out[0]<52) out.forEach((_,i)=>out[i]+=12);
   while(out[out.length-1]>79) out.forEach((_,i)=>out[i]-=12);
+  if(q.bass!=null){ // slash chord: the bass note goes under everything
+    let b=out[0]-1; while(mod12(b-root.pc-q.bass)!==0) b--;
+    out.unshift(b);
+  }
   return out;
 }
 
@@ -506,7 +530,7 @@ const STAGES=[
   {n:3,t:'Sixths, sus and m(maj7)'},
   {n:4,t:'Ninths, elevenths, thirteenths'},
   {n:5,t:'Altered dominants and ♯11s'},
-  {n:6,t:'ii–V–I in every key'},
+  {n:6,t:'Pop colours: add9, 6/9, slash chords'},
   {n:7,t:'Everything'},
 ];
 const TIERS=[
@@ -516,23 +540,36 @@ const TIERS=[
   {id:'cherokee',name:'Cherokee',        bpm:240,step:8, cap:3,lives:3,mult:2},
   {id:'donna',   name:'Donna Lee',       bpm:290,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
 ];
-function iiVI(keyPc){
-  const minor=Math.random()<0.4;
-  const kpc=keyPc===undefined?Math.floor(Math.random()*12):keyPc;
-  const k=defaultRoot(kpc,minor);
-  const at=(steps,semis)=>{const l=(k.l+steps)%7;let a=mod12(kpc+semis-LETTER_PC[l]);if(a>6)a-=12;return mkRoot(l,a);};
-  const pick=a=>a[Math.floor(Math.random()*a.length)];
-  if(!minor) return [
-    {root:at(1,2),q:Q[pick(['min7','min7','min9','min11'])]},
-    {root:at(4,7),q:Q[pick(['dom7','dom9','dom13','dom13'])]},
-    {root:k,q:Q[pick(['maj7','maj9','six','maj7'])]},
-  ];
-  return [
-    {root:at(1,2),q:Q['hdim']},
-    {root:at(4,7),q:Q[pick(['d7b9','alt','d7b13'])]},
-    {root:k,q:Q[pick(['min6','mmaj7','min9','min7'])]},
-  ];
+/* Progressions as data: the common moves of J-pop, city pop and jazz, playable in any key.
+   Each chord: [letter steps above the key, semitones above the key, quality id or list of variants, degree, bass degree for slash chords],
+   or a list of such chords to choose between (V7 or IV/V, say).
+   Degrees use J-pop style: uppercase numeral plus the chord suffix, like IVmaj7 V7 IIIm7 VIm7. */
+const PROGS=[
+  {id:'royal',short:'Royal Road',name:'Royal Road (王道進行)',ch:[[3,5,['maj7','maj9'],'IV'],[[4,7,['dom7','dom9','sus7'],'V'],[3,5,'maj_2','IV','V']],[2,4,'min7','III'],[5,9,['min7','min9','min'],'VI']]},
+  {id:'marusa',short:'Just the Two of Us',name:'Just the Two of Us (丸サ進行)',ch:[[3,5,['maj7','maj9'],'IV'],[2,4,['dom7','d7b9','d7s9'],'III'],[5,9,['min7','min9'],'VI'],[4,7,'min7','V'],[0,0,['dom7','dom9'],'I']]},
+  {id:'canon',short:'Canon',name:'Canon (カノン進行)',ch:[[0,0,['maj','add9'],'I'],[4,7,'maj_3','V','VII'],[5,9,['min','min7'],'VI'],[2,4,'min_3','III','V'],[3,5,['maj','maj7'],'IV'],[0,0,'maj_3','I','III'],[1,2,['min7','min'],'II'],[4,7,['maj','sus4','dom7'],'V']]},
+  {id:'komuro',short:'Komuro',name:'Komuro (小室進行)',ch:[[5,9,['min','min7'],'VI'],[3,5,['maj','add9','maj7'],'IV'],[4,7,['maj','sus4'],'V'],[0,0,['maj','add9'],'I']]},
+  {id:'axis',short:'1–5–6–4',name:'1–5–6–4',ch:[[0,0,['maj','add9'],'I'],[4,7,['maj','sus4'],'V'],[5,9,['min','min7'],'VI'],[3,5,['maj','maj7','add9'],'IV']]},
+  {id:'passdim',short:'Passing diminished',name:'Passing diminished (経過ディミニッシュ)',ch:[[3,5,'maj7','IV'],[3,6,'dim7','♯IV'],[0,0,'maj_5','I','V'],[5,9,['min7','min9'],'VI'],[1,2,['min7','min9'],'II'],[[4,7,['dom7','sus7'],'V'],[3,5,'maj_2','IV','V']],[0,0,['maj7','six9'],'I']]},
+  {id:'minorIV',short:'Minor iv',name:'Minor iv (サブドミナントマイナー)',ch:[[3,5,['maj7','maj9'],'IV'],[3,5,['min6','min7'],'IV'],[2,4,'min7','III'],[5,9,['min7','min9'],'VI']]},
+  {id:'turnI',short:'I–VI–II–V',name:'I–VI–II–V turnaround',ch:[[0,0,['maj7','six9'],'I'],[5,9,['dom7','d7b9'],'VI'],[1,2,['min7','min9'],'II'],[4,7,['dom7','dom9','dom13'],'V']]},
+  {id:'turnIII',short:'III–VI–II–V',name:'III–VI–II–V (city pop turnaround)',ch:[[2,4,'min7','III'],[5,9,['dom7','d7b9','d7b13'],'VI'],[1,2,['min7','min9'],'II'],[[4,7,['dom7','dom13'],'V'],[3,5,'maj_2','IV','V']]]},
+  {id:'iiVI',short:'ii–V–I',name:'ii–V–I, major',ch:[[1,2,['min7','min9','min11'],'II'],[4,7,['dom7','dom9','dom13'],'V'],[0,0,['maj7','maj9','six','six9'],'I']]},
+  {id:'iiVIm',short:'ii–V–i minor',name:'ii–V–i, minor',minor:true,ch:[[1,2,'hdim','II'],[4,7,['d7b9','alt','d7b13'],'V'],[0,0,['min6','mmaj7','min9','min7'],'I']]},
+  {id:'backdoor',short:'Backdoor',name:'Backdoor (IVm7 to ♭VII7 to I)',ch:[[3,5,'min7','IV'],[6,10,['dom7','dom9','dom13'],'♭VII'],[0,0,['maj7','maj9'],'I']]},
+  {id:'cliche',short:'Minor line cliché',name:'Minor line cliché',minor:true,ch:[[0,0,'min','I'],[0,0,'mmaj7','I'],[0,0,'min7','I'],[0,0,'min6','I']]},
+];
+const PROG=Object.fromEntries(PROGS.map(p=>[p.id,p]));
+// Degree label for a chord in a progression, e.g. IIIm7 or V/VII
+const degText=(rn,q,b)=>rn+q.suf+(b?'/'+b:'');
+function progChords(p,keyPc,pickFn=a=>a[Math.floor(Math.random()*a.length)]){
+  const k=defaultRoot(keyPc,!!p.minor);
+  const at=(steps,semis)=>{const l=(k.l+steps)%7;let a=mod12(keyPc+semis-LETTER_PC[l]);if(a>6)a-=12;return mkRoot(l,a);};
+  return p.ch.map(e=>{ const [s,i,qs,rn,b]=Array.isArray(e[0])?pickFn(e):e, q=Q[Array.isArray(qs)?pickFn(qs):qs]; return {root:at(s,i),q,rn:degText(rn,q,b)}; });
 }
+// Degrees of a progression with its first variant of each chord, for menus: IVmaj7 V7 IIIm7 VIm7
+const progDegrees=p=>p.ch.map(e=>{ const [,,qs,rn,b]=Array.isArray(e[0])?e[0]:e; return degText(rn,Q[Array.isArray(qs)?qs[0]:qs],b); }).join(' ');
+const keyName=(pc,minor)=>rootName(defaultRoot(pc,minor))+(minor?' minor':' major');
 // Name what was played: try every root and quality, keep the ones that fit, rank like a pianist would
 function identify(notes){
   const sorted=[...new Set(notes)].sort((a,b)=>a-b);
@@ -542,9 +579,9 @@ function identify(notes){
     const t={root:defaultRoot(pc,q.minor),q};
     const ev=evaluate(sorted,t,{rootless:true});
     if(!ev.ok) continue;
-    const extra=[...ev.set].filter(iv=>!q.ct.includes(iv)&&!q.req.includes(iv)&&!q.imp.includes(iv));
+    const extra=[...ev.set].filter(iv=>!q.ct.includes(iv)&&!q.req.includes(iv)&&!q.imp.includes(iv)&&iv!==q.bass);
     let sc=0;
-    if(mod12(sorted[0]-pc)===0) sc+=10;
+    if(mod12(sorted[0]-pc)===0||q.bass!=null) sc+=10; // slash chords only pass when their bass note is lowest
     if(!ev.set.has(0)) sc-=4;
     sc-=extra.length*1.5+q.stage*0.1;
     out.push({t,ev,extra,sc,name:symText(t)+(extra.length?` (add ${extra.map(iv=>q.lab[iv]).join(', ')})`:'')});
@@ -558,6 +595,7 @@ function identify(notes){
 const REQ_LABEL={byear:'by ear',rootless:'rootless',shell:'shell: root, 3, 7',nine:'add the 9',inverted:'inverted',open:'open voicing',smooth:'smooth voice leading'};
 function requestsFor(t,o){
   const q=t.q, r=['open'];
+  if(q.bass!=null) return o.sequence?[...r,'smooth','smooth']:r;
   if(q.rootless && o.rootless) r.push('rootless');
   if(['maj7','dom7','min7'].includes(q.id)) r.push('shell');
   if(!q.req.includes(2) && (q.ct.includes(2)||q.ext.includes(2))) r.push('nine');
@@ -588,7 +626,16 @@ function meetsRequest(kind,ev,t,prev){
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem('mtc:'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('mtc:'+k,JSON.stringify(v));}catch(e){}}};
 const opts={rootless:store.get('rootless',true),weird:store.get('weird',false),sound:store.get('sound',true),metro:store.get('metro',false)};
-let stageN=Math.min(STAGES.length,store.get('stage',2)); // saves from before stage 8 was removed
+// stageN: a chord stage number, or 'p:<progression id>' / 'p:mix' for Progressions
+// v2 save format: stage 6 used to be ii–V–I; that moved to Progressions and stage 6 is now Pop colours
+if(store.get('v',1)<2){
+  if(store.get('stage')===6) store.set('stage','p:iiVI');
+  const b=store.get('best2',{});
+  Object.keys(b).forEach(k=>{ const [tier,st]=k.split(':'); if(st==='6'){ b[tier+':p:iiVI']=b[k]; delete b[k]; } });
+  store.set('best2',b); store.set('v',2);
+}
+const validStage=s=>typeof s==='number'?s>=1&&s<=STAGES.length:s==='p:mix'||(typeof s==='string'&&!!PROG[s.slice(2)]);
+let stageN=store.get('stage',2); if(!validStage(stageN)) stageN=Math.min(STAGES.length,+stageN||2); // e.g. the removed stage 8
 let G=null; // running game
 opts.smart=store.get('smart',true);
 let STATS=store.get('stats',{});
@@ -839,11 +886,11 @@ function showAnalysis(ev,target,result,extra){
   ev.per.forEach(p=>kbMarks[p.midi]='k-'+p.role);
   chips.innerHTML=ev.per.map(p=>`<span class="r-${p.role}">${p.spell.name}<em>${p.label==='R'?'root':p.label}</em></span>`).join('');
   if(ev.ok){
-    v.className='verdict ok'; v.textContent=`${symText(target)}, nice.`+(result?`  +${result.total}`:'');
+    v.className='verdict ok'; v.textContent=`${symText(target)}${target.rn?` (${target.rn})`:''}, nice.`+(result?`  +${result.total}`:'');
     why.textContent=result&&result.mult>1?`Combo ×${result.mult.toFixed(1)}`:'';
     tags.innerHTML=result?result.tags.map(t=>`<span class="${t.p<0?'neg':''}">${t.t} ${t.p>0?'+':''}${t.p}</span>`).join(', '):'';
   }else{
-    v.className='verdict no'; v.textContent=`Not ${symText(target)} yet.`;
+    v.className='verdict no'; v.textContent=`Not ${symText(target)}${target.rn?` (${target.rn})`:''} yet.`;
     why.textContent=ev.reasons.join(' '); tags.textContent='';
   }
   paintKeys();
@@ -942,14 +989,20 @@ function tierUnlocked(t){
   const bests=store.get('best2',{});
   return Object.entries(bests).some(([k,v])=>k.startsWith(t.unlock.tier+':')&&v>=t.unlock.score);
 }
+const isProgStage=()=>typeof stageN==='string';
 function nextChords(){
   const st=stageN;
   // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
   const kw=opts.smart?[...Array(12).keys()].map(p=>keyWeight(p,'hands')):null;
-  if(st===6){
-    if(!opts.smart) return iiVI();
-    const keys=[...Array(12).keys()].map(k=>({k,w:kw[k]*(weightOf('min7',(k+2)%12)+weightOf('dom7',(k+7)%12)+weightOf('maj7',k))/3}));
-    return iiVI(weightedPick(keys).k);
+  if(isProgStage()){
+    const p=st==='p:mix'?PROGS[Math.floor(Math.random()*PROGS.length)]:PROG[st.slice(2)];
+    let key=Math.floor(Math.random()*12);
+    if(opts.smart){ // lean on shaky keys, and on keys where this progression's chords are weak
+      const keys=[...Array(12).keys()].map(k=>{ const ch=progChords(p,k); return {k,w:kw[k]*ch.reduce((a,c)=>a+weightOf(c.q.id,c.root.pc),0)/ch.length}; });
+      key=weightedPick(keys).k;
+    }
+    const label=`${p.short} in ${keyName(key,!!p.minor)}`;
+    return progChords(p,key).map(c=>({...c,prog:label}));
   }
   const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
   let q, pc, tries=0;
@@ -966,9 +1019,9 @@ function nextChords(){
   return [{root,q}];
 }
 function withReq(c){
-  const t={root:c.root,q:c.q,suf:pickSuf(c.q),req:null};
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null};
   if(Math.random()<0.25){
-    const list=requestsFor(t,{rootless:opts.rootless,sequence:stageN===6});
+    const list=requestsFor(t,{rootless:opts.rootless,sequence:isProgStage()});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
     t.req=list[Math.floor(Math.random()*list.length)];
   }
@@ -981,10 +1034,13 @@ function symHTML(t){
   if(t.req==='byear') return '<span class="rt q">?</span>';
   const acc=ACC[t.root.a];
   const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
-  return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}`;
+  const sl=t.q.bass!=null?`<span class="sl">/${bassNote(t)}</span>`:'';
+  return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}${sl}`;
 }
 function renderAhead(){
-  $('ahead').innerHTML='<span class="lbl">Coming up</span>'+G.queue.slice(0,2).map(t=>`<span class="sym">${symHTML(t)}</span>`).join('');
+  // In Progressions, name the progression and key of the chord you're on
+  const cur=(G.enemies[0]&&G.enemies[0].t)||G.queue[0], lbl=cur&&cur.prog?cur.prog:'Coming up';
+  $('ahead').innerHTML=`<span class="lbl">${lbl}</span>`+G.queue.slice(0,2).map(t=>`<span class="sym">${symHTML(t)}</span>`).join('');
 }
 const fallTime=()=>BEATS_PER_CHORD*60/G.bpm;
 
@@ -1012,7 +1068,7 @@ function spawn(){
   const t=G.queue.shift(); fillQueue(); renderAhead();
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
-  el.innerHTML=symHTML(t)+(req?`<span class="req">${req==='byear'?'by ear':REQ_LABEL[req]} ×2</span>`:'');
+  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${req==='byear'?'by ear':REQ_LABEL[req]} ×2</span>`:'');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);
@@ -1041,7 +1097,7 @@ function tick(now){
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
-    const e=G.enemies.shift(); e.el.remove();
+    const e=G.enemies.shift(); e.el.remove(); renderAhead();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
@@ -1087,7 +1143,7 @@ function submit(notes){
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
   if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
-  G.enemies.shift();
+  G.enemies.shift(); renderAhead();
   G.cool=G.practice?0.5:Math.max(0.4,60/G.bpm);
   fx(e,res);
   showAnalysis(ev,e.t,res); if(reqNote) $('why').textContent=(($('why').textContent||'')+' '+reqNote).trim(); updateHud();
@@ -1304,7 +1360,48 @@ const GEN={
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'&&Q[pk]){playChord(v(pk),t,1.4,tb,bus); e=t+1.7;} playChord(notes,e,1.6,tb,bus); return e+1.8;},
       reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q,suf:sufs[ans]})}, ${styleName} voicing.`}};
   },
+  prog(p,ctx,force){
+    const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
+    const ans=answerFrom(set,'prog:',force), P=PROG[ans], kpc=pickKeyPc();
+    const chords=progChords(P,kpc), voiced=voiceProg(chords);
+    const key=keyName(kpc,!!P.minor), last=chords[chords.length-1];
+    return {prompt:'Which progression?',sub:'Listen to the bass line and where the colours go.',
+      options:set.map(id=>({id,label:PROG[id].short})),answer:ans,item:`prog:${ans}`,keyPc:kpc,
+      play:(bus,t)=>playProg(voiced,tb,bus,t),
+      compare:(pk,bus,t)=>{ let e=t; if(pk!=null&&pk!=='timeout'&&PROG[pk]) e=playProg(voiceProg(progChords(PROG[pk],kpc)),tb,bus,t)+0.3; return playProg(voiced,tb,bus,e); },
+      reveal:{notes:voiced[voiced.length-1].all,target:{root:last.root,q:last.q},
+        text:`${P.name} in ${key}: ${chords.map(c=>symText(c)).join('  ')}. As degrees: ${chords.map(c=>c.rn).join('  ')}.`}};
+  },
 };
+
+// Voice a progression the way a band keyboardist would: root (or slash note) in the bass,
+// the other chord tones in the middle register, each chord moving as little as possible from the last
+function voiceProg(chords){
+  let prev=null;
+  return chords.map(c=>{
+    const q=c.q, pc=c.root.pc;
+    let ivs=q.id==='alt'?[4,10,1,8]:[...new Set([...q.ct,...q.req])];
+    if(ivs.length>3&&q.bass==null) ivs=ivs.filter(x=>x!==0); // the bass has the root
+    if(ivs.length>4) ivs=ivs.filter(x=>x!==7);
+    const pcs=ivs.map(iv=>mod12(pc+iv)).sort((a,b)=>a-b);
+    let best=null;
+    for(let r=0;r<pcs.length;r++) for(const base of [54,60,66]){ // every inversion, a few registers
+      const v=[]; let m=base-1;
+      for(let i=0;i<pcs.length;i++){ m++; while(mod12(m)!==pcs[(r+i)%pcs.length]) m++; v.push(m); }
+      if(v[0]<53||v[v.length-1]>79) continue;
+      const d=prev?voiceLeadDist(v,prev):Math.abs(v[0]-60);
+      if(!best||d<best.d) best={v,d};
+    }
+    if(!best) best={v:pcs.map(x=>60+x)};
+    prev=best.v;
+    const bass=40+mod12(pc+(q.bass??0)-40);
+    return {upper:best.v,bass,all:[bass,...best.v]};
+  });
+}
+function playProg(voiced,tb,bus,t){
+  voiced.forEach((v,i)=>{ const at=t+i*0.95; playChord(v.upper,at,0.9,tb,bus,68); tone(v.bass,at,0.9,82,tb,bus); });
+  return t+voiced.length*0.95+0.4;
+}
 
 // Build a voicing of chord quality q on pitch class pc: close, open (drop 2) or rootless
 function voiceChord(q,pc,style){
@@ -1318,6 +1415,7 @@ function voiceChord(q,pc,style){
   ivs.sort((a,b)=>num(a)-num(b)||a-b);
   const r=48+mod12(pc-48); const out=[r]; let prev=r;
   ivs.slice(1).forEach(iv=>{ let m=prev+1; while(mod12(m-pc)!==iv) m++; out.push(m); prev=m; });
+  if(q.bass!=null){ let b=out[0]-1; while(mod12(b-pc-q.bass)!==0) b--; return [b,...out]; } // slash chord
   if(style==='open' && out.length>=4){
     const up=out.slice(1); up[up.length-2]-=12; up.sort((a,b)=>a-b);
     let bass=out[0]; while(bass>=up[0]) bass-=12;
@@ -1369,6 +1467,13 @@ const WORLDS=[
     {id:'c8',name:'Altered dominants',gen:'chord',p:{set:['d7b9','d7s9','d7s11','d7b13','alt'],timbre:'random'}},
     {id:'c9',name:'Any voicing',gen:'chord',p:{set:['maj7','dom7','min7','hdim','dim7'],style:'mixed',timbre:'random'}},
     {id:'cB',name:'Rootless, any register',gen:'chord',p:{set:['maj7','dom7','min7','hdim','maj9','min9','dom13','d7b9'],style:'rootless',timbre:'random'},boss:true},
+  ]},
+  {id:'progs',name:'Progressions',blurb:'Name the J-pop, city pop and jazz moves by ear',rt:6,levels:[
+    {id:'g1',name:'Royal Road, Komuro, 1–5–6–4',gen:'prog',p:{set:['royal','komuro','axis']}},
+    {id:'g2',name:'Add Canon and Just the Two of Us',gen:'prog',p:{set:['royal','komuro','axis','canon','marusa']}},
+    {id:'g3',name:'Passing dim, minor iv, turnarounds',gen:'prog',p:{set:['royal','marusa','passdim','minorIV','turnI','turnIII']}},
+    {id:'g4',name:'Jazz moves: ii–V–I, backdoor, cliché',gen:'prog',p:{set:['iiVI','iiVIm','backdoor','cliche','turnI','minorIV'],timbre:'random'}},
+    {id:'gB',name:'Every progression',gen:'prog',p:{set:PROGS.map(x=>x.id),timbre:'random'},boss:true},
   ]},
 ];
 const LEVELS=Object.fromEntries(WORLDS.flatMap(w=>w.levels.map((l,i)=>[l.id,{...l,world:w,index:i}])));
@@ -1554,7 +1659,7 @@ function topConfusions(n){
 function confLabel(c){
   const lv=LEVELS[c.level], lab=id=>{
     if(lv.gen==='degree') return DEG_LABEL[+id]; if(lv.gen==='interval') return INT_LABEL[+id];
-    if(lv.gen==='chord') return QNAME(id); if(lv.gen==='inversion') return ['root','3rd','5th'][+id]+' in bass'; return id; };
+    if(lv.gen==='chord') return QNAME(id); if(lv.gen==='prog') return PROG[id].short; if(lv.gen==='inversion') return ['root','3rd','5th'][+id]+' in bass'; return id; };
   return `${lab(c.a)} heard as ${lab(c.b)}`;
 }
 function earsMenuNote(t){ const el=$('earsNote'); if(el){ el.textContent=t; } }
@@ -1614,12 +1719,19 @@ function renderMenu(){
     const b=bests[bestKey(tierId,s.n)];
     return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
+  const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
+  $('progs').innerHTML=PROGS.map(p=>{
+    const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
+    const best=bestLine(id);
+    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}</span><span class="t">${p.short}</span><span class="best">${progDegrees(p)}${best?`. ${best}`:''}</span></button>`;
+  }).join('')+`<button class="stage" data-p="p:mix" aria-pressed="${stageN==='p:mix'}"><span class="n">&nbsp;</span><span class="t">All of them, mixed</span><span class="best">A random progression each time${bestLine('p:mix')?`. ${bestLine('p:mix')}`:''}</span></button>`;
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);
   updateHud();
 }
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
+$('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
 $('sHands').onclick=()=>{side='hands';renderMenu();};
 $('sEars').onclick=()=>{side='ears';renderMenu();};
@@ -1665,7 +1777,7 @@ function renderProgress(){
   let lastStage=0;
   QUALS.forEach(q=>{
     if(q.stage!==lastStage){ lastStage=q.stage; h+=`<tr class="grp"><td colspan="13">${STAGES[q.stage-1].t}</td></tr>`; }
-    h+=`<tr><th>${q.suf||'major'}</th>`+CIRCLE.map(pc=>{
+    h+=`<tr><th>${q.row||q.suf||'major'}</th>`+CIRCLE.map(pc=>{
       const s=STATS[statKey(q.id,pc)], f=fluency(q.id,pc), sym=symText({root:defaultRoot(pc,q.minor),q});
       const cls=f===null?'u':f>=0.7?'g':f>=0.4?'m':'b';
       const tip=f===null?`${sym}: not seen yet`:`${sym}: seen ${s.n}, right first try ${Math.round(100*s.ft/s.n)}%, about ${s.t.toFixed(1)}s`;

@@ -41,5 +41,12 @@ const WORLDS=[
     {id:'c9',name:'Any voicing',gen:'chord',p:{set:['maj7','dom7','min7','hdim','dim7'],style:'mixed',timbre:'random'}},
     {id:'cB',name:'Rootless, any register',gen:'chord',p:{set:['maj7','dom7','min7','hdim','maj9','min9','dom13','d7b9'],style:'rootless',timbre:'random'},boss:true},
   ]},
+  {id:'progs',name:'Progressions',blurb:'Name the J-pop, city pop and jazz moves by ear',rt:6,levels:[
+    {id:'g1',name:'Royal Road, Komuro, 1–5–6–4',gen:'prog',p:{set:['royal','komuro','axis']}},
+    {id:'g2',name:'Add Canon and Just the Two of Us',gen:'prog',p:{set:['royal','komuro','axis','canon','marusa']}},
+    {id:'g3',name:'Passing dim, minor iv, turnarounds',gen:'prog',p:{set:['royal','marusa','passdim','minorIV','turnI','turnIII']}},
+    {id:'g4',name:'Jazz moves: ii–V–I, backdoor, cliché',gen:'prog',p:{set:['iiVI','iiVIm','backdoor','cliche','turnI','minorIV'],timbre:'random'}},
+    {id:'gB',name:'Every progression',gen:'prog',p:{set:PROGS.map(x=>x.id),timbre:'random'},boss:true},
+  ]},
 ];
 const LEVELS=Object.fromEntries(WORLDS.flatMap(w=>w.levels.map((l,i)=>[l.id,{...l,world:w,index:i}])));

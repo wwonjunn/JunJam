@@ -115,7 +115,48 @@ const GEN={
       compare:(pk,bus,t)=>{let e=t; if(pk!=null&&pk!=='timeout'&&Q[pk]){playChord(v(pk),t,1.4,tb,bus); e=t+1.7;} playChord(notes,e,1.6,tb,bus); return e+1.8;},
       reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q,suf:sufs[ans]})}, ${styleName} voicing.`}};
   },
+  prog(p,ctx,force){
+    const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
+    const ans=answerFrom(set,'prog:',force), P=PROG[ans], kpc=pickKeyPc();
+    const chords=progChords(P,kpc), voiced=voiceProg(chords);
+    const key=keyName(kpc,!!P.minor), last=chords[chords.length-1];
+    return {prompt:'Which progression?',sub:'Listen to the bass line and where the colours go.',
+      options:set.map(id=>({id,label:PROG[id].short})),answer:ans,item:`prog:${ans}`,keyPc:kpc,
+      play:(bus,t)=>playProg(voiced,tb,bus,t),
+      compare:(pk,bus,t)=>{ let e=t; if(pk!=null&&pk!=='timeout'&&PROG[pk]) e=playProg(voiceProg(progChords(PROG[pk],kpc)),tb,bus,t)+0.3; return playProg(voiced,tb,bus,e); },
+      reveal:{notes:voiced[voiced.length-1].all,target:{root:last.root,q:last.q},
+        text:`${P.name} in ${key}: ${chords.map(c=>symText(c)).join('  ')}. As degrees: ${chords.map(c=>c.rn).join('  ')}.`}};
+  },
 };
+
+// Voice a progression the way a band keyboardist would: root (or slash note) in the bass,
+// the other chord tones in the middle register, each chord moving as little as possible from the last
+function voiceProg(chords){
+  let prev=null;
+  return chords.map(c=>{
+    const q=c.q, pc=c.root.pc;
+    let ivs=q.id==='alt'?[4,10,1,8]:[...new Set([...q.ct,...q.req])];
+    if(ivs.length>3&&q.bass==null) ivs=ivs.filter(x=>x!==0); // the bass has the root
+    if(ivs.length>4) ivs=ivs.filter(x=>x!==7);
+    const pcs=ivs.map(iv=>mod12(pc+iv)).sort((a,b)=>a-b);
+    let best=null;
+    for(let r=0;r<pcs.length;r++) for(const base of [54,60,66]){ // every inversion, a few registers
+      const v=[]; let m=base-1;
+      for(let i=0;i<pcs.length;i++){ m++; while(mod12(m)!==pcs[(r+i)%pcs.length]) m++; v.push(m); }
+      if(v[0]<53||v[v.length-1]>79) continue;
+      const d=prev?voiceLeadDist(v,prev):Math.abs(v[0]-60);
+      if(!best||d<best.d) best={v,d};
+    }
+    if(!best) best={v:pcs.map(x=>60+x)};
+    prev=best.v;
+    const bass=40+mod12(pc+(q.bass??0)-40);
+    return {upper:best.v,bass,all:[bass,...best.v]};
+  });
+}
+function playProg(voiced,tb,bus,t){
+  voiced.forEach((v,i)=>{ const at=t+i*0.95; playChord(v.upper,at,0.9,tb,bus,68); tone(v.bass,at,0.9,82,tb,bus); });
+  return t+voiced.length*0.95+0.4;
+}
 
 // Build a voicing of chord quality q on pitch class pc: close, open (drop 2) or rootless
 function voiceChord(q,pc,style){
@@ -129,6 +170,7 @@ function voiceChord(q,pc,style){
   ivs.sort((a,b)=>num(a)-num(b)||a-b);
   const r=48+mod12(pc-48); const out=[r]; let prev=r;
   ivs.slice(1).forEach(iv=>{ let m=prev+1; while(mod12(m-pc)!==iv) m++; out.push(m); prev=m; });
+  if(q.bass!=null){ let b=out[0]-1; while(mod12(b-pc-q.bass)!==0) b--; return [b,...out]; } // slash chord
   if(style==='open' && out.length>=4){
     const up=out.slice(1); up[up.length-2]-=12; up.sort((a,b)=>a-b);
     let bass=out[0]; while(bass>=up[0]) bass-=12;

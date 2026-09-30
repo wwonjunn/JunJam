@@ -2,7 +2,16 @@
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem('mtc:'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('mtc:'+k,JSON.stringify(v));}catch(e){}}};
 const opts={rootless:store.get('rootless',true),weird:store.get('weird',false),sound:store.get('sound',true),metro:store.get('metro',false)};
-let stageN=Math.min(STAGES.length,store.get('stage',2)); // saves from before stage 8 was removed
+// stageN: a chord stage number, or 'p:<progression id>' / 'p:mix' for Progressions
+// v2 save format: stage 6 used to be ii–V–I; that moved to Progressions and stage 6 is now Pop colours
+if(store.get('v',1)<2){
+  if(store.get('stage')===6) store.set('stage','p:iiVI');
+  const b=store.get('best2',{});
+  Object.keys(b).forEach(k=>{ const [tier,st]=k.split(':'); if(st==='6'){ b[tier+':p:iiVI']=b[k]; delete b[k]; } });
+  store.set('best2',b); store.set('v',2);
+}
+const validStage=s=>typeof s==='number'?s>=1&&s<=STAGES.length:s==='p:mix'||(typeof s==='string'&&!!PROG[s.slice(2)]);
+let stageN=store.get('stage',2); if(!validStage(stageN)) stageN=Math.min(STAGES.length,+stageN||2); // e.g. the removed stage 8
 let G=null; // running game
 opts.smart=store.get('smart',true);
 let STATS=store.get('stats',{});

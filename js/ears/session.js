@@ -178,7 +178,7 @@ function topConfusions(n){
 function confLabel(c){
   const lv=LEVELS[c.level], lab=id=>{
     if(lv.gen==='degree') return DEG_LABEL[+id]; if(lv.gen==='interval') return INT_LABEL[+id];
-    if(lv.gen==='chord') return QNAME(id); if(lv.gen==='inversion') return ['root','3rd','5th'][+id]+' in bass'; return id; };
+    if(lv.gen==='chord') return QNAME(id); if(lv.gen==='prog') return PROG[id].short; if(lv.gen==='inversion') return ['root','3rd','5th'][+id]+' in bass'; return id; };
   return `${lab(c.a)} heard as ${lab(c.b)}`;
 }
 function earsMenuNote(t){ const el=$('earsNote'); if(el){ el.textContent=t; } }

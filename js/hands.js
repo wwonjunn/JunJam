@@ -11,14 +11,20 @@ function tierUnlocked(t){
   const bests=store.get('best2',{});
   return Object.entries(bests).some(([k,v])=>k.startsWith(t.unlock.tier+':')&&v>=t.unlock.score);
 }
+const isProgStage=()=>typeof stageN==='string';
 function nextChords(){
   const st=stageN;
   // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
   const kw=opts.smart?[...Array(12).keys()].map(p=>keyWeight(p,'hands')):null;
-  if(st===6){
-    if(!opts.smart) return iiVI();
-    const keys=[...Array(12).keys()].map(k=>({k,w:kw[k]*(weightOf('min7',(k+2)%12)+weightOf('dom7',(k+7)%12)+weightOf('maj7',k))/3}));
-    return iiVI(weightedPick(keys).k);
+  if(isProgStage()){
+    const p=st==='p:mix'?PROGS[Math.floor(Math.random()*PROGS.length)]:PROG[st.slice(2)];
+    let key=Math.floor(Math.random()*12);
+    if(opts.smart){ // lean on shaky keys, and on keys where this progression's chords are weak
+      const keys=[...Array(12).keys()].map(k=>{ const ch=progChords(p,k); return {k,w:kw[k]*ch.reduce((a,c)=>a+weightOf(c.q.id,c.root.pc),0)/ch.length}; });
+      key=weightedPick(keys).k;
+    }
+    const label=`${p.short} in ${keyName(key,!!p.minor)}`;
+    return progChords(p,key).map(c=>({...c,prog:label}));
   }
   const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
   let q, pc, tries=0;
@@ -35,9 +41,9 @@ function nextChords(){
   return [{root,q}];
 }
 function withReq(c){
-  const t={root:c.root,q:c.q,suf:pickSuf(c.q),req:null};
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null};
   if(Math.random()<0.25){
-    const list=requestsFor(t,{rootless:opts.rootless,sequence:stageN===6});
+    const list=requestsFor(t,{rootless:opts.rootless,sequence:isProgStage()});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
     t.req=list[Math.floor(Math.random()*list.length)];
   }
@@ -50,10 +56,13 @@ function symHTML(t){
   if(t.req==='byear') return '<span class="rt q">?</span>';
   const acc=ACC[t.root.a];
   const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
-  return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}`;
+  const sl=t.q.bass!=null?`<span class="sl">/${bassNote(t)}</span>`:'';
+  return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}${sl}`;
 }
 function renderAhead(){
-  $('ahead').innerHTML='<span class="lbl">Coming up</span>'+G.queue.slice(0,2).map(t=>`<span class="sym">${symHTML(t)}</span>`).join('');
+  // In Progressions, name the progression and key of the chord you're on
+  const cur=(G.enemies[0]&&G.enemies[0].t)||G.queue[0], lbl=cur&&cur.prog?cur.prog:'Coming up';
+  $('ahead').innerHTML=`<span class="lbl">${lbl}</span>`+G.queue.slice(0,2).map(t=>`<span class="sym">${symHTML(t)}</span>`).join('');
 }
 const fallTime=()=>BEATS_PER_CHORD*60/G.bpm;
 
@@ -81,7 +90,7 @@ function spawn(){
   const t=G.queue.shift(); fillQueue(); renderAhead();
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
-  el.innerHTML=symHTML(t)+(req?`<span class="req">${req==='byear'?'by ear':REQ_LABEL[req]} ×2</span>`:'');
+  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${req==='byear'?'by ear':REQ_LABEL[req]} ×2</span>`:'');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);
@@ -110,7 +119,7 @@ function tick(now){
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
-    const e=G.enemies.shift(); e.el.remove();
+    const e=G.enemies.shift(); e.el.remove(); renderAhead();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
@@ -156,7 +165,7 @@ function submit(notes){
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
   if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
-  G.enemies.shift();
+  G.enemies.shift(); renderAhead();
   G.cool=G.practice?0.5:Math.max(0.4,60/G.bpm);
   fx(e,res);
   showAnalysis(ev,e.t,res); if(reqNote) $('why').textContent=(($('why').textContent||'')+' '+reqNote).trim(); updateHud();

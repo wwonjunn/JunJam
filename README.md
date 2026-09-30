@@ -4,6 +4,9 @@ A jazz piano trainer with two sides:
 
 - **Hands**: chord symbols fall toward the keyboard. Play any valid voicing on a MIDI keyboard.
   Practice mode (waits for you) or Game mode (five tempo tiers, Misty to Donna Lee).
+- **Progressions**: 13 common J-pop, city pop and jazz progressions (Royal Road, Just the Two of Us,
+  Canon, Komuro, passing diminished, minor iv, turnarounds, ii–V–I...) to play in every key in Hands,
+  with J-pop style degrees (IVmaj7 V7 IIIm7 VIm7), and to name by ear in the Ears Progressions world.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
@@ -19,7 +22,7 @@ Chrome or Edge yourself (Web MIDI only works there). No server or build step nee
 ```
 index.html            page markup; loads everything below in order
 css/style.css         all styling (light and dark themes)
-js/theory.js          chord rules, spelling, scoring, chord naming, requests (pure, no DOM)
+js/theory.js          chord rules, spelling, scoring, chord naming, progressions, requests (pure, no DOM)
 js/state.js           storage, mastery stats, smart mix weights, XP and ranks
 js/audio.js           electric piano synth, hi-hat, scheduled tones and timbres
 js/views.js           on-screen keyboard, grand staff, analysis panel
