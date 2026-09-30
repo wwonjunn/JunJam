@@ -1067,7 +1067,7 @@ function withReq(c){
 }
 function fillQueue(){ while(G.queue.length<3) nextChords().forEach(c=>G.queue.push(withReq(c))); }
 /* By-ear chords: heard once when they appear, then repeated while they're the target, so your hands can stay on the keys.
-   Game mode repeats on the beat (every 2 beats above 140, every bar from 240); Practice every 1.5 seconds.
+   Game mode repeats on the beat grid every 1, 2 or 4 bars (about every 3-4 s); Practice every 4 seconds.
    Both run off the metronome's audio clock so the timing stays steady. */
 let earBus=null;
 const byEarVoice=t=>t.voice||(t.voice=voiceChord(t.q,t.root.pc,'close')); // same voicing every time
@@ -1078,7 +1078,7 @@ function stabByEar(t,when,dur){
   if(earBus) playChord(byEarVoice(t),when,dur,'epiano',earBus,72);
 }
 const byEarTarget=()=>{ const e=G&&G.enemies[0]; return e&&e.t.req==='byear'?e:null; };
-const byEarStride=bpm=>bpm<=140?1:bpm<240?2:4;
+const byEarStride=bpm=>4*(bpm<=90?1:bpm<=180?2:4); // in beats: every 1, 2 or 4 bars, about 3-4 s at any tempo
 function stopByEar(){ killBus(earBus); earBus=null; }
 function symHTML(t){
   const acc=ACC[t.root.a];
@@ -1231,9 +1231,9 @@ function pulse(b){
   const el=$('beat'); if(!G||!G.running||G.practice) return;
   el.classList.add('on'); setTimeout(()=>el.classList.remove('on'),90);
 }
-// In Practice the clock still runs, at one slow 1.5 s 'beat', only to repeat by-ear chords (no hi-hat, no pulse)
+// In Practice the clock still runs, at one slow 4 s 'beat', only to repeat by-ear chords (no hi-hat, no pulse)
 const metro={timer:null,next:0,beat:0,
-  beatLen(){ return G.practice?1.5:60/G.bpm; },
+  beatLen(){ return G.practice?4:60/G.bpm; },
   start(){
     this.stop(); if(!G) return;
     const c=synth.ctx; const now=c?c.currentTime:performance.now()/1000;
@@ -1248,7 +1248,7 @@ const metro={timer:null,next:0,beat:0,
       const b=this.beat%4;
       if(opts.metro && !G.practice && c && c.state==='running' && (b===1||b===3)) hat(this.next);
       const be=byEarTarget(), st=G.practice?1:byEarStride(G.bpm);
-      if(be && c && c.state==='running' && this.beat%st===0 && this.next>(be.earFrom||0)) stabByEar(be.t,this.next,Math.min(1.2,0.85*st*this.beatLen()));
+      if(be && c && c.state==='running' && this.beat%st===0 && this.next>(be.earFrom||0)) stabByEar(be.t,this.next,Math.min(1.2,0.85*60/G.bpm*(G.practice?4:st)));
       setTimeout(()=>pulse(b),Math.max(0,(this.next-now)*1000));
       this.next+=this.beatLen(); this.beat++;
     }
