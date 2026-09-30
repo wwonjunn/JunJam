@@ -87,11 +87,10 @@ const GEN={
       answer:key,item:null,play:run,compare:run,reveal:{notes,text:`The shape was ${key}.`}};
   },
   degree(p,ctx,force){
-    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ // a new key every 3 questions, never the one you just had
+    { // a new key every question (never the one you just had), so each note is heard against its own key
       let pc, n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20);
-      ctx.key=55+mod12(pc-55); ctx.keyLeft=3;
+      ctx.key=55+mod12(pc-55);
     }
-    ctx.keyLeft--;
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p), cad=pickCadence(minor,ctx);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force,ctx);
     const m=pickOne([T+ans-12,T+ans,T+ans+12].filter(x=>x>=50&&x<=79));

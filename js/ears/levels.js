@@ -18,7 +18,7 @@ const WORLDS=[
     {id:'d6',name:'Blue notes: ♭3 and ♭7',gen:'degree',p:{set:[...MAJOR,3,10],timbre:'random'}},
     {id:'d7',name:'Every chromatic degree',gen:'degree',p:{set:[0,1,2,3,4,5,6,7,8,9,10,11],timbre:'random'}},
     {id:'d8',name:'Minor keys',gen:'degree',p:{set:MINOR,minor:true,timbre:'random'}},
-    {id:'dB',name:'New key every question',gen:'degree',p:{set:[...MAJOR,3,10],newKeyEach:true,timbre:'random'},boss:true},
+    {id:'dB',name:'Everything so far, against the clock',gen:'degree',p:{set:[...MAJOR,3,10],timbre:'random'},boss:true},
   ]},
   {id:'intervals',name:'Intervals',blurb:'The distance between two notes',rt:4,levels:[
     {id:'i1',name:'Fifths and octaves',gen:'interval',p:{set:[7,12],dir:'up'}},

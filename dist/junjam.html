@@ -1370,11 +1370,10 @@ const GEN={
       answer:key,item:null,play:run,compare:run,reveal:{notes,text:`The shape was ${key}.`}};
   },
   degree(p,ctx,force){
-    if(!ctx.key||ctx.keyLeft<=0||p.newKeyEach){ // a new key every 3 questions, never the one you just had
+    { // a new key every question (never the one you just had), so each note is heard against its own key
       let pc, n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20);
-      ctx.key=55+mod12(pc-55); ctx.keyLeft=3;
+      ctx.key=55+mod12(pc-55);
     }
-    ctx.keyLeft--;
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p), cad=pickCadence(minor,ctx);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force,ctx);
     const m=pickOne([T+ans-12,T+ans,T+ans+12].filter(x=>x>=50&&x<=79));
@@ -1519,7 +1518,7 @@ const WORLDS=[
     {id:'d6',name:'Blue notes: ♭3 and ♭7',gen:'degree',p:{set:[...MAJOR,3,10],timbre:'random'}},
     {id:'d7',name:'Every chromatic degree',gen:'degree',p:{set:[0,1,2,3,4,5,6,7,8,9,10,11],timbre:'random'}},
     {id:'d8',name:'Minor keys',gen:'degree',p:{set:MINOR,minor:true,timbre:'random'}},
-    {id:'dB',name:'New key every question',gen:'degree',p:{set:[...MAJOR,3,10],newKeyEach:true,timbre:'random'},boss:true},
+    {id:'dB',name:'Everything so far, against the clock',gen:'degree',p:{set:[...MAJOR,3,10],timbre:'random'},boss:true},
   ]},
   {id:'intervals',name:'Intervals',blurb:'The distance between two notes',rt:4,levels:[
     {id:'i1',name:'Fifths and octaves',gen:'interval',p:{set:[7,12],dir:'up'}},
