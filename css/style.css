@@ -250,3 +250,4 @@ body.earsmode .ahead{display:none}
 .eresults p{color:var(--muted)}
 .eresults .ghost{margin-left:8px}
 .enemy .rt.q{opacity:.9}
+.enemy .sf.q{font-size:34px;vertical-align:.35em;margin-left:4px}

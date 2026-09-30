@@ -260,6 +260,7 @@ body.earsmode .ahead{display:none}
 .eresults p{color:var(--muted)}
 .eresults .ghost{margin-left:8px}
 .enemy .rt.q{opacity:.9}
+.enemy .sf.q{font-size:34px;vertical-align:.35em;margin-left:4px}
 </style>
 </head>
 <body>
@@ -301,7 +302,7 @@ body.earsmode .ahead{display:none}
           <label><input type="checkbox" id="optSmart"> Smart mix: serve the chords and keys you are weakest at more often</label>
         </div>
         <button class="go" id="startBtn">Start</button><button class="ghost" id="progBtn">Progress</button>
-        <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. Gold "by ear" chords hide their name: press <kbd>R</kbd> to hear them again.</div>
+        <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
         </div>
       </div>
     </div>
@@ -601,7 +602,7 @@ function identify(notes){
 }
 
 // Bandleader requests: optional constraints on a chord, worth double when met
-const REQ_LABEL={byear:'by ear',rootless:'rootless',shell:'shell: root, 3, 7',nine:'add the 9',inverted:'inverted',open:'open voicing',smooth:'smooth voice leading'};
+const REQ_LABEL={byear:'chord type by ear',rootless:'rootless',shell:'shell: root, 3, 7',nine:'add the 9',inverted:'inverted',open:'open voicing',smooth:'smooth voice leading'};
 function requestsFor(t,o){
   const q=t.q, r=['open'];
   if(q.bass!=null) return o.sequence?[...r,'smooth','smooth']:r;
@@ -1068,8 +1069,9 @@ function fillQueue(){ while(G.queue.length<3) nextChords().forEach(c=>G.queue.pu
 let earBus=null;
 function playByEar(t){ killBus(earBus); earBus=newBus(); if(earBus) playChord(voiceChord(t.q,t.root.pc,'close'),now()+0.05,1.6,'epiano',earBus,85); }
 function symHTML(t){
-  if(t.req==='byear') return '<span class="rt q">?</span>';
   const acc=ACC[t.root.a];
+  // By ear: the root is shown (naming a root from nothing needs perfect pitch); the chord type is what you hear
+  if(t.req==='byear') return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}<span class="sf q">?</span>`;
   const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
   const sl=t.q.bass!=null?`<span class="sl">/${bassNote(t)}</span>`:'';
   return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}${sl}`;
@@ -1105,7 +1107,7 @@ function spawn(){
   const t=G.queue.shift(); fillQueue(); renderAhead();
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
-  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${req==='byear'?'by ear':REQ_LABEL[req]} ×2</span>`:'');
+  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);

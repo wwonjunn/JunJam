@@ -240,7 +240,7 @@ function identify(notes){
 }
 
 // Bandleader requests: optional constraints on a chord, worth double when met
-const REQ_LABEL={byear:'by ear',rootless:'rootless',shell:'shell: root, 3, 7',nine:'add the 9',inverted:'inverted',open:'open voicing',smooth:'smooth voice leading'};
+const REQ_LABEL={byear:'chord type by ear',rootless:'rootless',shell:'shell: root, 3, 7',nine:'add the 9',inverted:'inverted',open:'open voicing',smooth:'smooth voice leading'};
 function requestsFor(t,o){
   const q=t.q, r=['open'];
   if(q.bass!=null) return o.sequence?[...r,'smooth','smooth']:r;

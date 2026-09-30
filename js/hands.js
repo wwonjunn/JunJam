@@ -80,8 +80,9 @@ function fillQueue(){ while(G.queue.length<3) nextChords().forEach(c=>G.queue.pu
 let earBus=null;
 function playByEar(t){ killBus(earBus); earBus=newBus(); if(earBus) playChord(voiceChord(t.q,t.root.pc,'close'),now()+0.05,1.6,'epiano',earBus,85); }
 function symHTML(t){
-  if(t.req==='byear') return '<span class="rt q">?</span>';
   const acc=ACC[t.root.a];
+  // By ear: the root is shown (naming a root from nothing needs perfect pitch); the chord type is what you hear
+  if(t.req==='byear') return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}<span class="sf q">?</span>`;
   const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
   const sl=t.q.bass!=null?`<span class="sl">/${bassNote(t)}</span>`:'';
   return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}${sl}`;
@@ -117,7 +118,7 @@ function spawn(){
   const t=G.queue.shift(); fillQueue(); renderAhead();
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
-  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${req==='byear'?'by ear':REQ_LABEL[req]} ×2</span>`:'');
+  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);
