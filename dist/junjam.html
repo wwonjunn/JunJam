@@ -142,6 +142,12 @@ body.menu .panel{display:none}
 .stage .best{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .stage[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 12%, transparent)}
 .stage[aria-pressed="true"] .n{color:var(--brass)}
+.stage .st{color:var(--brass);letter-spacing:1px;margin-right:6px;white-space:nowrap}
+.stage .nx{display:inline-block;margin-left:6px;padding:0 5px;border-radius:3px;background:var(--brass);color:var(--lane);font-size:11px;line-height:16px;vertical-align:1px}
+#starLine b{color:var(--ink)}
+.results b.stars{color:var(--brass);letter-spacing:2px}
+.pop.startoast{animation-duration:2.3s}
+.pop.startoast b{font-size:36px;letter-spacing:4px}
 .opts{display:flex;flex-direction:column;gap:6px;margin:0 0 16px}
 .opts label{display:flex;gap:8px;align-items:center;cursor:pointer}
 .opts input{accent-color:var(--brass);width:16px;height:16px}
@@ -279,6 +285,7 @@ body.earsmode .ahead{display:none}
         <div id="handsPane">
         <p>Chord symbols fall toward your keyboard. Play any correct voicing before one lands. Rootless, extended, open and smoothly voice-led chords score more.</p>
         <div class="seg" role="group" aria-label="Mode"><button id="mPractice">Practice</button><button id="mGame">Game</button></div>
+        <p class="fine" id="starLine" style="margin:0 0 12px"></p>
         <div id="tierBox"><div class="sec">Tempo</div><div class="stages" id="tiers"></div></div>
         <div class="sec">Chords</div>
         <div class="stages" id="stages"></div>
@@ -686,6 +693,7 @@ function pushedKeys(n=3){
 
 /* ---------------- shared XP and rank (both Hands and Ears feed it) ---------------- */
 const RANKS=[[0,'Woodshedder'],[500,'Sitting in'],[2000,'Sideman'],[6000,'Bandleader'],[15000,'Legend']];
+const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 function addXP(n){ if(n>0) store.set('xp',store.get('xp',0)+Math.round(n)); }
 function rankLine(){
   const xp=store.get('xp',0); let i=0; while(i+1<RANKS.length&&xp>=RANKS[i+1][0]) i++;
@@ -990,6 +998,33 @@ function tierUnlocked(t){
   return Object.entries(bests).some(([k,v])=>k.startsWith(t.unlock.tier+':')&&v>=t.unlock.score);
 }
 const isProgStage=()=>typeof stageN==='string';
+
+/* ---------------- stars (Game mode only, no locks) ----------------
+   Per chord stage and per progression. Each star needs the ones before it. */
+const STAR_RUN=16;
+const STAR_GOALS=['Clear 16 chords in one Game run.','Clear 16 with 90% right on the first try.','Do that at Cherokee tempo or faster without losing a life.'];
+let HSTARS=store.get('hstars',{});
+const starsOf=id=>HSTARS[String(id)]||0;
+const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),'p:mix'];
+function runStars(){
+  if(G.practice||G.kills<STAR_RUN) return 0;
+  const tries=G.kills+G.escapes;
+  if(!tries||G.firstTry/tries<0.9) return 1;
+  return G.tier.bpm>=240&&G.escapes===0?3:2;
+}
+function checkStars(){
+  const n=runStars(), id=String(stageN);
+  if(n>starsOf(id)){ HSTARS[id]=n; store.set('hstars',HSTARS); starToast(n); }
+}
+function starToast(n){
+  const el=document.createElement('div'); el.className='pop startoast';
+  el.style.left='50%'; el.style.top=(STRIP+30)+'px';
+  el.innerHTML=`<b>${starStr(n)}</b><span>New star on this ${isProgStage()?'progression':'stage'}</span>`;
+  $('lane').appendChild(el); setTimeout(()=>el.remove(),2300);
+}
+// "Next up" on the menu: the first thing in a J-pop band keys order that still has stars to earn
+const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','7','p:mix'];
+function nextUp(){ for(const need of [1,2,3]){ const id=NEXT_ORDER.find(x=>starsOf(x)<need); if(id) return id; } return null; }
 function nextChords(){
   const st=stageN;
   // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
@@ -1049,7 +1084,7 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,raf:0,last:0,id:0};
+     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0};
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -1099,7 +1134,7 @@ function tick(now){
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove(); renderAhead();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
-    G.lives--; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
+    G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
     if(G.lives<=0){ gameOver(); return; }
@@ -1137,7 +1172,7 @@ function submit(notes){
   }
   if(!G.practice) res.total=Math.round(res.total*G.tier.mult);
   recordStat(e.t,'clear',(performance.now()-e.born)/1000,e.misses===0);
-  G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++;
+  G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();
   const secs=(performance.now()-e.born)/1000;
   G.times.push(secs); G.slow.push({sym:symText(e.t),secs});
   G.prev=ev.per.map(p=>p.midi);
@@ -1226,7 +1261,7 @@ function gameOver(){
   $('overTitle').textContent=G.practice?'Practice session':newBest?'New best':'Run over';
   $('results').innerHTML=G.practice
     ? `<div><b>${G.kills}</b>chords played</div><div><b>${acc}%</b>of attempts correct</div><div><b>${avg}s</b>average per chord</div>`
-    : `<div><b>${G.score.toLocaleString()}</b>score</div><div><b>${G.kills}</b>chords cleared</div><div><b>${acc}%</b>of attempts correct</div><div><b>${G.bpm}</b>tempo reached</div><div><b>${G.maxCombo}</b>best combo</div>`;
+    : `<div><b>${G.score.toLocaleString()}</b>score</div><div><b>${G.kills}</b>chords cleared</div><div><b>${acc}%</b>of attempts correct</div><div><b>${G.bpm}</b>tempo reached</div><div><b>${G.maxCombo}</b>best combo</div><div><b class="stars">${starStr(starsOf(stageN))}</b>stars here</div>`;
   $('bestV').innerHTML=G.best?`<div class="sym">${G.best.sym}</div><div>${G.best.notes.join(' ')}, worth ${G.best.total}${G.best.tags.length?`. ${G.best.tags.join(', ')}.`:''}</div>`:'<div>No chords cleared this time.</div>';
   let weak='';
   if(G.practice){
@@ -1236,6 +1271,7 @@ function gameOver(){
   const trouble={}; Object.entries(G.escaped).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v*2); Object.entries(G.missed).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v);
   const top=Object.entries(trouble).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
   if(top.length) weak+=(weak?' ':'')+`Most missed: ${top.join(', ')}.`;
+  if(!G.practice&&starsOf(stageN)<3) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;
   $('overOv').hidden=false; $('againBtn').focus();
   renderMenu();
@@ -1487,7 +1523,6 @@ function earWeight(key){ const s=EARDATA.items[key]; if(!s||!s.n) return 1.5; re
 function earRecord(key,ok,secs){ if(!key) return; const s=EARDATA.items[key]||(EARDATA.items[key]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(secs!=null) s.t=s.t==null?secs:s.t*0.7+secs*0.3; }
 function keyRecord(pc,ok,tn){ const s=EARDATA.keys[pc]||(EARDATA.keys[pc]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(tn!=null) s.t=s.t==null?tn:s.t*0.7+tn*0.3; }
 function levelUnlocked(l){ return l.index===0 || (EARDATA.stars[l.world.levels[l.index-1].id]||0)>=1; }
-const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 
 const EARS={active:false};
 // Mixed: practice run drawing from every unlocked level of one world. No stars.
@@ -1715,16 +1750,19 @@ function renderMenu(){
     const sub=open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
+  const nx=nextUp(), total=STAR_IDS().reduce((a,id)=>a+starsOf(id),0);
+  $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*3} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try, ★★★ at Cherokee tempo or faster without losing a life. Everything stays open either way.`;
+  const stars=id=>`<span class="st">${starStr(starsOf(id))}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}</span><span class="t">${s.t}</span><span class="best">${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
   $('progs').innerHTML=PROGS.map(p=>{
     const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
     const best=bestLine(id);
-    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}</span><span class="t">${p.short}</span><span class="best">${progDegrees(p)}${best?`. ${best}`:''}</span></button>`;
-  }).join('')+`<button class="stage" data-p="p:mix" aria-pressed="${stageN==='p:mix'}"><span class="n">&nbsp;</span><span class="t">All of them, mixed</span><span class="best">A random progression each time${bestLine('p:mix')?`. ${bestLine('p:mix')}`:''}</span></button>`;
+    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`;
+  }).join('')+`<button class="stage" data-p="p:mix" aria-pressed="${stageN==='p:mix'}"><span class="n">&nbsp;${tag('p:mix')}</span><span class="t">All of them, mixed</span><span class="best">${stars('p:mix')}A random progression each time${bestLine('p:mix')?`. ${bestLine('p:mix')}`:''}</span></button>`;
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);

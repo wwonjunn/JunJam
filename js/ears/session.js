@@ -6,7 +6,6 @@ function earWeight(key){ const s=EARDATA.items[key]; if(!s||!s.n) return 1.5; re
 function earRecord(key,ok,secs){ if(!key) return; const s=EARDATA.items[key]||(EARDATA.items[key]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(secs!=null) s.t=s.t==null?secs:s.t*0.7+secs*0.3; }
 function keyRecord(pc,ok,tn){ const s=EARDATA.keys[pc]||(EARDATA.keys[pc]={n:0,ok:0,t:null}); s.n++; if(ok) s.ok++; if(tn!=null) s.t=s.t==null?tn:s.t*0.7+tn*0.3; }
 function levelUnlocked(l){ return l.index===0 || (EARDATA.stars[l.world.levels[l.index-1].id]||0)>=1; }
-const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 
 const EARS={active:false};
 // Mixed: practice run drawing from every unlocked level of one world. No stars.

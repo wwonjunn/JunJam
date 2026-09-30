@@ -132,6 +132,12 @@ body.menu .panel{display:none}
 .stage .best{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .stage[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 12%, transparent)}
 .stage[aria-pressed="true"] .n{color:var(--brass)}
+.stage .st{color:var(--brass);letter-spacing:1px;margin-right:6px;white-space:nowrap}
+.stage .nx{display:inline-block;margin-left:6px;padding:0 5px;border-radius:3px;background:var(--brass);color:var(--lane);font-size:11px;line-height:16px;vertical-align:1px}
+#starLine b{color:var(--ink)}
+.results b.stars{color:var(--brass);letter-spacing:2px}
+.pop.startoast{animation-duration:2.3s}
+.pop.startoast b{font-size:36px;letter-spacing:4px}
 .opts{display:flex;flex-direction:column;gap:6px;margin:0 0 16px}
 .opts label{display:flex;gap:8px;align-items:center;cursor:pointer}
 .opts input{accent-color:var(--brass);width:16px;height:16px}

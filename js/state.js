@@ -62,6 +62,7 @@ function pushedKeys(n=3){
 
 /* ---------------- shared XP and rank (both Hands and Ears feed it) ---------------- */
 const RANKS=[[0,'Woodshedder'],[500,'Sitting in'],[2000,'Sideman'],[6000,'Bandleader'],[15000,'Legend']];
+const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 function addXP(n){ if(n>0) store.set('xp',store.get('xp',0)+Math.round(n)); }
 function rankLine(){
   const xp=store.get('xp',0); let i=0; while(i+1<RANKS.length&&xp>=RANKS[i+1][0]) i++;
