@@ -385,7 +385,7 @@ body.linesmode header .modetag{display:none}
         <div class="ldots" id="lDots"></div>
         <div class="lstaff" id="lStaff"></div>
         <div class="lmsg" id="lMsg"></div>
-        <div class="erow"><button class="ghost" id="lHear">Hear it (R)</button><button class="ghost" id="lFeel">Feel: swing</button><button class="ghost" id="lShow">Show notes (N)</button><button class="go" id="lNext" hidden>Next (Enter)</button><button class="ghost" id="lQuit">End</button></div>
+        <div class="erow"><button class="ghost" id="lHear">Hear it (R)</button><button class="ghost" id="lFeel">Feel: swing</button><button class="ghost" id="lLH">Left hand: on</button><button class="ghost" id="lShow">Show notes (N)</button><button class="go" id="lNext" hidden>Next (Enter)</button><button class="ghost" id="lQuit">End</button></div>
       </div>
       <div class="card eresults" id="lResults" hidden></div>
     </div>
@@ -2213,7 +2213,9 @@ const SOLO_LICKS=[
 /* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
    Grading follows the notes in order, in any octave; rhythm is free for now. */
 let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
-if(LDATA.feel!=='swing'&&LDATA.feel!=='straight') LDATA.feel='swing'; // playback feel for every lick, the player's choice
+if(LDATA.feel!=='swing'&&LDATA.feel!=='straight') LDATA.feel='swing';
+if(typeof LDATA.lh!=='boolean') LDATA.lh=true; // left hand: notes below middle C are your comping, not part of the lick
+const LH_SPLIT=60; // playback feel for every lick, the player's choice
 if(!['all','solo','orig','user','fav'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||''; LDATA.fav=LDATA.fav||{}; // fav: licks saved with ♥
 const isFav=id=>!!LDATA.fav[id];
 function toggleFav(id){ if(LDATA.fav[id]) delete LDATA.fav[id]; else LDATA.fav[id]=1; saveLines(); }
@@ -2302,7 +2304,9 @@ function linesStart(id){
 function linesRound(){
   clearTimeout(LINES.advance);
   const ref=LINES.keys[LINES.round];
-  Object.assign(LINES,{inst:lickInstance(LINES.lick,ref),idx:0,offset:null,mistakes:0,revealed:LINES.round===0,done:false});
+  const inst=lickInstance(LINES.lick,ref);
+  if(LDATA.lh&&Math.min(...inst.notes.map(n=>n.midi))<LH_SPLIT) inst.notes.forEach(n=>{ n.midi+=12; n.spell={...n.spell,midi:n.midi,oct:n.spell.oct+1,di:n.spell.di+7}; });
+  Object.assign(LINES,{inst,idx:0,offset:null,mistakes:0,revealed:LINES.round===0,done:false});
   $('lMsg').textContent=''; $('lMsg').className='lmsg';
   kbMarks={}; linesRender(); setTimeout(linesPlay,250);
 }
@@ -2311,11 +2315,11 @@ function linesRender(){
   $('lTitle').textContent=L.lick.name; $('lFav').textContent=isFav(L.lick.id)?'♥':'♡'; $('lFav').title=isFav(L.lick.id)?'Remove from favourites':'Add to favourites';
   $('lCount').textContent=learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
   $('lChords').textContent=inst.chords.map(c=>symText(c)).join('  →  ');
-  $('lSub').textContent=learn?'Listen, then play it back on your keyboard. Any octave works.'+(L.lick.tip?' '+L.lick.tip:'')
+  $('lSub').textContent=learn?(LDATA.lh?'Listen, then play it back with your right hand above middle C; hold the chord with your left if you like.':'Listen, then play it back on your keyboard. Any octave works.')+(L.lick.tip?' '+L.lick.tip:'')
     :'Same lick, new key. Play it without looking; press N if you need the notes.';
   $('lDots').innerHTML=inst.notes.map((_,i)=>`<i class="${i<L.idx?'on':i===L.idx&&!L.done?'cur':''}"></i>`).join('');
   $('lStaff').innerHTML=L.revealed?lineStaffSVG(inst,L.idx,L.done):'<p class="fine">Notes hidden. Hear it with R, or press N to show them.</p>';
-  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done; $('lFeel').textContent=LDATA.feel==='swing'?'Feel: swing':'Feel: straight';
+  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done; $('lFeel').textContent=LDATA.feel==='swing'?'Feel: swing':'Feel: straight'; $('lLH').textContent=LDATA.lh?'Left hand: on':'Left hand: off';
   if(learn&&!L.done){ kbMarks={}; const n=inst.notes[L.idx]; kbMarks[n.midi+(L.offset??0)]='k-hint'; }
   paintKeys();
 }
@@ -2407,10 +2411,12 @@ function compUnder(c,ceil){
   const under=out.filter(m=>m<=ceil);
   return under.length>=2?under:out;
 }
-function linesPlay(){ if(!LINES.active) return; killBus(LINES.bus); LINES.bus=newBus(); if(LINES.bus) playLine(LINES.inst,LINES.lick,LINES.bus,now()+.08,LDATA.tempo); }
+// Returns how many seconds the playback lasts
+function linesPlay(delay=.08){ if(!LINES.active) return 0; killBus(LINES.bus); LINES.bus=newBus(); if(!LINES.bus) return 0; const t0=now()+delay; return playLine(LINES.inst,LINES.lick,LINES.bus,t0,LDATA.tempo)-now(); }
 function linesNote(m){
   if(LINES.rec){ LINES.rec.notes.push({m,t:performance.now()}); const c=$('iCount'); if(c) c.textContent=`${LINES.rec.notes.length} notes`; return; }
   const L=LINES; if(!L.active||L.done) return;
+  if(LDATA.lh&&m<LH_SPLIT) return; // left-hand comping
   const want=L.inst.notes[L.idx].midi;
   const ok=L.idx===0?mod12(m-want)===0:m===want+L.offset;
   if(ok){
@@ -2432,9 +2438,11 @@ function linesRoundDone(){
   $('lMsg').textContent=clean?(L.round===0?'Got it. Now the real test: new keys.':'Clean.'):`Done${L.mistakes?`, after ${L.mistakes} restart${L.mistakes>1?'s':''}`:''}${L.round>0&&L.revealed?', with the notes showing':''}.`;
   $('lMsg').className='lmsg '+(clean?'ok':'');
   L.revealed=true; linesRender();
-  if(clean) L.advance=setTimeout(linesNext,1100);
+  // Replay the lick you just played, then go to the next key on its own (Enter skips the wait)
+  const secs=linesPlay(.35)||1.2;
+  L.advance=setTimeout(linesNext,secs*1000+500);
 }
-function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; LINES.round++; if(LINES.round>TRANSFER_KEYS) return linesFinish(false); linesRound(); }
+function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; clearTimeout(LINES.advance); LINES.round++; if(LINES.round>TRANSFER_KEYS) return linesFinish(false); linesRound(); }
 function linesFinish(quit){
   const L=LINES; clearTimeout(L.advance); killBus(L.bus); L.active=false;
   const learned=L.results.length>0, finished=L.round>TRANSFER_KEYS;
@@ -2518,6 +2526,7 @@ $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!
 $('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
 $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
 $('lHear').onclick=()=>linesPlay();
+$('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
 $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender(); } };
 $('lFeel').onclick=()=>{ LDATA.feel=LDATA.feel==='swing'?'straight':'swing'; saveLines(); linesRender(); linesPlay(); };
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
