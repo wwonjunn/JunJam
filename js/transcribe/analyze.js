@@ -30,12 +30,14 @@ function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
   }
   return out.filter(n=>n.e-n.s>=.03);
 }
+// Every note also keeps when it was really played (seconds into the selection), for the As played view
+const asPlayed=(s,e)=>({sec:Math.round(s*1000)/1000,dsec:Math.round(Math.max(.03,e-s)*1000)/1000});
 // The written melody in beats, cleaned up like the licks (gridTimes); lead sheets also drop ornaments
 function melodyBeats(line,toBeat,lead){
-  let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c})).filter(n=>n.at>-.25);
+  let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c,s:n.s,e:n.e})).filter(n=>n.at>-.25);
   if(lead) notes=notes.filter((n,i)=>n.dur>=.2||(notes[i+1]&&notes[i+1].at-n.at>=.4));       // grace notes and turns go
   const g=gridTimes(notes.map(n=>({at:Math.max(0,n.at),dur:n.dur})));
-  return notes.map((n,i)=>({midi:n.midi,gat:lead?Math.round(g[i].gat*2)/2:g[i].gat,gdur:g[i].gdur,tri:!lead&&g[i].tri}))
+  return notes.map((n,i)=>({midi:n.midi,gat:lead?Math.round(g[i].gat*2)/2:g[i].gat,gdur:g[i].gdur,tri:!lead&&g[i].tri,...asPlayed(n.s,n.e)}))
     .filter((n,i,a)=>!lead||i===0||n.gat>a[i-1].gat).map((n,i,a)=>lead&&a[i+1]?{...n,gdur:Math.min(Math.max(n.gdur,.5),a[i+1].gat-n.gat)}:n);
 }
 // Full parts (piano or guitar with chords): keep every note. Notes that start together are one chord; the chords'
@@ -50,7 +52,7 @@ function partBeats(notes,toBeat,{minConf=.3,minLen=.06,lo=21,hi=108}={}){
   const out=[], seen=new Set();
   evs.forEach((e,i)=>{ if(toBeat(e.s)<=-.25) return; const unit=g[i].tri?1/3:.25;
     e.notes.forEach(n=>{ const k=n.p+'@'+g[i].gat; if(seen.has(k)) return; seen.add(k);
-      out.push({midi:n.p,gat:g[i].gat,gdur:Math.min(8,Math.max(unit,Math.round(len(n)/unit)*unit)),tri:g[i].tri}); }); });
+      out.push({midi:n.p,gat:g[i].gat,gdur:Math.min(8,Math.max(unit,Math.round(len(n)/unit)*unit)),tri:g[i].tri,...asPlayed(n.s,n.e)}); }); });
   return out.sort((a,b)=>a.gat-b.gat||b.midi-a.midi);
 }
 // Chords: score every root and chord type against how much each pitch class sounds in the window
@@ -135,6 +137,13 @@ function guessDownbeat(res){
 // Shift for a chosen beat 1: notes before it become an opening pickup bar instead of being cut off
 const shiftFor=p=>p?p-4:0;
 // Build the whole score from the helper's answer
+const inverseMap=(toBeat,dur)=>b=>{ let lo=-50,hi=dur+50; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(toBeat(m)<b) lo=m; else hi=m; } return (lo+hi)/2; };
+// A score's beats and the recording's seconds, both ways (with no recording, a steady tempo)
+function scoreMaps(res,score){
+  if(!res){ const spb=60/(score.tempo||100); return {toBeat:t=>t/spb,toSec:b=>b*spb,duration:null}; }
+  const toBeat=beatMapper(fillBeats(scaleBeats(res.beats,score.beatScale||1),res.duration),score.shift||0);
+  return {toBeat,toSec:inverseMap(toBeat,res.duration),duration:res.duration};
+}
 function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='line',sens=2,beatScale=1}){
   const res={...res0,beats:scaleBeats(res0.beats,beatScale),tempo:res0.tempo*beatScale,
     notes:{...res0.notes,target:mergeFragments(res0.notes.target),bass:mergeFragments(res0.notes.bass),harmony:mergeFragments(res0.notes.harmony)}};
@@ -146,8 +155,7 @@ function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='l
     :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
-  // beats back to seconds for the chord windows
-  const toSec=b=>{ let lo=-50,hi=res.duration+50; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(toBeat(m)<b) lo=m; else hi=m; } return (lo+hi)/2; };
+  const toSec=inverseMap(toBeat,res.duration); // beats back to seconds for the chord windows
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
   const used=Math.max(melody.length?Math.floor(Math.max(...melody.map(n=>n.gat))/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);

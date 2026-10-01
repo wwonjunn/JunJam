@@ -15,7 +15,8 @@ function spellIn(score,midi,at){
 const visibleMelody=score=>score.melody.filter(n=>!(score.soloBars||[]).includes(Math.floor(n.gat/4+1e-6)));
 
 /* ---------------- MIDI (type 1: tempo, melody, chords) ---------------- */
-function toMidiFile(score){
+// played: the score's scoreMaps, to write the notes when they were really played instead of on the grid
+function toMidiFile(score,played=null){
   const PPQ=480, vlq=n=>{ const b=[n&127]; while(n>>=7) b.unshift((n&127)|128); return b; };
   const track=evs=>{ evs.sort((a,b)=>a.t-b.t||a.o-b.o); let last=0; const bytes=[];
     evs.forEach(e=>{ bytes.push(...vlq(Math.max(0,Math.round(e.t)-last)),...e.d); last=Math.max(last,Math.round(e.t)); });
@@ -23,10 +24,12 @@ function toMidiFile(score){
   const us=Math.round(60e6/(score.tempo||100));
   const name=[...new TextEncoder().encode(score.title||'Jun Jam transcription')].slice(0,60);
   const t0=track([{t:0,o:0,d:[0xff,0x51,3,(us>>16)&255,(us>>8)&255,us&255]},{t:0,o:0,d:[0xff,0x58,4,4,2,24,8]},{t:0,o:0,d:[0xff,0x03,name.length,...name]}]);
-  const mel=[]; visibleMelody(score).forEach(n=>{ mel.push({t:n.gat*PPQ,o:1,d:[0x90,n.midi,96]},{t:(n.gat+n.gdur)*PPQ-2,o:0,d:[0x80,n.midi,0]}); });
-  const ch=[]; score.chords.forEach((c,i)=>{ const end=(score.chords[i+1]?score.chords[i+1].at:score.bars*4), t=chordObj(c);
+  const bps=(score.tempo||100)/60, at=b=>played?Math.max(0,played.toSec(b))*bps:b;
+  const mel=[]; visibleMelody(score).forEach(n=>{ const s=played&&n.sec!=null?n.sec*bps:n.gat, e=played&&n.sec!=null?(n.sec+n.dsec)*bps:n.gat+n.gdur;
+    mel.push({t:s*PPQ,o:1,d:[0x90,n.midi,96]},{t:e*PPQ-2,o:0,d:[0x80,n.midi,0]}); });
+  const ch=[]; score.chords.forEach((c,i)=>{ const end=at(score.chords[i+1]?score.chords[i+1].at:score.bars*4), t=chordObj(c), c0=at(c.at);
     const notes=[36+mod12(c.root-36),...[...new Set([...t.q.ct,...t.q.req])].map(iv=>48+mod12(c.root+iv)).sort((a,b)=>a-b)];
-    notes.forEach(m=>ch.push({t:c.at*PPQ,o:1,d:[0x91,m,64]},{t:end*PPQ-4,o:0,d:[0x81,m,0]})); });
+    notes.forEach(m=>ch.push({t:c0*PPQ,o:1,d:[0x91,m,64]},{t:end*PPQ-4,o:0,d:[0x81,m,0]})); });
   const head=[0x4d,0x54,0x68,0x64,0,0,0,6,0,1,0,3,(PPQ>>8)&255,PPQ&255];
   return new Uint8Array([...head,...t0,...track(mel),...track(ch)]);
 }
