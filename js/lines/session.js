@@ -1,9 +1,6 @@
 /* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
    Grading follows the notes in order, in any octave; rhythm is free for now. */
 let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
-// Playback feel, the player's choice: Original (the real timing), Straight (16th grid) or Swing (grid, swung)
-if(!LDATA.feel2){ LDATA.feel='orig'; LDATA.feel2=1; } if(!['orig','straight','swing'].includes(LDATA.feel)) LDATA.feel='orig';
-const FEEL_NAME={orig:'Original',straight:'Straight',swing:'Swing'};
 if(typeof LDATA.lh!=='boolean') LDATA.lh=true; // left hand: notes below middle C are your comping, not part of the lick
 const LH_SPLIT=60; // playback feel for every lick, the player's choice
 if(!['all','solo','orig','user','fav'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||''; LDATA.fav=LDATA.fav||{}; // fav: licks saved with ♥
@@ -27,7 +24,7 @@ function renderLinesPane(){
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
-    ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')} ${seg([['orig','Original'],['straight','Straight'],['swing','Swing']],LDATA.feel,'feel')}
+    ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
     <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
@@ -41,7 +38,7 @@ function importHTML(){
   const quals=['maj7','dom7','min7','hdim','maj','min','alt'].map(id=>`<option value="${id}">${Q[id].suf||'major'}</option>`).join('');
   const r=LINES.rec;
   return `<details class="import"${r?' open':''}><summary>Add your own lick</summary>
-    <p class="fine">Pick the chord it goes over, press Record, play it (a few notes to about a bar is ideal), then Save. The rhythm is kept exactly as you played it, measured at the Lines tempo; Straight or Swing snap it to a grid.</p>
+    <p class="fine">Pick the chord it goes over, press Record, play it (a few notes to about a bar is ideal), then Save. Your rhythm is measured at the Lines tempo and cleaned up onto straight 8ths, 16ths and triplets.</p>
     <div class="irow"><input id="iName" placeholder="Name" maxlength="40" value="${r?r.name:''}">
       <select id="iRoot">${roots}</select><select id="iQual">${quals}</select>
       <select id="iDiff"><option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option></select></div>
@@ -57,7 +54,6 @@ function bindLinesPane(){
     if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
     if(b.dataset.diff!==undefined){ LDATA.diff=+b.dataset.diff; saveLines(); renderLinesPane(); }
     else if(b.dataset.tempo){ LDATA.tempo=+b.dataset.tempo; saveLines(); renderLinesPane(); }
-    else if(b.dataset.feel){ LDATA.feel=b.dataset.feel; saveLines(); renderLinesPane(); }
     else if(b.dataset.from){ LDATA.from=b.dataset.from; saveLines(); renderLinesPane(); }
     else if(b.dataset.lick) linesStart(b.dataset.lick);
     else if(b.id==='iRec'){ LINES.rec={notes:[],name:$('iName').value,root:+$('iRoot').value,qual:$('iQual').value,diff:+$('iDiff').value}; synth.init(); renderLinesPane(); keepImportFields(); }
@@ -108,7 +104,7 @@ function linesRender(){
     :'Same lick, new key. Play it without looking; press N if you need the notes.';
   $('lDots').innerHTML=inst.notes.map((_,i)=>`<i class="${i<L.idx?'on':i===L.idx&&!L.done?'cur':''}"></i>`).join('');
   $('lStaff').innerHTML=L.revealed?lineStaffSVG(inst,L.idx,L.done):'<p class="fine">Notes hidden. Hear it with R, or press N to show them.</p>';
-  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done; $('lFeel').textContent='Feel: '+FEEL_NAME[LDATA.feel].toLowerCase(); $('lLH').textContent=LDATA.lh?'Left hand: on':'Left hand: off';
+  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done; $('lLH').textContent=LDATA.lh?'Left hand: on':'Left hand: off';
   if(learn&&!L.done){ kbMarks={}; const n=inst.notes[L.idx]; kbMarks[n.midi+(L.offset??0)]='k-hint'; }
   paintKeys();
 }
@@ -129,17 +125,16 @@ function splitDur(at,d){
 }
 function lineStaffSVG(inst,idx,done){
   const BW=78, X0=60, y=di=>40+(38-di)*5, xOf=t=>X0+t*BW;
-  const total=inst.notes.reduce((a,n)=>Math.max(a,n.dat+n.ddur),0), W=Math.max(320,xOf(total)+24);
+  const total=inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0), W=Math.max(320,xOf(total)+24);
   // pieces: each note split into writable values, tied together
   // pieces: each note split into writable values and tied; triplet notes are written as triplet 8ths or quarters
-  const P=[]; inst.notes.forEach((n,i)=>n.tri?P.push({at:n.dat,d:n.ddur,n,i,first:true,tie:false,tri:true}):splitDur(n.dat,n.ddur).forEach((pc,k,arr)=>P.push({...pc,n,i,first:k===0,tie:k<arr.length-1})));
+  const P=[]; inst.notes.forEach((n,i)=>n.tri?P.push({at:n.gat,d:n.gdur,n,i,first:true,tie:false,tri:true}):splitDur(n.gat,n.gdur).forEach((pc,k,arr)=>P.push({...pc,n,i,first:k===0,tie:k<arr.length-1})));
   const col=i=>done||i<idx?'var(--chord)':i===idx?'var(--brass)':'var(--ink)';
   let s=`<svg viewBox="0 0 ${W} 140" width="${W}" height="140" aria-label="The lick on a staff">`;
   for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*k)}" y2="${y(38-2*k)}"/>`;
   s+=`<text class="clef" x="10" y="${y(32)+9}" font-size="44">𝄞</text>`;
-  if(LDATA.feel==='swing') s+=`<text class="csym" x="10" y="12">Swing</text>`;
   for(let b=4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b)-8}" x2="${xOf(b)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
-  inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="${LDATA.feel==='swing'&&c.at===0?26:14}">${symText(c)}</text>`; });
+  inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="14">${symText(c)}</text>`; });
   // beam groups: consecutive notes shorter than a beat inside the same beat
   const groups=[]; let g=null;
   P.forEach((p,k)=>{ const short=p.d<1-1e-6&&!(p.tri&&p.d>.5), beat=Math.floor(p.at+1e-9);
@@ -181,11 +176,8 @@ function lineStaffSVG(inst,idx,done){
 }
 // Play the lick over its chords: soft comp an octave down, bass, melody on top. Jazz licks swing their 8ths.
 function playLine(inst,lick,bus,t0,bpm){
-  // Original plays each note where it really falls (a written lick marked swing is swung); Straight uses the 16th grid;
-  // Swing stretches the first half of each beat to 2/3 and squeezes the second into the last 1/3, every 16th in proportion
-  const feel=LDATA.feel, spb=60/bpm, swung=feel==='swing'||(feel==='orig'&&!inst.real&&lick.swing);
-  const T=b=>{ const i=Math.floor(b+1e-9), f=b-i, g=!swung?f:f<=.5?f*4/3:2/3+(f-.5)*2/3; return t0+(i+g)*spb; };
-  const onGrid=feel!=='orig', startOf=n=>onGrid?n.qat:n.at, lenOf=n=>onGrid?n.qdur:n.dur;
+  // Straight, exactly as written on the staff (see gridTimes): what you see is what you hear
+  const spb=60/bpm, T=b=>t0+b*spb, startOf=n=>n.gat, lenOf=n=>n.gdur;
   // Comp: the 3rd, 7th and a colour tone packed just under the lick's lowest note (down to C3), root in the bass
   const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
   inst.chords.forEach(c=>{

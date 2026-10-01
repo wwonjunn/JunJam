@@ -94,21 +94,23 @@ function lickInstance(l,refPc){
 }
 // Start and length of every note in beats: real starts when the lick has them, otherwise one after another
 function lickTimes(l){ let t=0; return l.notes.map(n=>{ const at=n.length>2?n[2]:t; t=at+n[1]; return {at,dur:n[1]}; }); }
-/* Grid versions of the timing, for Straight/Swing playback and for notation.
-   q: 16th grid, reading a swung 8th (2/3 of the beat) as the "and".
-   d: notation; a beat with a note on a triplet position is written as triplets, otherwise 16ths. */
+/* The rhythm you hear and see: the real timing cleaned up the way notation software does it ("mixed quantization").
+   Each beat on its own: a swung long-short pair becomes two straight 8ths (jazz is written straight), three evenly
+   spaced notes stay a real triplet, everything else snaps to 16ths. Playback and the staff both use this. */
 function gridTimes(times){
-  const q16=x=>{ const i=Math.floor(x+1e-6), f=x-i; return i+(Math.abs(f-2/3)<.08?.5:Math.abs(f-1/3)<.08?.25:Math.round(f*4)/4); };
-  const triBeat=new Set(times.filter(x=>{ const f=x.at-Math.floor(x.at+1e-6); return Math.abs(f-1/3)<.07||(Math.abs(f-2/3)<.07&&times.some(y=>Math.floor(y.at+1e-6)===Math.floor(x.at+1e-6)&&Math.abs(y.at-Math.floor(y.at+1e-6)-1/3)<.07)); }).map(x=>Math.floor(x.at+1e-6)));
-  const out=[]; let pq=-1, pd=-1;
-  times.forEach(x=>{ const b=Math.floor(x.at+1e-6), tri=triBeat.has(b);
-    let qat=q16(x.at); if(qat<=pq) qat=pq+.25;
-    let dat=tri?b+Math.round((x.at-b)*3)/3:qat; if(dat<=pd) dat=pd+(tri?1/3:.25);
-    out.push({qat,dat,tri}); pq=qat; pd=dat; });
-  out.forEach((o,i)=>{ const nx=out[i+1], last=Math.max(.25,Math.round(times[i].dur*4)/4);
-    o.qdur=nx?Math.min(nx.qat-o.qat,Math.max(.25,Math.round(times[i].dur*4)/4)):last;
-    o.ddur=nx?Math.min(nx.dat-o.dat,o.tri?Math.max(1/3,Math.round(times[i].dur*3)/3):Math.max(.25,Math.round(times[i].dur*4)/4)):(o.tri?1/3:last); });
-  return out;
+  const G16=[0,.25,.5,.75,1], G3=[0,1/3,2/3,1], near=(f,g)=>g.reduce((a,v)=>Math.abs(f-v)<Math.abs(f-a)?v:a);
+  const byBeat=new Map(); times.forEach((x,i)=>{ const b=Math.floor(x.at+.04); if(!byBeat.has(b)) byBeat.set(b,[]); byBeat.get(b).push(i); });
+  const pos=[], tri=[];
+  for(const [b,idx] of byBeat){
+    const fs=idx.map(i=>times[i].at-b);
+    const e16=fs.reduce((a,f)=>a+Math.abs(f-near(f,G16)),0), e3=fs.reduce((a,f)=>a+Math.abs(f-near(f,G3)),0);
+    const swungPair=fs.length<=2&&fs.every(f=>f<.08||(f>.54&&f<.84));                // long-short: a swung 8th, written straight
+    const isTri=!swungPair&&fs.length>=2&&e3+.04<e16&&fs.filter(f=>Math.abs(f-1/3)<.08||Math.abs(f-2/3)<.08).length>=2;
+    idx.forEach((i,k)=>{ const f=fs[k]; tri[i]=isTri; pos[i]=b+(isTri?near(f,G3):swungPair&&f>.5?.5:near(f,G16)); });
+  }
+  for(let i=1;i<pos.length;i++) if(pos[i]<=pos[i-1]+1e-6) pos[i]=pos[i-1]+(tri[i-1]?1/3:.25); // keep order, one note per spot (step on the grid of the note before)
+  return times.map((x,i)=>{ const unit=tri[i]?1/3:.25, own=Math.max(unit,Math.round(x.dur/unit)*unit), nx=pos[i+1];
+    return {gat:pos[i],gdur:nx!==undefined?Math.min(nx-pos[i],own):own,tri:tri[i]}; });
 }
 const lickOver=l=>l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
 

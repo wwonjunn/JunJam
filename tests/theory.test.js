@@ -49,7 +49,7 @@ ok(ALL.length>=185,'library is at least 5x the first 37');
 for(const l of ALL){
   ok(l.notes.length>=3&&l.notes.length<=16,`${l.id} is 3 to 16 notes`);
   ok(T.lickInstance(l,0).total<=8.25,`${l.id} is at most two bars`);
-  { const li=T.lickInstance(l,0); ok(li.notes.every((n,i)=>i===0||(n.qat>li.notes[i-1].qat&&n.dat>li.notes[i-1].dat)),`${l.id}: grid times always move forward`); }
+  { const li=T.lickInstance(l,0); ok(li.notes.every((n,i)=>i===0||n.gat>li.notes[i-1].gat+1e-6)&&li.notes.every(n=>n.gdur>0),`${l.id}: written rhythm always moves forward`); }
   for(let k=0;k<12;k++){ const li=T.lickInstance(l,k);
     ok(li.chords.every(c=>c.q)&&li.notes.every(n=>n.midi>=48&&n.midi<=96&&n.name),`${l.id} in ${k}`);
     ok(li.chords.reduce((a,c)=>a+c.beats,0)>=li.total-1e-6,`${l.id} chords cover the lick`);
