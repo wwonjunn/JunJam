@@ -164,13 +164,14 @@ async function trRun(){
     if(!res.ok) throw new Error(res.error||'The helper could not transcribe this.');
     // lead sheets: no vocals (an instrumental)? the melody comes from the lead instrument instead
     if(T.mode==='lead'&&res.notes.target.length<12&&res.notes.alt&&res.notes.alt.length>res.notes.target.length) res.notes.target=res.notes.alt;
-    T.res=res; T.shift=0;
-    trEdit(buildScore(res,{mode:T.mode,instrument:T.mode==='lead'?'voice':T.instrument,title:T.title}),res,null);
+    T.res=res;
+    const sc=buildScore(res,{mode:T.mode,instrument:T.mode==='lead'?'voice':T.instrument,title:T.title}); T.shift=sc.shift;
+    trEdit(sc,res,null);
   }catch(e){ clearInterval(tick); if(e.name==='AbortError') return; $('trBody').innerHTML=`<p class="lmsg no">${String(e.message||e).replace(/</g,'&lt;')}</p><div class="erow"><button class="go" id="trBack">Back</button></div>`; $('trBack').onclick=trSetupRender; }
 }
 
 /* ---------------- the editor ---------------- */
-const PXB=46, ROW=11, LANE=26;
+const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to set beat 1) sits above the chord lane
 function trEdit(score,res,savedIndex){
   trStopAll(); Object.assign(TR,{active:true,step:'edit',score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],selected:new Set(),rate:TR.rate||1,speed:1});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
@@ -180,7 +181,7 @@ function trEdit(score,res,savedIndex){
       ${TR.res?'<button class="ghost" id="trShiftL" title="Move the bar lines one beat earlier">◀ bar line</button><button class="ghost" id="trShiftR" title="One beat later">bar line ▶</button>':''}
       <button class="ghost" id="trUndo">Undo</button></div>
     <div class="trscore" id="trScore"></div>
-    <div class="sec">Edit: drag notes to move them, drag their right edge to change length, double-click to add, Delete to remove, ↑/↓ to transpose. Click a chord to change it.</div>
+    <div class="sec">Edit: drag notes to move them, drag their right edge to change length, double-click to add, Delete to remove, ↑/↓ to transpose. Click a chord to change it.${TR.res?' Beat 1 in the wrong place? Click the beat number that should be 1.':''}</div>
     <div class="trroll" id="trRoll"></div>
     <div class="lmsg" id="trMsg"></div>
     <div class="erow"><button class="go" id="trSave">Save</button><button class="ghost" id="trXml">Export MusicXML</button><button class="ghost" id="trMid">Export MIDI</button><button class="ghost" id="trLick">Selected notes → Lines</button><button class="ghost" id="trClose">Close</button></div>`;
@@ -197,8 +198,10 @@ function trInfo(){ const s=TR.score;
   $('trTitle').textContent=s.title; $('trInfo').textContent=`${s.mode==='lead'?'Lead sheet':'Solo'} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)} · ${s.bars} bars · ${s.melody.length} notes`; }
 function trPush(){ TR.undo.push(JSON.stringify({m:TR.score.melody,c:TR.score.chords,s:TR.score.soloBars})); if(TR.undo.length>80) TR.undo.shift(); }
 function trUndo(){ const u=TR.undo.pop(); if(!u) return; const o=JSON.parse(u); TR.score.melody=o.m; TR.score.chords=o.c; TR.score.soloBars=o.s; TR.selected.clear(); trRender(); }
-function trReshift(d){ if(!TR.res) return; trPush(); TR.shift=(TR.shift||0)+d; const s=TR.score;
-  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,shift:TR.shift,title:s.title}),soloBars:s.soloBars}; TR.selected.clear(); trRender(); trMsg(`Bar lines moved ${d<0?'earlier':'later'}.`); }
+function trSetBeat1(beat){ if(!TR.res) return; const k=mod12(beat)%4; if(!k) return; let sh=(TR.shift||0)+k; while(sh>0) sh-=4; trApplyShift(sh,`Beat 1 set. The score is redrawn from there.`); }
+function trApplyShift(sh,msg){ trPush(); TR.shift=sh; const s=TR.score;
+  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,shift:TR.shift,title:s.title}),soloBars:s.soloBars}; TR.selected.clear(); trRender(); trMsg(msg); }
+function trReshift(d){ if(!TR.res) return; let sh=(TR.shift||0)+d; while(sh>0) sh-=4; while(sh<=-4) sh+=4; trApplyShift(sh,`Bar lines moved ${d<0?'earlier':'later'}.`); }
 function trMsg(t,cls=''){ const m=$('trMsg'); if(m){ m.textContent=t; m.className='lmsg '+cls; } }
 
 // Sheet music: four bars to a line, chord symbols above, notes spelled from their chords
@@ -216,13 +219,14 @@ function trScoreView(){
 // Piano roll with a chord lane; everything editable
 function trRollView(){
   const s=TR.score, mel=s.melody, ps=mel.map(n=>n.midi), lo=Math.min(...ps,60)-3, hi=Math.max(...ps,72)+3;
-  const W=s.bars*4*PXB+20, H=LANE+(hi-lo+1)*ROW, y=m=>LANE+(hi-m)*ROW;
+  const W=s.bars*4*PXB+20, H=RULER+LANE+(hi-lo+1)*ROW, y=m=>RULER+LANE+(hi-m)*ROW;
   let g=`<svg id="trSvg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
   for(let m=lo;m<=hi;m++) g+=`<rect x="0" y="${y(m)}" width="${W}" height="${ROW}" class="${isBlack(m)?'rbk':'rwh'}"/>${m%12===0?`<text x="2" y="${y(m)+ROW-2}" class="rlab">C${m/12-1}</text>`:''}`;
-  for(let b=0;b<=s.bars*4;b++) g+=`<line x1="${b*PXB}" x2="${b*PXB}" y1="${LANE}" y2="${H}" class="${b%4===0?'rbar':'rbeat'}"/>`;
+  for(let b=0;b<=s.bars*4;b++) g+=`<line x1="${b*PXB}" x2="${b*PXB}" y1="${RULER+LANE}" y2="${H}" class="${b%4===0?'rbar':'rbeat'}"/>`;
+  for(let b=0;b<s.bars*4;b++) g+=`<rect x="${b*PXB}" y="0" width="${PXB}" height="${RULER}" class="rruler${b%4===0?' one':''}" data-beat="${b}"><title>${TR.res?'Click to make this beat 1':''}</title></rect><text x="${b*PXB+4}" y="12" class="rbeatn${b%4===0?' one':''}">${b%4===0?(b/4+1)+'.':''}${b%4+1}</text>`;
   for(let b=0;b<s.bars;b++){ const solo=(s.soloBars||[]).includes(b);
-    g+=`<rect x="${b*4*PXB}" y="0" width="${4*PXB}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${b*4*PXB+4*PXB-4}" y="16" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
-  s.chords.forEach((c,i)=>{ g+=`<text x="${c.at*PXB+3}" y="17" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
+    g+=`<rect x="${b*4*PXB}" y="${RULER}" width="${4*PXB}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${b*4*PXB+4*PXB-4}" y="${RULER+16}" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
+  s.chords.forEach((c,i)=>{ g+=`<text x="${c.at*PXB+3}" y="${RULER+17}" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
   mel.forEach((n,i)=>{ const hid=(s.soloBars||[]).includes(Math.floor(n.gat/4+1e-6));
     g+=`<rect x="${n.gat*PXB+1}" y="${y(n.midi)+1}" width="${Math.max(4,n.gdur*PXB-2)}" height="${ROW-2}" rx="2" class="rnote${TR.selected.has(i)?' sel':''}${hid?' hid':''}" data-i="${i}"/>`; });
   g+=`<line id="trHead" x1="-5" x2="-5" y1="0" y2="${H}" class="rhead"/></svg>`;
@@ -232,9 +236,10 @@ function trRollView(){
 function trRollEvents(){
   const svg=$('trSvg'), s=TR.score; let drag=null;
   const pt=e=>{ const r=svg.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; };
-  const toPitch=py=>TR.roll.hi-Math.floor((py-LANE)/ROW), snap=b=>Math.max(0,Math.round(b*4)/4);
+  const toPitch=py=>TR.roll.hi-Math.floor((py-RULER-LANE)/ROW), snap=b=>Math.max(0,Math.round(b*4)/4);
   svg.onpointerdown=e=>{
     const p=pt(e), nEl=e.target.closest('.rnote'), cEl=e.target.closest('[data-chord]'), sEl=e.target.closest('[data-solo]');
+    const rEl=e.target.closest('[data-beat]'); if(rEl){ trSetBeat1(+rEl.dataset.beat); return; }
     if(sEl){ trPush(); const b=+sEl.dataset.solo, sb=s.soloBars||(s.soloBars=[]); sb.includes(b)?sb.splice(sb.indexOf(b),1):sb.push(b); trRender(); return; }
     if(cEl){ trChordEdit(+cEl.dataset.chord,e); return; }
     if(e.target.closest('.rlane')){ trChordAdd(Math.floor(p.x/PXB/4)*4,e); return; }

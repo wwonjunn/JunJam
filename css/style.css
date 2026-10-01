@@ -375,3 +375,5 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 @media (max-width:700px){ .trmodes{grid-template-columns:1fr} }
 .trmeter{height:14px;border-radius:7px;background:var(--line);overflow:hidden;margin:4px 0 10px;box-shadow:inset 0 0 0 1px var(--line-strong)}
 .trmeter i{display:block;height:100%;width:0;background:var(--good);transition:width .08s}
+.rruler{fill:var(--panel);cursor:pointer} .rruler:hover{fill:color-mix(in srgb, var(--brass) 25%, var(--panel))}
+.rbeatn{font-family:var(--cond);font-weight:600;font-size:10px;fill:var(--muted);pointer-events:none} .rbeatn.one{fill:var(--ink)}

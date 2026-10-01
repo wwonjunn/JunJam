@@ -82,8 +82,33 @@ function guessKey(notes){
 // Instruments: which stem the helper should transcribe, and the range the line lives in
 const TR_INSTRUMENTS={piano:{name:'Piano (right hand)',stem:'piano',lo:55,hi:100},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88},
   sax:{name:'Saxophone',stem:'other',lo:44,hi:84},trumpet:{name:'Trumpet',stem:'other',lo:52,hi:84},voice:{name:'Voice',stem:'vocals',lo:45,hi:84},bass:{name:'Bass',stem:'bass',lo:24,hi:60}};
+/* Which beat is beat 1? Beat trackers find the beats but not the bar. Try each of the four phases and keep the one
+   where the music acts most like a downbeat: chords change there, the bass plays there, strong notes start there. */
+function guessDownbeat(res){
+  const toBeat=beatMapper(fillBeats(res.beats,res.duration),0), n=Math.max(4,Math.ceil(toBeat(res.duration)));
+  const onset=Array(n+1).fill(0), bassOn=Array(n+1).fill(0), prof=[...Array(n+1)].map(()=>Array(12).fill(0));
+  const strength=x=>x.c*Math.min(1,(x.e-x.s)*2);
+  const on=(arr,x)=>{ const t=toBeat(x.s), b=Math.round(t); if(b>=0&&b<=n&&Math.abs(t-b)<.2) arr[b]+=strength(x); };
+  res.notes.harmony.forEach(x=>{ on(onset,x); const b0=Math.max(0,Math.floor(toBeat(x.s))), b1=Math.min(n,Math.floor(toBeat(x.e)));
+    for(let b=b0;b<=b1;b++) prof[b][mod12(x.p)]+=x.c; });
+  res.notes.bass.forEach(x=>on(bassOn,x));
+  const cos=(u,v)=>{ const d=u.reduce((a,x,i)=>a+x*v[i],0), m=Math.sqrt(u.reduce((a,x)=>a+x*x,0)*v.reduce((a,x)=>a+x*x,0)); return m?d/m:1; };
+  const change=prof.map((p,b)=>b?1-cos(prof[b-1],p):0);
+  const norm=a=>{ const mx=Math.max(...a)||1; return a.map(x=>x/mx); };
+  const O=norm(onset), Bs=norm(bassOn), C=norm(change);
+  let best={p:0,sc:-1e9};
+  for(let p=0;p<4;p++){
+    let on1=0, k1=0, rest=0, k=0;
+    for(let b=1;b<=n;b++){ const v=O[b]+2*Bs[b]+3*C[b]; if(b%4===p){ on1+=v; k1++; } else { rest+=v; k++; } }
+    const sc=(k1?on1/k1:0)-(k?rest/k:0); if(sc>best.sc) best={p,sc};
+  }
+  return best.p;
+}
+// Shift for a chosen beat 1: notes before it become an opening pickup bar instead of being cut off
+const shiftFor=p=>p?p-4:0;
 // Build the whole score from the helper's answer
-function buildScore(res,{mode,instrument,shift=0,title='Untitled'}){
+function buildScore(res,{mode,instrument,shift=null,title='Untitled'}){
+  if(shift===null) shift=shiftFor(guessDownbeat(res));
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const line=topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3});
   const melody=melodyBeats(line,toBeat,lead);
@@ -94,5 +119,5 @@ function buildScore(res,{mode,instrument,shift=0,title='Untitled'}){
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
   const used=Math.max(melody.length?Math.floor((melody[melody.length-1].gat)/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
-  return {v:1,title,mode,instrument,tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[]};
+  return {v:1,title,mode,instrument,tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
 }
