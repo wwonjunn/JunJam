@@ -16,7 +16,7 @@ A jazz piano trainer with two sides:
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
 - **Transcribe** (button on the home screen): drop in an mp3, choose a solo transcription or a lead sheet, select
   the part, and get editable sheet music with chords. Edit in a piano roll, export MusicXML or MIDI, or send a phrase
-  to Lines. Needs the local helper in `tools/transcriber` (Demucs + Basic Pitch + librosa), installed once with
+  to Lines. Needs the local helper in `tools/transcriber` (Basic Pitch + librosa; Demucs separation is optional and off), installed once with
   `bash tools/transcriber/install.sh`; Jun Jam.app starts it automatically. Everything else works without it.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.

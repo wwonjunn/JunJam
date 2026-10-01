@@ -3222,7 +3222,7 @@ async function trRun(){
   trStopAll(); T.step='working';
   const target=T.mode==='lead'?'vocals':TR_INSTRUMENTS[T.instrument].stem, t0=performance.now();
   $('trBody').innerHTML=`<div class="etop"><span class="etitle">${T.title.replace(/</g,'&lt;')}</span></div>
-    <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">Separating the instruments, then finding the notes and the beat. Roughly as long as the selection, longer the first time (the separation model downloads once).</p>
+    <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">Finding the notes and the beat in the whole recording, then picking out the line and the chords. Usually a few seconds; longer the very first time.</p>
     <div class="erow"><button class="ghost" id="trCancel">Cancel</button></div>`;
   const tick=setInterval(()=>{ if($('trEl')) $('trEl').textContent=Math.round((performance.now()-t0)/1000); },500);
   const ctl=new AbortController(); $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };

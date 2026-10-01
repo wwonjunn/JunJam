@@ -4,11 +4,12 @@
   POST /transcribe?target=piano  body: a WAV file of the part of the recording you selected
 
 What it does with the audio:
-  1. Demucs (htdemucs_6s) splits it into drums, bass, vocals, guitar, piano and other.
-  2. Basic Pitch turns the target instrument's stem into notes, and does the same for the bass and the
-     remaining harmony stems so Jun Jam can work out the chords.
-  3. librosa finds the beats in the full mix.
-It answers with JSON: tempo, beat times and the notes of each part (start, end, MIDI pitch, confidence).
+  1. Basic Pitch turns the whole recording into notes, in one pass (no instrument separation: on real
+     recordings it gave worse results and was slow).
+  2. librosa finds the beats.
+It answers with JSON: tempo, beat times, and the notes, also split into the bass (low notes) and the
+harmony (everything), so Jun Jam can pull out the solo line by range and work out the chords.
+Add ?separate=1 to split instruments with Demucs first (slower; needs the separation model).
 Only listens on localhost. Audio is processed in a temporary folder and deleted afterwards.
 """
 import json, os, sys, shutil, tempfile, subprocess, traceback
@@ -19,7 +20,7 @@ PORT = 8771
 VERSION = 1
 STEMS = ['drums', 'bass', 'vocals', 'guitar', 'piano', 'other']
 # Frequency ranges per part, so a stem's leftovers outside its instrument's range are ignored
-RANGE = {'piano': (27, 4200), 'guitar': (80, 1400), 'vocals': (80, 1100), 'other': (100, 1600), 'bass': (30, 400)}
+RANGE = {'full': (27, 4200), 'piano': (27, 4200), 'guitar': (80, 1400), 'vocals': (80, 1100), 'other': (100, 1600), 'bass': (30, 400)}
 
 _model = None
 def model():
@@ -62,7 +63,7 @@ def beats_of(wav):
     t = librosa.frames_to_time(frames, sr=sr)
     return float(tempo if not hasattr(tempo, '__len__') else tempo[0]), [round(float(x), 3) for x in t], len(y) / sr
 
-def transcribe(wav_bytes, target, mode):
+def transcribe(wav_bytes, target, mode, separate_first=False):
     tmp = tempfile.mkdtemp(prefix='junjam-')
     try:
         wav = os.path.join(tmp, 'clip.wav')
@@ -71,6 +72,10 @@ def transcribe(wav_bytes, target, mode):
         data, sr = sf.read(wav, always_2d=True)
         if data.shape[1] == 1: sf.write(wav, np.repeat(data, 2, axis=1), sr)   # Demucs 4.0.1 + new PyTorch crash on mono input
         tempo, beats, dur = beats_of(wav)
+        if not separate_first:
+            notes = notes_of(wav, 'full', True)
+            return {'ok': True, 'version': VERSION, 'mode': mode, 'target': 'full', 'tempo': tempo, 'beats': beats, 'duration': dur,
+                    'notes': {'target': notes, 'bass': [n for n in notes if n['p'] < 52], 'harmony': notes}}
         stems = separate(wav, tmp)
         if target not in stems: target = 'other'
         harmony_parts = [s for s in ('piano', 'guitar', 'other', 'vocals') if s in stems and s != target]
@@ -108,7 +113,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             n = int(self.headers.get('Content-Length', 0))
             if n <= 44 or n > 400 * 1024 * 1024: return self._json(400, {'ok': False, 'error': 'send a WAV file up to 400 MB'})
-            res = transcribe(self.rfile.read(n), q.get('target', ['piano'])[0], q.get('mode', ['solo'])[0])
+            res = transcribe(self.rfile.read(n), q.get('target', ['piano'])[0], q.get('mode', ['solo'])[0], q.get('separate', ['0'])[0] == '1')
             self._json(200, res)
         except Exception as e:
             traceback.print_exc()
