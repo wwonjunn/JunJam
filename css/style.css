@@ -312,3 +312,9 @@ body.linesmode header .modetag{display:none}
 .lstaff svg{height:170px;width:auto;max-width:none}
 #lArtist{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 10px}
 .import a,.fine a{color:var(--brass)}
+.lick .fav{position:absolute;right:6px;top:2px;font-size:17px;color:var(--muted);padding:0 4px;line-height:1.2}
+.lick .fav.withdel{right:24px}
+.lick .fav.on,.lfav{color:var(--wrong)}
+.lick .fav:hover{color:var(--wrong)}
+.lick .lt{padding-right:30px}
+.lfav{background:none;border:0;cursor:pointer;font-size:22px;padding:0 4px;vertical-align:1px}

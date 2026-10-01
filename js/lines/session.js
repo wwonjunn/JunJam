@@ -2,7 +2,9 @@
    Grading follows the notes in order, in any octave; rhythm is free for now. */
 let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
 if(LDATA.feel!=='swing'&&LDATA.feel!=='straight') LDATA.feel='swing'; // playback feel for every lick, the player's choice
-if(!['all','solo','orig','user'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||'';
+if(!['all','solo','orig','user','fav'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||''; LDATA.fav=LDATA.fav||{}; // fav: licks saved with ♥
+const isFav=id=>!!LDATA.fav[id];
+function toggleFav(id){ if(LDATA.fav[id]) delete LDATA.fav[id]; else LDATA.fav[id]=1; saveLines(); }
 const saveLines=()=>store.set('lines',LDATA);
 const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
 const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':'orig';
@@ -14,17 +16,17 @@ const TRANSFER_KEYS=5;
 /* ---------------- menu pane ---------------- */
 function linesStarTotal(){ return allLicks().reduce((a,l)=>a+(LDATA.stars[l.id]||0),0); }
 function renderLinesPane(){
-  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||lickFrom(l)===LDATA.from)&&(!LDATA.artist||l.artist===LDATA.artist))
+  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||(LDATA.from==='fav'?isFav(l.id):lickFrom(l)===LDATA.from))&&(!LDATA.artist||l.artist===LDATA.artist))
     .sort((a,b)=>a.diff-b.diff||lickLabel(a).localeCompare(lickLabel(b))||a.name.localeCompare(b.name));
   const artists=[...new Set(allLicks().map(l=>l.artist).filter(Boolean))].sort();
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')} ${seg([['straight','Straight'],['swing','Swing']],LDATA.feel,'feel')}
-    <div class="chipsrow">${[['all','All'],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
+    <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
     <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
-    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||'<p class="fine">Nothing here yet.</p>'}</div>
+    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span><span class="fav${isFav(l.id)?' on':''}${l.user?' withdel':''}" data-fav="${l.id}" title="${isFav(l.id)?'Remove from favourites':'Add to favourites'}">${isFav(l.id)?'♥':'♡'}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||`<p class="fine">${LDATA.from==='fav'?'No favourites yet. Tap the ♡ on any lick to save it here.':'Nothing here yet.'}</p>`}</div>
     <p class="fine" style="margin-top:12px">★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks from famous solos are short phrases from the <a href="https://jazzomat.hfm-weimar.de/" target="_blank" rel="noopener">Weimar Jazz Database</a> (Jazzomat Research Project, HfM Weimar), used under the <a href="https://opendatacommons.org/licenses/odbl/1.0/" target="_blank" rel="noopener">ODbL</a>. A few others follow formulas documented by teachers; the rest are Jun Jam originals.</p>
     ${importHTML()}`;
   $('linesPane').innerHTML=h;
@@ -45,6 +47,7 @@ function bindLinesPane(){
   const p=$('linesPane');
   p.onchange=e=>{ if(e.target.id==='lArtist'){ LDATA.artist=e.target.value; if(LDATA.artist&&LDATA.from!=='all'&&LDATA.from!=='solo'&&LDATA.from!=='orig') LDATA.from='all'; saveLines(); renderLinesPane(); } };
   p.onclick=e=>{
+    const f=e.target.closest('[data-fav]'); if(f){ e.stopPropagation(); toggleFav(f.dataset.fav); renderLinesPane(); return; }
     const b=e.target.closest('button,[data-del]'); if(!b) return;
     if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
     if(b.dataset.diff!==undefined){ LDATA.diff=+b.dataset.diff; saveLines(); renderLinesPane(); }
@@ -92,7 +95,7 @@ function linesRound(){
 }
 function linesRender(){
   const L=LINES, inst=L.inst, learn=L.round===0;
-  $('lTitle').textContent=L.lick.name;
+  $('lTitle').textContent=L.lick.name; $('lFav').textContent=isFav(L.lick.id)?'♥':'♡'; $('lFav').title=isFav(L.lick.id)?'Remove from favourites':'Add to favourites';
   $('lCount').textContent=learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
   $('lChords').textContent=inst.chords.map(c=>symText(c)).join('  →  ');
   $('lSub').textContent=learn?'Listen, then play it back on your keyboard. Any octave works.'+(L.lick.tip?' '+L.lick.tip:'')
