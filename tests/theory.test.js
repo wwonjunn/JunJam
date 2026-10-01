@@ -67,11 +67,19 @@ ok(T.lickInstance(T.LICKS.find(l=>l.id==='c1235'),0).notes.map(n=>n.name).join('
 // reharm moves: valid in every key, slots point at real chords, and each slot's chord can be played
 for(const m of T.REHARM_MOVES){
   ok(m.slots.every(i=>i>=0&&i<m.after.length),`${m.id} slots`);
-  for(let k=0;k<12;k++){ const a=T.rhChords(m.after,k), b=T.rhChords(m.before,k);
+  for(let k=0;k<12;k++){ const a=T.rhChords(m.after,k,m.minor), b=T.rhChords(m.before,k,m.minor);
     ok(a.every(c=>c.q&&Math.abs(c.root.a)<=1)&&b.every(c=>c.q),`${m.id} in ${k} spells`);
-    m.slots.forEach(i=>{ const t={root:a[i].root,q:a[i].q}; ok(T.evaluate(T.hintVoicing(t,{rootless:true}),t,{rootless:true}).ok&&T.rhAccepts(a[i].q).length>0,`${m.id} slot ${i} playable in ${k}`); }); }
+    m.slots.forEach(i=>{ const ts=m.alts&&m.alts[i]?T.rhChords(m.alts[i],k,m.minor):[a[i]];
+      ts.forEach(c=>{ const t={root:c.root,q:c.q}; ok(T.evaluate(T.hintVoicing(t,{rootless:true}),t,{rootless:true}).ok&&T.rhAccepts(c.q,m.exact).length>0,`${m.id} slot ${i} (${T.symText(c)}) playable in ${k}`); }); }); }
 }
 ok(T.rhChords(T.REHARM_MOVES.find(m=>m.id==='tritone').after,0).map(T.symText).join(' ')==='Dm7 D♭7 Cmaj7','tritone sub in C');
 ok(T.rhChords(T.REHARM_MOVES.find(m=>m.id==='ivv').after,0).map(T.symText).join(' ')==='Dm7 F/G Cmaj7','IV/V in C');
+const R_=id=>T.REHARM_MOVES.find(m=>m.id===id), names=(id,k=0)=>T.rhChords(R_(id).after,k,R_(id).minor).map(T.symText).join(' ');
+ok(names('coltrane')==='Dm7 E♭7 A♭maj7 B7 Emaj7 G7 Cmaj7','Coltrane changes in C');
+ok(names('negative')==='Gm7 Fm6 Cmaj7','negative harmony ii–V in C');
+ok(names('ladybird')==='Cmaj7 E♭7 A♭maj7 D♭maj7','Lady Bird in C');
+ok(names('cliche',9)==='Am Am(maj7) Am7 Am6','minor line cliché in A minor');
+ok(names('bassdown')==='C G/B Am C/G','descending bass in C');
+ok(T.REHARM_MOVES.length===30,'30 moves');
 console.log(fails?`${fails} failures`:'all theory and generator checks passed');
 process.exit(fails?1:0);
