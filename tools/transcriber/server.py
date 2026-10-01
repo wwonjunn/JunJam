@@ -51,8 +51,10 @@ def separate(wav, out):
 def notes_of(path, part, solo):
     from basic_pitch.inference import predict
     lo, hi = RANGE.get(part, (27, 4200))
-    _, _, events = predict(path, model(), onset_threshold=0.55 if solo else 0.5, frame_threshold=0.3,
-                           minimum_note_length=60, minimum_frequency=lo, maximum_frequency=hi)
+    # Generous thresholds: Jun Jam filters by confidence and length on its side ("Notes: fewer / more"),
+    # so the same answer can be tightened or loosened without transcribing again
+    _, _, events = predict(path, model(), onset_threshold=0.4, frame_threshold=0.22,
+                           minimum_note_length=40, minimum_frequency=lo, maximum_frequency=hi)
     return [{'s': round(float(e[0]), 3), 'e': round(float(e[1]), 3), 'p': int(e[2]), 'c': round(float(e[3]), 3)}
             for e in sorted(events, key=lambda e: e[0])]
 

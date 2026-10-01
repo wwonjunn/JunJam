@@ -94,6 +94,19 @@ function guessKey(notes){
   }
   return best;
 }
+// Basic Pitch often cuts one held note into pieces: join a same-pitch piece that starts right as the last ends,
+// but only if it's a short leftover or clearly quieter. A re-struck note (same chord played again) is just as loud: keep it.
+function mergeFragments(notes,gap=.05){
+  const byP=new Map(); notes.forEach(n=>{ if(!byP.has(n.p)) byP.set(n.p,[]); byP.get(n.p).push({...n}); });
+  const out=[]; byP.forEach(ns=>{ ns.sort((a,b)=>a.s-b.s); let cur=null;
+    ns.forEach(n=>{ if(cur&&n.s-cur.e<gap&&n.s>=cur.s&&(n.e-n.s<.15||n.c<cur.c*.8)){ cur.e=Math.max(cur.e,n.e); } else { if(cur) out.push(cur); cur=n; } }); if(cur) out.push(cur); });
+  return out.sort((a,b)=>a.s-b.s);
+}
+// "Notes: fewer ↔ more": how confident and how long a note must be to count
+const TR_SENS=[{c:.5,l:.12},{c:.4,l:.09},{c:.3,l:.065},{c:.24,l:.05},{c:.18,l:.04}];
+// Half-time / double-time: beat trackers often lock onto half or double the real tempo
+function scaleBeats(beats,k){ if(k===1||beats.length<2) return beats; if(k<1) return beats.filter((_,i)=>i%2===0);
+  const out=[]; beats.forEach((b,i)=>{ out.push(b); if(i+1<beats.length) out.push((b+beats[i+1])/2); }); return out; }
 // Instruments: which stem the helper should transcribe, and the range the line lives in
 const TR_INSTRUMENTS={piano:{name:'Piano',stem:'piano',lo:55,hi:100,full:[21,108],grand:true},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88,full:[40,88]},
   sax:{name:'Saxophone',stem:'other',lo:44,hi:84},trumpet:{name:'Trumpet',stem:'other',lo:52,hi:84},voice:{name:'Voice',stem:'vocals',lo:45,hi:84},bass:{name:'Bass',stem:'bass',lo:24,hi:60}};
@@ -122,12 +135,15 @@ function guessDownbeat(res){
 // Shift for a chosen beat 1: notes before it become an opening pickup bar instead of being cut off
 const shiftFor=p=>p?p-4:0;
 // Build the whole score from the helper's answer
-function buildScore(res,{mode,instrument,shift=null,title='Untitled',texture='line'}){
+function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='line',sens=2,beatScale=1}){
+  const res={...res0,beats:scaleBeats(res0.beats,beatScale),tempo:res0.tempo*beatScale,
+    notes:{...res0.notes,target:mergeFragments(res0.notes.target),bass:mergeFragments(res0.notes.bass),harmony:mergeFragments(res0.notes.harmony)}};
+  const S=TR_SENS[Math.max(0,Math.min(4,sens))];
   if(shift===null) shift=shiftFor(guessDownbeat(res));
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const full=!lead&&texture==='full'&&inst.full;
-  const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1]})
-    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3}),toBeat,lead);
+  const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1],minConf:S.c,minLen:S.l})
+    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   // beats back to seconds for the chord windows
@@ -135,5 +151,5 @@ function buildScore(res,{mode,instrument,shift=null,title='Untitled',texture='li
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
   const used=Math.max(melody.length?Math.floor(Math.max(...melody.map(n=>n.gat))/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
-  return {v:1,title,mode,instrument,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
+  return {v:1,title,mode,instrument,sens,beatScale,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
 }

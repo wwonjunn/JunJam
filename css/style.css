@@ -379,3 +379,16 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .rbeatn{font-family:var(--cond);font-weight:600;font-size:10px;fill:var(--muted);pointer-events:none} .rbeatn.one{fill:var(--ink)}
 .trrollhead{position:sticky;top:0;z-index:2;line-height:0}
 .trrollhead svg{display:block}
+.trwavewrap{position:relative;margin:4px 0 8px;touch-action:none;cursor:crosshair}
+.trwavewrap .trwave{margin:0}
+.trhandle{position:absolute;top:-4px;bottom:-4px;width:12px;margin-left:-6px;cursor:ew-resize;border-radius:4px;background:var(--brass);opacity:.9;box-shadow:0 0 0 2px var(--lane)}
+.trhandle::after{content:"";position:absolute;left:5px;top:30%;bottom:30%;width:2px;background:var(--lane);opacity:.8}
+.trwhead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--wrong);display:none;pointer-events:none}
+.trgrid{display:grid}
+.trcorner{position:sticky;left:0;top:0;z-index:4;background:var(--panel)}
+.trrollhead{z-index:3}
+.trkeys{position:sticky;left:0;z-index:2;line-height:0;background:var(--panel)} .trkeys svg{display:block}
+.kwh{fill:var(--white-key);stroke:var(--key-edge);stroke-width:.5;cursor:pointer} .kbk{fill:var(--black-key);cursor:pointer}
+.kuse{fill:color-mix(in srgb, var(--chord) 30%, var(--white-key))} .kbk.kuse{fill:color-mix(in srgb, var(--chord) 55%, var(--black-key))}
+.ksel{fill:var(--brass)}
+.klab{font-family:var(--cond);font-weight:600;font-size:9px;fill:#56618a;pointer-events:none} .klab.on{fill:var(--ink);font-size:10px}
