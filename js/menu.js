@@ -1,12 +1,12 @@
 /* ---------------- menu ---------------- */
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
-let side='home'; // 'home' | 'hands' | 'ears' | 'lines'
+let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm'
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*3} stars`; }},
   {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
   {id:'groove',name:'Groove',blurb:'Comping in time: feel, pushes, kime, genre recipes',soon:true},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
-  {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',soon:true},
+  {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
   {id:'gig',name:'Gig',blurb:'A full song form with a band behind you',soon:true},
 ];
 function renderHome(){
@@ -14,10 +14,11 @@ function renderHome(){
 }
 function renderMenu(){
   $('rankLine').textContent=rankLine();
-  ['home','hands','ears','lines'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  ['home','hands','ears','lines','reharm'].forEach(s=>$(s+'Pane').hidden=side!==s);
   if(side==='home') renderHome();
   if(side==='ears') renderEarsPane();
   if(side==='lines') renderLinesPane();
+  if(side==='reharm') renderReharmPane();
   document.body.classList.toggle('nohud',side!=='hands');
   const bests=store.get('best2',{});
   $('mPractice').setAttribute('aria-pressed',mode==='practice'); $('mGame').setAttribute('aria-pressed',mode==='game');
@@ -58,7 +59,7 @@ $('lFeel').onclick=()=>{ LDATA.feel=LDATA.feel==='swing'?'straight':'swing'; sav
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
-bindLinesPane();
+bindLinesPane(); bindReharmPane();
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);

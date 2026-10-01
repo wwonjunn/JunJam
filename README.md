@@ -11,6 +11,9 @@ A jazz piano trainer with two sides:
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
   learn in one key and then play in five more without looking. Import your own over MIDI.
+- **Reharm**: 13 reharmonisation moves (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
+  backdoor, borrowed chords...). Each has a card (what, why, where you hear it), before/after audio, a drill
+  where you play the move in six keys while the app plays the progression around you, and an ear quiz.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
 
@@ -36,6 +39,8 @@ js/ears/session.js    Ears game loop, stars, drill, Ears menu
 js/lines/licks.js     the lick library as data (edit here to add licks), with sources
 js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Database (ODbL)
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
+js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
+js/reharm/session.js  Reharm cards, drill and ear quiz
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript

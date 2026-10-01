@@ -320,3 +320,19 @@ body.linesmode header .modetag{display:none}
 .lfav{background:none;border:0;cursor:pointer;font-size:22px;padding:0 4px;vertical-align:1px}
 .lick .ltags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
 .lick .ltags i{font-style:normal;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted);border:1px solid var(--line-strong);border-radius:3px;padding:0 4px}
+
+/* ---------------- Reharm ---------------- */
+.rhbody{width:100%;max-width:760px}
+.rhbody p{color:var(--ink);margin:0 0 10px;max-width:68ch}
+.rhwhat{font-family:var(--hand);font-weight:700;font-size:22px;line-height:1.25}
+.rhbody a{color:var(--brass)}
+.rhrow{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px}
+.rhc{min-width:86px;border:1.5px solid var(--line-strong);border-radius:5px;padding:6px 10px;text-align:center}
+.rhc b{display:block;font-family:var(--hand);font-weight:700;font-size:24px;line-height:1.1}
+.rhc span{display:block;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted);min-height:1em}
+.rhc.slot{border-style:dashed;border-color:var(--brass)}
+.rhc.slot b{color:var(--brass)}
+.rhc.solved{border-color:var(--good);background:color-mix(in srgb, var(--good) 14%, transparent)}
+.rhc.cur{box-shadow:0 0 0 2px var(--brass)}
+.lick .rwhat{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.3}
+body.nohud:not(.earsmode) header .modetag{display:none}

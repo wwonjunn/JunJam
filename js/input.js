@@ -25,7 +25,7 @@ function toggleDraft(m){
   kbMarks={}; paintKeys();
 }
 function submitDraft(){ if(!draft.size) return; const n=[...draft]; draft.clear(); routeNotes(n); }
-function routeNotes(n){ if(EARS.active) earsNotes(n); else submit(n); }
+function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else submit(n); }
 
 async function initMIDI(){
   const el=$('midi');
@@ -53,6 +53,7 @@ let qOct=60;
 document.addEventListener('keydown',e=>{
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
   if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
+  if(typeof REHARM!=='undefined' && REHARM.active && rhKey(e)) return;
   if((e.key==='r'||e.key==='R') && G && G.running && G.enemies.length && G.enemies[0].t.req==='byear'){ playByEar(G.enemies[0].t); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();

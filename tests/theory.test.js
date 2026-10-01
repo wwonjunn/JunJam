@@ -5,9 +5,9 @@ vm.createContext(ctx);
 const load=f=>vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx,{filename:f});
 load('js/theory.js');
 vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
-load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js');
+load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js'); load('js/reharm/moves.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
-const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance})',ctx);
+const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts})',ctx);
 const t=(pc,id)=>({root:T.defaultRoot(pc,T.Q[id].minor),q:T.Q[id]});
 ok(T.evaluate([53,56,60,63],t(5,'min7'),{rootless:true}).ok,'Fm7 root position');
 ok(T.evaluate([56,60,63,67],t(5,'min7'),{rootless:true}).ok,'Fm7 rootless');
@@ -64,5 +64,14 @@ ok(L('trisub').rate.tags.includes('altered')&&L('dbl5').rate.tags.includes('chro
 ok(L('altdn').diff>1,'a stepwise run through altered notes is not easy');
 ok(T.lickInstance(T.LICKS.find(l=>l.id==='thelick'),2).notes.map(n=>n.name).join(' ')==='D E F G E C D','The Lick in D');
 ok(T.lickInstance(T.LICKS.find(l=>l.id==='c1235'),0).notes.map(n=>n.name).join(' ')==='C D E G','Coltrane 1-2-3-5 in C');
+// reharm moves: valid in every key, slots point at real chords, and each slot's chord can be played
+for(const m of T.REHARM_MOVES){
+  ok(m.slots.every(i=>i>=0&&i<m.after.length),`${m.id} slots`);
+  for(let k=0;k<12;k++){ const a=T.rhChords(m.after,k), b=T.rhChords(m.before,k);
+    ok(a.every(c=>c.q&&Math.abs(c.root.a)<=1)&&b.every(c=>c.q),`${m.id} in ${k} spells`);
+    m.slots.forEach(i=>{ const t={root:a[i].root,q:a[i].q}; ok(T.evaluate(T.hintVoicing(t,{rootless:true}),t,{rootless:true}).ok&&T.rhAccepts(a[i].q).length>0,`${m.id} slot ${i} playable in ${k}`); }); }
+}
+ok(T.rhChords(T.REHARM_MOVES.find(m=>m.id==='tritone').after,0).map(T.symText).join(' ')==='Dm7 D♭7 Cmaj7','tritone sub in C');
+ok(T.rhChords(T.REHARM_MOVES.find(m=>m.id==='ivv').after,0).map(T.symText).join(' ')==='Dm7 F/G Cmaj7','IV/V in C');
 console.log(fails?`${fails} failures`:'all theory and generator checks passed');
 process.exit(fails?1:0);

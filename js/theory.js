@@ -212,7 +212,8 @@ const PROG=Object.fromEntries(PROGS.map(p=>[p.id,p]));
 const degText=(rn,q,b)=>rn+q.suf+(b?'/'+b:'');
 function progChords(p,keyPc,pickFn=a=>a[Math.floor(Math.random()*a.length)]){
   const k=defaultRoot(keyPc,!!p.minor);
-  const at=(steps,semis)=>{const l=(k.l+steps)%7;let a=mod12(keyPc+semis-LETTER_PC[l]);if(a>6)a-=12;return mkRoot(l,a);};
+  // spelled by letter from the key, but never with a double sharp or flat (B𝄫7 becomes A7)
+  const at=(steps,semis)=>{const l=(k.l+steps)%7;let a=mod12(keyPc+semis-LETTER_PC[l]);if(a>6)a-=12;return Math.abs(a)>1?defaultRoot(mod12(keyPc+semis),false):mkRoot(l,a);};
   return p.ch.map(e=>{ const [s,i,qs,rn,b]=Array.isArray(e[0])?pickFn(e):e, q=Q[Array.isArray(qs)?pickFn(qs):qs]; return {root:at(s,i),q,rn:degText(rn,q,b)}; });
 }
 // Degrees of a progression with its first variant of each chord, for menus: IVmaj7 V7 IIIm7 VIm7
