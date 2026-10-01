@@ -92,3 +92,60 @@ function lickInstance(l,refPc){
   return {notes,chords,total,ref:refPc};
 }
 const lickOver=l=>l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
+
+/* ---------------- difficulty: what each note is over its chord, and how you get to it ----------------
+   Chord tones are free; natural tensions cost a little; altered or outside notes cost a lot, unless they're
+   walked through by half or whole step (passing notes, neighbours, enclosures), which is easy for hand and ear.
+   Wide intervals, 16ths and syncopation, length and chord changes add on top. Easy/Medium/Hard split the library. */
+function noteRole(iv,q){
+  const has=x=>q.ct.includes(x)||q.req.includes(x);
+  if(has(iv)) return 0;                                         // chord tone
+  const dom=has(4)&&has(10), minor=has(3), maj=has(4)&&!has(10);
+  if(iv===2||iv===9) return 1;                                  // 9 and 13
+  if(iv===5&&(minor||q.id.startsWith('sus'))) return 1;         // 11 on minor and sus chords
+  if((iv===6&&maj)||(iv===8&&minor)) return 1.5;                // ♯11 on major, ♭13 on minor: colour
+  if(dom&&[1,3,6,8].includes(iv)) return q.id==='alt'||q.anyOf?2:2.5; // altered tensions on a dominant
+  return 3;                                                     // outside the chord's sound
+}
+const LEAP_COST=d=>d===0?.1:d<=2?0:d<=4?.3:d===5?.6:d===6?1.2:d===7?.8:d<=9?1.2:d<=11?1.6:d===12?1:2;
+function rateLick(l){
+  const chs=l.ch||[[0,0,l.over,99]]; let t=0;
+  const tl=chs.map(([,semis,qid,b])=>{ const c={at:t,r:semis,q:Q[qid]}; t+=b||99; return c; });
+  const at=[]; t=0; l.notes.forEach(n=>{ at.push(t); t+=n[1]; });
+  let role=0, leaps=0, rhythm=0, worst=0, chrom=0, tension=0, altered=0, outside=0, wide=0, tritone=0, sixteenths=0, sync=0;
+  const roles=l.notes.map(([s],i)=>{ const c=tl.filter(c=>c.at<=at[i]+1e-6).pop()||tl[0]; return noteRole(mod12(s-c.r),c.q); });
+  l.notes.forEach(([s,d],i)=>{
+    const base=roles[i], into=i>0?Math.abs(s-l.notes[i-1][0]):null, out=i<l.notes.length-1?Math.abs(l.notes[i+1][0]-s):null;
+    let cost=base;
+    if(base>0){
+      const stepIn=into!==null&&into<=2&&into>0, stepOut=out!==null&&out<=2&&out>0;
+      const chromatic=(stepIn&&into===1)||(stepOut&&out===1);    // a half step on at least one side
+      const reachCT=(dir)=>{ for(let k=i,n=0;n<3;n++){ const j=k+dir; if(j<0||j>=l.notes.length||Math.abs(l.notes[j][0]-l.notes[k][0])>2||l.notes[j][0]===l.notes[k][0]) return false; if(roles[j]===0) return true; k=j; } return false; };
+      const linked=reachCT(1)||reachCT(-1);                       // a short step-wise chain reaches a chord tone
+      if(stepIn&&stepOut&&linked) cost*=chromatic?(base>=2?.35:.2):(base>=2?.5:.3); // passing: chromatic is easiest, scalar altered still sounds out
+      else if(stepOut&&reachCT(1)) cost*=chromatic?.4:.6;         // leapt to, then steps into a chord tone (enclosure, approach)
+      else if(stepIn&&stepOut) cost*=.7;                         // a run of outside notes going nowhere near the chord
+      if(cost<base){ if(chromatic) chrom++; } else if(base>=3) outside++; else if(base>=2) altered++; else tension++;
+    }
+    role+=cost; worst=Math.max(worst,cost);
+    if(into!==null){ leaps+=LEAP_COST(into); if(into>=8) wide++; if(into===6) tritone++; }
+    if(Math.abs(d-.25)<1e-6){ rhythm+=.4; sixteenths++; } else if(Math.abs(d-.75)<1e-6) rhythm+=.3;
+    const f=at[i]-Math.floor(at[i]+1e-9); if((Math.abs(f-.25)<1e-6||Math.abs(f-.75)<1e-6)&&d>=.5-1e-6){ rhythm+=.3; sync++; } // off-beat 16th that's held
+  });
+  const score=role+leaps+.6*rhythm+.12*l.notes.length+.5*(tl.length-1);
+  const tags=[];
+  if(altered) tags.push('altered'); if(outside) tags.push('outside'); if(!altered&&!outside) tags.push(tension?'tensions':'chord tones');
+  if(chrom) tags.push('chromatic');
+  if(tritone) tags.push('tritone'); if(wide||l.notes.slice(1).filter((n,i)=>Math.abs(n[0]-l.notes[i][0])>=5).length>=2) tags.push('wide leaps');
+  if(sixteenths>=2) tags.push('16ths'); if(sync>=2) tags.push('syncopated');
+  if(tl.length>1) tags.push('chord changes');
+  return {score,tags};
+}
+// Rate a set of licks: thresholds split the built-in library into thirds; user licks are placed with the same cut-offs
+let RATE_CUTS=null;
+function applyRatings(builtIn,extra=[]){
+  builtIn.forEach(l=>Object.assign(l,{rate:rateLick(l)}));
+  const sc=builtIn.map(l=>l.rate.score).sort((a,b)=>a-b);
+  RATE_CUTS=[sc[Math.floor(sc.length/3)],sc[Math.floor(2*sc.length/3)]];
+  [...builtIn,...extra].forEach(l=>{ if(!l.rate) l.rate=rateLick(l); l.diff=l.rate.score<=RATE_CUTS[0]?1:l.rate.score<=RATE_CUTS[1]?2:3; l.tags=l.rate.tags; });
+}

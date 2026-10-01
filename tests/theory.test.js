@@ -54,6 +54,14 @@ for(const l of ALL){
     ok(li.chords.reduce((a,c)=>a+c.beats,0)>=li.total-1e-6,`${l.id} chords cover the lick`);
     ok(li.chords.every(c=>Math.abs(c.root.a)<=1),`${l.id} in ${k}: no double-accidental chord roots`); }
 }
+// difficulty follows the notes' roles: stepping chromatically through is easy, leaping to altered notes is hard
+vm.runInContext('applyRatings([...LICKS,...SOLO_LICKS])',ctx);
+const L=id=>T.LICKS.find(l=>l.id===id);
+ok(L('dbl5').diff===1,'chromatic 4-#4-5 is easy');
+ok(L('c1235').diff===1,'Coltrane 1-2-3-5 is easy');
+ok(L('trisub').rate.score>L('arp39').rate.score,'tritone-sub arpeggio is harder than a 3-to-9 arpeggio');
+ok(L('trisub').rate.tags.includes('altered')&&L('dbl5').rate.tags.includes('chromatic')&&!L('c1235').rate.tags.includes('chromatic'),'tags: altered, chromatic only for half steps');
+ok(L('altdn').diff>1,'a stepwise run through altered notes is not easy');
 ok(T.lickInstance(T.LICKS.find(l=>l.id==='thelick'),2).notes.map(n=>n.name).join(' ')==='D E F G E C D','The Lick in D');
 ok(T.lickInstance(T.LICKS.find(l=>l.id==='c1235'),0).notes.map(n=>n.name).join(' ')==='C D E G','Coltrane 1-2-3-5 in C');
 console.log(fails?`${fails} failures`:'all theory and generator checks passed');

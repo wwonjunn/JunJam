@@ -318,3 +318,5 @@ body.linesmode header .modetag{display:none}
 .lick .fav:hover{color:var(--wrong)}
 .lick .lt{padding-right:30px}
 .lfav{background:none;border:0;cursor:pointer;font-size:22px;padding:0 4px;vertical-align:1px}
+.lick .ltags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.lick .ltags i{font-style:normal;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted);border:1px solid var(--line-strong);border-radius:3px;padding:0 4px}
