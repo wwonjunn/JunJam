@@ -34,6 +34,7 @@ js/ears/questions.js  ear-training question generators
 js/ears/levels.js     worlds and levels as data (edit here to add levels)
 js/ears/session.js    Ears game loop, stars, drill, Ears menu
 js/lines/licks.js     the lick library as data (edit here to add licks), with sources
+js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Database (ODbL)
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
@@ -47,4 +48,11 @@ when opened straight from disk.
 ```
 node tests/theory.test.js     # run checks
 python3 tools/bundle.py       # rebuild dist/junjam.html
+python3 tools/mine_licks.py wjazzd.db js/lines/solos.js   # regenerate solo licks (download wjazzd.db from jazzomat.hfm-weimar.de first)
 ```
+
+## Credits
+Licks from famous solos (`js/lines/solos.js`) are short phrases taken from the
+[Weimar Jazz Database](https://jazzomat.hfm-weimar.de/) by the Jazzomat Research Project,
+Hochschule für Musik Franz Liszt Weimar. That lick data is derived from the database and is
+shared under the [Open Database License (ODbL 1.0)](https://opendatacommons.org/licenses/odbl/1.0/).

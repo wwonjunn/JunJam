@@ -1,8 +1,11 @@
 /* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
    Grading follows the notes in order, in any octave; rhythm is free for now. */
-let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0,style:'All'});
+let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
+if(!['all','solo','orig','user'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||'';
 const saveLines=()=>store.set('lines',LDATA);
-const allLicks=()=>[...LICKS,...LDATA.user];
+const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
+const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':'orig';
+const lickLabel=l=>l.user?'Yours':l.artist||'Original';
 const lickById=id=>allLicks().find(l=>l.id===id);
 const LINES={active:false,rec:null};
 const TRANSFER_KEYS=5;
@@ -10,14 +13,18 @@ const TRANSFER_KEYS=5;
 /* ---------------- menu pane ---------------- */
 function linesStarTotal(){ return allLicks().reduce((a,l)=>a+(LDATA.stars[l.id]||0),0); }
 function renderLinesPane(){
-  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.style==='All'||(LDATA.style==='Yours'?l.user:l.style===LDATA.style)));
+  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||lickFrom(l)===LDATA.from)&&(!LDATA.artist||l.artist===LDATA.artist))
+    .sort((a,b)=>a.diff-b.diff||lickLabel(a).localeCompare(lickLabel(b))||a.name.localeCompare(b.name));
+  const artists=[...new Set(allLicks().map(l=>l.artist).filter(Boolean))].sort();
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
-    <div class="chipsrow">${['All',...LSTYLES,'Yours'].map(s=>`<button class="chip" data-style="${s}" aria-pressed="${s===LDATA.style}">${s}</button>`).join('')}</div>
-    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${l.user?'Yours':l.style}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||'<p class="fine">Nothing here yet.</p>'}</div>
-    <p class="fine" style="margin-top:12px">★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks marked with a source follow a documented formula; the rest are Jun Jam originals in that style.</p>
+    <div class="chipsrow">${[['all','All'],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
+      <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
+    <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
+    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||'<p class="fine">Nothing here yet.</p>'}</div>
+    <p class="fine" style="margin-top:12px">★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks from famous solos are short phrases from the <a href="https://jazzomat.hfm-weimar.de/" target="_blank" rel="noopener">Weimar Jazz Database</a> (Jazzomat Research Project, HfM Weimar), used under the <a href="https://opendatacommons.org/licenses/odbl/1.0/" target="_blank" rel="noopener">ODbL</a>. A few others follow formulas documented by teachers; the rest are Jun Jam originals.</p>
     ${importHTML()}`;
   $('linesPane').innerHTML=h;
 }
@@ -35,12 +42,13 @@ function importHTML(){
 }
 function bindLinesPane(){
   const p=$('linesPane');
+  p.onchange=e=>{ if(e.target.id==='lArtist'){ LDATA.artist=e.target.value; if(LDATA.artist&&LDATA.from!=='all'&&LDATA.from!=='solo'&&LDATA.from!=='orig') LDATA.from='all'; saveLines(); renderLinesPane(); } };
   p.onclick=e=>{
     const b=e.target.closest('button,[data-del]'); if(!b) return;
     if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
     if(b.dataset.diff!==undefined){ LDATA.diff=+b.dataset.diff; saveLines(); renderLinesPane(); }
     else if(b.dataset.tempo){ LDATA.tempo=+b.dataset.tempo; saveLines(); renderLinesPane(); }
-    else if(b.dataset.style){ LDATA.style=b.dataset.style; saveLines(); renderLinesPane(); }
+    else if(b.dataset.from){ LDATA.from=b.dataset.from; saveLines(); renderLinesPane(); }
     else if(b.dataset.lick) linesStart(b.dataset.lick);
     else if(b.id==='iRec'){ LINES.rec={notes:[],name:$('iName').value,root:+$('iRoot').value,qual:$('iQual').value,diff:+$('iDiff').value}; synth.init(); renderLinesPane(); keepImportFields(); }
     else if(b.id==='iCancel'){ LINES.rec=null; renderLinesPane(); }
@@ -58,7 +66,7 @@ function saveRecording(){
   const beats=gaps.map(g=>Math.min(2,Math.max(.25,Math.round(g/med*.5*4)/4)));
   let semis=r.notes.map(n=>n.m-(60+r.root)); while(Math.min(...semis)<-12) semis=semis.map(s=>s+12); while(Math.min(...semis)>11) semis=semis.map(s=>s-12);
   const lick=Lk('u'+Date.now(),r.name,r.diff,'Yours',r.qual,semis.map((s,i)=>[s,i<beats.length?beats[i]:1.5]));
-  lick.user=true; LDATA.user.push(lick); LINES.rec=null; LDATA.style='Yours'; saveLines(); renderLinesPane();
+  lick.user=true; LDATA.user.push(lick); LINES.rec=null; LDATA.from='user'; LDATA.artist=''; saveLines(); renderLinesPane();
 }
 
 /* ---------------- the drill ---------------- */
@@ -113,10 +121,23 @@ function lineStaffSVG(inst,idx,done){
 // Play the lick over its chords: soft comp an octave down, bass, melody on top. Jazz licks swing their 8ths.
 function playLine(inst,lick,bus,t0,bpm){
   const spb=60/bpm, T=b=>{ const f=b-Math.floor(b); return t0+(Math.floor(b)+(lick.swing&&Math.abs(f-.5)<1e-6?2/3:f))*spb; };
-  const v=voiceProg(inst.chords);
-  inst.chords.forEach((c,i)=>{ const at=T(c.at), d=c.beats*spb*.95; playChord(v[i].upper.map(m=>m-12>=46?m-12:m),at,d,'mellow',bus,46); tone(v[i].bass,at,d,60,'mellow',bus); });
+  // Comp: the 3rd, 7th and a colour tone packed just under the lick's lowest note (down to C3), root in the bass
+  const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
+  inst.chords.forEach(c=>{
+    const at=T(c.at), d=c.beats*spb*.95;
+    playChord(compUnder(c,ceil),at,d,'mellow',bus,44);
+    tone(40+mod12(c.root.pc-40),at,d,58,'mellow',bus);
+  });
   inst.notes.forEach(n=>{ const a=T(n.at), e=T(n.at+n.dur); tone(n.midi,a,Math.max(.12,(e-a)*.92),96,'epiano',bus); });
   return T(inst.total)+.3;
+}
+function compUnder(c,ceil){
+  const q=c.q; let ivs=q.id==='alt'?[4,10,1]:[...new Set([...q.ct,...q.req])];
+  if(ivs.length>3) ivs=ivs.filter(x=>x!==0); if(ivs.length>3) ivs=ivs.filter(x=>x!==7); // the bass has the root; the 5th is the first to go
+  // Tones go down to C3 at most; anything that would still reach the melody is left out (keeping at least two)
+  const out=ivs.map(iv=>{ let m=ceil; while(mod12(m-c.root.pc-iv)!==0) m--; return m<48?m+12:m; }).sort((x,y)=>x-y);
+  const under=out.filter(m=>m<=ceil);
+  return under.length>=2?under:out;
 }
 function linesPlay(){ if(!LINES.active) return; killBus(LINES.bus); LINES.bus=newBus(); if(LINES.bus) playLine(LINES.inst,LINES.lick,LINES.bus,now()+.08,LDATA.tempo); }
 function linesNote(m){

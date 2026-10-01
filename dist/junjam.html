@@ -320,6 +320,8 @@ body.linesmode .panel{display:none}
 body.menu.nohud header .modetag{display:none}
 body.linesmode header .modetag{display:none}
 .lstaff svg{height:165px;width:auto;max-width:none}
+#lArtist{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 10px}
+.import a,.fine a{color:var(--brass)}
 </style>
 </head>
 <body>
@@ -1882,7 +1884,8 @@ function earsKey(e){
    A lick is short on purpose: a cell you can drop anywhere beats a memorised 4-bar solo.
    notes: [semitones above the chord root (or the key, for multi-chord licks), length in beats]
    over:  the chord it sits on, or ch: [[letter steps, semitones, quality, beats], ...] for licks that cross chords
-   src:   where the formula is documented; licks without one are Jun Jam originals in that style */
+   src:   where the formula is documented; licks without one are Jun Jam originals
+   artist: only when the lick really comes from that player. style is kept for the code, not shown. */
 const S=(semis,d=.5,last)=>semis.map((s,i)=>[s,i===semis.length-1&&last?last:(Array.isArray(d)?d[i]:d)]);
 const LSRC={
   lick:'https://en.wikipedia.org/wiki/The_Lick',
@@ -1898,17 +1901,18 @@ const LSRC={
   blues:'https://pianowithjonny.com/piano-lessons/blues-scale-for-piano-beginner-guide/',
   neo:'https://pianowithjonny.com/piano-lessons/neo-soul-piano-improv-with-the-pentatonic-scale/',
   mccoy:'https://www.jazzadvice.com/lessons/mccoy-tyner-and-the-pentatonic-scale/',
+  wilson:'https://seanwilsonpiano.com/9-gospel-piano-licks-for-every-musician/',
 };
 const VtoI=(v,i,vb=4,ib=2)=>[[0,0,v,vb],[3,5,i,ib]];           // reference = the V chord's root
 const IIVI=[[1,2,'min7',2],[4,7,'dom7',2],[0,0,'maj7',4]];       // reference = the key
 const LSTYLES=['Jazz','Bebop','Coltrane','Blues','Gospel','Neo-soul','Modern jazz','Fusion','City pop & J-pop'];
 const LDIFF=['','Easy','Medium','Hard'];
-function Lk(id,name,diff,style,over,notes,o={}){ return {id,name,diff,style,over:typeof over==='string'?over:null,ch:Array.isArray(over)?over:null,notes,swing:!!o.swing,src:o.src||null,tip:o.tip||''}; }
+function Lk(id,name,diff,style,over,notes,o={}){ return {id,name,diff,style,over:typeof over==='string'?over:null,ch:Array.isArray(over)?over:null,notes,swing:!!o.swing,src:o.src||null,artist:o.artist||null,tip:o.tip||''}; }
 const LICKS=[
   // ---------------- Easy ----------------
   Lk('thelick','The Lick',1,'Jazz','min7',S([0,2,3,5,2,-2,0],[.5,.5,.5,.5,1,.5],1.5),{swing:1,src:LSRC.lick,tip:'1 2 ♭3 4 2 ♭7 1. The most famous jazz cliché.'}),
-  Lk('c1235','Coltrane 1-2-3-5',1,'Coltrane','maj7',S([0,2,4,7],.5,1.5),{src:LSRC.coltrane,tip:'The digital pattern Coltrane used all over Giant Steps.'}),
-  Lk('c5321','Coltrane 5-3-2-1',1,'Coltrane','maj7',S([7,4,2,0],.5,1.5),{src:LSRC.coltrane,tip:'The same cell, coming down.'}),
+  Lk('c1235','Coltrane 1-2-3-5',1,'Coltrane','maj7',S([0,2,4,7],.5,1.5),{src:LSRC.coltrane,artist:'John Coltrane',tip:'The digital pattern Coltrane used all over Giant Steps.'}),
+  Lk('c5321','Coltrane 5-3-2-1',1,'Coltrane','maj7',S([7,4,2,0],.5,1.5),{src:LSRC.coltrane,artist:'John Coltrane',tip:'The same cell, coming down.'}),
   Lk('encl3','Enclosure onto the 3rd',1,'Bebop','maj7',S([5,3,4],.5,2),{swing:1,src:LSRC.enclosure,tip:'Scale step above, half step below, land on the 3rd.'}),
   Lk('enclR','Enclosure onto the root',1,'Bebop','maj7',S([2,-1,0],.5,2),{swing:1,src:LSRC.enclosure,tip:'Above, below, target.'}),
   Lk('appr3','Chromatic step into the 3rd',1,'Bebop','maj7',S([2,3,4],.5,2),{swing:1,src:LSRC.enclosure,tip:'9, then a passing ♭3, into the 3rd.'}),
@@ -1925,15 +1929,15 @@ const LICKS=[
   Lk('cryalt','Cry Me a River over V7alt',2,'Jazz',VtoI('alt','min6',3,3),S([3,1,-4,4,3,1,0,-2,-4],[.5,.5,.5,.5,.5,.5,.5,.5],1.5),{swing:1,src:LSRC.cry,tip:'♯9 ♭9 ♭13 3 ♯9 ♭9, resolving 5 4 ♭3 of the minor I.'}),
   Lk('bebopdom','Bebop dominant scale descent',2,'Bebop','dom7',S([12,11,10,9,7,5,4,2,0],.5,1.5),{swing:1,src:LSRC.bebopScale,tip:'The passing major 7 puts chord tones on the beats.'}),
   Lk('arp39','3-to-9 arpeggio, down to the 5th',2,'Bebop','dom7',S([4,7,10,14,9,7],.5,1.5),{swing:1,src:LSRC.schneider,tip:'3 5 ♭7 9, then 13 5.'}),
-  Lk('p3b9','Parker: 3 up to ♭9',2,'Bebop',VtoI('d7b9','maj7',2,2),S([4,7,10,13,12],.5,2),{swing:1,src:LSRC.parker,tip:'A diminished arpeggio from the 3rd; the ♭9 falls to the 5th of I.'}),
+  Lk('p3b9','Parker: 3 up to ♭9',2,'Bebop',VtoI('d7b9','maj7',2,2),S([4,7,10,13,12],.5,2),{swing:1,src:LSRC.parker,artist:'Charlie Parker',tip:'A diminished arpeggio from the 3rd; the ♭9 falls to the 5th of I.'}),
   Lk('arpdown','Arpeggio up, scale down (ii–V–I)',2,'Jazz',IIVI,S([2,5,9,12,11,9,7,5,4],.5,2),{swing:1,src:LSRC.iiVI,tip:'ii7 arpeggio, V7 scale down, land on the 3rd of I.'}),
-  Lk('c1235iiVI','Coltrane 1-2-3-5 through ii–V–I',2,'Coltrane',IIVI,S([2,4,5,9,7,9,11,14,12,14,16,19],.5,1.5),{src:LSRC.coltrane,tip:'One 1-2-3-5 cell per chord.'}),
+  Lk('c1235iiVI','Coltrane 1-2-3-5 through ii–V–I',2,'Coltrane',IIVI,S([2,4,5,9,7,9,11,14,12,14,16,19],.5,1.5),{src:LSRC.coltrane,artist:'John Coltrane',tip:'One 1-2-3-5 cell per chord.'}),
   Lk('gospup','Gospel scale run up',2,'Gospel','maj',S([0,2,3,4,7,9,12],.25,1.5),{src:LSRC.gospel,tip:'1 2 ♭3 3 5 6 1.'}),
   Lk('gospdn2','Gospel scale run down',2,'Gospel','maj',S([12,9,7,4,3,2,0],.25,1.5),{src:LSRC.gospel}),
   Lk('neo911','Neo-soul 9 and 11',2,'Neo-soul','min9',S([7,10,14,17,14,10],.5,1.5),{src:LSRC.neo,tip:'5 ♭7 9 11 9 ♭7.'}),
   Lk('neoslide','R&B slide into the ♭3',2,'Neo-soul','min7',S([2,3,7,10,12,10,7],[.25,.75,.5,.5,.5,.5],1.5)),
   Lk('bturn','Blues turnaround line',2,'Blues','dom7',S([12,10,9,8,7,4],.5,1.5),{swing:1,tip:'Chromatic slide down from the ♭7 to the 5th.'}),
-  Lk('mccoy','McCoy quartal cells',2,'Modern jazz','min7',S([0,5,10,3,7,12,5,10,15],.5,1.5),{src:LSRC.mccoy,tip:'Minor pentatonic grouped in 4ths.'}),
+  Lk('mccoy','McCoy quartal cells',2,'Modern jazz','min7',S([0,5,10,3,7,12,5,10,15],.5,1.5),{src:LSRC.mccoy,artist:'McCoy Tyner',tip:'Minor pentatonic grouped in 4ths.'}),
   Lk('wtone','Whole-tone run',2,'Modern jazz','d7s11',S([0,2,4,6,8,10,12],.25,1.5)),
   Lk('cityfill','City pop maj9 cascade',2,'City pop & J-pop','maj9',S([14,11,7,4,2,0],.25,1.5)),
   Lk('ivv','IV to V fill',2,'City pop & J-pop',[[0,0,'maj7',2],[1,2,'dom7',2]],S([4,7,11,14,18],.5,2),{tip:'Up the IV chord, landing on the 3rd of V. Royal Road territory.'}),
@@ -1944,32 +1948,211 @@ const LICKS=[
   Lk('altdn','Altered scale descent',3,'Jazz',VtoI('alt','maj7',4,2),S([13,10,8,6,4,3,1,0,-3],.5,2),{swing:1,tip:'♭9 ♭7 ♭13 ♯11 3 ♯9 ♭9 1, into the 3rd of I.'}),
   Lk('hw','Half-whole diminished climb',3,'Jazz','d7b9',S([0,1,3,4,6,7,9,10,12],.25,1.5)),
   Lk('trisub','Tritone-sub arpeggio into I',3,'Jazz',VtoI('dom7','maj7',4,2),S([6,10,13,16,13,10,6,5],[.5,.5,.5,.5,.5,.5,1],2),{tip:'Outline ♭II7 over V7, then fall a half step to I.'}),
+  Lk('pryor','Running-bass gospel line',2,'Gospel','dom7',S([7,4,5,6,7,9,12,11,10],.5,1.5),{src:LSRC.wilson,artist:'Joseph Pryor',tip:'5, down to 3, then chromatic up to the root and back to ♭7. Notes as written by Sean Wilson; rhythm approximate.'}),
   Lk('shout','Gospel shout run',3,'Gospel','dom7',S([12,9,7,4,3,4,2,0],.25,1.5),{src:LSRC.gospel,tip:'1 6 5 3 ♭3 3 2 1, fast.'}),
 ];
 // Place a lick on a reference pitch class: real notes, chords with start beats, and spellings
 function lickInstance(l,refPc){
-  const k=defaultRoot(refPc,false);
-  const at=(s,i)=>{const lt=(k.l+s)%7;let a=mod12(refPc+i-LETTER_PC[lt]);if(a>6)a-=12;return mkRoot(lt,a);};
+  const first=Q[l.ch?l.ch[0][2]:l.over], k=defaultRoot(refPc,!!(first&&first.minor));
+  // Spell chord roots by letter from the reference, but never with a double sharp or flat (E𝄫7 becomes D7)
+  const at=(s,i)=>{const lt=(k.l+s)%7;let a=mod12(refPc+i-LETTER_PC[lt]);if(a>6)a-=12;return Math.abs(a)>1?defaultRoot(mod12(refPc+i),false):mkRoot(lt,a);};
   const total=l.notes.reduce((a,n)=>a+n[1],0);
   let t=0;
   const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b])=>{ const beats=b||Math.max(2,Math.ceil(total)); const c={root:at(s,i),q:Q[qid],at:t,beats}; t+=beats; return c; });
   const R=60+mod12(refPc); t=0;
   const raw=l.notes.map(([s,d])=>{ const n={midi:R+s,at:t,dur:d}; t+=d; return n; });
-  let shift=0; const lo=Math.min(...raw.map(n=>n.midi)), hi=Math.max(...raw.map(n=>n.midi));
-  while(hi+shift>84) shift-=12; while(lo+shift<53) shift+=12; // a comfortable right-hand register
+  // Right-hand register: lowest note from middle C up when it fits, so the comp has room underneath
+  const lo=Math.min(...raw.map(n=>n.midi)), hi=Math.max(...raw.map(n=>n.midi));
+  let shift=12*Math.round((60-lo)/12); if(lo+shift<60) shift+=12;
+  while(hi+shift>88&&lo+shift-12>=50) shift-=12;
   // Blues and gospel write the blue notes as ♭3 and ♭5, not ♯9 and ♯11
   const blue=l.style==='Blues'||l.style==='Gospel', qOf=c=>blue?{...c.q,lab:{...c.q.lab,3:'♭3',6:'♭5'}}:c.q;
-  const notes=raw.map(n=>{ const m=n.midi+shift, c=chords.filter(c=>c.at<=n.at+1e-6).pop()||chords[0], sp=spellNote(m,c.root,qOf(c)); return {...n,midi:m,spell:{...sp,midi:m},name:sp.name}; });
+  // Passing notes that would need a double sharp or flat get a plain spelling, flats in flat keys, sharps otherwise
+  const plain=(m,sp)=>{ if(Math.abs(sp.a)<=1) return sp; const opts=spellingsFor(mod12(m)), pk=opts.find(([,a])=>a===0)||opts.find(([,a])=>k.a<0?a<0:a>0)||opts[0];
+    const oct=Math.floor((m-pk[1])/12)-1; return {l:pk[0],a:pk[1],oct,di:oct*7+pk[0],name:LETTERS[pk[0]]+ACC[pk[1]]}; };
+  const notes=raw.map(n=>{ const m=n.midi+shift, c=chords.filter(c=>c.at<=n.at+1e-6).pop()||chords[0], sp=plain(m,spellNote(m,c.root,qOf(c))); return {...n,midi:m,spell:{...sp,midi:m},name:sp.name}; });
   return {notes,chords,total,ref:refPc};
 }
 const lickOver=l=>l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
 </script>
 <script>
+/* Lines from real solos: short phrases taken from the Weimar Jazz Database, generated by a script.
+   Jazzomat Research Project, Hochschule für Musik Franz Liszt Weimar. https://jazzomat.hfm-weimar.de/
+   This lick data is derived from that database and is shared under the Open Database License (ODbL 1.0):
+   https://opendatacommons.org/licenses/odbl/1.0/ . Each lick names the player and tune it comes from. */
+const WJAZZD='https://jazzomat.hfm-weimar.de/';
+const SOLO_LICKS=[
+  Lk('wj14_1',"Avalon",1,'Solo',[[0, 0, "maj", 4.0]],[[9, 0.5], [12, 0.25], [16, 0.25], [21, 1.0], [16, 1.0], [19, 1.0]],{swing:1,artist:"Benny Goodman",src:WJAZZD,tip:"From Benny Goodman's solo on Avalon (1937)."}),
+  Lk('wj19_1',"Tiger Rag",1,'Solo',[[0, 0, "maj", 2.5], [0, 0, "min", 2.75]],[[19, 0.75], [19, 1.0], [16, 0.5], [14, 0.5], [11, 0.5], [9, 1.0], [14, 1.0]],{swing:1,artist:"Benny Goodman",src:WJAZZD,tip:"From Benny Goodman's solo on Tiger Rag (1936)."}),
+  Lk('wj26_1',"I'm Coming Virginia",1,'Solo',[[0, 0, "min", 3.0], [1, 2, "hdim", 3.25]],[[0, 2.0], [2, 0.5], [3, 0.75], [5, 0.75], [5, 0.75], [5, 1.5]],{swing:1,artist:"Bix Beiderbecke",src:WJAZZD,tip:"From Bix Beiderbecke's solo on I'm Coming Virginia (1927)."}),
+  Lk('wj32_1',"Blues for Bela",1,'Solo',[[0, 0, "min7", 4.0]],[[5, 1.75], [7, 0.25], [0, 0.25], [5, 0.75], [0, 1.0]],{swing:1,artist:"Bob Berg",src:WJAZZD,tip:"From Bob Berg's solo on Blues for Bela (1993)."}),
+  Lk('wj45_1',"Destination K.C.",1,'Solo',[[0, 0, "maj", 1.0], [4, 7, "dom7", 4.0], [0, 0, "maj", 3.0]],[[15, 1.0], [16, 0.75], [12, 0.75], [15, 0.5], [16, 0.5], [16, 0.5], [16, 1.0], [16, 0.75], [12, 0.75], [12, 1.5]],{swing:1,artist:"Buck Clayton",src:WJAZZD,tip:"From Buck Clayton's solo on Destination K.C. (1944)."}),
+  Lk('wj51_1',"Work Song",1,'Solo',[[0, 0, "min7", 4.75]],[[0, 1.0], [3, 0.5], [7, 0.5], [10, 0.75], [8, 2.0]],{swing:1,artist:"Cannonball Adderley",src:WJAZZD,tip:"From Cannonball Adderley's solo on Work Song (1960)."}),
+  Lk('wj66_1',"Steeplechase",1,'Solo',[[0, 0, "maj7", 2.0], [5, 9, "dom7", 2.0], [1, 2, "min7", 1.75]],[[-4, 0.75], [2, 0.75], [0, 1.5], [-5, 0.5], [0, 0.5], [2, 0.75], [0, 1.0]],{swing:1,artist:"Charlie Parker",src:WJAZZD,tip:"From Charlie Parker's solo on Steeplechase (1948)."}),
+  Lk('wj73_1',"Long Ago and Far Away",1,'Solo',[[0, 0, "dom7", 0.5], [1, 2, "min7", 4.0], [4, 7, "dom7", 3.0]],[[19, 1.0], [17, 1.0], [12, 0.25], [16, 0.75], [14, 1.0], [20, 1.25], [19, 0.75], [17, 0.5], [16, 0.5], [15, 0.5]],{swing:1,artist:"Chet Baker",src:WJAZZD,tip:"From Chet Baker's solo on Long Ago and Far Away (1955)."}),
+  Lk('wj77_1',"You'd Be So Nice to Come Home to",1,'Solo',[[0, 0, "hdim", 2.0], [3, 5, "dom7", 1.0]],[[-12, 0.75], [-11, 0.5], [-9, 0.75], [-6, 0.5], [-7, 0.5]],{swing:1,artist:"Chet Baker",src:WJAZZD,tip:"From Chet Baker's solo on You'd Be So Nice to Come Home to (1975)."}),
+  Lk('wj85_1',"Body and Soul",1,'Solo',[[0, 0, "dom7", 1.5], [6, 11, "min7", 2.0], [6, 10, "dim7", 3.0]],[[-10, 0.5], [-8, 0.5], [-6, 0.25], [-3, 1.25], [-5, 1.0], [-6, 1.0], [-7, 0.5], [-8, 1.5]],{swing:1,artist:"Chu Berry",src:WJAZZD,tip:"From Chu Berry's solo on Body and Soul (1938)."}),
+  Lk('wj94_1',"Sandu",1,'Solo',[[0, 0, "dom7", 2.0], [4, 7, "dom7", 3.75]],[[-5, 0.5], [-3, 0.5], [-5, 0.25], [-8, 0.25], [-11, 0.5], [-5, 1.5], [-3, 0.75], [-7, 1.5]],{swing:1,artist:"Clifford Brown",src:WJAZZD,tip:"From Clifford Brown's solo on Sandu (1955)."}),
+  Lk('wj97_1',"It's Only a Papermoon",1,'Solo',[[0, 0, "min7", 1.0], [3, 5, "dom7", 2.0], [6, 10, "six", 2.75]],[[-15, 0.25], [-14, 0.5], [-17, 0.5], [-7, 0.5], [-9, 0.5], [-12, 0.25], [-10, 1.25], [-15, 2.0]],{swing:1,artist:"Coleman Hawkins",src:WJAZZD,tip:"From Coleman Hawkins's solo on It's Only a Papermoon (1949)."}),
+  Lk('wj102_1',"Blue Train",1,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "dom7", 4.5]],[[-5, 0.5], [-2, 0.5], [2, 0.75], [0, 0.75], [0, 1.0], [-2, 0.75], [2, 0.75], [1, 0.5]],{swing:1,artist:"Curtis Fuller",src:WJAZZD,tip:"From Curtis Fuller's solo on Blue Train (1957)."}),
+  Lk('wj127_1',"After Theatre Jump",1,'Solo',[[0, 0, "min7", 1.0], [3, 5, "min7", 2.0], [6, 10, "min7", 3.25]],[[-9, 0.5], [-7, 0.5], [-4, 0.5], [0, 0.5], [-4, 0.5], [-7, 0.5], [-9, 0.75], [-13, 1.0], [-12, 1.5]],{swing:1,artist:"Dickie Wells",src:WJAZZD,tip:"From Dickie Wells's solo on After Theatre Jump (1944)."}),
+  Lk('wj132_1',"Six Cats and a Prince",1,'Solo',[[0, 0, "dom7", 5.75]],[[-14, 1.0], [-4, 0.25], [-3, 0.25], [-2, 1.25], [-2, 0.5], [-3, 0.75], [-5, 0.75], [0, 1.0]],{swing:1,artist:"Dickie Wells",src:WJAZZD,tip:"From Dickie Wells's solo on Six Cats and a Prince (1944)."}),
+  Lk('wj136_1',"Cognac Blues",1,'Solo',[[0, 0, "min7", 3.0], [6, 10, "dom7", 2.0]],[[-2, 0.25], [2, 0.25], [3, 0.25], [2, 0.25], [1, 0.5], [0, 0.25], [-2, 0.25], [-5, 1.0], [-2, 2.0]],{swing:1,artist:"Dizzy Gillespie",src:WJAZZD,tip:"From Dizzy Gillespie's solo on Cognac Blues (1952)."}),
+  Lk('wj137_1',"Groovin' High",1,'Solo',[[0, 0, "dom7", 2.0], [3, 5, "maj7", 3.0]],[[10, 1.0], [15, 0.75], [19, 1.75], [13, 0.25], [17, 0.75], [15, 0.5]],{swing:1,artist:"Dizzy Gillespie",src:WJAZZD,tip:"From Dizzy Gillespie's solo on Groovin' High (1945)."}),
+  Lk('wj150_1',"Sweet and Lovely",1,'Solo',[[0, 0, "dom7", 2.0], [3, 5, "maj7", 2.0], [6, 10, "dom7", 2.0]],[[0, 0.5], [3, 0.5], [4, 0.5], [7, 0.75], [9, 0.75], [-2, 1.0], [-3, 1.0], [5, 1.0]],{swing:1,artist:"Don Ellis",src:WJAZZD,tip:"From Don Ellis's solo on Sweet and Lovely (1961)."}),
+  Lk('wj166_1',"Dolphin Dance",1,'Solo',[[0, 0, "maj7", 1.5], [1, 2, "maj7", 4.0], [0, 0, "maj7", 2.5]],[[18, 0.75], [18, 0.75], [18, 1.25], [15, 0.25], [16, 0.5], [15, 1.0], [13, 1.0], [13, 1.0], [12, 0.25], [11, 0.75], [6, 0.5]],{swing:1,artist:"Freddie Hubbard",src:WJAZZD,tip:"From Freddie Hubbard's solo on Dolphin Dance (1966)."}),
+  Lk('wj170_1',"Speak No Evil",1,'Solo',[[0, 0, "min7", 4.25]],[[6, 0.25], [7, 0.75], [12, 0.75], [14, 1.5], [15, 0.5], [10, 0.5]],{swing:1,artist:"Freddie Hubbard",src:WJAZZD,tip:"From Freddie Hubbard's solo on Speak No Evil (1964)."}),
+  Lk('wj179_1',"Lady Bird",1,'Solo',[[0, 0, "min7", 2.0], [3, 5, "dom7", 3.0]],[[-1, 0.5], [2, 0.5], [-1, 0.5], [-4, 0.5], [-1, 0.75], [-5, 0.75], [-1, 0.5], [-5, 0.5], [-9, 0.5]],{swing:1,artist:"Hank Mobley",src:WJAZZD,tip:"From Hank Mobley's solo on Lady Bird (1955)."}),
+  Lk('wj186_1',"Gingerbread Boy",1,'Solo',[[0, 0, "dom7", 3.5], [4, 7, "dom7", 1.0]],[[-3, 0.75], [-4, 0.5], [-5, 0.25], [-6, 0.5], [-7, 0.5], [-9, 0.5], [-10, 0.5], [-12, 0.5], [-14, 0.5]],{swing:1,artist:"Herbie Hancock",src:WJAZZD,tip:"From Herbie Hancock's solo on Gingerbread Boy (1966)."}),
+  Lk('wj189_1',"Baby Won't You Please Come Home",1,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "min", 2.0], [5, 8, "maj", 3.5]],[[-7, 1.0], [-9, 0.5], [-12, 0.75], [-9, 0.75], [-7, 0.75], [-9, 0.75], [-10, 1.5]],{swing:1,artist:"J.C. Higginbotham",src:WJAZZD,tip:"From J.C. Higginbotham's solo on Baby Won't You Please Come Home (1941)."}),
+  Lk('wj192_1',"Crazy Rhythm",1,'Solo',[[0, 0, "maj7", 4.0], [0, 0, "maj7", 2.75]],[[-3, 0.5], [0, 1.25], [-4, 0.25], [-1, 1.0], [-7, 0.5], [-3, 1.25], [-8, 1.0], [-5, 1.0]],{swing:1,artist:"J.J. Johnson",src:WJAZZD,tip:"From J.J. Johnson's solo on Crazy Rhythm (1957)."}),
+  Lk('wj213_1',"Work",1,'Solo',[[0, 0, "dom7", 1.0], [0, 11, "dom7", 3.0]],[[-9, 0.5], [-8, 0.25], [-2, 0.25], [0, 1.0], [1, 1.0], [0, 1.0]],{swing:1,artist:"Joe Lovano",src:WJAZZD,tip:"From Joe Lovano's solo on Work (1991)."}),
+  Lk('wj224_1',"Impressions",1,'Solo',[[0, 0, "min7", 3.75]],[[7, 0.25], [10, 2.0], [7, 0.5], [21, 0.5], [10, 0.5]],{swing:1,artist:"John Coltrane",src:WJAZZD,tip:"From John Coltrane's solo on Impressions (1961)."}),
+  Lk('wj235_1',"Got No Blues",1,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "dom7", 2.0], [6, 10, "dom7", 1.5]],[[17, 0.5], [19, 0.5], [20, 0.5], [14, 0.5], [17, 0.5], [10, 1.0]],{swing:1,artist:"Johnny Dodds",src:WJAZZD,tip:"From Johnny Dodds's solo on Got No Blues (1927)."}),
+  Lk('wj248_1',"Tiny's Blues",1,'Solo',[[0, 0, "dom7", 1.5], [3, 5, "dom7", 4.0], [6, 10, "dom7", 1.5]],[[0, 1.0], [5, 1.75], [5, 1.75], [5, 1.5], [-4, 1.0]],{swing:1,artist:"Kai Winding",src:WJAZZD,tip:"From Kai Winding's solo on Tiny's Blues (1948)."}),
+  Lk('wj248_2',"Tiny's Blues (2)",1,'Solo',[[0, 0, "dom7", 4.25]],[[-2, 0.25], [0, 1.25], [-3, 0.5], [-2, 1.25], [-8, 1.0]],{swing:1,artist:"Kai Winding",src:WJAZZD,tip:"From Kai Winding's solo on Tiny's Blues (1948)."}),
+  Lk('wj253_1',"Prince Albert",1,'Solo',[[0, 0, "maj7", 3.25]],[[0, 0.5], [-2, 0.25], [-1, 0.5], [-6, 0.5], [-3, 1.0], [-3, 0.5]],{swing:1,artist:"Kenny Dorham",src:WJAZZD,tip:"From Kenny Dorham's solo on Prince Albert (1955)."}),
+  Lk('wj265_1',"Who's it",1,'Solo',[[0, 0, "min", 4.0], [3, 5, "dom7", 2.5]],[[-9, 0.5], [-5, 1.0], [-9, 1.0], [-17, 1.0], [-10, 1.5], [-12, 1.5]],{swing:1,artist:"Kid Ory",src:WJAZZD,tip:"From Kid Ory's solo on Who's it (1926)."}),
+  Lk('wj276_1',"The Sidewinder",1,'Solo',[[0, 0, "dom7", 4.75]],[[10, 0.25], [7, 2.0], [6, 0.5], [6, 0.5], [5, 0.25], [3, 0.25], [0, 0.25], [-1, 0.25], [0, 0.5]],{swing:0,artist:"Lee Morgan",src:WJAZZD,tip:"From Lee Morgan's solo on The Sidewinder (1963)."}),
+  Lk('wj282_1',"Dickie's Dream",1,'Solo',[[0, 0, "dom7", 5.0], [3, 5, "dom7", 2.5]],[[9, 0.75], [7, 0.5], [4, 0.5], [2, 0.5], [-2, 0.5], [-3, 0.5], [-5, 0.5], [-7, 0.5], [-8, 0.5], [-9, 0.5], [-5, 0.75], [-7, 1.5]],{swing:1,artist:"Lester Young",src:WJAZZD,tip:"From Lester Young's solo on Dickie's Dream (1939)."}),
+  Lk('wj287_1',"High Society",1,'Solo',[[0, 0, "maj", 1.0], [3, 5, "maj", 2.0], [0, 0, "maj", 3.5]],[[7, 0.75], [5, 0.5], [-4, 1.0], [4, 1.0], [0, 1.75], [-5, 1.5]],{swing:1,artist:"Lionel Hampton",src:WJAZZD,tip:"From Lionel Hampton's solo on High Society (1939)."}),
+  Lk('wj315_1',"E.S.P.",1,'Solo',[[0, 0, "alt", 3.0]],[[17, 0.75], [12, 0.5], [15, 0.75], [12, 0.5], [13, 0.5]],{swing:1,artist:"Miles Davis",src:WJAZZD,tip:"From Miles Davis's solo on E.S.P. (1964)."}),
+  Lk('wj335_1',"Work Song",1,'Solo',[[0, 0, "min7", 5.0]],[[12, 0.5], [10, 0.5], [15, 0.75], [12, 1.25], [9, 1.0], [3, 0.5], [2, 0.5]],{swing:1,artist:"Nat Adderley",src:WJAZZD,tip:"From Nat Adderley's solo on Work Song (1960)."}),
+  Lk('wj335_2',"Work Song (2)",1,'Solo',[[0, 0, "min7", 6.5]],[[7, 0.5], [9, 0.5], [10, 0.75], [12, 0.75], [15, 0.5], [14, 0.75], [12, 1.25], [10, 0.5], [10, 0.5], [9, 0.5]],{swing:1,artist:"Nat Adderley",src:WJAZZD,tip:"From Nat Adderley's solo on Work Song (1960)."}),
+  Lk('wj340_1',"Ramblin'",1,'Solo',[[0, 0, "dom7", 4.5]],[[-6, 0.25], [-5, 0.25], [-4, 0.25], [-3, 1.5], [2, 0.5], [0, 0.75], [-5, 1.0]],{swing:1,artist:"Ornette Coleman",src:WJAZZD,tip:"From Ornette Coleman's solo on Ramblin' (1959)."}),
+  Lk('wj342_1',"All the Things You Are",1,'Solo',[[0, 0, "min7", 2.0], [3, 5, "dom7", 4.25]],[[3, 0.75], [3, 0.5], [2, 0.5], [-1, 0.5], [0, 1.0], [2, 0.75], [3, 1.0], [5, 0.75], [2, 0.5]],{swing:1,artist:"Pat Metheny",src:WJAZZD,tip:"From Pat Metheny's solo on All the Things You Are (1989)."}),
+  Lk('wj352_1',"Samba Cantina",1,'Solo',[[0, 0, "dom7", 3.5], [3, 5, "maj7", 1.75]],[[0, 0.25], [2, 0.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 0.5], [-2, 0.5], [-3, 2.0]],{swing:0,artist:"Paul Desmond",src:WJAZZD,tip:"From Paul Desmond's solo on Samba Cantina (1964)."}),
+  Lk('wj353_1',"The Girl from East 9th Street",1,'Solo',[[0, 0, "dom7", 0.5], [2, 5, "min7", 3.75]],[[0, 0.5], [7, 0.75], [5, 0.75], [0, 1.25], [2, 1.0]],{swing:0,artist:"Paul Desmond",src:WJAZZD,tip:"From Paul Desmond's solo on The Girl from East 9th Street (1964)."}),
+  Lk('wj365_1',"Oleo",1,'Solo',[[0, 0, "min6", 2.0], [4, 7, "maj7", 2.0], [1, 2, "dom7", 1.5]],[[-9, 1.0], [-5, 1.0], [-9, 0.5], [-10, 0.5], [-12, 0.5], [-15, 0.5], [-14, 0.25], [-13, 0.75], [-10, 0.5]],{swing:1,artist:"Red Garland",src:WJAZZD,tip:"From Red Garland's solo on Oleo (1956)."}),
+  Lk('wj366_1',"Perdido",1,'Solo',[[0, 0, "dom7", 0.5], [4, 7, "min7", 2.0], [0, 0, "dom7", 2.5]],[[8, 0.25], [9, 0.25], [13, 0.5], [16, 0.25], [18, 0.5], [21, 1.0], [21, 1.25], [17, 0.5]],{swing:1,artist:"Rex Stewart",src:WJAZZD,tip:"From Rex Stewart's solo on Perdido (1950)."}),
+  Lk('wj370_1',"The Gasser",1,'Solo',[[0, 0, "dom7", 4.0]],[[7, 0.5], [7, 0.5], [10, 0.5], [14, 0.5], [17, 1.0], [17, 1.0]],{swing:1,artist:"Roy Eldridge",src:WJAZZD,tip:"From Roy Eldridge's solo on The Gasser (1943)."}),
+  Lk('wj380_1',"Blue Seven",1,'Solo',[[0, 0, "dom7", 1.5], [4, 7, "dom7", 4.25]],[[2, 0.5], [5, 1.0], [9, 1.0], [9, 1.0], [9, 0.5], [2, 0.5], [5, 0.75], [7, 0.5]],{swing:1,artist:"Sonny Rollins",src:WJAZZD,tip:"From Sonny Rollins's solo on Blue Seven (1956)."}),
+  Lk('wj385_1',"St. Thomas",1,'Solo',[[0, 0, "six9", 3.0], [5, 9, "d7s9", 2.25]],[[10, 1.0], [4, 1.0], [13, 0.25], [16, 1.0], [14, 1.0], [13, 1.0]],{swing:0,artist:"Sonny Rollins",src:WJAZZD,tip:"From Sonny Rollins's solo on St. Thomas (1956)."}),
+  Lk('wj397_1',"Blues in the Closet",1,'Solo',[[0, 0, "dom7", 4.0], [3, 5, "dom7", 2.25]],[[2, 0.5], [0, 0.5], [-3, 0.5], [-5, 0.5], [-7, 0.75], [-12, 1.0], [-15, 0.5], [-12, 0.5], [-7, 1.5]],{swing:1,artist:"Stan Getz",src:WJAZZD,tip:"From Stan Getz's solo on Blues in the Closet (1957)."}),
+  Lk('wj402_1',"My Funny Valentine",1,'Solo',[[0, 0, "maj7", 1.0], [3, 6, "hdim", 2.0], [6, 11, "d7b9", 1.5]],[[4, 0.75], [7, 0.5], [9, 0.75], [9, 0.5], [10, 0.25], [9, 0.25], [9, 0.25], [7, 0.25], [9, 1.0]],{swing:1,artist:"Stan Getz",src:WJAZZD,tip:"From Stan Getz's solo on My Funny Valentine (1957)."}),
+  Lk('wj408_1',"Segment",1,'Solo',[[0, 0, "dom7", 3.5]],[[4, 0.5], [5, 0.25], [6, 0.5], [8, 0.75], [12, 1.5]],{swing:1,artist:"Steve Coleman",src:WJAZZD,tip:"From Steve Coleman's solo on Segment (1988)."}),
+  Lk('wj429_1',"E.S.P.",1,'Solo',[[0, 0, "maj7", 4.25]],[[-10, 1.0], [-10, 0.75], [-1, 1.0], [-1, 0.5], [-10, 1.0]],{swing:1,artist:"Wayne Shorter",src:WJAZZD,tip:"From Wayne Shorter's solo on E.S.P. (1964)."}),
+  Lk('wj439_1',"In a Capricornian Way",1,'Solo',[[0, 0, "sus7", 2.5], [6, 10, "sus7", 2.5]],[[0, 0.25], [5, 0.5], [10, 0.5], [12, 1.25], [7, 2.0], [5, 0.5]],{swing:1,artist:"Woody Shaw",src:WJAZZD,tip:"From Woody Shaw's solo on In a Capricornian Way (1978)."}),
+  Lk('wj440_1',"Rahsaan's Run",1,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "min11", 3.75]],[[16, 1.0], [19, 0.75], [18, 0.75], [19, 0.75], [16, 1.5]],{swing:1,artist:"Woody Shaw",src:WJAZZD,tip:"From Woody Shaw's solo on Rahsaan's Run (1977)."}),
+  Lk('wj450_1',"You're My Everything",1,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "min7", 4.25]],[[8, 1.25], [5, 0.25], [8, 1.0], [5, 0.75], [-4, 1.5]],{swing:1,artist:"Wynton Marsalis",src:WJAZZD,tip:"From Wynton Marsalis's solo on You're My Everything (1990)."}),
+  Lk('wj452_1',"Dancing in the Dark",1,'Solo',[[0, 0, "six", 0.5], [1, 2, "min7", 1.5], [4, 7, "dom7", 3.75]],[[-12, 0.5], [-8, 0.5], [-12, 0.25], [-8, 1.25], [-12, 1.25], [-15, 0.5], [-13, 1.5]],{swing:1,artist:"Zoot Sims",src:WJAZZD,tip:"From Zoot Sims's solo on Dancing in the Dark (1950)."}),
+  Lk('wj4_1',"In a Mellow Tone",2,'Solo',[[0, 0, "dom7", 1.5], [3, 5, "six", 5.5]],[[-3, 0.5], [0, 0.5], [-3, 0.5], [-5, 0.5], [-7, 0.5], [-5, 0.25], [-7, 0.25], [-8, 0.5], [-5, 0.5], [-7, 0.75], [-12, 0.75], [-12, 1.0], [-12, 0.5]],{swing:1,artist:"Art Pepper",src:WJAZZD,tip:"From Art Pepper's solo on In a Mellow Tone (1979)."}),
+  Lk('wj21_1',"Bye Bye Blackbird",2,'Solo',[[0, 0, "hdim", 3.0], [3, 5, "dom7", 2.5]],[[-16, 0.5], [-15, 0.5], [-12, 0.5], [-9, 0.5], [-6, 0.5], [-9, 0.5], [-7, 0.5], [-12, 0.5], [-17, 0.5], [-16, 0.5], [-15, 0.5]],{swing:1,artist:"Ben Webster",src:WJAZZD,tip:"From Ben Webster's solo on Bye Bye Blackbird (1959)."}),
+  Lk('wj22_1',"Did You Call Her Today",2,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "six", 2.5]],[[-12, 0.5], [-2, 0.5], [-3, 0.75], [-7, 0.5], [-5, 0.25], [-7, 0.25], [-8, 0.25], [-7, 0.5]],{swing:1,artist:"Ben Webster",src:WJAZZD,tip:"From Ben Webster's solo on Did You Call Her Today (1962)."}),
+  Lk('wj35_1',"No Moe",2,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "min7", 1.75]],[[-2, 0.25], [-5, 0.25], [-4, 1.25], [1, 0.25], [0, 0.25], [-1, 0.5]],{swing:1,artist:"Bob Berg",src:WJAZZD,tip:"From Bob Berg's solo on No Moe (1993)."}),
+  Lk('wj44_1',"After Theatre Jump",2,'Solo',[[0, 0, "dom7", 5.5]],[[6, 0.5], [7, 1.0], [0, 0.5], [2, 0.5], [4, 0.25], [9, 0.25], [7, 0.5], [2, 1.0], [0, 1.0]],{swing:1,artist:"Buck Clayton",src:WJAZZD,tip:"From Buck Clayton's solo on After Theatre Jump (1944)."}),
+  Lk('wj49_1',"Star Eyes",2,'Solo',[[0, 0, "dom7", 2.5], [3, 5, "maj7", 5.25]],[[-12, 0.25], [-2, 0.5], [-3, 0.5], [-7, 0.5], [-12, 0.5], [-8, 0.5], [-7, 0.5], [-3, 0.75], [1, 0.5], [4, 0.75], [5, 1.0], [7, 1.5]],{swing:1,artist:"Cannonball Adderley",src:WJAZZD,tip:"From Cannonball Adderley's solo on Star Eyes (1961)."}),
+  Lk('wj52_1',"Billie's Bounce",2,'Solo',[[0, 0, "dom7", 4.0], [4, 7, "dom7", 3.0]],[[9, 0.25], [10, 0.75], [9, 0.75], [7, 0.5], [4, 0.5], [5, 0.25], [2, 0.5], [0, 0.5], [-5, 0.5], [-3, 0.25], [-2, 0.25], [-1, 1.0], [2, 1.0]],{swing:1,artist:"Charlie Parker",src:WJAZZD,tip:"From Charlie Parker's solo on Billie's Bounce (1945)."}),
+  Lk('wj85_2',"Body and Soul (2)",2,'Solo',[[0, 0, "dom7", 0.5], [0, 0, "min7", 1.0], [3, 5, "dom7", 3.0]],[[-2, 0.25], [0, 0.25], [2, 0.5], [3, 0.25], [5, 0.25], [3, 0.25], [2, 0.5], [-7, 0.25], [-2, 2.0]],{swing:1,artist:"Chu Berry",src:WJAZZD,tip:"From Chu Berry's solo on Body and Soul (1938)."}),
+  Lk('wj98_1',"My Blue Heaven",2,'Solo',[[0, 0, "dom7", 1.5], [0, 0, "d7b13", 1.0], [3, 5, "maj", 2.5]],[[-2, 0.25], [0, 2.0], [-2, 0.25], [0, 0.25], [-3, 0.5], [-3, 0.5], [-1, 0.25], [0, 0.25], [-1, 0.25], [-3, 0.5]],{swing:1,artist:"Coleman Hawkins",src:WJAZZD,tip:"From Coleman Hawkins's solo on My Blue Heaven (1950)."}),
+  Lk('wj126_1',"The Rainbow People",2,'Solo',[[0, 0, "maj7", 1.0], [1, 2, "min7", 1.75]],[[7, 0.25], [11, 0.25], [12, 0.5], [7, 0.25], [11, 0.5], [12, 1.0]],{swing:1,artist:"Dexter Gordon",src:WJAZZD,tip:"From Dexter Gordon's solo on The Rainbow People (1969)."}),
+  Lk('wj140_1',"Body and Soul",2,'Solo',[[0, 0, "dom7", 1.5], [0, 11, "maj7", 1.25]],[[-2, 0.25], [-1, 0.25], [-4, 0.25], [-2, 0.25], [-6, 0.25], [-10, 0.5], [-9, 1.0]],{swing:1,artist:"Don Byas",src:WJAZZD,tip:"From Don Byas's solo on Body and Soul (1947)."}),
+  Lk('wj149_1',"Out of Nowhere",2,'Solo',[[0, 0, "d7b9", 1.0], [3, 5, "min7", 5.25]],[[4, 0.25], [7, 0.75], [4, 0.5], [8, 0.5], [5, 0.25], [7, 0.5], [8, 0.5], [10, 0.5], [12, 0.5], [12, 0.5], [13, 0.5], [11, 1.0]],{swing:1,artist:"Don Ellis",src:WJAZZD,tip:"From Don Ellis's solo on Out of Nowhere (1961)."}),
+  Lk('wj157_1',"On Green Dolphin Street",2,'Solo',[[0, 0, "dom7", 1.0], [6, 11, "maj", 2.0], [6, 10, "maj7", 3.5]],[[3, 0.25], [4, 0.25], [5, 0.25], [4, 1.0], [2, 0.25], [-3, 0.5], [0, 0.5], [-2, 0.5], [-7, 0.25], [-10, 0.75], [-9, 0.5], [-7, 1.5]],{swing:1,artist:"Eric Dolphy",src:WJAZZD,tip:"From Eric Dolphy's solo on On Green Dolphin Street (1960)."}),
+  Lk('wj160_1',"Double Talk",2,'Solo',[[0, 0, "maj", 4.0], [0, 0, "min7", 3.25]],[[2, 0.5], [-1, 0.25], [-3, 0.5], [2, 0.5], [4, 0.5], [7, 0.25], [9, 0.75], [12, 2.0], [15, 0.25], [12, 0.25], [7, 0.25], [3, 0.75], [0, 0.5]],{swing:1,artist:"Fats Navarro",src:WJAZZD,tip:"From Fats Navarro's solo on Double Talk (1948)."}),
+  Lk('wj164_1',"The Skunk",2,'Solo',[[0, 0, "dom7", 2.5]],[[7, 0.25], [9, 0.25], [7, 0.5], [4, 0.5], [9, 0.5], [7, 0.5]],{swing:1,artist:"Fats Navarro",src:WJAZZD,tip:"From Fats Navarro's solo on The Skunk (1948)."}),
+  Lk('wj176_1',"This Can't Be Love",2,'Solo',[[0, 0, "six", 0.5], [6, 11, "min7", 4.0], [2, 4, "dom7", 2.75]],[[-5, 0.5], [-4, 0.5], [-8, 0.25], [-6, 1.0], [-4, 0.75], [-8, 0.5], [-6, 0.5], [-8, 0.25], [-6, 0.5], [-8, 0.5], [-10, 0.5], [-12, 0.5], [-14, 0.5], [-15, 0.5]],{swing:1,artist:"Gerry Mulligan",src:WJAZZD,tip:"From Gerry Mulligan's solo on This Can't Be Love (1957)."}),
+  Lk('wj182_1',"Did You Call Her Today",2,'Solo',[[0, 0, "dom7", 2.0], [3, 5, "six", 3.0]],[[7, 0.25], [9, 0.5], [12, 0.5], [7, 0.25], [8, 0.25], [7, 0.5], [2, 0.5], [0, 1.25], [-3, 0.5], [-4, 0.5]],{swing:1,artist:"Harry Edison",src:WJAZZD,tip:"From Harry Edison's solo on Did You Call Her Today (1962)."}),
+  Lk('wj182_2',"Did You Call Her Today (2)",2,'Solo',[[0, 0, "dom7", 3.5], [3, 5, "min7", 3.25]],[[5, 1.0], [3, 0.25], [4, 0.25], [3, 0.5], [0, 0.25], [3, 1.0], [5, 0.25], [6, 0.25], [7, 0.5], [0, 1.0], [3, 1.5]],{swing:1,artist:"Harry Edison",src:WJAZZD,tip:"From Harry Edison's solo on Did You Call Her Today (1962)."}),
+  Lk('wj186_2',"Gingerbread Boy (2)",2,'Solo',[[0, 0, "dom7", 3.75]],[[5, 0.5], [2, 0.5], [5, 0.5], [10, 1.0], [5, 0.25], [10, 1.0]],{swing:1,artist:"Herbie Hancock",src:WJAZZD,tip:"From Herbie Hancock's solo on Gingerbread Boy (1966)."}),
+  Lk('wj189_2',"Baby Won't You Please Come Home (2)",2,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "maj", 2.0], [1, 2, "dom7", 1.5]],[[-12, 0.5], [-7, 0.5], [-12, 0.75], [-7, 0.5], [-3, 0.5], [0, 0.75], [-1, 0.5]],{swing:1,artist:"J.C. Higginbotham",src:WJAZZD,tip:"From J.C. Higginbotham's solo on Baby Won't You Please Come Home (1941)."}),
+  Lk('wj191_1',"Blues in the Closet",2,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "dom7", 4.0], [6, 10, "dom7", 3.5]],[[-3, 0.75], [-8, 2.0], [-2, 0.5], [-7, 1.5], [-1, 0.75], [-6, 1.25], [0, 0.75], [-5, 0.5]],{swing:1,artist:"J.J. Johnson",src:WJAZZD,tip:"From J.J. Johnson's solo on Blues in the Closet (1957)."}),
+  Lk('wj203_1',"The Sidewinder",2,'Solo',[[0, 0, "dom7", 2.25]],[[0, 0.25], [0, 0.25], [4, 0.25], [7, 0.25], [11, 0.75], [10, 0.5]],{swing:0,artist:"Joe Henderson",src:WJAZZD,tip:"From Joe Henderson's solo on The Sidewinder (1963)."}),
+  Lk('wj221_1',"Countdown",2,'Solo',[[0, 0, "min7", 1.5], [1, 1, "dom7", 2.5]],[[0, 0.5], [3, 0.5], [7, 0.5], [-1, 0.5], [1, 0.25], [5, 0.75], [7, 0.5], [6, 0.5]],{swing:1,artist:"John Coltrane",src:WJAZZD,tip:"From John Coltrane's solo on Countdown (1959)."}),
+  Lk('wj224_2',"Impressions (2)",2,'Solo',[[0, 0, "min7", 4.5]],[[-12, 0.5], [-9, 0.5], [-5, 0.5], [-3, 0.25], [4, 0.5], [4, 0.75], [0, 0.5], [5, 0.5], [-1, 0.5]],{swing:1,artist:"John Coltrane",src:WJAZZD,tip:"From John Coltrane's solo on Impressions (1961)."}),
+  Lk('wj224_3',"Impressions (3)",2,'Solo',[[0, 0, "min7", 4.5]],[[-2, 0.5], [3, 0.5], [7, 0.5], [8, 0.5], [0, 0.5], [3, 0.5], [7, 0.5], [9, 0.5], [5, 0.5]],{swing:1,artist:"John Coltrane",src:WJAZZD,tip:"From John Coltrane's solo on Impressions (1961)."}),
+  Lk('wj239_1',"My Heart",2,'Solo',[[0, 0, "dom7", 5.75]],[[-12, 0.5], [-12, 0.5], [-8, 0.5], [-5, 0.5], [-12, 0.5], [-8, 0.75], [-5, 0.5], [-2, 0.5], [-5, 0.5], [-2, 0.5], [-5, 0.5]],{swing:1,artist:"Johnny Dodds",src:WJAZZD,tip:"From Johnny Dodds's solo on My Heart (1925)."}),
+  Lk('wj242_1',"Early Morning Rock",2,'Solo',[[0, 0, "dom7", 3.5], [4, 7, "dom7", 2.5]],[[-1, 0.25], [2, 0.5], [0, 0.5], [-2, 0.5], [-5, 0.5], [-10, 0.5], [-13, 0.5], [-12, 1.0], [-13, 0.75], [-5, 1.0]],{swing:1,artist:"Johnny Hodges",src:WJAZZD,tip:"From Johnny Hodges's solo on Early Morning Rock (1957)."}),
+  Lk('wj242_2',"Early Morning Rock (2)",2,'Solo',[[0, 0, "dom7", 7.0]],[[6, 0.25], [7, 0.5], [5, 0.5], [4, 0.5], [0, 0.5], [-3, 0.5], [-8, 0.5], [-7, 0.5], [-7, 0.25], [-8, 0.5], [-5, 0.5], [-3, 0.5], [0, 1.5]],{swing:1,artist:"Johnny Hodges",src:WJAZZD,tip:"From Johnny Hodges's solo on Early Morning Rock (1957)."}),
+  Lk('wj244_1',"Home Fries",2,'Solo',[[0, 0, "dom7", 3.75]],[[-2, 0.5], [-5, 0.5], [-12, 0.5], [-6, 0.5], [-7, 0.5], [-10, 0.25], [-12, 1.0]],{swing:1,artist:"Joshua Redman",src:WJAZZD,tip:"From Joshua Redman's solo on Home Fries (1996)."}),
+  Lk('wj250_1',"Doodlin'",2,'Solo',[[0, 0, "dom7", 3.0], [5, 9, "dom7", 2.0], [1, 2, "min7", 2.5]],[[5, 0.25], [7, 0.25], [9, 0.5], [10, 1.25], [4, 0.5], [9, 1.0], [4, 2.0], [0, 1.0], [-3, 0.25], [0, 0.5]],{swing:1,artist:"Kenny Dorham",src:WJAZZD,tip:"From Kenny Dorham's solo on Doodlin' (1954)."}),
+  Lk('wj257_1',"Brother Hubbard",2,'Solo',[[0, 0, "min7", 3.0]],[[-8, 0.25], [-5, 0.5], [-5, 0.5], [-5, 0.5], [-5, 0.5], [-8, 0.25], [-2, 0.5]],{swing:0,artist:"Kenny Garrett",src:WJAZZD,tip:"From Kenny Garrett's solo on Brother Hubbard (1997)."}),
+  Lk('wj258_1',"Double Vision",2,'Solo',[[0, 0, "dom7", 4.0], [6, 11, "dom7", 1.0]],[[12, 0.25], [13, 0.25], [5, 0.25], [6, 2.0], [8, 0.25], [9, 0.5], [3, 0.25], [5, 0.5], [6, 0.25], [8, 0.5]],{swing:0,artist:"Kenny Wheeler",src:WJAZZD,tip:"From Kenny Wheeler's solo on Double Vision (1985)."}),
+  Lk('wj264_1',"Savoy Blues",2,'Solo',[[0, 0, "dom7", 3.25]],[[-1, 0.25], [0, 0.5], [-1, 0.25], [0, 0.5], [-1, 0.25], [0, 0.5], [-1, 0.5], [-3, 0.5]],{swing:1,artist:"Kid Ory",src:WJAZZD,tip:"From Kid Ory's solo on Savoy Blues (1927)."}),
+  Lk('wj283_1',"Lester Leaps In",2,'Solo',[[0, 0, "maj", 7.5]],[[-17, 0.5], [-12, 0.5], [-9, 0.25], [-8, 0.5], [-12, 0.5], [-15, 0.75], [-20, 0.5], [-19, 0.75], [-22, 0.5], [-20, 0.75], [-17, 2.0]],{swing:1,artist:"Lester Young",src:WJAZZD,tip:"From Lester Young's solo on Lester Leaps In (1939)."}),
+  Lk('wj294_1',"Got No Blues",2,'Solo',[[0, 0, "maj", 3.0], [4, 7, "maj", 1.25]],[[-13, 0.25], [-10, 0.5], [-6, 0.25], [-1, 0.5], [-1, 0.5], [-1, 1.0], [-5, 0.75], [-5, 0.5]],{swing:1,artist:"Louis Armstrong",src:WJAZZD,tip:"From Louis Armstrong's solo on Got No Blues (1927)."}),
+  Lk('wj307_1',"Peep",2,'Solo',[[0, 0, "alt", 4.5]],[[-24, 0.5], [-20, 0.5], [-16, 0.5], [-12, 0.5], [-17, 0.5], [-20, 0.5], [-18, 0.5], [-19, 0.5], [-20, 0.5]],{swing:1,artist:"Michael Brecker",src:WJAZZD,tip:"From Michael Brecker's solo on Peep (1990)."}),
+  Lk('wj318_1',"Miles Runs the Voodoo Down",2,'Solo',[[0, 0, "d7s9", 4.0]],[[2, 0.5], [7, 0.5], [9, 0.5], [7, 0.5], [2, 1.0], [2, 0.5], [4, 0.5]],{swing:0,artist:"Miles Davis",src:WJAZZD,tip:"From Miles Davis's solo on Miles Runs the Voodoo Down (1969)."}),
+  Lk('wj340_2',"Ramblin' (2)",2,'Solo',[[0, 0, "dom7", 6.75]],[[1, 0.25], [2, 0.25], [4, 0.5], [4, 0.5], [7, 0.75], [3, 0.5], [4, 0.5], [4, 0.25], [7, 0.5], [3, 0.5], [3, 1.0], [11, 0.75], [7, 0.5]],{swing:1,artist:"Ornette Coleman",src:WJAZZD,tip:"From Ornette Coleman's solo on Ramblin' (1959)."}),
+  Lk('wj341_1',"Along Came Betty",2,'Solo',[[0, 0, "min7", 3.0]],[[-10, 0.25], [-7, 0.75], [-10, 0.25], [-7, 0.25], [-10, 0.5], [-14, 0.5], [-17, 0.5]],{swing:0,artist:"Pat Martino",src:WJAZZD,tip:"From Pat Martino's solo on Along Came Betty (1974)."}),
+  Lk('wj343_1',"Cabin Fever",2,'Solo',[[0, 0, "dom7", 2.0], [4, 7, "dom7", 5.5]],[[-5, 0.5], [-7, 0.5], [-9, 0.5], [-12, 0.5], [-14, 0.5], [-17, 0.5], [-18, 0.5], [-19, 0.5], [-24, 0.5], [-21, 0.25], [-20, 0.75], [-12, 2.0]],{swing:1,artist:"Pat Metheny",src:WJAZZD,tip:"From Pat Metheny's solo on Cabin Fever (1996)."}),
+  Lk('wj357_1',"Just One of Those Things",2,'Solo',[[0, 0, "dom7", 2.0], [3, 6, "hdim", 1.5]],[[-16, 0.25], [-14, 0.5], [-10, 0.75], [-5, 0.5], [-3, 0.5], [0, 0.5], [-5, 0.5]],{swing:1,artist:"Pepper Adams",src:WJAZZD,tip:"From Pepper Adams's solo on Just One of Those Things (1957)."}),
+  Lk('wj359_1',"Be My Love",2,'Solo',[[0, 0, "hdim", 1.5], [3, 5, "dom7", 2.5]],[[-6, 0.5], [-4, 0.5], [1, 0.25], [4, 0.25], [3, 0.5], [1, 0.5], [-1, 0.5], [-2, 0.5], [-3, 0.5]],{swing:1,artist:"Phil Woods",src:WJAZZD,tip:"From Phil Woods's solo on Be My Love (1955)."}),
+  Lk('wj364_1',"Strollin' with Pam",2,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "dom7", 4.0], [0, 0, "dom7", 3.0]],[[8, 1.0], [9, 0.25], [8, 0.25], [9, 0.5], [8, 0.25], [9, 0.5], [5, 0.5], [3, 1.0], [3, 0.5], [4, 0.5], [-5, 0.75], [0, 1.5]],{swing:1,artist:"Phil Woods",src:WJAZZD,tip:"From Phil Woods's solo on Strollin' with Pam (1955)."}),
+  Lk('wj366_2',"Perdido (2)",2,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "maj", 5.5]],[[17, 0.5], [16, 0.5], [19, 0.5], [17, 1.0], [8, 0.5], [9, 0.5], [16, 1.0], [8, 0.5], [9, 0.5], [14, 1.0]],{swing:1,artist:"Rex Stewart",src:WJAZZD,tip:"From Rex Stewart's solo on Perdido (1950)."}),
+  Lk('wj377_1',"Summertime",2,'Solo',[[0, 0, "min", 6.75]],[[9, 0.5], [12, 0.5], [9, 0.5], [3, 0.5], [5, 1.0], [5, 0.25], [7, 0.5], [0, 0.5], [3, 1.0], [5, 0.5], [0, 1.0]],{swing:1,artist:"Sidney Bechet",src:WJAZZD,tip:"From Sidney Bechet's solo on Summertime (1938)."}),
+  Lk('wj377_2',"Summertime (2)",2,'Solo',[[0, 0, "min", 3.75]],[[13, 0.25], [14, 1.5], [12, 0.25], [14, 0.25], [12, 0.25], [9, 0.25], [7, 0.25], [3, 0.25], [2, 0.5]],{swing:1,artist:"Sidney Bechet",src:WJAZZD,tip:"From Sidney Bechet's solo on Summertime (1938)."}),
+  Lk('wj399_1',"Crazy Rhythm",2,'Solo',[[0, 0, "min7", 1.0], [3, 5, "dom7", 3.5]],[[9, 0.75], [3, 1.0], [9, 0.5], [3, 1.0], [9, 0.75], [2, 0.5]],{swing:1,artist:"Stan Getz",src:WJAZZD,tip:"From Stan Getz's solo on Crazy Rhythm (1957)."}),
+  Lk('wj410_1',"Take the Coltrane",2,'Solo',[[0, 0, "dom7", 2.5], [3, 5, "dom7", 3.5]],[[15, 0.5], [10, 0.5], [5, 0.5], [6, 0.5], [9, 0.5], [11, 0.5], [14, 0.5], [15, 0.5], [12, 0.5], [10, 0.5], [6, 0.5], [10, 0.5]],{swing:1,artist:"Steve Coleman",src:WJAZZD,tip:"From Steve Coleman's solo on Take the Coltrane (1988)."}),
+  Lk('wj416_1',"Let's Cool One",2,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "maj7", 4.75]],[[-8, 0.5], [-3, 0.5], [0, 0.25], [4, 0.25], [4, 0.25], [4, 0.5], [4, 0.75], [9, 0.75], [4, 0.5], [2, 1.0]],{swing:1,artist:"Steve Lacy",src:WJAZZD,tip:"From Steve Lacy's solo on Let's Cool One (1961)."}),
+  Lk('wj417_1',"Skippy",2,'Solo',[[0, 0, "dom7", 2.0], [6, 11, "dom7", 2.5]],[[-9, 0.25], [-7, 0.25], [-5, 0.75], [-1, 0.5], [1, 0.25], [3, 0.25], [4, 0.25], [5, 0.25], [7, 0.25], [8, 1.5]],{swing:1,artist:"Steve Lacy",src:WJAZZD,tip:"From Steve Lacy's solo on Skippy (1958)."}),
+  Lk('wj422_1',"Pass It On",2,'Solo',[[0, 0, "maj", 1.0], [5, 9, "min7", 1.5]],[[-6, 0.5], [-8, 0.25], [-6, 0.75], [-3, 0.25], [-6, 0.25], [-2, 0.5]],{swing:0,artist:"Von Freeman",src:WJAZZD,tip:"From Von Freeman's solo on Pass It On (1991)."}),
+  Lk('wj423_1',"Crosscurrent",2,'Solo',[[0, 0, "maj7", 3.0], [5, 9, "min7", 2.0], [1, 2, "dom7", 2.25]],[[-13, 0.5], [-12, 0.5], [-10, 0.5], [-11, 0.25], [-12, 0.75], [-9, 0.5], [-10, 0.75], [-12, 0.5], [-13, 0.5], [-10, 0.5], [-8, 0.5], [-6, 0.5], [-5, 0.5], [-3, 0.5]],{swing:1,artist:"Warne Marsh",src:WJAZZD,tip:"From Warne Marsh's solo on Crosscurrent (1949)."}),
+  Lk('wj424_1',"Tautology",2,'Solo',[[0, 0, "d7s11", 1.5], [6, 10, "mj7s11", 2.0], [5, 9, "maj7", 4.0]],[[-8, 0.5], [-11, 0.5], [-15, 0.5], [-7, 0.75], [-11, 0.5], [-16, 0.5], [-15, 0.5], [-13, 0.5], [-11, 0.75], [-7, 0.5], [-6, 2.0]],{swing:1,artist:"Warne Marsh",src:WJAZZD,tip:"From Warne Marsh's solo on Tautology (1949)."}),
+  Lk('wj6_1',"Stardust",3,'Solo',[[0, 0, "min7", 2.0]],[[-1, 0.25], [1, 0.25], [0, 0.25], [-1, 0.25], [0, 0.25], [7, 0.25], [0, 0.5]],{swing:0,artist:"Art Pepper",src:WJAZZD,tip:"From Art Pepper's solo on Stardust (1979)."}),
+  Lk('wj22_2',"Did You Call Her Today (2)",3,'Solo',[[0, 0, "six", 4.0]],[[-4, 0.25], [-3, 0.75], [-12, 0.5], [-10, 0.25], [-12, 0.25], [-13, 0.25], [-12, 0.25], [-12, 0.5], [-5, 0.5], [-8, 0.5]],{swing:1,artist:"Ben Webster",src:WJAZZD,tip:"From Ben Webster's solo on Did You Call Her Today (1962)."}),
+  Lk('wj25_1',"Where or When",3,'Solo',[[0, 0, "dom7", 3.0], [3, 5, "min7", 2.75]],[[-6, 0.25], [-5, 0.25], [-2, 0.25], [-5, 0.25], [1, 0.25], [-2, 0.25], [3, 0.25], [4, 1.75], [7, 0.25], [5, 0.25], [0, 0.25], [-4, 0.5], [0, 1.0]],{swing:1,artist:"Ben Webster",src:WJAZZD,tip:"From Ben Webster's solo on Where or When (1956)."}),
+  Lk('wj7_1',"I Got It Bad",3,'Solo',[[0, 0, "dom7", 1.5], [2, 2, "maj7", 2.25]],[[-10, 0.25], [-3, 0.25], [-1, 0.25], [-3, 0.25], [-5, 0.25], [1, 0.25], [2, 0.25], [-3, 0.25], [-10, 0.25], [-4, 0.25], [-3, 0.25], [-5, 0.25], [-10, 0.25], [-15, 0.5]],{swing:1,artist:"Benny Carter",src:WJAZZD,tip:"From Benny Carter's solo on I Got It Bad (1952)."}),
+  Lk('wj8_1',"It's a Wonderful World",3,'Solo',[[0, 0, "maj7", 1.5]],[[11, 0.25], [14, 0.25], [12, 0.25], [7, 0.25], [4, 0.5]],{swing:1,artist:"Benny Carter",src:WJAZZD,tip:"From Benny Carter's solo on It's a Wonderful World (1986)."}),
+  Lk('wj30_1',"Singin the Blues",3,'Solo',[[0, 0, "dom7", 6.5]],[[4, 0.25], [2, 0.25], [0, 0.25], [-2, 0.25], [-5, 0.25], [-8, 0.25], [-10, 0.5], [0, 0.5], [-12, 0.5], [-8, 0.5], [-5, 1.0], [-5, 1.0], [-5, 1.0]],{swing:1,artist:"Bix Beiderbecke",src:WJAZZD,tip:"From Bix Beiderbecke's solo on Singin the Blues (1927)."}),
+  Lk('wj33_1',"I Didn't Know What Time It Was",3,'Solo',[[0, 0, "min7", 0.5], [3, 5, "dom7", 2.0], [6, 11, "min7", 1.0]],[[2, 0.25], [0, 0.25], [5, 0.25], [3, 0.25], [-1, 0.25], [-6, 0.25], [-7, 0.25], [-9, 0.25], [-10, 0.25], [-12, 0.25], [-13, 0.5]],{swing:1,artist:"Bob Berg",src:WJAZZD,tip:"From Bob Berg's solo on I Didn't Know What Time It Was (1979)."}),
+  Lk('wj41_1',"The Nearness of You",3,'Solo',[[0, 0, "min7", 1.0], [3, 5, "dom7", 2.5]],[[-9, 0.25], [-12, 0.25], [-9, 0.25], [-5, 0.25], [-9, 0.25], [-5, 0.25], [-2, 0.25], [-5, 0.25], [-2, 0.25], [3, 0.25], [-2, 0.25], [3, 0.25], [7, 0.5]],{swing:1,artist:"Branford Marsalis",src:WJAZZD,tip:"From Branford Marsalis's solo on The Nearness of You (1988)."}),
+  Lk('wj41_2',"The Nearness of You (2)",3,'Solo',[[0, 0, "dim7", 2.25]],[[-4, 0.25], [-2, 0.25], [-5, 0.25], [-9, 0.25], [-12, 0.25], [-3, 0.25], [-5, 0.25], [-9, 0.5]],{swing:1,artist:"Branford Marsalis",src:WJAZZD,tip:"From Branford Marsalis's solo on The Nearness of You (1988)."}),
+  Lk('wj80_1',"In a Sentimental Mood",3,'Solo',[[0, 0, "mmaj7", 0.5], [0, 0, "min7", 2.5]],[[3, 0.25], [2, 0.25], [-2, 0.25], [-7, 0.25], [-14, 0.25], [-9, 0.5], [-10, 0.25], [-12, 0.5]],{swing:1,artist:"Chris Potter",src:WJAZZD,tip:"From Chris Potter's solo on In a Sentimental Mood (1993)."}),
+  Lk('wj82_1',"Pop Tune #1",3,'Solo',[[0, 0, "min7", 2.0]],[[-1, 0.25], [0, 0.25], [0, 0.25], [1, 0.25], [2, 0.25], [0, 0.25], [2, 0.5]],{swing:0,artist:"Chris Potter",src:WJAZZD,tip:"From Chris Potter's solo on Pop Tune #1 (2007)."}),
+  Lk('wj87_1',"A Night in Tunisia",3,'Solo',[[0, 0, "min6", 0.5], [4, 7, "hdim", 2.5]],[[19, 0.25], [18, 0.25], [19, 0.5], [11, 0.25], [12, 0.25], [14, 0.5], [7, 0.25], [6, 0.25], [7, 0.5]],{swing:1,artist:"Clifford Brown",src:WJAZZD,tip:"From Clifford Brown's solo on A Night in Tunisia (1954)."}),
+  Lk('wj96_1',"Body and Soul",3,'Solo',[[0, 0, "min7", 1.5], [6, 11, "dim", 1.5], [6, 10, "min7", 2.0]],[[5, 0.25], [4, 0.25], [3, 0.25], [0, 0.25], [-2, 0.25], [-7, 0.25], [-4, 0.25], [-5, 0.75], [-13, 0.5], [-10, 0.25], [-5, 0.5], [-5, 0.25], [-7, 1.0]],{swing:1,artist:"Coleman Hawkins",src:WJAZZD,tip:"From Coleman Hawkins's solo on Body and Soul (1939)."}),
+  Lk('wj96_2',"Body and Soul (2)",3,'Solo',[[0, 0, "dom7", 2.0], [0, 11, "min7", 1.75]],[[-4, 0.5], [-14, 0.5], [-5, 0.5], [-14, 0.5], [-6, 0.25], [-13, 0.5], [-9, 1.0]],{swing:1,artist:"Coleman Hawkins",src:WJAZZD,tip:"From Coleman Hawkins's solo on Body and Soul (1939)."}),
+  Lk('wj104_1',"Begin the Beguine",3,'Solo',[[0, 0, "maj9", 1.75]],[[14, 0.25], [16, 0.25], [18, 0.25], [19, 0.25], [18, 0.25], [16, 0.5]],{swing:1,artist:"David Liebman",src:WJAZZD,tip:"From David Liebman's solo on Begin the Beguine (1988)."}),
+  Lk('wj110_1',"Pablo's Story",3,'Solo',[[0, 0, "hdim", 2.25]],[[-10, 0.25], [-5, 0.25], [1, 0.25], [7, 0.25], [-3, 0.25], [1, 0.25], [7, 0.25], [1, 0.5]],{swing:0,artist:"David Liebman",src:WJAZZD,tip:"From David Liebman's solo on Pablo's Story (1988)."}),
+  Lk('wj116_1',"Blues for Two",3,'Solo',[[0, 0, "dom7", 3.0]],[[-6, 0.25], [-11, 0.25], [-14, 0.25], [-12, 0.25], [-12, 0.25], [-11, 0.25], [-7, 0.25], [-5, 0.25], [0, 0.5], [7, 0.5]],{swing:1,artist:"David Murray",src:WJAZZD,tip:"From David Murray's solo on Blues for Two (1990)."}),
+  Lk('wj120_1',"Chelsea Bridge",3,'Solo',[[0, 0, "dom7", 1.0], [6, 11, "min7", 2.25]],[[-6, 0.25], [-4, 0.25], [-5, 0.25], [-3, 0.25], [-5, 0.25], [-3, 0.75], [-6, 0.25], [-11, 0.25], [-15, 0.25], [-13, 0.5]],{swing:0,artist:"David Murray",src:WJAZZD,tip:"From David Murray's solo on Chelsea Bridge (1990)."}),
+  Lk('wj124_1',"Society Red",3,'Solo',[[0, 0, "min7", 3.75]],[[2, 0.25], [3, 0.25], [-2, 0.25], [-6, 0.25], [-7, 0.25], [-9, 0.25], [-4, 0.25], [-7, 0.25], [-6, 0.25], [-2, 0.25], [1, 0.25], [5, 0.25], [4, 0.25], [3, 0.5]],{swing:1,artist:"Dexter Gordon",src:WJAZZD,tip:"From Dexter Gordon's solo on Society Red (1961)."}),
+  Lk('wj140_2',"Body and Soul (2)",3,'Solo',[[0, 0, "maj", 0.5], [4, 8, "dom7", 2.0], [0, 1, "maj7", 2.75]],[[0, 1.75], [3, 0.25], [-6, 0.25], [-7, 0.5], [-4, 0.25], [-2, 0.25], [3, 0.25], [4, 0.25], [3, 0.25], [1, 0.25], [-6, 1.0]],{swing:1,artist:"Don Byas",src:WJAZZD,tip:"From Don Byas's solo on Body and Soul (1947)."}),
+  Lk('wj158_1',"Serene",3,'Solo',[[0, 0, "d7s11", 2.5]],[[2, 0.25], [7, 0.25], [7, 0.25], [7, 0.25], [7, 0.25], [6, 0.25], [7, 0.25], [5, 0.25], [4, 0.5]],{swing:1,artist:"Eric Dolphy",src:WJAZZD,tip:"From Eric Dolphy's solo on Serene (1960)."}),
+  Lk('wj171_1',"Maiden Voyage",3,'Solo',[[0, 0, "sus7", 2.0]],[[-7, 0.25], [-12, 0.25], [-5, 0.5], [0, 0.5], [5, 0.5]],{swing:1,artist:"George Coleman",src:WJAZZD,tip:"From George Coleman's solo on Maiden Voyage (1965)."}),
+  Lk('wj175_1',"The Red Door",3,'Solo',[[0, 0, "min7", 2.0], [3, 5, "dom7", 2.0], [4, 7, "maj", 2.75]],[[-5, 0.5], [-2, 0.5], [3, 0.5], [-3, 0.5], [0, 0.75], [5, 0.5], [3, 0.5], [0, 0.5], [2, 1.0], [-1, 1.0], [-10, 0.5]],{swing:1,artist:"Gerry Mulligan",src:WJAZZD,tip:"From Gerry Mulligan's solo on The Red Door (1960)."}),
+  Lk('wj180_1',"Remember",3,'Solo',[[0, 0, "d7s11", 4.0], [0, 11, "dom7", 3.5]],[[2, 1.25], [0, 0.5], [-5, 0.5], [-10, 0.75], [-12, 1.0], [-1, 0.25], [1, 0.75], [-1, 0.5], [-6, 0.5], [-11, 0.5], [-13, 1.0]],{swing:1,artist:"Hank Mobley",src:WJAZZD,tip:"From Hank Mobley's solo on Remember (1960)."}),
+  Lk('wj180_2',"Remember (2)",3,'Solo',[[0, 0, "d7s11", 3.25]],[[-13, 0.25], [-10, 0.25], [-3, 0.5], [0, 0.25], [-2, 0.5], [-10, 0.25], [-7, 0.25], [-3, 0.5], [-5, 0.5]],{swing:1,artist:"Hank Mobley",src:WJAZZD,tip:"From Hank Mobley's solo on Remember (1960)."}),
+  Lk('wj197_1',"Yesterdays",3,'Solo',[[0, 0, "min", 0.5], [1, 2, "hdim", 2.0], [4, 7, "d7b9", 1.0]],[[-7, 0.25], [-5, 0.25], [-4, 0.5], [-4, 0.25], [-2, 0.25], [-1, 0.25], [-2, 0.25], [-4, 0.25], [-5, 0.25], [-6, 0.25], [-9, 0.25], [-10, 0.5]],{swing:1,artist:"J.J. Johnson",src:WJAZZD,tip:"From J.J. Johnson's solo on Yesterdays (1957)."}),
+  Lk('wj203_2',"The Sidewinder (2)",3,'Solo',[[0, 0, "dom7", 3.75]],[[-12, 0.25], [-9, 0.25], [-8, 0.25], [-7, 0.25], [-6, 0.25], [-5, 0.25], [-12, 0.25], [-9, 0.5], [-8, 0.25], [-7, 0.25], [-6, 0.25], [-5, 0.25], [-12, 0.5]],{swing:0,artist:"Joe Henderson",src:WJAZZD,tip:"From Joe Henderson's solo on The Sidewinder (1963)."}),
+  Lk('wj213_2',"Work (2)",3,'Solo',[[0, 0, "dom7", 3.75]],[[-5, 0.5], [2, 0.25], [4, 0.25], [5, 0.5], [4, 0.5], [9, 0.5], [6, 0.5], [9, 0.25], [10, 0.5]],{swing:1,artist:"Joe Lovano",src:WJAZZD,tip:"From Joe Lovano's solo on Work (1991)."}),
+  Lk('wj218_1',"Blue Train",3,'Solo',[[0, 0, "dom7", 3.75]],[[-5, 0.25], [-4, 0.25], [-2, 0.25], [0, 0.25], [2, 0.25], [3, 0.25], [5, 0.5], [10, 0.5], [4, 0.25], [1, 0.25], [-3, 0.25], [-6, 0.5]],{swing:1,artist:"John Coltrane",src:WJAZZD,tip:"From John Coltrane's solo on Blue Train (1957)."}),
+  Lk('wj243_1',"Blues on Sunday",3,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "dom7", 2.75]],[[-7, 0.25], [-7, 0.25], [-4, 0.25], [-3, 0.5], [2, 0.25], [1, 0.25], [0, 0.5], [-7, 1.0]],{swing:1,artist:"Joshua Redman",src:WJAZZD,tip:"From Joshua Redman's solo on Blues on Sunday (1992)."}),
+  Lk('wj243_2',"Blues on Sunday (2)",3,'Solo',[[0, 0, "dom7", 5.0], [4, 7, "dom7", 1.0]],[[-3, 0.25], [-7, 0.25], [-5, 0.5], [-7, 0.5], [-10, 0.5], [-17, 0.5], [-19, 0.5], [-12, 0.25], [-11, 0.5], [-17, 0.25], [-15, 0.25], [-14, 0.75], [-17, 1.0]],{swing:1,artist:"Joshua Redman",src:WJAZZD,tip:"From Joshua Redman's solo on Blues on Sunday (1992)."}),
+  Lk('wj246_1',"Sweet Sorrow",3,'Solo',[[0, 0, "mmaj7", 2.5]],[[-10, 0.25], [-13, 0.25], [-12, 0.25], [-10, 0.25], [-10, 0.25], [-9, 0.5], [-15, 0.25], [-15, 0.5]],{swing:0,artist:"Joshua Redman",src:WJAZZD,tip:"From Joshua Redman's solo on Sweet Sorrow (1994)."}),
+  Lk('wj253_2',"Prince Albert (2)",3,'Solo',[[0, 0, "min7", 0.5], [6, 11, "min7", 4.0], [5, 10, "dim", 2.5]],[[9, 0.5], [6, 0.5], [7, 0.25], [6, 0.25], [2, 0.5], [9, 0.5], [6, 0.5], [6, 0.5], [2, 0.5], [12, 1.5], [10, 0.5], [5, 0.5]],{swing:1,artist:"Kenny Dorham",src:WJAZZD,tip:"From Kenny Dorham's solo on Prince Albert (1955)."}),
+  Lk('wj256_2',"Brother Hubbard (2)",3,'Solo',[[0, 0, "min", 1.5], [1, 2, "dom7", 2.0], [4, 7, "min", 3.5]],[[-5, 0.5], [-2, 0.5], [0, 0.5], [0, 1.0], [-2, 0.5], [1, 0.25], [0, 0.5], [-5, 0.5], [0, 0.5], [-2, 0.5], [-5, 0.5], [-7, 0.5], [-5, 0.25], [-6, 0.5]],{swing:0,artist:"Kenny Garrett",src:WJAZZD,tip:"From Kenny Garrett's solo on Brother Hubbard (1997)."}),
+  Lk('wj260_1',"Slipped again",3,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "dom7", 3.5]],[[17, 0.25], [15, 0.25], [11, 0.25], [9, 0.25], [10, 0.5], [7, 0.25], [9, 1.0], [7, 0.25], [5, 0.25], [4, 0.25], [3, 0.5]],{swing:1,artist:"Kenny Wheeler",src:WJAZZD,tip:"From Kenny Wheeler's solo on Slipped again (1991)."}),
+  Lk('wj268_1',"Crosscurrent",3,'Solo',[[0, 0, "maj7", 3.5], [1, 2, "min7", 2.0], [4, 7, "dom7", 2.0]],[[1, 0.25], [2, 0.25], [5, 0.25], [9, 0.5], [12, 0.75], [2, 1.0], [5, 0.5], [9, 0.5], [12, 0.5], [1, 1.25], [5, 0.25], [9, 0.5], [12, 0.5], [0, 0.5]],{swing:1,artist:"Lee Konitz",src:WJAZZD,tip:"From Lee Konitz's solo on Crosscurrent (1949)."}),
+  Lk('wj271_1',"Mean to Me",3,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "maj7", 1.5]],[[-9, 0.25], [-8, 0.25], [-5, 0.25], [-6, 0.25], [-7, 0.25], [-5, 0.25], [-3, 0.25], [-2, 0.25], [0, 0.5]],{swing:1,artist:"Lee Konitz",src:WJAZZD,tip:"From Lee Konitz's solo on Mean to Me (1954)."}),
+  Lk('wj277_1',"Totem Pole",3,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "min9", 1.5]],[[0, 0.25], [5, 0.25], [7, 0.25], [8, 0.25], [10, 0.25], [11, 0.25], [12, 0.5], [7, 0.5]],{swing:1,artist:"Lee Morgan",src:WJAZZD,tip:"From Lee Morgan's solo on Totem Pole (1963)."}),
+  Lk('wj288_1',"Memories of You",3,'Solo',[[0, 0, "dom9", 1.0], [3, 5, "six", 1.5]],[[0, 0.25], [-2, 0.25], [-4, 0.25], [-7, 0.25], [-10, 0.25], [-12, 0.25], [-7, 0.5], [-7, 0.5]],{swing:1,artist:"Lionel Hampton",src:WJAZZD,tip:"From Lionel Hampton's solo on Memories of You (1939)."}),
+  Lk('wj293_1',"Cornet Chop Suey",3,'Solo',[[0, 0, "dom7", 0.5], [3, 5, "maj", 4.0], [6, 10, "maj", 2.75]],[[5, 0.5], [0, 0.5], [5, 0.5], [9, 0.5], [12, 0.5], [5, 0.5], [9, 0.5], [12, 0.25], [14, 0.5], [10, 0.5], [19, 1.0], [13, 1.0]],{swing:1,artist:"Louis Armstrong",src:WJAZZD,tip:"From Louis Armstrong's solo on Cornet Chop Suey (1926)."}),
+  Lk('wj303_1',"Midnight Voyage",3,'Solo',[[0, 0, "dom7", 3.25]],[[-22, 0.5], [-15, 0.5], [-12, 0.25], [-8, 0.25], [-18, 0.5], [-15, 0.25], [-12, 0.25], [-8, 0.25], [-13, 0.5]],{swing:1,artist:"Michael Brecker",src:WJAZZD,tip:"From Michael Brecker's solo on Midnight Voyage (1996)."}),
+  Lk('wj332_1',"Softly as in a Morning Sunrise",3,'Solo',[[0, 0, "min7", 2.75]],[[2, 0.25], [5, 0.25], [10, 0.25], [14, 0.25], [11, 0.25], [12, 0.5], [12, 0.5], [7, 0.5]],{swing:1,artist:"Milt Jackson",src:WJAZZD,tip:"From Milt Jackson's solo on Softly as in a Morning Sunrise (1955)."}),
+  Lk('wj332_2',"Softly as in a Morning Sunrise (2)",3,'Solo',[[0, 0, "hdim", 1.5], [3, 5, "dom7", 2.0], [6, 10, "min7", 1.0]],[[-2, 0.5], [-1, 0.25], [0, 0.25], [1, 0.25], [3, 0.25], [5, 0.25], [6, 0.25], [8, 0.5], [9, 0.25], [10, 0.5], [5, 0.5]],{swing:1,artist:"Milt Jackson",src:WJAZZD,tip:"From Milt Jackson's solo on Softly as in a Morning Sunrise (1955)."}),
+  Lk('wj354_1',"A Night in Tunisia",3,'Solo',[[0, 0, "dom7", 3.5]],[[-15, 0.25], [-14, 0.25], [-12, 0.25], [-10, 0.25], [-8, 0.25], [-6, 0.25], [-3, 0.25], [2, 0.25], [-2, 0.5], [-2, 0.25], [-6, 0.25], [-10, 0.5]],{swing:0,artist:"Pepper Adams",src:WJAZZD,tip:"From Pepper Adams's solo on A Night in Tunisia (1957)."}),
+  Lk('wj367_1',"Body and Soul",3,'Solo',[[0, 0, "min7", 1.0], [6, 11, "dom7", 2.0], [6, 10, "maj7", 1.0]],[[-5, 0.25], [0, 0.25], [3, 0.25], [5, 0.25], [7, 0.25], [6, 0.25], [-6, 0.25], [-2, 0.25], [1, 0.25], [6, 0.25], [10, 0.25], [8, 0.25], [6, 0.25], [5, 0.5]],{swing:1,artist:"Roy Eldridge",src:WJAZZD,tip:"From Roy Eldridge's solo on Body and Soul (1938)."}),
+  Lk('wj387_1',"Tenor Madness",3,'Solo',[[0, 0, "dom7", 1.0], [3, 5, "dom7", 1.75]],[[-16, 0.5], [-15, 0.25], [-8, 0.25], [-5, 0.25], [-5, 0.5], [-7, 0.5], [-12, 0.5]],{swing:1,artist:"Sonny Rollins",src:WJAZZD,tip:"From Sonny Rollins's solo on Tenor Madness (1956)."}),
+  Lk('wj391_1',"Blue Mode",3,'Solo',[[0, 0, "dom7", 2.75]],[[-3, 0.25], [0, 0.25], [2, 0.25], [4, 0.25], [7, 0.5], [4, 0.25], [0, 0.25], [-3, 0.25], [2, 0.5]],{swing:1,artist:"Sonny Stitt",src:WJAZZD,tip:"From Sonny Stitt's solo on Blue Mode (1949)."}),
+  Lk('wj393_1',"Body and Soul",3,'Solo',[[0, 0, "d7b9", 0.5], [6, 10, "sus7", 2.0], [6, 10, "dom7", 2.25]],[[0, 0.25], [-4, 0.25], [-8, 0.25], [-12, 0.25], [-9, 0.75], [-1, 0.25], [0, 0.25], [2, 0.25], [0, 0.25], [-4, 0.25], [-7, 0.25], [-12, 0.25], [-9, 0.25], [-10, 1.0]],{swing:0,artist:"Sonny Stitt",src:WJAZZD,tip:"From Sonny Stitt's solo on Body and Soul (1948)."}),
+  Lk('wj419_1',"Dat Dere",3,'Solo',[[0, 0, "min", 0.5], [5, 8, "dom7", 1.5]],[[-5, 0.25], [-4, 0.25], [-4, 0.25], [-4, 0.25], [-5, 0.25], [-4, 0.25], [-3, 0.5]],{swing:1,artist:"Steve Turre",src:WJAZZD,tip:"From Steve Turre's solo on Dat Dere (1987)."}),
+  Lk('wj421_1',"Steve's Blues",3,'Solo',[[0, 0, "min7", 0.5], [3, 5, "dom7", 4.0], [6, 10, "dom7", 3.5]],[[-2, 0.5], [-12, 0.5], [-10, 0.5], [-9, 0.5], [-5, 0.75], [-11, 0.5], [-8, 0.5], [-3, 0.5], [-5, 0.5], [-7, 0.5], [-10, 0.5], [-9, 0.75], [-7, 1.0]],{swing:1,artist:"Steve Turre",src:WJAZZD,tip:"From Steve Turre's solo on Steve's Blues (1987)."}),
+  Lk('wj422_2',"Pass It On (2)",3,'Solo',[[0, 0, "maj", 1.5], [5, 9, "min7", 2.25]],[[-5, 0.25], [-3, 0.5], [9, 0.5], [-3, 0.5], [-3, 0.25], [-3, 0.25], [-3, 0.5], [-3, 0.5], [-3, 0.5]],{swing:0,artist:"Von Freeman",src:WJAZZD,tip:"From Von Freeman's solo on Pass It On (1991)."}),
+  Lk('wj431_1',"Footprints",3,'Solo',[[0, 0, "min7", 1.75]],[[7, 0.25], [5, 0.25], [3, 0.25], [2, 0.25], [0, 0.25], [-2, 0.5]],{swing:1,artist:"Wayne Shorter",src:WJAZZD,tip:"From Wayne Shorter's solo on Footprints (1966)."}),
+  Lk('wj454_1',"King David",3,'Solo',[[0, 0, "min7", 0.5], [3, 5, "dom7", 4.0], [6, 10, "dom7", 1.75]],[[-4, 0.25], [-6, 0.5], [-5, 0.5], [-2, 0.5], [2, 0.5], [1, 0.5], [-4, 0.5], [-7, 0.5], [-12, 0.5], [-10, 0.5], [-2, 1.0]],{swing:1,artist:"Zoot Sims",src:WJAZZD,tip:"From Zoot Sims's solo on King David (1950)."}),
+];
+</script>
+<script>
 /* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
    Grading follows the notes in order, in any octave; rhythm is free for now. */
-let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0,style:'All'});
+let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
+if(!['all','solo','orig','user'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||'';
 const saveLines=()=>store.set('lines',LDATA);
-const allLicks=()=>[...LICKS,...LDATA.user];
+const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
+const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':'orig';
+const lickLabel=l=>l.user?'Yours':l.artist||'Original';
 const lickById=id=>allLicks().find(l=>l.id===id);
 const LINES={active:false,rec:null};
 const TRANSFER_KEYS=5;
@@ -1977,14 +2160,18 @@ const TRANSFER_KEYS=5;
 /* ---------------- menu pane ---------------- */
 function linesStarTotal(){ return allLicks().reduce((a,l)=>a+(LDATA.stars[l.id]||0),0); }
 function renderLinesPane(){
-  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.style==='All'||(LDATA.style==='Yours'?l.user:l.style===LDATA.style)));
+  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||lickFrom(l)===LDATA.from)&&(!LDATA.artist||l.artist===LDATA.artist))
+    .sort((a,b)=>a.diff-b.diff||lickLabel(a).localeCompare(lickLabel(b))||a.name.localeCompare(b.name));
+  const artists=[...new Set(allLicks().map(l=>l.artist).filter(Boolean))].sort();
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
-    <div class="chipsrow">${['All',...LSTYLES,'Yours'].map(s=>`<button class="chip" data-style="${s}" aria-pressed="${s===LDATA.style}">${s}</button>`).join('')}</div>
-    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${l.user?'Yours':l.style}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||'<p class="fine">Nothing here yet.</p>'}</div>
-    <p class="fine" style="margin-top:12px">★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks marked with a source follow a documented formula; the rest are Jun Jam originals in that style.</p>
+    <div class="chipsrow">${[['all','All'],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
+      <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
+    <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
+    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||'<p class="fine">Nothing here yet.</p>'}</div>
+    <p class="fine" style="margin-top:12px">★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks from famous solos are short phrases from the <a href="https://jazzomat.hfm-weimar.de/" target="_blank" rel="noopener">Weimar Jazz Database</a> (Jazzomat Research Project, HfM Weimar), used under the <a href="https://opendatacommons.org/licenses/odbl/1.0/" target="_blank" rel="noopener">ODbL</a>. A few others follow formulas documented by teachers; the rest are Jun Jam originals.</p>
     ${importHTML()}`;
   $('linesPane').innerHTML=h;
 }
@@ -2002,12 +2189,13 @@ function importHTML(){
 }
 function bindLinesPane(){
   const p=$('linesPane');
+  p.onchange=e=>{ if(e.target.id==='lArtist'){ LDATA.artist=e.target.value; if(LDATA.artist&&LDATA.from!=='all'&&LDATA.from!=='solo'&&LDATA.from!=='orig') LDATA.from='all'; saveLines(); renderLinesPane(); } };
   p.onclick=e=>{
     const b=e.target.closest('button,[data-del]'); if(!b) return;
     if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
     if(b.dataset.diff!==undefined){ LDATA.diff=+b.dataset.diff; saveLines(); renderLinesPane(); }
     else if(b.dataset.tempo){ LDATA.tempo=+b.dataset.tempo; saveLines(); renderLinesPane(); }
-    else if(b.dataset.style){ LDATA.style=b.dataset.style; saveLines(); renderLinesPane(); }
+    else if(b.dataset.from){ LDATA.from=b.dataset.from; saveLines(); renderLinesPane(); }
     else if(b.dataset.lick) linesStart(b.dataset.lick);
     else if(b.id==='iRec'){ LINES.rec={notes:[],name:$('iName').value,root:+$('iRoot').value,qual:$('iQual').value,diff:+$('iDiff').value}; synth.init(); renderLinesPane(); keepImportFields(); }
     else if(b.id==='iCancel'){ LINES.rec=null; renderLinesPane(); }
@@ -2025,7 +2213,7 @@ function saveRecording(){
   const beats=gaps.map(g=>Math.min(2,Math.max(.25,Math.round(g/med*.5*4)/4)));
   let semis=r.notes.map(n=>n.m-(60+r.root)); while(Math.min(...semis)<-12) semis=semis.map(s=>s+12); while(Math.min(...semis)>11) semis=semis.map(s=>s-12);
   const lick=Lk('u'+Date.now(),r.name,r.diff,'Yours',r.qual,semis.map((s,i)=>[s,i<beats.length?beats[i]:1.5]));
-  lick.user=true; LDATA.user.push(lick); LINES.rec=null; LDATA.style='Yours'; saveLines(); renderLinesPane();
+  lick.user=true; LDATA.user.push(lick); LINES.rec=null; LDATA.from='user'; LDATA.artist=''; saveLines(); renderLinesPane();
 }
 
 /* ---------------- the drill ---------------- */
@@ -2080,10 +2268,23 @@ function lineStaffSVG(inst,idx,done){
 // Play the lick over its chords: soft comp an octave down, bass, melody on top. Jazz licks swing their 8ths.
 function playLine(inst,lick,bus,t0,bpm){
   const spb=60/bpm, T=b=>{ const f=b-Math.floor(b); return t0+(Math.floor(b)+(lick.swing&&Math.abs(f-.5)<1e-6?2/3:f))*spb; };
-  const v=voiceProg(inst.chords);
-  inst.chords.forEach((c,i)=>{ const at=T(c.at), d=c.beats*spb*.95; playChord(v[i].upper.map(m=>m-12>=46?m-12:m),at,d,'mellow',bus,46); tone(v[i].bass,at,d,60,'mellow',bus); });
+  // Comp: the 3rd, 7th and a colour tone packed just under the lick's lowest note (down to C3), root in the bass
+  const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
+  inst.chords.forEach(c=>{
+    const at=T(c.at), d=c.beats*spb*.95;
+    playChord(compUnder(c,ceil),at,d,'mellow',bus,44);
+    tone(40+mod12(c.root.pc-40),at,d,58,'mellow',bus);
+  });
   inst.notes.forEach(n=>{ const a=T(n.at), e=T(n.at+n.dur); tone(n.midi,a,Math.max(.12,(e-a)*.92),96,'epiano',bus); });
   return T(inst.total)+.3;
+}
+function compUnder(c,ceil){
+  const q=c.q; let ivs=q.id==='alt'?[4,10,1]:[...new Set([...q.ct,...q.req])];
+  if(ivs.length>3) ivs=ivs.filter(x=>x!==0); if(ivs.length>3) ivs=ivs.filter(x=>x!==7); // the bass has the root; the 5th is the first to go
+  // Tones go down to C3 at most; anything that would still reach the melody is left out (keeping at least two)
+  const out=ivs.map(iv=>{ let m=ceil; while(mod12(m-c.root.pc-iv)!==0) m--; return m<48?m+12:m; }).sort((x,y)=>x-y);
+  const under=out.filter(m=>m<=ceil);
+  return under.length>=2?under:out;
 }
 function linesPlay(){ if(!LINES.active) return; killBus(LINES.bus); LINES.bus=newBus(); if(LINES.bus) playLine(LINES.inst,LINES.lick,LINES.bus,now()+.08,LDATA.tempo); }
 function linesNote(m){
