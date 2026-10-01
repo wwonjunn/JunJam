@@ -29,7 +29,8 @@
       <div class="card wide">
         <h1>Jun Jam</h1>
         <p class="rank" id="rankLine"></p>
-        <div id="homePane"><div class="modes" id="modes"></div></div>
+        <div id="homePane"><div class="modes" id="modes"></div>
+          <div class="trhome"><button class="ghost" id="trOpenBtn" style="margin-left:0">Transcribe a recording</button><span>Turn an mp3 into editable sheet music with chords: a solo note for note, or a lead sheet.</span></div></div>
         <div id="earsPane" hidden></div>
         <div id="linesPane" hidden></div>
         <div id="reharmPane" hidden></div>
@@ -67,6 +68,7 @@
       </div>
       <div class="card eresults" id="lResults" hidden></div>
     </div>
+    <div class="ears" id="transStage" hidden><div id="trBody" class="rhbody trbody"></div></div>
     <div class="ears" id="reharmStage" hidden><div id="rhBody" class="rhbody"></div></div>
     <div class="ears" id="earsStage" hidden>
       <div id="ePlay">
@@ -135,6 +137,9 @@
 <script src="js/lines/session.js"></script>
 <script src="js/reharm/moves.js"></script>
 <script src="js/reharm/session.js"></script>
+<script src="js/transcribe/analyze.js"></script>
+<script src="js/transcribe/export.js"></script>
+<script src="js/transcribe/session.js"></script>
 <script src="js/menu.js"></script>
 </body>
 </html>

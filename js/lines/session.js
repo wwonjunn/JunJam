@@ -125,7 +125,7 @@ function splitDur(at,d){
 }
 function lineStaffSVG(inst,idx,done){
   const BW=78, X0=60, y=di=>40+(38-di)*5, xOf=t=>X0+t*BW;
-  const total=inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0), W=Math.max(320,xOf(total)+24);
+  const total=Math.max(inst.total||0,inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0)), W=Math.max(320,xOf(total)+24);
   // pieces: each note split into writable values, tied together
   // pieces: each note split into writable values and tied; triplet notes are written as triplet 8ths or quarters
   const P=[]; inst.notes.forEach((n,i)=>n.tri?P.push({at:n.gat,d:n.gdur,n,i,first:true,tie:false,tri:true}):splitDur(n.gat,n.gdur).forEach((pc,k,arr)=>P.push({...pc,n,i,first:k===0,tie:k<arr.length-1})));

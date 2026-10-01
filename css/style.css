@@ -336,3 +336,40 @@ body.linesmode header .modetag{display:none}
 .rhc.cur{box-shadow:0 0 0 2px var(--brass)}
 .lick .rwhat{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.3}
 body.nohud:not(.earsmode) header .modetag{display:none}
+
+/* ---------------- Transcribe ---------------- */
+.trhome{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 2px;font-size:14px;color:var(--muted)}
+body.trmode .panel,body.trmode .kbwrap{display:none}
+.trbody{max-width:1100px}
+.trok{color:var(--good);font-family:var(--cond);font-weight:600} .trno{color:var(--wrong);font-family:var(--cond);font-weight:600}
+.trguide{border:1.5px solid var(--line-strong);border-radius:6px;padding:10px 14px;margin:0 0 12px}
+.trguide ol{margin:8px 0 0;padding-left:20px} .trguide li{margin:0 0 8px}
+.trcmd{display:flex;gap:6px;align-items:center;margin-top:4px}
+.trcmd code{flex:1;overflow-x:auto;white-space:nowrap;background:var(--panel);border:1px solid var(--line-strong);border-radius:4px;padding:5px 8px;font-size:12px}
+.trcmd .ghost{margin-left:0;padding:4px 10px;font-size:14px}
+.trdrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed var(--line-strong);border-radius:8px;padding:26px;cursor:pointer;color:var(--muted)}
+.trdrop b{font-family:var(--cond);font-size:20px;color:var(--ink)} .trdrop.over{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 10%, transparent)}
+.trmodes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.trpick{text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:10px 12px;cursor:pointer}
+.trpick b{display:block;font-family:var(--hand);font-size:22px} .trpick span{font-size:13px;color:var(--muted)}
+.trpick[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 12%, transparent)}
+.trwave{width:100%;height:110px;display:block;border:1px solid var(--line-strong);border-radius:6px;cursor:crosshair;margin:4px 0 8px;background:var(--panel)}
+.trtools{align-items:center;margin-bottom:8px}
+.trscore{max-height:46vh;overflow-y:auto;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;margin-bottom:10px}
+.trline{position:relative} .trline svg{width:100%;height:auto;display:block}
+.trbar{position:absolute;left:4px;top:0;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted)}
+.trscore .ln{stroke:var(--ink);stroke-width:1;opacity:.55} .trscore .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
+.trscore .acc{font-family:var(--body);font-size:15px;font-weight:600} .trscore .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--ink)}
+.trroll{overflow:auto;max-height:34vh;border:1px solid var(--line-strong);border-radius:6px;margin-bottom:8px;user-select:none}
+.trroll svg{display:block;touch-action:none}
+.rwh{fill:var(--panel)} .rbk{fill:color-mix(in srgb, var(--line-strong) 60%, var(--panel))}
+.rlab{font-family:var(--cond);font-size:9px;fill:var(--muted)} .rbeat{stroke:var(--line-strong);stroke-width:.5} .rbar{stroke:var(--muted);stroke-width:1}
+.rlane{fill:var(--lane);stroke:var(--line-strong);cursor:copy} .rlane.solo{fill:color-mix(in srgb, var(--wrong) 14%, var(--lane))}
+.rchord{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--brass);cursor:pointer}
+.rsolo{font-family:var(--cond);font-size:11px;fill:var(--muted);cursor:pointer}
+.rnote{fill:var(--chord);stroke:color-mix(in srgb, var(--chord) 60%, #000);stroke-width:.5;cursor:grab} .rnote.sel{fill:var(--brass)} .rnote.hid{opacity:.25}
+.rhead{stroke:var(--wrong);stroke-width:2}
+.trpop{position:fixed;z-index:50;display:flex;gap:6px;align-items:center;background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.trpop select{font:inherit;color:var(--ink);background:var(--lane);border:1px solid var(--line-strong);border-radius:4px;padding:4px}
+.trpop .ghost{margin-left:0}
+@media (max-width:700px){ .trmodes{grid-template-columns:1fr} }

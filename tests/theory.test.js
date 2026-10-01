@@ -1,13 +1,13 @@
 // Quick checks for the theory core and ear-training generators. Run: node tests/theory.test.js
 const fs=require('fs'), vm=require('vm'), path=require('path');
-const ctx={console,store:{get:(k,d)=>d,set(){}},localStorage:null};
+const ctx={console,TextEncoder,store:{get:(k,d)=>d,set(){}},localStorage:null};
 vm.createContext(ctx);
 const load=f=>vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx,{filename:f});
 load('js/theory.js');
 vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
-load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js'); load('js/reharm/moves.js');
+load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js'); load('js/reharm/moves.js'); load('js/transcribe/analyze.js'); load('js/transcribe/export.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
-const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts})',ctx);
+const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile})',ctx);
 const t=(pc,id)=>({root:T.defaultRoot(pc,T.Q[id].minor),q:T.Q[id]});
 ok(T.evaluate([53,56,60,63],t(5,'min7'),{rootless:true}).ok,'Fm7 root position');
 ok(T.evaluate([56,60,63,67],t(5,'min7'),{rootless:true}).ok,'Fm7 rootless');
@@ -82,5 +82,16 @@ ok(names('ladybird')==='Cmaj7 E♭7 A♭maj7 D♭maj7','Lady Bird in C');
 ok(names('cliche',9)==='Am Am(maj7) Am7 Am6','minor line cliché in A minor');
 ok(names('bassdown')==='C G/B Am C/G','descending bass in C');
 ok(T.REHARM_MOVES.length===30,'30 moves');
+// transcribe: beats, the top line, chord naming, and exports that open in MuseScore
+{ const map=T.beatMapper(T.fillBeats([.6,1.2,1.8,2.4],3),0); ok(Math.abs(map(0))<.01&&Math.abs(map(.9)-1.5)<.01,'beat grid filled back to 0 and mapped');
+  const line=T.topLine([{s:0,e:.5,p:60,c:.9},{s:.01,e:.5,p:72,c:.9},{s:.5,e:1,p:74,c:.2},{s:.6,e:1,p:76,c:.8}]);
+  ok(line.map(n=>n.p).join()==='72,76','top line keeps the highest confident note');
+  const N=(p,s,e)=>({p,s,e,c:.8}), c=T.chordAt([N(45,0,2)],[N(60,0,2),N(64,0,2),N(69,0,2),N(67,0,2)],0,2);
+  ok(c&&c.root===9&&c.qid==='min7','A in the bass with C E G A over it is Am7');
+  const res={tempo:100,duration:4.8,beats:[0,.6,1.2,1.8,2.4,3,3.6,4.2],notes:{target:[N(72,0,.6),N(74,.6,1.2),N(76,1.2,2.4)],bass:[N(36,0,2.4)],harmony:[N(60,0,2.4),N(64,0,2.4),N(67,0,2.4)]}};
+  const sc=T.buildScore(res,{mode:'solo',instrument:'piano',title:'t'});
+  ok(sc.melody.map(n=>n.gat).join()==='0,1,2'&&sc.chords[0].root===0,'score from helper output');
+  const xml=T.toMusicXML(sc); ok(xml.includes('<harmony>')&&xml.includes('<step>C</step>')&&(xml.match(/<measure /g)||[]).length===sc.bars,'MusicXML has chords, notes and every bar');
+  const mid=T.toMidiFile(sc); ok(mid[0]===0x4d&&mid[1]===0x54&&mid[2]===0x68&&mid[3]===0x64,'MIDI header'); }
 console.log(fails?`${fails} failures`:'all theory and generator checks passed');
 process.exit(fails?1:0);

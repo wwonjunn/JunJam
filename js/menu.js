@@ -59,6 +59,7 @@ $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
 bindLinesPane(); bindReharmPane();
+$('trOpenBtn').onclick=trOpen;
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);

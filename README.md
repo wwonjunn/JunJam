@@ -14,6 +14,10 @@ A jazz piano trainer with two sides:
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
   backdoor, line clichés, pedal point, Coltrane changes, negative harmony, melody reharm...). Each has a card (what, why, where you hear it), before/after audio, a drill
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
+- **Transcribe** (button on the home screen): drop in an mp3, choose a solo transcription or a lead sheet, select
+  the part, and get editable sheet music with chords. Edit in a piano roll, export MusicXML or MIDI, or send a phrase
+  to Lines. Needs the local helper in `tools/transcriber` (Demucs + Basic Pitch + librosa), installed once with
+  `bash tools/transcriber/install.sh`; Jun Jam.app starts it automatically. Everything else works without it.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
 
@@ -41,6 +45,10 @@ js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Data
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
+js/transcribe/analyze.js   helper notes (seconds) to a score: beats, top line, chords, key
+js/transcribe/export.js    spelling, MIDI and MusicXML export
+js/transcribe/session.js   Transcribe screens: import, what to see, region, helper call, editor
+tools/transcriber/         the local helper: install.sh, requirements.txt, server.py
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript

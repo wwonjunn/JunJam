@@ -346,6 +346,43 @@ body.linesmode header .modetag{display:none}
 .rhc.cur{box-shadow:0 0 0 2px var(--brass)}
 .lick .rwhat{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.3}
 body.nohud:not(.earsmode) header .modetag{display:none}
+
+/* ---------------- Transcribe ---------------- */
+.trhome{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 2px;font-size:14px;color:var(--muted)}
+body.trmode .panel,body.trmode .kbwrap{display:none}
+.trbody{max-width:1100px}
+.trok{color:var(--good);font-family:var(--cond);font-weight:600} .trno{color:var(--wrong);font-family:var(--cond);font-weight:600}
+.trguide{border:1.5px solid var(--line-strong);border-radius:6px;padding:10px 14px;margin:0 0 12px}
+.trguide ol{margin:8px 0 0;padding-left:20px} .trguide li{margin:0 0 8px}
+.trcmd{display:flex;gap:6px;align-items:center;margin-top:4px}
+.trcmd code{flex:1;overflow-x:auto;white-space:nowrap;background:var(--panel);border:1px solid var(--line-strong);border-radius:4px;padding:5px 8px;font-size:12px}
+.trcmd .ghost{margin-left:0;padding:4px 10px;font-size:14px}
+.trdrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed var(--line-strong);border-radius:8px;padding:26px;cursor:pointer;color:var(--muted)}
+.trdrop b{font-family:var(--cond);font-size:20px;color:var(--ink)} .trdrop.over{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 10%, transparent)}
+.trmodes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.trpick{text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:10px 12px;cursor:pointer}
+.trpick b{display:block;font-family:var(--hand);font-size:22px} .trpick span{font-size:13px;color:var(--muted)}
+.trpick[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 12%, transparent)}
+.trwave{width:100%;height:110px;display:block;border:1px solid var(--line-strong);border-radius:6px;cursor:crosshair;margin:4px 0 8px;background:var(--panel)}
+.trtools{align-items:center;margin-bottom:8px}
+.trscore{max-height:46vh;overflow-y:auto;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;margin-bottom:10px}
+.trline{position:relative} .trline svg{width:100%;height:auto;display:block}
+.trbar{position:absolute;left:4px;top:0;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted)}
+.trscore .ln{stroke:var(--ink);stroke-width:1;opacity:.55} .trscore .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
+.trscore .acc{font-family:var(--body);font-size:15px;font-weight:600} .trscore .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--ink)}
+.trroll{overflow:auto;max-height:34vh;border:1px solid var(--line-strong);border-radius:6px;margin-bottom:8px;user-select:none}
+.trroll svg{display:block;touch-action:none}
+.rwh{fill:var(--panel)} .rbk{fill:color-mix(in srgb, var(--line-strong) 60%, var(--panel))}
+.rlab{font-family:var(--cond);font-size:9px;fill:var(--muted)} .rbeat{stroke:var(--line-strong);stroke-width:.5} .rbar{stroke:var(--muted);stroke-width:1}
+.rlane{fill:var(--lane);stroke:var(--line-strong);cursor:copy} .rlane.solo{fill:color-mix(in srgb, var(--wrong) 14%, var(--lane))}
+.rchord{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--brass);cursor:pointer}
+.rsolo{font-family:var(--cond);font-size:11px;fill:var(--muted);cursor:pointer}
+.rnote{fill:var(--chord);stroke:color-mix(in srgb, var(--chord) 60%, #000);stroke-width:.5;cursor:grab} .rnote.sel{fill:var(--brass)} .rnote.hid{opacity:.25}
+.rhead{stroke:var(--wrong);stroke-width:2}
+.trpop{position:fixed;z-index:50;display:flex;gap:6px;align-items:center;background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.trpop select{font:inherit;color:var(--ink);background:var(--lane);border:1px solid var(--line-strong);border-radius:4px;padding:4px}
+.trpop .ghost{margin-left:0}
+@media (max-width:700px){ .trmodes{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -368,7 +405,8 @@ body.nohud:not(.earsmode) header .modetag{display:none}
       <div class="card wide">
         <h1>Jun Jam</h1>
         <p class="rank" id="rankLine"></p>
-        <div id="homePane"><div class="modes" id="modes"></div></div>
+        <div id="homePane"><div class="modes" id="modes"></div>
+          <div class="trhome"><button class="ghost" id="trOpenBtn" style="margin-left:0">Transcribe a recording</button><span>Turn an mp3 into editable sheet music with chords: a solo note for note, or a lead sheet.</span></div></div>
         <div id="earsPane" hidden></div>
         <div id="linesPane" hidden></div>
         <div id="reharmPane" hidden></div>
@@ -406,6 +444,7 @@ body.nohud:not(.earsmode) header .modetag{display:none}
       </div>
       <div class="card eresults" id="lResults" hidden></div>
     </div>
+    <div class="ears" id="transStage" hidden><div id="trBody" class="rhbody trbody"></div></div>
     <div class="ears" id="reharmStage" hidden><div id="rhBody" class="rhbody"></div></div>
     <div class="ears" id="earsStage" hidden>
       <div id="ePlay">
@@ -1075,6 +1114,7 @@ function onMsg(e){
 const QWERTY={a:0,w:1,s:2,e:3,d:4,f:5,t:6,g:7,y:8,h:9,u:10,j:11,k:12,o:13,l:14,p:15,';':16,"'":17};
 let qOct=60;
 document.addEventListener('keydown',e=>{
+  if(typeof TR!=='undefined' && TR.active && trKey(e)) return;
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
   if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
   if(typeof REHARM!=='undefined' && REHARM.active && rhKey(e)) return;
@@ -2379,7 +2419,7 @@ function splitDur(at,d){
 }
 function lineStaffSVG(inst,idx,done){
   const BW=78, X0=60, y=di=>40+(38-di)*5, xOf=t=>X0+t*BW;
-  const total=inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0), W=Math.max(320,xOf(total)+24);
+  const total=Math.max(inst.total||0,inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0)), W=Math.max(320,xOf(total)+24);
   // pieces: each note split into writable values, tied together
   // pieces: each note split into writable values and tied; triplet notes are written as triplet 8ths or quarters
   const P=[]; inst.notes.forEach((n,i)=>n.tri?P.push({at:n.gat,d:n.gdur,n,i,first:true,tie:false,tri:true}):splitDur(n.gat,n.gdur).forEach((pc,k,arr)=>P.push({...pc,n,i,first:k===0,tie:k<arr.length-1})));
@@ -2841,6 +2881,487 @@ function rhKey(e){
 }
 </script>
 <script>
+/* Transcribe: turn the helper's raw notes (seconds) into a score (beats, bars, chords). Pure, no DOM.
+   Tested by tests/theory.test.js. The helper does the listening; this does the music. */
+
+// Beat trackers often miss the first or last beats: extend the grid back to the start and on to the end
+function fillBeats(beats,duration){
+  const b=beats.length>1?[...beats]:[0,.5], gap=(b[b.length-1]-b[0])/(b.length-1);
+  while(b[0]-gap>-gap*.35) b.unshift(b[0]-gap);
+  while(b[b.length-1]+gap<duration+gap) b.push(b[b.length-1]+gap);
+  return b;
+}
+// Seconds → beats, following the detected beats (so a recording that drifts in tempo still lines up)
+function beatMapper(beats,shift=0){
+  const b=beats.length>1?beats:[0,.5], gap=(b[b.length-1]-b[0])/(b.length-1);
+  return t=>{
+    if(t<=b[0]) return (t-b[0])/(b[1]-b[0]||gap)-shift;
+    if(t>=b[b.length-1]) return b.length-1+(t-b[b.length-1])/gap-shift;
+    let lo=0, hi=b.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(b[m]<=t) lo=m; else hi=m; }
+    return lo+(t-b[lo])/(b[lo+1]-b[lo])-shift;
+  };
+}
+// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps
+function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
+  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
+  const out=[];
+  for(const n of ok){
+    const last=out[out.length-1];
+    if(last&&n.s-last.s<.04){ if(n.p>last.p) out[out.length-1]={...n}; continue; } // same moment: the top note wins
+    if(last&&last.e>n.s) last.e=n.s;                                                     // cut the one before
+    out.push({...n});
+  }
+  return out.filter(n=>n.e-n.s>=.03);
+}
+// The written melody in beats, cleaned up like the licks (gridTimes); lead sheets also drop ornaments
+function melodyBeats(line,toBeat,lead){
+  let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c})).filter(n=>n.at>-.25);
+  if(lead) notes=notes.filter((n,i)=>n.dur>=.2||(notes[i+1]&&notes[i+1].at-n.at>=.4));       // grace notes and turns go
+  const g=gridTimes(notes.map(n=>({at:Math.max(0,n.at),dur:n.dur})));
+  return notes.map((n,i)=>({midi:n.midi,gat:lead?Math.round(g[i].gat*2)/2:g[i].gat,gdur:g[i].gdur,tri:!lead&&g[i].tri}))
+    .filter((n,i,a)=>!lead||i===0||n.gat>a[i-1].gat).map((n,i,a)=>lead&&a[i+1]?{...n,gdur:Math.min(Math.max(n.gdur,.5),a[i+1].gat-n.gat)}:n);
+}
+// Chords: score every root and chord type against how much each pitch class sounds in the window
+const CHORD_TYPES=['maj','min','dom7','maj7','min7','hdim','dim7','sus7','six','min6'];
+function chordAt(bassNotes,harmNotes,t0,t1,minWeight=0){
+  const w=Array(12).fill(0); let low=null, lowW=0;
+  const add=(n,k)=>{ const ov=Math.min(n.e,t1)-Math.max(n.s,t0); if(ov>0) w[mod12(n.p)]+=ov*(.4+n.c)*k; return ov; };
+  bassNotes.forEach(n=>{ const ov=add(n,2); if(ov>lowW){ lowW=ov; low=mod12(n.p); } });
+  harmNotes.forEach(n=>add(n,1));
+  const max=Math.max(...w), total=w.reduce((a,b)=>a+b,0); if(max<=0||total<minWeight) return null;
+  let best=null;
+  for(let r=0;r<12;r++) for(const id of CHORD_TYPES){
+    const q=Q[id], tones=[...new Set([...q.ct,...q.req])].map(iv=>mod12(r+iv));
+    const inW=tones.reduce((a,pc)=>a+w[pc],0), outW=w.reduce((a,x,pc)=>a+(tones.includes(pc)?0:x),0);
+    const weakTone=Math.min(...tones.map(pc=>w[pc]))/max;                        // every chord tone should really sound
+    const sc=inW-.55*outW-.06*tones.length*max+(low===r?.35*max:0)+(weakTone<.08?-.3*max:0);
+    if(!best||sc>best.sc) best={root:r,qid:id,sc};
+  }
+  return best;
+}
+function chordsPerBar(bassNotes,harmNotes,toSec,bars,perBar=1){
+  const out=[]; const len=4/perBar;
+  // how much sounds in a typical bar, so near-silent stretches (fades, gaps) don't get a chord
+  const load=b=>{ const t0=toSec(b*len), t1=toSec((b+1)*len); return [...bassNotes,...harmNotes].reduce((a,n)=>a+Math.max(0,Math.min(n.e,t1)-Math.max(n.s,t0))*(.4+n.c),0); };
+  const loads=[...Array(bars*perBar).keys()].map(load).sort((a,b)=>a-b), typical=loads[Math.floor(loads.length*.6)]||0;
+  for(let b=0;b<bars;b++) for(let h=0;h<perBar;h++){
+    const at=b*4+h*len, c=chordAt(bassNotes,harmNotes,toSec(at),toSec(at+len),typical*.2);
+    if(c) out.push({at,root:c.root,qid:c.qid});
+  }
+  return out.filter((c,i,a)=>i===0||c.root!==a[i-1].root||c.qid!==a[i-1].qid);     // a chord lasts until it changes
+}
+// Key: correlate the melody and harmony with major and minor key profiles (Krumhansl–Kessler)
+const KK_MAJ=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88], KK_MIN=[6.33,2.68,3.52,5.38,2.6,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+function guessKey(notes){
+  const w=Array(12).fill(0); notes.forEach(n=>w[mod12(n.p)]+=(n.e-n.s)*(.4+n.c));
+  let best={pc:0,minor:false,r:-9};
+  for(let k=0;k<12;k++) for(const [prof,minor] of [[KK_MAJ,false],[KK_MIN,true]]){
+    const xs=w, ys=xs.map((_,i)=>prof[mod12(i-k)]), mx=xs.reduce((a,b)=>a+b,0)/12, my=ys.reduce((a,b)=>a+b,0)/12;
+    const num=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0), den=Math.sqrt(xs.reduce((a,x)=>a+(x-mx)**2,0)*ys.reduce((a,y)=>a+(y-my)**2,0))||1;
+    if(num/den>best.r) best={pc:k,minor,r:num/den};
+  }
+  return best;
+}
+// Instruments: which stem the helper should transcribe, and the range the line lives in
+const TR_INSTRUMENTS={piano:{name:'Piano (right hand)',stem:'piano',lo:55,hi:100},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88},
+  sax:{name:'Saxophone',stem:'other',lo:44,hi:84},trumpet:{name:'Trumpet',stem:'other',lo:52,hi:84},voice:{name:'Voice',stem:'vocals',lo:45,hi:84},bass:{name:'Bass',stem:'bass',lo:24,hi:60}};
+// Build the whole score from the helper's answer
+function buildScore(res,{mode,instrument,shift=0,title='Untitled'}){
+  const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
+  const line=topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3});
+  const melody=melodyBeats(line,toBeat,lead);
+  const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
+  const bars=Math.ceil(totalBeats/4);
+  // beats back to seconds for the chord windows
+  const toSec=b=>{ let lo=-50,hi=res.duration+50; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(toBeat(m)<b) lo=m; else hi=m; } return (lo+hi)/2; };
+  const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
+  const key=guessKey([...res.notes.target,...res.notes.harmony]);
+  const used=Math.max(melody.length?Math.floor((melody[melody.length-1].gat)/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
+  return {v:1,title,mode,instrument,tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[]};
+}
+</script>
+<script>
+/* Transcribe: spelling, MIDI and MusicXML export. Pure, no DOM. Tested by tests/theory.test.js
+   score: {title, tempo, bars, key:{pc,minor}, melody:[{midi,gat,gdur,tri}], chords:[{at,root,qid}], soloBars:[bar...]} */
+
+const scoreChordAt=(score,at)=>score.chords.filter(c=>c.at<=at+1e-6).pop()||null;
+const chordObj=c=>({root:defaultRoot(c.root,Q[c.qid].minor),q:Q[c.qid]});
+// Spell a melody note from the chord it sits over (so F♯ over D7, G♭ over A♭m), falling back to the key
+function spellIn(score,midi,at){
+  const c=scoreChordAt(score,at);
+  if(c){ const t=chordObj(c), sp=spellNote(midi,t.root,t.q); if(Math.abs(sp.a)<=1) return sp; }
+  const k=defaultRoot(score.key?score.key.pc:0,score.key&&score.key.minor), opts=spellingsFor(mod12(midi));
+  const pk=opts.find(([,a])=>a===0)||opts.find(([,a])=>k.a<0?a<0:a>0)||opts[0], oct=Math.floor((midi-pk[1])/12)-1;
+  return {l:pk[0],a:pk[1],oct,di:oct*7+pk[0],name:LETTERS[pk[0]]+ACC[pk[1]]};
+}
+// The melody the score shows and plays: notes in "solo" bars are hidden on lead sheets
+const visibleMelody=score=>score.melody.filter(n=>!(score.soloBars||[]).includes(Math.floor(n.gat/4+1e-6)));
+
+/* ---------------- MIDI (type 1: tempo, melody, chords) ---------------- */
+function toMidiFile(score){
+  const PPQ=480, vlq=n=>{ const b=[n&127]; while(n>>=7) b.unshift((n&127)|128); return b; };
+  const track=evs=>{ evs.sort((a,b)=>a.t-b.t||a.o-b.o); let last=0; const bytes=[];
+    evs.forEach(e=>{ bytes.push(...vlq(Math.max(0,Math.round(e.t)-last)),...e.d); last=Math.max(last,Math.round(e.t)); });
+    bytes.push(0,0xff,0x2f,0); return [0x4d,0x54,0x72,0x6b,(bytes.length>>>24)&255,(bytes.length>>>16)&255,(bytes.length>>>8)&255,bytes.length&255,...bytes]; };
+  const us=Math.round(60e6/(score.tempo||100));
+  const name=[...new TextEncoder().encode(score.title||'Jun Jam transcription')].slice(0,60);
+  const t0=track([{t:0,o:0,d:[0xff,0x51,3,(us>>16)&255,(us>>8)&255,us&255]},{t:0,o:0,d:[0xff,0x58,4,4,2,24,8]},{t:0,o:0,d:[0xff,0x03,name.length,...name]}]);
+  const mel=[]; visibleMelody(score).forEach(n=>{ mel.push({t:n.gat*PPQ,o:1,d:[0x90,n.midi,96]},{t:(n.gat+n.gdur)*PPQ-2,o:0,d:[0x80,n.midi,0]}); });
+  const ch=[]; score.chords.forEach((c,i)=>{ const end=(score.chords[i+1]?score.chords[i+1].at:score.bars*4), t=chordObj(c);
+    const notes=[36+mod12(c.root-36),...[...new Set([...t.q.ct,...t.q.req])].map(iv=>48+mod12(c.root+iv)).sort((a,b)=>a-b)];
+    notes.forEach(m=>ch.push({t:c.at*PPQ,o:1,d:[0x91,m,64]},{t:end*PPQ-4,o:0,d:[0x81,m,0]})); });
+  const head=[0x4d,0x54,0x68,0x64,0,0,0,6,0,1,0,3,(PPQ>>8)&255,PPQ&255];
+  return new Uint8Array([...head,...t0,...track(mel),...track(ch)]);
+}
+
+/* ---------------- MusicXML (one part, chord symbols, ties, triplets) ---------------- */
+function toMusicXML(score){
+  const DIV=12, BAR=48, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const TYPES=[[48,'whole',0],[36,'half',1],[24,'half',0],[18,'quarter',1],[12,'quarter',0],[9,'eighth',1],[6,'eighth',0],[3,'16th',0]];
+  const KIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'major-seventh',dom7:'dominant',min7:'minor-seventh',hdim:'half-diminished',
+    dim7:'diminished-seventh',six:'major-sixth',min6:'minor-sixth',sus7:'suspended-fourth',sus4:'suspended-fourth',sus2:'suspended-second',mmaj7:'major-minor',maj9:'major-ninth',dom9:'dominant-ninth',min9:'minor-ninth'};
+  const fifths=k=>{ const order=[0,7,2,9,4,11,6,1,8,3,10,5]; let f=order.indexOf(mod12(k.minor?k.pc+3:k.pc)); if(f>6) f-=12; return f; };
+  // melody as integer divisions, clipped to bars and with no overlaps
+  const mel=visibleMelody(score).map(n=>({...n,s:Math.round(n.gat*DIV),e:Math.round((n.gat+n.gdur)*DIV)})).sort((a,b)=>a.s-b.s);
+  mel.forEach((n,i)=>{ if(mel[i+1]&&n.e>mel[i+1].s) n.e=mel[i+1].s; if(n.e<=n.s) n.e=n.s+1; });
+  const pitchXml=(midi,at)=>{ const sp=spellIn(score,midi,at); return `<pitch><step>${LETTERS[sp.l]}</step>${sp.a?`<alter>${sp.a}</alter>`:''}<octave>${sp.oct}</octave></pitch>`; };
+  const noteXml=(dur,body,{tri=false,tieStart=false,tieStop=false,rest=false}={})=>{
+    const base=tri?dur*3/2:dur, t=TYPES.find(x=>x[0]===base)||TYPES.find(x=>x[0]<=base)||TYPES[TYPES.length-1];
+    return `<note>${rest?'<rest/>':body}<duration>${dur}</duration>${tieStop?'<tie type="stop"/>':''}${tieStart?'<tie type="start"/>':''}<type>${t[1]}</type>${t[2]?'<dot/>':''}`+
+      (tri?'<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>':'')+
+      ((tieStart||tieStop)?`<notations>${tieStop?'<tied type="stop"/>':''}${tieStart?'<tied type="start"/>':''}</notations>`:'')+'</note>';
+  };
+  // split a length into writable values (whole, dotted, plain), plus 8th- and quarter-note triplets
+  const pieces=(len,tri)=>{ if(tri&&(len===4||len===8)) return [{d:len,tri:true}]; const out=[]; let left=len;
+    while(left>0){ const v=[48,36,24,18,12,9,6,3].find(x=>x<=left); if(!v){ out.push({d:left}); break; } out.push({d:v}); left-=v; } return out; };
+  let xml=`<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n`+
+    `<score-partwise version="4.0"><work><work-title>${esc(score.title||'Transcription')}</work-title></work><identification><encoding><software>Jun Jam</software></encoding></identification>`+
+    `<part-list><score-part id="P1"><part-name>${score.mode==='lead'?'Lead sheet':'Solo'}</part-name></score-part></part-list><part id="P1">`;
+  for(let b=0;b<score.bars;b++){
+    const b0=b*BAR, b1=b0+BAR;
+    xml+=`<measure number="${b+1}">`;
+    if(b===0) xml+=`<attributes><divisions>${DIV}</divisions><key><fifths>${fifths(score.key||{pc:0})}</fifths>${score.key&&score.key.minor?'<mode>minor</mode>':''}</key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>`+
+      `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${score.tempo||100}</per-minute></metronome></direction-type><sound tempo="${score.tempo||100}"/></direction>`;
+    if((score.soloBars||[]).includes(b)) xml+=`<direction placement="above"><direction-type><words>Solo</words></direction-type></direction>`;
+    // chord symbols and notes, in time order
+    const evs=[]; score.chords.filter(c=>Math.round(c.at*DIV)>=b0&&Math.round(c.at*DIV)<b1).forEach(c=>evs.push({t:Math.round(c.at*DIV),c}));
+    let t=b0;
+    const out=[];
+    const flushTo=to=>{ if(to>t){ pieces(to-t).forEach(p=>out.push({t,xml:noteXml(p.d,'',{rest:true})})); t=to; } };
+    mel.filter(n=>n.e>b0&&n.s<b1).forEach(n=>{
+      const s=Math.max(n.s,b0), e=Math.min(n.e,b1);
+      flushTo(s);
+      const ps=pieces(e-s,n.tri&&n.s>=b0&&n.e<=b1);
+      ps.forEach((p,i)=>{ out.push({t,xml:noteXml(p.d,pitchXml(n.midi,n.gat),{tri:p.tri,tieStop:i>0||n.s<b0,tieStart:i<ps.length-1||n.e>b1})}); t+=p.d; });
+    });
+    flushTo(b1);
+    // place each chord symbol before the first note or rest at or after its time
+    evs.forEach(ev=>{ const i=out.findIndex(o=>o.t>=ev.t), c=chordObj(ev.c), sym=symText({root:c.root,q:c.q});
+      const h=`<harmony><root><root-step>${LETTERS[c.root.l]}</root-step>${c.root.a?`<root-alter>${c.root.a}</root-alter>`:''}</root><kind text="${esc(c.q.suf)}">${KIND[c.q.id]||'major'}</kind></harmony>`;
+      out.splice(i<0?out.length:i,0,{t:ev.t,xml:h,sym}); });
+    xml+=out.map(o=>o.xml).join('')+'</measure>';
+  }
+  return xml+'</part></score-partwise>\n';
+}
+</script>
+<script>
+/* Transcribe: mp3 in, editable sheet music out. The helper (tools/transcriber) does the listening on this Mac;
+   this screen imports the recording, asks what you want to see, sends the selection, and lets you fix the result. */
+const TR_URL='http://127.0.0.1:8771';
+let TRDATA=store.get('trans',{list:[]});
+const saveTr=()=>store.set('trans',TRDATA);
+const TR={active:false};
+
+/* ---------------- helper status and install guide ---------------- */
+async function trHelperOk(){ try{ const c=new AbortController(); setTimeout(()=>c.abort(),1500); const r=await fetch(TR_URL+'/health',{signal:c.signal}); return (await r.json()).ok; }catch(e){ return false; } }
+function trProjectDir(){ if(location.protocol!=='file:') return null; const p=decodeURIComponent(location.pathname); return p.slice(0,p.lastIndexOf('/')); }
+function trInstallGuide(){
+  const dir=trProjectDir(), q=s=>`"${s}"`;
+  const install=`bash ${q((dir||'/path/to/Jun Jam')+'/tools/transcriber/install.sh')}`;
+  const start=`"$HOME/Library/Application Support/Jun Jam/transcriber-venv/bin/python" "$HOME/Library/Application Support/Jun Jam/server.py"`;
+  const cmd=(t,id)=>`<div class="trcmd"><code id="${id}">${t.replace(/</g,'&lt;')}</code><button class="ghost" data-copy="${id}">Copy</button></div>`;
+  return `<div class="trguide"><b>The transcriber helper isn't running.</b> Everything else in Jun Jam works without it; transcribing needs it once, on this Mac.
+    <ol><li>Open <b>Terminal</b> (Cmd+Space, type Terminal) and paste this to install it (about 700 MB, a few minutes, one time only):${cmd(install,'trCmd1')}${dir?'':'<span class="fine">Replace /path/to/Jun Jam with the folder Jun Jam is in.</span>'}</li>
+    <li>From then on <b>Jun Jam.app starts it for you</b>. If you open Jun Jam another way, start it with:${cmd(start,'trCmd2')}</li>
+    <li><button class="go" id="trRecheck">Check again</button></li></ol></div>`;
+}
+
+/* ---------------- start screen ---------------- */
+async function trOpen(){
+  trStopAll(); Object.assign(TR,{active:true,step:'start'});
+  synth.init(); hideOv(); document.body.classList.add('nohud','trmode'); document.body.classList.remove('menu'); $('transStage').hidden=false;
+  $('trBody').innerHTML=`<div class="etop"><span class="etitle">Transcribe a recording</span><span id="trStatus">Checking the helper…</span></div>
+    <p>Drop in an mp3 (or any audio file you own). Choose what you want to see, select the part of the song, and it comes back as sheet music with chords that you can fix and save.</p>
+    <div id="trGuide"></div>
+    <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*" hidden><b>Choose an audio file</b><span>or drop it here</span></label>
+    ${TRDATA.list.length?`<div class="sec" style="margin-top:14px">Saved transcriptions</div><div class="licks">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':'Solo: '+(TR_INSTRUMENTS[t.instrument]||{}).name} · ${t.bars} bars</span><span class="lt">${t.title}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>`:''}
+    <div class="erow" style="margin-top:14px"><button class="ghost" id="trHome">Back</button></div>`;
+  $('trHome').onclick=trToMenu;
+  const f=$('trFile'), drop=$('trDrop');
+  f.onchange=()=>f.files[0]&&trLoad(f.files[0]);
+  drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); }; drop.ondragleave=()=>drop.classList.remove('over');
+  drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); const file=e.dataTransfer.files[0]; if(file) trLoad(file); };
+  $('trBody').onclick=e=>{ const d=e.target.closest('[data-del]'), o=e.target.closest('[data-open]'), c=e.target.closest('[data-copy]');
+    if(d){ e.stopPropagation(); if(confirm('Delete this transcription?')){ TRDATA.list.splice(+d.dataset.del,1); saveTr(); trOpen(); } return; }
+    if(o){ trEdit(JSON.parse(JSON.stringify(TRDATA.list[+o.dataset.open])),null,+o.dataset.open); return; }
+    if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
+    if(e.target.id==='trRecheck') trCheck(); };
+  trCheck();
+}
+async function trCheck(){
+  const ok=await trHelperOk(); TR.helper=ok; if(!$('trStatus')) return;
+  $('trStatus').textContent=ok?'Helper ready':'Helper not running'; $('trStatus').className=ok?'trok':'trno';
+  if($('trGuide')) $('trGuide').innerHTML=ok?'':trInstallGuide();
+  if($('trGo')) $('trGo').disabled=!ok;
+}
+
+/* ---------------- setup: waveform, region, what you want to see ---------------- */
+async function trLoad(file){
+  const c=synth.ctx; $('trStatus').textContent='Reading the file…';
+  let buf; try{ buf=await c.decodeAudioData(await file.arrayBuffer()); }catch(e){ $('trStatus').textContent="Couldn't read that file. Try an mp3, m4a or wav."; return; }
+  if(TR.url) URL.revokeObjectURL(TR.url);
+  Object.assign(TR,{step:'setup',buf,file,url:URL.createObjectURL(file),title:file.name.replace(/\.[^.]+$/,''),sel:[0,Math.min(buf.duration,30)],mode:'solo',instrument:'piano'});
+  trSetupRender();
+}
+const fmtT=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}.${Math.floor((s%1)*10)}`;
+function trSetupRender(){
+  const T=TR;
+  $('trBody').innerHTML=`<div class="etop"><span class="etitle">${T.title.replace(/</g,'&lt;')}</span><span id="trStatus"></span></div>
+    <div class="sec">1. What do you want to see?</div>
+    <div class="trmodes"><button class="trpick" data-mode="solo" aria-pressed="${T.mode==='solo'}"><b>Solo transcription</b><span>One instrument's line, note for note, with the chords under it.</span></button>
+      <button class="trpick" data-mode="lead" aria-pressed="${T.mode==='lead'}"><b>Lead sheet</b><span>The tune's melody and chord changes. Mark solo sections afterwards to leave them out.</span></button></div>
+    <div class="irow">${T.mode==='solo'?`<span>Instrument</span><select id="trInst">${Object.entries(TR_INSTRUMENTS).map(([k,v])=>`<option value="${k}"${k===T.instrument?' selected':''}>${v.name}</option>`).join('')}</select>`:'<span>The melody is taken from the vocals, or the lead instrument if there are none.</span>'}</div>
+    <div class="sec">2. Select the part to transcribe <span class="fine" id="trSelT"></span></div>
+    <canvas class="trwave" id="trWave" height="110"></canvas>
+    <div class="erow"><button class="ghost" id="trPlaySel">Play selection</button><button class="ghost" id="trAll">Whole song</button>
+      <div class="seg" role="group">${[[.5,'50%'],[.75,'75%'],[1,'100%']].map(([v,t])=>`<button data-rate="${v}" aria-pressed="${(T.rate||1)===v}">${t}</button>`).join('')}</div></div>
+    <p class="fine">Drag across the waveform to select. About 30 to 90 seconds works best for a solo; a whole song for a lead sheet takes a few minutes.</p>
+    <div class="erow"><button class="go" id="trGo">Transcribe</button><button class="ghost" id="trBack">Back</button></div>`;
+  $('trBack').onclick=trOpen; $('trGo').onclick=trRun;
+  $('trBody').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ T.mode=b.dataset.mode; trSetupRender(); });
+  $('trBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ T.rate=+b.dataset.rate; trSetupRender(); });
+  if($('trInst')) $('trInst').onchange=e=>T.instrument=e.target.value;
+  $('trPlaySel').onclick=()=>trPlayOriginal(T.sel[0],T.sel[1]);
+  $('trAll').onclick=()=>{ T.sel=[0,T.buf.duration]; trDrawWave(); };
+  trDrawWave(); trWaveDrag(); trCheck();
+}
+function trDrawWave(){
+  const cv=$('trWave'); if(!cv) return; const T=TR, w=cv.clientWidth*2, h=220; cv.width=w; cv.height=h;
+  const g=cv.getContext('2d'), d=T.buf.getChannelData(0), step=Math.ceil(d.length/w), css=getComputedStyle(document.body);
+  g.clearRect(0,0,w,h); g.fillStyle=css.getPropertyValue('--line-strong');
+  const x0=T.sel[0]/T.buf.duration*w, x1=T.sel[1]/T.buf.duration*w;
+  g.fillStyle='rgba(224,169,59,.22)'; g.fillRect(x0,0,x1-x0,h);
+  for(let x=0;x<w;x++){ let mx=0; for(let i=x*step;i<(x+1)*step&&i<d.length;i+=4) mx=Math.max(mx,Math.abs(d[i]));
+    g.fillStyle=x>=x0&&x<=x1?css.getPropertyValue('--brass'):css.getPropertyValue('--muted'); g.fillRect(x,h/2-mx*h/2,1,Math.max(1,mx*h)); }
+  if($('trSelT')) $('trSelT').textContent=`${fmtT(T.sel[0])} to ${fmtT(T.sel[1])} (${Math.round(T.sel[1]-T.sel[0])} s)`;
+}
+function trWaveDrag(){
+  const cv=$('trWave'); let a=null;
+  const at=e=>{ const r=cv.getBoundingClientRect(); return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*TR.buf.duration; };
+  cv.onpointerdown=e=>{ a=at(e); TR.sel=[a,a]; cv.setPointerCapture(e.pointerId); };
+  cv.onpointermove=e=>{ if(a===null) return; const b=at(e); TR.sel=[Math.min(a,b),Math.max(a,b)]; trDrawWave(); };
+  cv.onpointerup=()=>{ if(TR.sel[1]-TR.sel[0]<1) TR.sel=[TR.sel[0],Math.min(TR.buf.duration,TR.sel[0]+15)]; a=null; trDrawWave(); };
+}
+// The original recording, through an audio element so it can slow down without changing pitch
+function trPlayOriginal(from,to){
+  trStopAll(); if(!TR.url) return;
+  const au=TR.audio||(TR.audio=new Audio()); if(au.src!==TR.url) au.src=TR.url;
+  au.preservesPitch=true; au.playbackRate=TR.rate||1; au.currentTime=from; au.play();
+  clearInterval(TR.audioTimer); TR.audioTimer=setInterval(()=>{ if(au.currentTime>=to){ au.pause(); clearInterval(TR.audioTimer); } trPlayhead(au.currentTime); },40);
+}
+function trStopAll(){ if(TR.audio) TR.audio.pause(); clearInterval(TR.audioTimer); killBus(TR.bus); TR.bus=null; cancelAnimationFrame(TR.raf); TR.playing=false; }
+
+/* ---------------- send the selection to the helper ---------------- */
+async function trWav(buf,from,to){ // the selection, resampled to 44.1 kHz stereo, as a 16-bit WAV
+  const sr=44100, len=Math.ceil((to-from)*sr), off=new OfflineAudioContext(2,len,sr), src=off.createBufferSource();
+  src.buffer=buf; src.connect(off.destination); src.start(0,from,to-from); const r=await off.startRendering();
+  const L=r.getChannelData(0), R=r.getChannelData(1), out=new DataView(new ArrayBuffer(44+len*4));
+  const w=(o,s)=>[...s].forEach((ch,i)=>out.setUint8(o+i,ch.charCodeAt(0)));
+  w(0,'RIFF'); out.setUint32(4,36+len*4,true); w(8,'WAVE'); w(12,'fmt '); out.setUint32(16,16,true); out.setUint16(20,1,true); out.setUint16(22,2,true);
+  out.setUint32(24,sr,true); out.setUint32(28,sr*4,true); out.setUint16(32,4,true); out.setUint16(34,16,true); w(36,'data'); out.setUint32(40,len*4,true);
+  for(let i=0;i<len;i++){ out.setInt16(44+i*4,Math.max(-1,Math.min(1,L[i]))*32767,true); out.setInt16(46+i*4,Math.max(-1,Math.min(1,R[i]))*32767,true); }
+  return new Blob([out],{type:'audio/wav'});
+}
+async function trRun(){
+  const T=TR; if(!(await trHelperOk())) return trCheck();
+  trStopAll(); T.step='working';
+  const target=T.mode==='lead'?'vocals':TR_INSTRUMENTS[T.instrument].stem, t0=performance.now();
+  $('trBody').innerHTML=`<div class="etop"><span class="etitle">${T.title.replace(/</g,'&lt;')}</span></div>
+    <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">Separating the instruments, then finding the notes and the beat. Roughly as long as the selection, longer the first time (the separation model downloads once).</p>
+    <div class="erow"><button class="ghost" id="trCancel">Cancel</button></div>`;
+  const tick=setInterval(()=>{ if($('trEl')) $('trEl').textContent=Math.round((performance.now()-t0)/1000); },500);
+  const ctl=new AbortController(); $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };
+  try{
+    const wav=await trWav(T.buf,T.sel[0],T.sel[1]);
+    const r=await fetch(`${TR_URL}/transcribe?target=${target}&mode=${T.mode}`,{method:'POST',body:wav,signal:ctl.signal}), res=await r.json();
+    clearInterval(tick);
+    if(!res.ok) throw new Error(res.error||'The helper could not transcribe this.');
+    // lead sheets: no vocals (an instrumental)? the melody comes from the lead instrument instead
+    if(T.mode==='lead'&&res.notes.target.length<12&&res.notes.alt&&res.notes.alt.length>res.notes.target.length) res.notes.target=res.notes.alt;
+    T.res=res; T.shift=0;
+    trEdit(buildScore(res,{mode:T.mode,instrument:T.mode==='lead'?'voice':T.instrument,title:T.title}),res,null);
+  }catch(e){ clearInterval(tick); if(e.name==='AbortError') return; $('trBody').innerHTML=`<p class="lmsg no">${String(e.message||e).replace(/</g,'&lt;')}</p><div class="erow"><button class="go" id="trBack">Back</button></div>`; $('trBack').onclick=trSetupRender; }
+}
+
+/* ---------------- the editor ---------------- */
+const PXB=46, ROW=11, LANE=26;
+function trEdit(score,res,savedIndex){
+  trStopAll(); Object.assign(TR,{active:true,step:'edit',score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],selected:new Set(),rate:TR.rate||1,speed:1});
+  if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
+  $('trBody').innerHTML=`<div class="etop"><span class="etitle" id="trTitle"></span><span id="trInfo"></span></div>
+    <div class="erow trtools"><button class="go" id="trPlay">Play (Space)</button>${TR.url&&TR.res?'<button class="ghost" id="trOrig">Original</button>':''}<button class="ghost" id="trStop">Stop</button>
+      <div class="seg" role="group">${[[.5,'50%'],[.75,'75%'],[1,'100%']].map(([v,t])=>`<button data-speed="${v}" aria-pressed="${TR.speed===v}">${t}</button>`).join('')}</div>
+      ${TR.res?'<button class="ghost" id="trShiftL" title="Move the bar lines one beat earlier">◀ bar line</button><button class="ghost" id="trShiftR" title="One beat later">bar line ▶</button>':''}
+      <button class="ghost" id="trUndo">Undo</button></div>
+    <div class="trscore" id="trScore"></div>
+    <div class="sec">Edit: drag notes to move them, drag their right edge to change length, double-click to add, Delete to remove, ↑/↓ to transpose. Click a chord to change it.</div>
+    <div class="trroll" id="trRoll"></div>
+    <div class="lmsg" id="trMsg"></div>
+    <div class="erow"><button class="go" id="trSave">Save</button><button class="ghost" id="trXml">Export MusicXML</button><button class="ghost" id="trMid">Export MIDI</button><button class="ghost" id="trLick">Selected notes → Lines</button><button class="ghost" id="trClose">Close</button></div>`;
+  const B=$('trBody');
+  $('trPlay').onclick=()=>trPlayScore(); $('trStop').onclick=trStopAll; if($('trOrig')) $('trOrig').onclick=()=>trPlayOriginal(TR.sel[0],TR.sel[1]);
+  B.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{ TR.speed=+b.dataset.speed; TR.rate=TR.speed; B.querySelectorAll('[data-speed]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+  if($('trShiftL')){ $('trShiftL').onclick=()=>trReshift(-1); $('trShiftR').onclick=()=>trReshift(1); }
+  $('trUndo').onclick=trUndo; $('trSave').onclick=trSave; $('trXml').onclick=()=>trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
+  $('trMid').onclick=()=>trDownload(toMidiFile(TR.score),'mid','audio/midi'); $('trLick').onclick=trToLick; $('trClose').onclick=trOpen;
+  trRender();
+}
+function trRender(){ trInfo(); trScoreView(); trRollView(); }
+function trInfo(){ const s=TR.score;
+  $('trTitle').textContent=s.title; $('trInfo').textContent=`${s.mode==='lead'?'Lead sheet':'Solo'} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)} · ${s.bars} bars · ${s.melody.length} notes`; }
+function trPush(){ TR.undo.push(JSON.stringify({m:TR.score.melody,c:TR.score.chords,s:TR.score.soloBars})); if(TR.undo.length>80) TR.undo.shift(); }
+function trUndo(){ const u=TR.undo.pop(); if(!u) return; const o=JSON.parse(u); TR.score.melody=o.m; TR.score.chords=o.c; TR.score.soloBars=o.s; TR.selected.clear(); trRender(); }
+function trReshift(d){ if(!TR.res) return; trPush(); TR.shift=(TR.shift||0)+d; const s=TR.score;
+  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,shift:TR.shift,title:s.title}),soloBars:s.soloBars}; TR.selected.clear(); trRender(); trMsg(`Bar lines moved ${d<0?'earlier':'later'}.`); }
+function trMsg(t,cls=''){ const m=$('trMsg'); if(m){ m.textContent=t; m.className='lmsg '+cls; } }
+
+// Sheet music: four bars to a line, chord symbols above, notes spelled from their chords
+function trScoreView(){
+  const s=TR.score, vis=visibleMelody(s), lines=[];
+  for(let b=0;b<s.bars;b+=4){
+    const a=b*4, z=a+16, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
+      return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,spell:{...sp,midi:n.midi},name:sp.name}; });
+    const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a}));
+    const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+4);
+    lines.push(`<div class="trline"><span class="trbar">${b+1}${solo.length?` · solo ${solo.map(x=>x+1).join(', ')}`:''}</span>${lineStaffSVG({notes,chords,total:16},-1,false)}</div>`);
+  }
+  $('trScore').innerHTML=lines.join('');
+}
+// Piano roll with a chord lane; everything editable
+function trRollView(){
+  const s=TR.score, mel=s.melody, ps=mel.map(n=>n.midi), lo=Math.min(...ps,60)-3, hi=Math.max(...ps,72)+3;
+  const W=s.bars*4*PXB+20, H=LANE+(hi-lo+1)*ROW, y=m=>LANE+(hi-m)*ROW;
+  let g=`<svg id="trSvg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  for(let m=lo;m<=hi;m++) g+=`<rect x="0" y="${y(m)}" width="${W}" height="${ROW}" class="${isBlack(m)?'rbk':'rwh'}"/>${m%12===0?`<text x="2" y="${y(m)+ROW-2}" class="rlab">C${m/12-1}</text>`:''}`;
+  for(let b=0;b<=s.bars*4;b++) g+=`<line x1="${b*PXB}" x2="${b*PXB}" y1="${LANE}" y2="${H}" class="${b%4===0?'rbar':'rbeat'}"/>`;
+  for(let b=0;b<s.bars;b++){ const solo=(s.soloBars||[]).includes(b);
+    g+=`<rect x="${b*4*PXB}" y="0" width="${4*PXB}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${b*4*PXB+4*PXB-4}" y="16" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
+  s.chords.forEach((c,i)=>{ g+=`<text x="${c.at*PXB+3}" y="17" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
+  mel.forEach((n,i)=>{ const hid=(s.soloBars||[]).includes(Math.floor(n.gat/4+1e-6));
+    g+=`<rect x="${n.gat*PXB+1}" y="${y(n.midi)+1}" width="${Math.max(4,n.gdur*PXB-2)}" height="${ROW-2}" rx="2" class="rnote${TR.selected.has(i)?' sel':''}${hid?' hid':''}" data-i="${i}"/>`; });
+  g+=`<line id="trHead" x1="-5" x2="-5" y1="0" y2="${H}" class="rhead"/></svg>`;
+  $('trRoll').innerHTML=g; TR.roll={lo,hi,y};
+  trRollEvents();
+}
+function trRollEvents(){
+  const svg=$('trSvg'), s=TR.score; let drag=null;
+  const pt=e=>{ const r=svg.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; };
+  const toPitch=py=>TR.roll.hi-Math.floor((py-LANE)/ROW), snap=b=>Math.max(0,Math.round(b*4)/4);
+  svg.onpointerdown=e=>{
+    const p=pt(e), nEl=e.target.closest('.rnote'), cEl=e.target.closest('[data-chord]'), sEl=e.target.closest('[data-solo]');
+    if(sEl){ trPush(); const b=+sEl.dataset.solo, sb=s.soloBars||(s.soloBars=[]); sb.includes(b)?sb.splice(sb.indexOf(b),1):sb.push(b); trRender(); return; }
+    if(cEl){ trChordEdit(+cEl.dataset.chord,e); return; }
+    if(e.target.closest('.rlane')){ trChordAdd(Math.floor(p.x/PXB/4)*4,e); return; }
+    if(nEl){ const i=+nEl.dataset.i, n=s.melody[i];
+      if(!e.shiftKey&&!TR.selected.has(i)) TR.selected.clear(); TR.selected.add(i);
+      const edge=p.x>(n.gat+n.gdur)*PXB-7;
+      trPush(); drag={mode:edge?'len':'move',p0:p,orig:[...TR.selected].map(k=>({k,...s.melody[k]}))};
+      svg.setPointerCapture(e.pointerId); trRollView(); return; }
+    TR.selected.clear(); drag={mode:'box',p0:p}; svg.setPointerCapture(e.pointerId);
+  };
+  svg.onpointermove=e=>{ if(!drag) return; const p=pt(e), dx=(p.x-drag.p0.x)/PXB, dy=Math.round((drag.p0.y-p.y)/ROW);
+    if(drag.mode==='move') drag.orig.forEach(o=>{ s.melody[o.k]={...s.melody[o.k],gat:snap(o.gat+dx),midi:Math.max(21,Math.min(108,o.midi+dy))}; });
+    else if(drag.mode==='len') drag.orig.forEach(o=>{ s.melody[o.k]={...s.melody[o.k],gdur:Math.max(.25,snap(o.gdur+dx)),tri:false}; });
+    else { const x0=Math.min(p.x,drag.p0.x), x1=Math.max(p.x,drag.p0.x), y0=Math.min(p.y,drag.p0.y), y1=Math.max(p.y,drag.p0.y);
+      TR.selected=new Set(s.melody.map((n,i)=>i).filter(i=>{ const n=s.melody[i], ny=TR.roll.y(n.midi)+ROW/2; return n.gat*PXB<x1&&(n.gat+n.gdur)*PXB>x0&&ny>y0&&ny<y1; })); }
+    trRollView();
+  };
+  svg.onpointerup=()=>{ if(drag&&drag.mode!=='box'){ trTidy(); trRender(); } drag=null; };
+  svg.ondblclick=e=>{ if(e.target.closest('.rnote')||e.target.closest('.rlane')) return; const p=pt(e); trPush();
+    s.melody.push({midi:toPitch(p.y),gat:Math.floor(p.x/PXB*4)/4,gdur:.5,tri:false}); trTidy(); TR.selected=new Set([s.melody.findIndex(n=>n.gat===Math.floor(p.x/PXB*4)/4&&n.midi===toPitch(p.y))]); trRender(); };
+}
+// keep notes in time order, one line: a note can't run into the next one
+function trTidy(){ const m=TR.score.melody; const sel=[...TR.selected].map(i=>m[i]); m.sort((a,b)=>a.gat-b.gat||b.midi-a.midi);
+  for(let i=0;i<m.length-1;i++) if(m[i].gat+m[i].gdur>m[i+1].gat) m[i].gdur=Math.max(.05,m[i+1].gat-m[i].gat);
+  TR.selected=new Set(sel.map(n=>m.indexOf(n)).filter(i=>i>=0)); }
+// chord symbols: click to change, click an empty spot in the lane to add one
+const TR_QUALS=['maj','min','dom7','maj7','min7','hdim','dim7','dim','aug','sus4','sus7','six','min6','mmaj7','maj9','dom9','min9','dom13','min11','d7b9','d7s9','alt','d7s11','add9','six9'];
+function trChordPopup(e,c,onSave,onDel){
+  document.querySelectorAll('.trpop').forEach(x=>x.remove());
+  const pop=document.createElement('div'); pop.className='trpop';
+  pop.innerHTML=`<select id="tpR">${[...Array(12).keys()].map(pc=>`<option value="${pc}"${pc===c.root?' selected':''}>${rootName(defaultRoot(pc,false))}</option>`).join('')}</select>
+    <select id="tpQ">${TR_QUALS.map(id=>`<option value="${id}"${id===c.qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
+    <button class="go" id="tpOk">OK</button>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}`;
+  document.body.appendChild(pop); pop.style.left=Math.min(innerWidth-300,e.clientX)+'px'; pop.style.top=(e.clientY+12)+'px';
+  pop.querySelector('#tpOk').onclick=()=>{ onSave(+pop.querySelector('#tpR').value,pop.querySelector('#tpQ').value); pop.remove(); };
+  if(onDel) pop.querySelector('#tpDel').onclick=()=>{ onDel(); pop.remove(); };
+  setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('pointerdown',f); } }),0);
+}
+function trChordEdit(i,e){ const s=TR.score, c=s.chords[i];
+  trChordPopup(e,c,(root,qid)=>{ trPush(); s.chords[i]={...c,root,qid}; trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); }); }
+function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.key.pc,qid:'maj7'};
+  trChordPopup(e,{...prev},(root,qid)=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); s.chords.push({at,root,qid}); s.chords.sort((a,b)=>a.at-b.at); trRender(); }); }
+
+/* ---------------- playback, save, export, to Lines ---------------- */
+function trPlayScore(){
+  trStopAll(); const s=TR.score, spb=60/(s.tempo*TR.speed), t0=now()+.1, bus=TR.bus=newBus(); if(!bus) return; TR.playing=true;
+  visibleMelody(s).forEach(n=>tone(n.midi,t0+n.gat*spb,Math.max(.08,n.gdur*spb*.92),94,'epiano',bus));
+  s.chords.forEach((c,i)=>{ const end=s.chords[i+1]?s.chords[i+1].at:s.bars*4, t=chordObj(c);
+    playChord(compUnder({root:t.root,q:t.q},58),t0+c.at*spb,(end-c.at)*spb*.95,'mellow',bus,42); tone(36+mod12(c.root-36),t0+c.at*spb,(end-c.at)*spb*.95,56,'mellow',bus); });
+  const end=t0+s.bars*4*spb, step=()=>{ const b=(now()-t0)/spb; trPlayhead(null,b); if(now()<end) TR.raf=requestAnimationFrame(step); else TR.playing=false; };
+  TR.raf=requestAnimationFrame(step);
+}
+function trPlayhead(sec,beat){ const h=$('trHead'); if(!h) return;
+  if(beat==null&&TR.res&&sec!=null){ const toB=beatMapper(fillBeats(TR.res.beats,TR.res.duration),TR.shift||0); beat=toB(sec-TR.sel[0]); }
+  if(beat==null) return; const x=beat*PXB; h.setAttribute('x1',x); h.setAttribute('x2',x);
+  const roll=$('trRoll'); if(roll&&(x<roll.scrollLeft||x>roll.scrollLeft+roll.clientWidth-40)) roll.scrollLeft=x-60; }
+function trSave(){
+  const s=TR.score, item={...s,saved:Date.now()};
+  if(TR.saved!=null&&TRDATA.list[TR.saved]) TRDATA.list[TR.saved]=item; else { TRDATA.list.unshift(item); TR.saved=0; if(TRDATA.list.length>40) TRDATA.list.pop(); }
+  saveTr(); trMsg('Saved. Find it under Saved transcriptions.','ok');
+}
+function trDownload(data,ext,type){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type})); a.download=(TR.score.title||'transcription').replace(/[\\/:*?"<>|]/g,'')+'.'+ext;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+// Selected notes become a lick in Lines, with the chords under them
+function trToLick(){
+  const s=TR.score, sel=[...TR.selected].sort((a,b)=>a-b).map(i=>s.melody[i]).filter(Boolean);
+  if(sel.length<3||sel.length>16) return trMsg('Select 3 to 16 notes in the piano roll first (drag a box around them).','no');
+  const start=Math.floor(sel[0].gat), end=Math.max(...sel.map(n=>n.gat+n.gdur)), c0=scoreChordAt(s,sel[0].gat)||{root:s.key.pc,qid:'maj7'};
+  const chs=[c0,...s.chords.filter(c=>c.at>sel[0].gat+1e-6&&c.at<end-1e-6)], r0=chordObj(c0).root;
+  const ch=chs.map((c,i)=>{ const r=chordObj(c).root, at=Math.max(start,i?c.at:start), next=i<chs.length-1?chs[i+1].at:Math.ceil(end);
+    return [mod7(r.l-r0.l),mod12(c.root-c0.root),c.qid,Math.max(.5,next-at)]; });
+  const lick=Lk('u'+Date.now(),`${s.title}, bar ${start/4+1|0}`,2,'Yours',ch,sel.map(n=>[n.midi-60-c0.root,n.gdur,n.gat-start]));
+  lick.user=true; lick.tip=`From your transcription of ${s.title}.`; applyRatings([],[lick]); LDATA.user.push(lick); saveLines();
+  trMsg(`Saved to Lines as "${lick.name}" (${lick.diff===1?'Easy':lick.diff===2?'Medium':'Hard'}). It's under Yours.`,'ok');
+}
+const mod7=x=>((x%7)+7)%7;
+function trToMenu(){ trStopAll(); TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
+function trKey(e){
+  if(!TR.active) return false;
+  if(e.target&&['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return true;
+  if(e.key==='Escape'){ document.querySelectorAll('.trpop').forEach(x=>x.remove()); TR.step==='edit'||TR.step==='setup'?trOpen():trToMenu(); return true; }
+  if(TR.step!=='edit') return true;
+  const s=TR.score, sel=[...TR.selected];
+  if(e.key===' '){ e.preventDefault(); TR.playing?trStopAll():trPlayScore(); return true; }
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); trUndo(); return true; }
+  if((e.key==='Delete'||e.key==='Backspace')&&sel.length){ trPush(); s.melody=s.melody.filter((n,i)=>!TR.selected.has(i)); TR.selected.clear(); trRender(); return true; }
+  if((e.key==='ArrowUp'||e.key==='ArrowDown')&&sel.length){ e.preventDefault(); trPush(); const d=(e.key==='ArrowUp'?1:-1)*(e.shiftKey?12:1); sel.forEach(i=>s.melody[i].midi+=d); trRender(); return true; }
+  return true; // nothing else in Jun Jam reacts to keys while transcribing
+}
+</script>
+<script>
 /* ---------------- menu ---------------- */
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
 let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm'
@@ -2902,6 +3423,7 @@ $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
 bindLinesPane(); bindReharmPane();
+$('trOpenBtn').onclick=trOpen;
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);
