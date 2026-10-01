@@ -27,6 +27,7 @@ async function trOpen(){
     <p>Drop in an mp3 (or any audio file you own). Choose what you want to see, select the part of the song, and it comes back as sheet music with chords that you can fix and save.</p>
     <div id="trGuide"></div>
     <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*" hidden><b>Choose an audio file</b><span>or drop it here</span></label>
+    <div class="trhome"><button class="ghost" id="trRec" style="margin-left:0">Record from a tab</button><span>Playing it on YouTube or anywhere else in Chrome? Capture that tab's sound while you play the part you want.</span></div>
     ${TRDATA.list.length?`<div class="sec" style="margin-top:14px">Saved transcriptions</div><div class="licks">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':'Solo: '+(TR_INSTRUMENTS[t.instrument]||{}).name} · ${t.bars} bars</span><span class="lt">${t.title}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>`:''}
     <div class="erow" style="margin-top:14px"><button class="ghost" id="trHome">Back</button></div>`;
   $('trHome').onclick=trToMenu;
@@ -38,7 +39,7 @@ async function trOpen(){
     if(d){ e.stopPropagation(); if(confirm('Delete this transcription?')){ TRDATA.list.splice(+d.dataset.del,1); saveTr(); trOpen(); } return; }
     if(o){ trEdit(JSON.parse(JSON.stringify(TRDATA.list[+o.dataset.open])),null,+o.dataset.open); return; }
     if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
-    if(e.target.id==='trRecheck') trCheck(); };
+    if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trRec') trTabRecord(); };
   trCheck();
 }
 async function trCheck(){
@@ -48,10 +49,42 @@ async function trCheck(){
   if($('trGo')) $('trGo').disabled=!ok;
 }
 
+/* ---------------- record from a tab: Chrome's tab sharing, audio only ---------------- */
+async function trTabRecord(){
+  let stream;
+  try{ stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true,preferCurrentTab:false,selfBrowserSurface:'exclude',surfaceSwitching:'include'}); }
+  catch(e){ $('trStatus').textContent='Recording cancelled.'; return; }
+  const audio=stream.getAudioTracks();
+  if(!audio.length){ stream.getTracks().forEach(t=>t.stop()); $('trStatus').textContent='No sound came through. Choose a Chrome tab and tick "Also share tab audio".'; $('trStatus').className='trno'; return; }
+  stream.getVideoTracks().forEach(t=>t.enabled=false); // only the sound is used
+  const rec=new MediaRecorder(new MediaStream(audio),{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm'}), chunks=[];
+  const t0=performance.now(), MAX=6*60*1000;
+  rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  const finish=()=>{ if(rec.state!=='inactive') rec.stop(); };
+  rec.onstop=async()=>{ clearInterval(tick); stream.getTracks().forEach(t=>t.stop());
+    const blob=new Blob(chunks,{type:rec.mimeType}); if(blob.size<2000){ trOpen(); return; }
+    const when=new Date(), file=new File([blob],`Tab recording ${when.getHours()}.${String(when.getMinutes()).padStart(2,'0')}.webm`,{type:rec.mimeType});
+    await trLoad(file); TR.sel=[0,TR.buf.duration]; trDrawWave(); };
+  audio[0].onended=finish; // the person pressed Chrome's own Stop sharing
+  // a level meter, so it's obvious the sound is coming through
+  const ac=synth.ctx, an=ac.createAnalyser(); an.fftSize=512; ac.createMediaStreamSource(new MediaStream(audio)).connect(an); const buf=new Uint8Array(an.fftSize);
+  $('trBody').innerHTML=`<div class="etop"><span class="etitle">Recording the tab</span><span class="trno">● REC <span id="trRecT">0:00</span></span></div>
+    <p class="rhwhat">Play the part you want in the other tab. A few seconds before and after is fine; you'll trim it next.</p>
+    <div class="trmeter"><i id="trLvl"></i></div>
+    <p class="fine">Jun Jam only hears that tab while this screen is open, and the recording stays on this Mac. Up to 6 minutes.</p>
+    <div class="erow"><button class="go" id="trRecStop">Stop and use it</button><button class="ghost" id="trRecCancel">Cancel</button></div>`;
+  $('trRecStop').onclick=finish; $('trRecCancel').onclick=()=>{ chunks.length=0; finish(); };
+  const tick=setInterval(()=>{ const ms=performance.now()-t0; if($('trRecT')) $('trRecT').textContent=fmtT(ms/1000).replace(/\..$/,'');
+    an.getByteTimeDomainData(buf); let pk=0; for(const v of buf) pk=Math.max(pk,Math.abs(v-128)); if($('trLvl')) $('trLvl').style.width=Math.min(100,pk/128*160)+'%';
+    if(ms>MAX) finish(); },100);
+  rec.start(500);
+}
+
 /* ---------------- setup: waveform, region, what you want to see ---------------- */
 async function trLoad(file){
-  const c=synth.ctx; $('trStatus').textContent='Reading the file…';
-  let buf; try{ buf=await c.decodeAudioData(await file.arrayBuffer()); }catch(e){ $('trStatus').textContent="Couldn't read that file. Try an mp3, m4a or wav."; return; }
+  const c=synth.ctx, say=t=>{ const st=$('trStatus'); if(st) st.textContent=t; else $('trBody').innerHTML=`<p class="lmsg no">${t}</p><div class="erow"><button class="go" onclick="trOpen()">Back</button></div>`; };
+  say('Reading the file…');
+  let buf; try{ buf=await c.decodeAudioData(await file.arrayBuffer()); }catch(e){ say("Couldn't read that file. Try an mp3, m4a or wav."); return; }
   if(TR.url) URL.revokeObjectURL(TR.url);
   Object.assign(TR,{step:'setup',buf,file,url:URL.createObjectURL(file),title:file.name.replace(/\.[^.]+$/,''),sel:[0,Math.min(buf.duration,30)],mode:'solo',instrument:'piano'});
   trSetupRender();
