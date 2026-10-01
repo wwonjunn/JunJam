@@ -7,7 +7,7 @@ load('js/theory.js');
 vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
 load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js'); load('js/reharm/moves.js'); load('js/transcribe/analyze.js'); load('js/transcribe/export.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
-const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile,tupletGrid,XDIV,XBAR})',ctx);
+const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile,tupletGrid,XDIV,XBAR,leadLine})',ctx);
 const t=(pc,id)=>({root:T.defaultRoot(pc,T.Q[id].minor),q:T.Q[id]});
 ok(T.evaluate([53,56,60,63],t(5,'min7'),{rootless:true}).ok,'Fm7 root position');
 ok(T.evaluate([56,60,63,67],t(5,'min7'),{rootless:true}).ok,'Fm7 rootless');
@@ -93,6 +93,11 @@ ok(T.REHARM_MOVES.length===30,'30 moves');
   ok(sc.melody.map(n=>n.gat).join()==='0,1,2'&&sc.chords[0].root===0,'score from helper output');
   const xml=T.toMusicXML(sc); ok(xml.includes('<harmony>')&&xml.includes('<step>C</step>')&&(xml.match(/<measure /g)||[]).length===sc.bars,'MusicXML has chords, notes and every bar');
   const mid=T.toMidiFile(sc); ok(mid[0]===0x4d&&mid[1]===0x54&&mid[2]===0x68&&mid[3]===0x64,'MIDI header'); }
+// voted notes: the line follows the solo, past an octave ghost above it and a comping chord below it
+{ const V=(p,s,c)=>({p,s,e:s+.12,c}), lead=[72,74,76,77,79,77,76,74].map((p,i)=>V(p,i*.15,.95));
+  const notes=[...lead,V(86,.3,.75),V(88,.45,.75),V(55,.6,.75),V(59,.6,.75),V(62,.6,.75),V(65,.6,.75),V(57,1.25,.75),V(60,1.25,.75),V(64,1.25,.75),V(67,1.25,.75)];
+  const line=T.leadLine(notes,{lo:40,hi:100});
+  ok(line.map(n=>n.p).join()===lead.map(n=>n.p).join(),'lead line skips octave ghosts and comping chords: '+line.map(n=>n.p).join()); }
 // rhythm: sextuplets, 32nds and quintuplets are found from slightly uneven timing, and plain 8ths stay plain
 { const jit=[.01,-.012,.008,-.006,.011,-.009,.004,-.01];
   const run=(D,b0)=>[...Array(D)].map((_,k)=>({at:b0+k/D+jit[k]*.5,dur:1/D}));
