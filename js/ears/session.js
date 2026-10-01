@@ -198,7 +198,7 @@ function earsMenuNote(t){ const el=$('earsNote'); if(el){ el.textContent=t; } }
 
 function renderEarsPane(){
   const conf=topConfusions(3);
-  let h=`<p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
+  let h=`<button class="back" data-home>← All modes</button><h2>Ears</h2><p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
     <div class="drill"><button class="ghost" id="drillBtn" style="margin-left:0">Weakness drill</button><span id="earsNote">${conf.length?`Your biggest mix-ups: ${conf.map(confLabel).join(', ')}.`:'The drill builds itself from your mix-ups once you have some.'}</span></div>`;
   const pushed=pushedKeys();
   if(pushed) h+=`<p class="fine" style="margin:-6px 0 14px">Scale degrees and chords lean on your shakiest keys, from Hands and Ears together. Right now: ${pushed}.</p>`;

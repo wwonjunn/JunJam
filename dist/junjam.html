@@ -261,6 +261,65 @@ body.earsmode .ahead{display:none}
 .eresults .ghost{margin-left:8px}
 .enemy .rt.q{opacity:.9}
 .enemy .sf.q{font-size:34px;vertical-align:.35em;margin-left:4px}
+
+/* ---------------- home: mode cards ---------------- */
+body.nohud header .stat, body.nohud header .beat, body.nohud header #lives{display:none}
+body.nohud .ahead{display:none}
+.back{background:none;border:0;padding:0;margin:0 0 6px;font-family:var(--cond);font-weight:600;font-size:15px;color:var(--muted);cursor:pointer}
+.back:hover{color:var(--brass)}
+.modes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:6px 0 4px}
+.mode{position:relative;text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:12px 14px 12px;cursor:pointer;min-height:118px;display:flex;flex-direction:column}
+.mode:hover:not(.soon){border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)}
+.mode .mn{font-family:var(--cond);font-weight:700;font-size:13px;color:var(--muted)}
+.mode .mt{font-family:var(--hand);font-weight:700;font-size:28px;line-height:1.1}
+.mode .mb{font-size:14px;color:var(--muted);margin:2px 0 8px}
+.mode .ms{margin-top:auto;font-family:var(--cond);font-weight:600;font-size:14px;color:var(--brass)}
+.mode.soon{cursor:default;border-style:dashed;opacity:.6}
+.mode.soon .ms{color:var(--muted)}
+
+/* ---------------- Lines menu ---------------- */
+.chipsrow{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
+.chip{background:transparent;border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 11px;font-family:var(--cond);font-weight:600;font-size:15px;color:var(--muted);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--lane)}
+.licks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.lick{position:relative;text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:4px;padding:7px 10px;cursor:pointer}
+.lick:hover{border-color:var(--brass)}
+.lick .ln{display:block;font-family:var(--cond);font-weight:700;font-size:12px;color:var(--muted)}
+.lick .lt{display:block;font-family:var(--cond);font-weight:600;font-size:17px;line-height:1.15;padding-right:14px}
+.lick .lst{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.lick .lst b{color:var(--brass);font-weight:400;letter-spacing:1px;margin-right:4px}
+.lick .del{position:absolute;right:6px;top:3px;font-size:18px;color:var(--muted);padding:0 4px}
+.lick .del:hover{color:var(--wrong)}
+.import{margin-top:14px;border-top:1px solid var(--line-strong);padding-top:10px}
+.import summary{cursor:pointer;font-family:var(--cond);font-weight:600;font-size:17px}
+.irow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.irow input,.irow select{font:inherit;font-size:15px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:4px;padding:5px 8px}
+.irow input{flex:1;min-width:140px}
+.irow .ghost{margin-left:0}
+.recdot{width:10px;height:10px;border-radius:50%;background:var(--wrong);animation:rec 1s infinite}
+@keyframes rec{50%{opacity:.25}}
+
+/* ---------------- Lines stage ---------------- */
+body.linesmode .panel{display:none}
+#lPlay{width:100%;max-width:760px}
+.lchords{font-family:var(--hand);font-weight:700;font-size:34px;line-height:1.15;margin:8px 0 2px}
+.ldots{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.ldots i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.ldots i.on{background:var(--chord);box-shadow:none}
+.ldots i.cur{box-shadow:inset 0 0 0 2px var(--brass)}
+.lstaff{overflow-x:auto;min-height:60px;margin-bottom:6px}
+.lstaff svg{display:block}
+.lstaff .ln{stroke:var(--ink);stroke-width:1;opacity:.55}
+.lstaff .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
+.lstaff .acc{font-family:var(--body);font-size:15px;font-weight:600}
+.lstaff .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--muted)}
+.lmsg{min-height:1.4em;margin:0 0 12px;font-family:var(--hand);font-weight:700;font-size:20px}
+.lmsg.ok{color:var(--brass)} .lmsg.no{color:var(--wrong)}
+.lkeys{list-style:none;padding:0;margin:0 0 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 14px;color:var(--muted)}
+.lkeys b{color:var(--ink);font-family:var(--cond);font-size:17px;margin-right:6px}
+body.menu.nohud header .modetag{display:none}
+body.linesmode header .modetag{display:none}
+.lstaff svg{height:165px;width:auto;max-width:none}
 </style>
 </head>
 <body>
@@ -283,9 +342,11 @@ body.earsmode .ahead{display:none}
       <div class="card wide">
         <h1>Jun Jam</h1>
         <p class="rank" id="rankLine"></p>
-        <div class="seg side" role="group" aria-label="Side"><button id="sHands">Hands: play chords</button><button id="sEars">Ears: hear them</button></div>
+        <div id="homePane"><div class="modes" id="modes"></div></div>
         <div id="earsPane" hidden></div>
-        <div id="handsPane">
+        <div id="linesPane" hidden></div>
+        <div id="handsPane" hidden>
+        <button class="back" data-home>← All modes</button><h2>Chords</h2>
         <p>Chord symbols fall toward your keyboard. Play any correct voicing before one lands. Rootless, extended, open and smoothly voice-led chords score more.</p>
         <div class="seg" role="group" aria-label="Mode"><button id="mPractice">Practice</button><button id="mGame">Game</button></div>
         <p class="fine" id="starLine" style="margin:0 0 12px"></p>
@@ -305,6 +366,18 @@ body.earsmode .ahead{display:none}
         <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
         </div>
       </div>
+    </div>
+    <div class="ears" id="linesStage" hidden>
+      <div id="lPlay">
+        <div class="etop"><span class="etitle" id="lTitle"></span><span id="lCount"></span></div>
+        <div class="lchords" id="lChords"></div>
+        <div class="esub" id="lSub"></div>
+        <div class="ldots" id="lDots"></div>
+        <div class="lstaff" id="lStaff"></div>
+        <div class="lmsg" id="lMsg"></div>
+        <div class="erow"><button class="ghost" id="lHear">Hear it (R)</button><button class="ghost" id="lShow">Show notes (N)</button><button class="go" id="lNext" hidden>Next (Enter)</button><button class="ghost" id="lQuit">End</button></div>
+      </div>
+      <div class="card eresults" id="lResults" hidden></div>
     </div>
     <div class="ears" id="earsStage" hidden>
       <div id="ePlay">
@@ -924,6 +997,7 @@ function showHint(target){
 const held=new Set(); let gesture=new Set(), settleTimer=null; const SETTLE=140;
 const draft=new Set();
 function noteOn(m,v){
+  if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.init(); held.add(m); synth.on(m,v); linesNote(m); return; } // lines take single notes, not chords
   synth.init(); held.add(m); gesture.add(m); synth.on(m,v);
   kbMarks={}; paintKeys();
   clearTimeout(settleTimer); settleTimer=setTimeout(commitGesture,SETTLE);
@@ -941,6 +1015,7 @@ function commitGesture(){
 }
 function toggleDraft(m){
   synth.init();
+  if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); linesNote(m); return; }
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
   kbMarks={}; paintKeys();
 }
@@ -972,6 +1047,7 @@ const QWERTY={a:0,w:1,s:2,e:3,d:4,f:5,t:6,g:7,y:8,h:9,u:10,j:11,k:12,o:13,l:14,p
 let qOct=60;
 document.addEventListener('keydown',e=>{
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
+  if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
   if((e.key==='r'||e.key==='R') && G && G.running && G.enemies.length && G.enemies[0].t.req==='byear'){ playByEar(G.enemies[0].t); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();
@@ -1105,7 +1181,7 @@ function newGame(){
   fillQueue(); renderAhead(); updateHud();
 }
 function start(){
-  document.body.classList.remove('earsmode');
+  document.body.classList.remove('earsmode','nohud');
   const tier=tierOf(tierId);
   if(mode==='game' && !tierUnlocked(tier)) return;
   synth.init();
@@ -1771,7 +1847,7 @@ function earsMenuNote(t){ const el=$('earsNote'); if(el){ el.textContent=t; } }
 
 function renderEarsPane(){
   const conf=topConfusions(3);
-  let h=`<p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
+  let h=`<button class="back" data-home>← All modes</button><h2>Ears</h2><p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
     <div class="drill"><button class="ghost" id="drillBtn" style="margin-left:0">Weakness drill</button><span id="earsNote">${conf.length?`Your biggest mix-ups: ${conf.map(confLabel).join(', ')}.`:'The drill builds itself from your mix-ups once you have some.'}</span></div>`;
   const pushed=pushedKeys();
   if(pushed) h+=`<p class="fine" style="margin:-6px 0 14px">Scale degrees and chords lean on your shakiest keys, from Hands and Ears together. Right now: ${pushed}.</p>`;
@@ -1802,15 +1878,291 @@ function earsKey(e){
 }
 </script>
 <script>
+/* Lines: the lick library. Pure data and helpers, no DOM. Tested by tests/theory.test.js
+   A lick is short on purpose: a cell you can drop anywhere beats a memorised 4-bar solo.
+   notes: [semitones above the chord root (or the key, for multi-chord licks), length in beats]
+   over:  the chord it sits on, or ch: [[letter steps, semitones, quality, beats], ...] for licks that cross chords
+   src:   where the formula is documented; licks without one are Jun Jam originals in that style */
+const S=(semis,d=.5,last)=>semis.map((s,i)=>[s,i===semis.length-1&&last?last:(Array.isArray(d)?d[i]:d)]);
+const LSRC={
+  lick:'https://en.wikipedia.org/wiki/The_Lick',
+  coltrane:'https://www.freejazzlessons.com/jazz-patterns/',
+  cry:'https://www.learnjazzstandards.com/blog/lick-of-the-week-11-cry-me-a-river-lick/',
+  bebopScale:'https://www.learnjazzstandards.com/blog/learning-jazz/jazz-theory/use-bebop-scales-like-pro/',
+  schneider:'https://jeffschneidermusic.com/blog/3-bebop-licks-every-jazz-musician-needs-to-know',
+  parker:'https://www.jazzguitar.be/blog/charlie-parker/',
+  enclosure:'https://fertilemindsjazzacademy.com/enclosures-surrounds-what-you-should-know/',
+  iiVI:'https://www.londonpianoinstitute.co.uk/five-cool-ii-v-i-jazz-piano-licks-that-you-should-know/',
+  gospel:'https://www.pianote.com/blog/gospel-piano-101/',
+  pent:'https://www.pianote.com/blog/pentatonic-scale-piano/',
+  blues:'https://pianowithjonny.com/piano-lessons/blues-scale-for-piano-beginner-guide/',
+  neo:'https://pianowithjonny.com/piano-lessons/neo-soul-piano-improv-with-the-pentatonic-scale/',
+  mccoy:'https://www.jazzadvice.com/lessons/mccoy-tyner-and-the-pentatonic-scale/',
+};
+const VtoI=(v,i,vb=4,ib=2)=>[[0,0,v,vb],[3,5,i,ib]];           // reference = the V chord's root
+const IIVI=[[1,2,'min7',2],[4,7,'dom7',2],[0,0,'maj7',4]];       // reference = the key
+const LSTYLES=['Jazz','Bebop','Coltrane','Blues','Gospel','Neo-soul','Modern jazz','Fusion','City pop & J-pop'];
+const LDIFF=['','Easy','Medium','Hard'];
+function Lk(id,name,diff,style,over,notes,o={}){ return {id,name,diff,style,over:typeof over==='string'?over:null,ch:Array.isArray(over)?over:null,notes,swing:!!o.swing,src:o.src||null,tip:o.tip||''}; }
+const LICKS=[
+  // ---------------- Easy ----------------
+  Lk('thelick','The Lick',1,'Jazz','min7',S([0,2,3,5,2,-2,0],[.5,.5,.5,.5,1,.5],1.5),{swing:1,src:LSRC.lick,tip:'1 2 ♭3 4 2 ♭7 1. The most famous jazz cliché.'}),
+  Lk('c1235','Coltrane 1-2-3-5',1,'Coltrane','maj7',S([0,2,4,7],.5,1.5),{src:LSRC.coltrane,tip:'The digital pattern Coltrane used all over Giant Steps.'}),
+  Lk('c5321','Coltrane 5-3-2-1',1,'Coltrane','maj7',S([7,4,2,0],.5,1.5),{src:LSRC.coltrane,tip:'The same cell, coming down.'}),
+  Lk('encl3','Enclosure onto the 3rd',1,'Bebop','maj7',S([5,3,4],.5,2),{swing:1,src:LSRC.enclosure,tip:'Scale step above, half step below, land on the 3rd.'}),
+  Lk('enclR','Enclosure onto the root',1,'Bebop','maj7',S([2,-1,0],.5,2),{swing:1,src:LSRC.enclosure,tip:'Above, below, target.'}),
+  Lk('appr3','Chromatic step into the 3rd',1,'Bebop','maj7',S([2,3,4],.5,2),{swing:1,src:LSRC.enclosure,tip:'9, then a passing ♭3, into the 3rd.'}),
+  Lk('dbl5','Double chromatic up to the 5th',1,'Bebop','dom7',S([5,6,7],.5,2),{swing:1,src:LSRC.enclosure,tip:'4, ♯4, 5.'}),
+  Lk('blue3','Blue third',1,'Blues','dom7',S([3,4,0],[.25,.75],1.5),{swing:1,src:LSRC.blues,tip:'Crush the ♭3 into the 3, then home.'}),
+  Lk('bluesdn','Blues scale descent',1,'Blues','dom7',S([10,7,6,5,3,0],.5,1.5),{swing:1,src:LSRC.blues,tip:'♭7 5 ♭5 4 ♭3 1.'}),
+  Lk('gospdn','Gospel run: 6-5-3-2-1',1,'Gospel','maj',S([9,7,4,2,0],.25,1.5),{src:LSRC.pent,tip:'Major pentatonic, straight down.'}),
+  Lk('amen','Amen: 4 to 3',1,'Gospel','maj',S([5,4,2,0],[1,.5,.5],2),{tip:'The sus-to-3 resolution, then step home.'}),
+  Lk('minpent','Minor pentatonic climb',1,'Neo-soul','min7',S([0,3,5,7,10,12],.5,1.5),{src:LSRC.neo}),
+  Lk('sabi','Sabi pickup (3-5-6-1)',1,'City pop & J-pop','maj',S([4,7,9,12],.25,2),{tip:'A 16th-note lift into the chorus.'}),
+  Lk('turn3','Ballad turn around the 3rd',1,'City pop & J-pop','maj',S([4,5,4,2,4],.25,2),{tip:'Upper neighbour, back, lower neighbour, back.'}),
+  // ---------------- Medium ----------------
+  Lk('cry','Cry Me a River (minor)',2,'Jazz','min7',S([2,0,-5,3,2,0],.5,1.5),{swing:1,src:LSRC.cry,tip:'2 1 5 ♭3 2 1. Fits in dozens of places.'}),
+  Lk('cryalt','Cry Me a River over V7alt',2,'Jazz',VtoI('alt','min6',3,3),S([3,1,-4,4,3,1,0,-2,-4],[.5,.5,.5,.5,.5,.5,.5,.5],1.5),{swing:1,src:LSRC.cry,tip:'♯9 ♭9 ♭13 3 ♯9 ♭9, resolving 5 4 ♭3 of the minor I.'}),
+  Lk('bebopdom','Bebop dominant scale descent',2,'Bebop','dom7',S([12,11,10,9,7,5,4,2,0],.5,1.5),{swing:1,src:LSRC.bebopScale,tip:'The passing major 7 puts chord tones on the beats.'}),
+  Lk('arp39','3-to-9 arpeggio, down to the 5th',2,'Bebop','dom7',S([4,7,10,14,9,7],.5,1.5),{swing:1,src:LSRC.schneider,tip:'3 5 ♭7 9, then 13 5.'}),
+  Lk('p3b9','Parker: 3 up to ♭9',2,'Bebop',VtoI('d7b9','maj7',2,2),S([4,7,10,13,12],.5,2),{swing:1,src:LSRC.parker,tip:'A diminished arpeggio from the 3rd; the ♭9 falls to the 5th of I.'}),
+  Lk('arpdown','Arpeggio up, scale down (ii–V–I)',2,'Jazz',IIVI,S([2,5,9,12,11,9,7,5,4],.5,2),{swing:1,src:LSRC.iiVI,tip:'ii7 arpeggio, V7 scale down, land on the 3rd of I.'}),
+  Lk('c1235iiVI','Coltrane 1-2-3-5 through ii–V–I',2,'Coltrane',IIVI,S([2,4,5,9,7,9,11,14,12,14,16,19],.5,1.5),{src:LSRC.coltrane,tip:'One 1-2-3-5 cell per chord.'}),
+  Lk('gospup','Gospel scale run up',2,'Gospel','maj',S([0,2,3,4,7,9,12],.25,1.5),{src:LSRC.gospel,tip:'1 2 ♭3 3 5 6 1.'}),
+  Lk('gospdn2','Gospel scale run down',2,'Gospel','maj',S([12,9,7,4,3,2,0],.25,1.5),{src:LSRC.gospel}),
+  Lk('neo911','Neo-soul 9 and 11',2,'Neo-soul','min9',S([7,10,14,17,14,10],.5,1.5),{src:LSRC.neo,tip:'5 ♭7 9 11 9 ♭7.'}),
+  Lk('neoslide','R&B slide into the ♭3',2,'Neo-soul','min7',S([2,3,7,10,12,10,7],[.25,.75,.5,.5,.5,.5],1.5)),
+  Lk('bturn','Blues turnaround line',2,'Blues','dom7',S([12,10,9,8,7,4],.5,1.5),{swing:1,tip:'Chromatic slide down from the ♭7 to the 5th.'}),
+  Lk('mccoy','McCoy quartal cells',2,'Modern jazz','min7',S([0,5,10,3,7,12,5,10,15],.5,1.5),{src:LSRC.mccoy,tip:'Minor pentatonic grouped in 4ths.'}),
+  Lk('wtone','Whole-tone run',2,'Modern jazz','d7s11',S([0,2,4,6,8,10,12],.25,1.5)),
+  Lk('cityfill','City pop maj9 cascade',2,'City pop & J-pop','maj9',S([14,11,7,4,2,0],.25,1.5)),
+  Lk('ivv','IV to V fill',2,'City pop & J-pop',[[0,0,'maj7',2],[1,2,'dom7',2]],S([4,7,11,14,18],.5,2),{tip:'Up the IV chord, landing on the 3rd of V. Royal Road territory.'}),
+  // ---------------- Hard ----------------
+  Lk('slip','Side-slip out and back',3,'Fusion','min7',S([12,10,7,5,13,11,8,6,12,10,7],.25,1.5),{src:LSRC.mccoy,tip:'Pentatonic, the same shape a half step up, then back in.'}),
+  Lk('pent4','Pentatonic 4-note sequence',3,'Fusion','min7',S([0,3,5,7,3,5,7,10,5,7,10,12,7,10,12,15],.25,1.5),{src:LSRC.mccoy}),
+  Lk('octrun','Two-octave pentatonic run',3,'City pop & J-pop','maj',S([0,2,4,7,9,12,14,16,19,21,24],.25,1.5),{tip:'The anime-ending flourish.'}),
+  Lk('altdn','Altered scale descent',3,'Jazz',VtoI('alt','maj7',4,2),S([13,10,8,6,4,3,1,0,-3],.5,2),{swing:1,tip:'♭9 ♭7 ♭13 ♯11 3 ♯9 ♭9 1, into the 3rd of I.'}),
+  Lk('hw','Half-whole diminished climb',3,'Jazz','d7b9',S([0,1,3,4,6,7,9,10,12],.25,1.5)),
+  Lk('trisub','Tritone-sub arpeggio into I',3,'Jazz',VtoI('dom7','maj7',4,2),S([6,10,13,16,13,10,6,5],[.5,.5,.5,.5,.5,.5,1],2),{tip:'Outline ♭II7 over V7, then fall a half step to I.'}),
+  Lk('shout','Gospel shout run',3,'Gospel','dom7',S([12,9,7,4,3,4,2,0],.25,1.5),{src:LSRC.gospel,tip:'1 6 5 3 ♭3 3 2 1, fast.'}),
+];
+// Place a lick on a reference pitch class: real notes, chords with start beats, and spellings
+function lickInstance(l,refPc){
+  const k=defaultRoot(refPc,false);
+  const at=(s,i)=>{const lt=(k.l+s)%7;let a=mod12(refPc+i-LETTER_PC[lt]);if(a>6)a-=12;return mkRoot(lt,a);};
+  const total=l.notes.reduce((a,n)=>a+n[1],0);
+  let t=0;
+  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b])=>{ const beats=b||Math.max(2,Math.ceil(total)); const c={root:at(s,i),q:Q[qid],at:t,beats}; t+=beats; return c; });
+  const R=60+mod12(refPc); t=0;
+  const raw=l.notes.map(([s,d])=>{ const n={midi:R+s,at:t,dur:d}; t+=d; return n; });
+  let shift=0; const lo=Math.min(...raw.map(n=>n.midi)), hi=Math.max(...raw.map(n=>n.midi));
+  while(hi+shift>84) shift-=12; while(lo+shift<53) shift+=12; // a comfortable right-hand register
+  // Blues and gospel write the blue notes as ♭3 and ♭5, not ♯9 and ♯11
+  const blue=l.style==='Blues'||l.style==='Gospel', qOf=c=>blue?{...c.q,lab:{...c.q.lab,3:'♭3',6:'♭5'}}:c.q;
+  const notes=raw.map(n=>{ const m=n.midi+shift, c=chords.filter(c=>c.at<=n.at+1e-6).pop()||chords[0], sp=spellNote(m,c.root,qOf(c)); return {...n,midi:m,spell:{...sp,midi:m},name:sp.name}; });
+  return {notes,chords,total,ref:refPc};
+}
+const lickOver=l=>l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
+</script>
+<script>
+/* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
+   Grading follows the notes in order, in any octave; rhythm is free for now. */
+let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0,style:'All'});
+const saveLines=()=>store.set('lines',LDATA);
+const allLicks=()=>[...LICKS,...LDATA.user];
+const lickById=id=>allLicks().find(l=>l.id===id);
+const LINES={active:false,rec:null};
+const TRANSFER_KEYS=5;
+
+/* ---------------- menu pane ---------------- */
+function linesStarTotal(){ return allLicks().reduce((a,l)=>a+(LDATA.stars[l.id]||0),0); }
+function renderLinesPane(){
+  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.style==='All'||(LDATA.style==='Yours'?l.user:l.style===LDATA.style)));
+  const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
+  let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
+    <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
+    ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
+    <div class="chipsrow">${['All',...LSTYLES,'Yours'].map(s=>`<button class="chip" data-style="${s}" aria-pressed="${s===LDATA.style}">${s}</button>`).join('')}</div>
+    <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${l.user?'Yours':l.style}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||'<p class="fine">Nothing here yet.</p>'}</div>
+    <p class="fine" style="margin-top:12px">★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks marked with a source follow a documented formula; the rest are Jun Jam originals in that style.</p>
+    ${importHTML()}`;
+  $('linesPane').innerHTML=h;
+}
+function importHTML(){
+  const roots=[...Array(12).keys()].map(pc=>`<option value="${pc}">${rootName(defaultRoot(pc,false))}</option>`).join('');
+  const quals=['maj7','dom7','min7','hdim','maj','min','alt'].map(id=>`<option value="${id}">${Q[id].suf||'major'}</option>`).join('');
+  const r=LINES.rec;
+  return `<details class="import"${r?' open':''}><summary>Add your own lick</summary>
+    <p class="fine">Pick the chord it goes over, press Record, play it (a few notes to about a bar is ideal), then Save. Rhythm is taken from how you played it.</p>
+    <div class="irow"><input id="iName" placeholder="Name" maxlength="40" value="${r?r.name:''}">
+      <select id="iRoot">${roots}</select><select id="iQual">${quals}</select>
+      <select id="iDiff"><option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option></select></div>
+    <div class="irow">${r?`<span class="recdot"></span><span id="iCount">${r.notes.length} notes</span><button class="go" id="iSave">Save</button><button class="ghost" id="iCancel">Cancel</button>`:'<button class="go" id="iRec">Record</button>'}</div>
+    <p class="fine" id="iMsg"></p></details>`;
+}
+function bindLinesPane(){
+  const p=$('linesPane');
+  p.onclick=e=>{
+    const b=e.target.closest('button,[data-del]'); if(!b) return;
+    if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
+    if(b.dataset.diff!==undefined){ LDATA.diff=+b.dataset.diff; saveLines(); renderLinesPane(); }
+    else if(b.dataset.tempo){ LDATA.tempo=+b.dataset.tempo; saveLines(); renderLinesPane(); }
+    else if(b.dataset.style){ LDATA.style=b.dataset.style; saveLines(); renderLinesPane(); }
+    else if(b.dataset.lick) linesStart(b.dataset.lick);
+    else if(b.id==='iRec'){ LINES.rec={notes:[],name:$('iName').value,root:+$('iRoot').value,qual:$('iQual').value,diff:+$('iDiff').value}; synth.init(); renderLinesPane(); keepImportFields(); }
+    else if(b.id==='iCancel'){ LINES.rec=null; renderLinesPane(); }
+    else if(b.id==='iSave') saveRecording();
+  };
+}
+function keepImportFields(){ const r=LINES.rec; if(!r) return; $('iRoot').value=r.root; $('iQual').value=r.qual; $('iDiff').value=r.diff; }
+function saveRecording(){
+  const r=LINES.rec, msg=$('iMsg');
+  r.name=$('iName').value.trim()||'My lick'; r.root=+$('iRoot').value; r.qual=$('iQual').value; r.diff=+$('iDiff').value;
+  if(r.notes.length<3){ msg.textContent='Play at least 3 notes first.'; return; }
+  if(r.notes.length>24){ msg.textContent='That is a long one. Keep it to 24 notes or fewer; shorter licks transfer better.'; return; }
+  // Rhythm: the typical gap between notes counts as an 8th; everything rounds to the nearest 16th
+  const gaps=r.notes.slice(1).map((n,i)=>n.t-r.notes[i].t), med=[...gaps].sort((a,b)=>a-b)[Math.floor(gaps.length/2)]||300;
+  const beats=gaps.map(g=>Math.min(2,Math.max(.25,Math.round(g/med*.5*4)/4)));
+  let semis=r.notes.map(n=>n.m-(60+r.root)); while(Math.min(...semis)<-12) semis=semis.map(s=>s+12); while(Math.min(...semis)>11) semis=semis.map(s=>s-12);
+  const lick=Lk('u'+Date.now(),r.name,r.diff,'Yours',r.qual,semis.map((s,i)=>[s,i<beats.length?beats[i]:1.5]));
+  lick.user=true; LDATA.user.push(lick); LINES.rec=null; LDATA.style='Yours'; saveLines(); renderLinesPane();
+}
+
+/* ---------------- the drill ---------------- */
+function pickLineKeys(){
+  const keys=[]; while(keys.length<1+TRANSFER_KEYS){ const k=weightedPick([...Array(12).keys()].filter(x=>!keys.includes(x)).map(pc=>({pc,w:keyWeight(pc,'hands')}))).pc; keys.push(k); }
+  return keys;
+}
+function linesStart(id){
+  const lick=lickById(id); if(!lick) return;
+  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0});
+  synth.init(); hideOv(); document.body.classList.add('nohud','linesmode'); document.body.classList.remove('menu');
+  $('linesStage').hidden=false; $('lResults').hidden=true; $('lPlay').hidden=false;
+  linesRound();
+}
+function linesRound(){
+  clearTimeout(LINES.advance);
+  const ref=LINES.keys[LINES.round];
+  Object.assign(LINES,{inst:lickInstance(LINES.lick,ref),idx:0,offset:null,mistakes:0,revealed:LINES.round===0,done:false});
+  $('lMsg').textContent=''; $('lMsg').className='lmsg';
+  kbMarks={}; linesRender(); setTimeout(linesPlay,250);
+}
+function linesRender(){
+  const L=LINES, inst=L.inst, learn=L.round===0;
+  $('lTitle').textContent=L.lick.name;
+  $('lCount').textContent=learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
+  $('lChords').textContent=inst.chords.map(c=>symText(c)).join('  →  ');
+  $('lSub').textContent=learn?'Listen, then play it back on your keyboard. Any octave works.'+(L.lick.tip?' '+L.lick.tip:'')
+    :'Same lick, new key. Play it without looking; press N if you need the notes.';
+  $('lDots').innerHTML=inst.notes.map((_,i)=>`<i class="${i<L.idx?'on':i===L.idx&&!L.done?'cur':''}"></i>`).join('');
+  $('lStaff').innerHTML=L.revealed?lineStaffSVG(inst,L.idx,L.done):'<p class="fine">Notes hidden. Hear it with R, or press N to show them.</p>';
+  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done;
+  if(learn&&!L.done){ kbMarks={}; const n=inst.notes[L.idx]; kbMarks[n.midi+(L.offset??0)]='k-hint'; }
+  paintKeys();
+}
+// A one-line treble staff, spaced by rhythm, chord symbols above
+function lineStaffSVG(inst,idx,done){
+  const xs=[]; let x=58; inst.notes.forEach(n=>{ xs.push(x); x+=Math.max(26,n.dur*52); });
+  const W=Math.max(320,x+10), y=di=>34+(38-di)*5;
+  let s=`<svg viewBox="0 0 ${W} 130" width="${W}" height="130" aria-label="The lick on a staff">`;
+  for(let i=0;i<5;i++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*i)}" y2="${y(38-2*i)}"/>`;
+  s+=`<text class="clef" x="10" y="${y(32)+9}" font-size="44">𝄞</text>`;
+  inst.chords.forEach(c=>{ const i=inst.notes.findIndex(n=>n.at>=c.at-1e-6); if(i>=0) s+=`<text class="csym" x="${xs[i]-6}" y="14">${symText(c)}</text>`; });
+  inst.notes.forEach((n,i)=>{
+    const di=n.spell.di, cy=y(di), cx=xs[i], col=done||i<idx?'var(--chord)':i===idx?'var(--brass)':'var(--ink)';
+    for(let d=28;d>=di;d-=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
+    for(let d=40;d<=di;d+=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
+    s+=`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${col}"/>`;
+    if(n.spell.a) s+=`<text class="acc" x="${cx-13}" y="${cy+5}" text-anchor="middle" fill="${col}">${ACC[n.spell.a]}</text>`;
+  });
+  return s+'</svg>';
+}
+// Play the lick over its chords: soft comp an octave down, bass, melody on top. Jazz licks swing their 8ths.
+function playLine(inst,lick,bus,t0,bpm){
+  const spb=60/bpm, T=b=>{ const f=b-Math.floor(b); return t0+(Math.floor(b)+(lick.swing&&Math.abs(f-.5)<1e-6?2/3:f))*spb; };
+  const v=voiceProg(inst.chords);
+  inst.chords.forEach((c,i)=>{ const at=T(c.at), d=c.beats*spb*.95; playChord(v[i].upper.map(m=>m-12>=46?m-12:m),at,d,'mellow',bus,46); tone(v[i].bass,at,d,60,'mellow',bus); });
+  inst.notes.forEach(n=>{ const a=T(n.at), e=T(n.at+n.dur); tone(n.midi,a,Math.max(.12,(e-a)*.92),96,'epiano',bus); });
+  return T(inst.total)+.3;
+}
+function linesPlay(){ if(!LINES.active) return; killBus(LINES.bus); LINES.bus=newBus(); if(LINES.bus) playLine(LINES.inst,LINES.lick,LINES.bus,now()+.08,LDATA.tempo); }
+function linesNote(m){
+  if(LINES.rec){ LINES.rec.notes.push({m,t:performance.now()}); const c=$('iCount'); if(c) c.textContent=`${LINES.rec.notes.length} notes`; return; }
+  const L=LINES; if(!L.active||L.done) return;
+  const want=L.inst.notes[L.idx].midi;
+  const ok=L.idx===0?mod12(m-want)===0:m===want+L.offset;
+  if(ok){
+    if(L.idx===0) L.offset=m-want;
+    L.idx++; kbMarks={}; kbMarks[m]='k-chord';
+    if(L.idx===L.inst.notes.length) return linesRoundDone();
+    $('lMsg').textContent=''; linesRender(); return;
+  }
+  L.mistakes++; L.idx=0; L.offset=null;
+  const name=plainSpell(m).name;
+  $('lMsg').textContent=L.round===0?`${name} isn't it. Start again from ${L.inst.notes[0].name}.`:`${name} isn't it. From the top.`;
+  $('lMsg').className='lmsg no'; linesRender(); kbMarks={}; kbMarks[m]='k-wrong'; paintKeys();
+}
+function linesRoundDone(){
+  const L=LINES, clean=L.mistakes===0&&(L.round===0||!L.revealed);
+  L.done=true; L.results.push({ref:L.keys[L.round],clean,mistakes:L.mistakes,revealed:L.round>0&&L.revealed});
+  if(L.round>0&&clean) L.clean++;
+  L.xp+=10+(clean?10:0);
+  $('lMsg').textContent=clean?(L.round===0?'Got it. Now the real test: new keys.':'Clean.'):`Done${L.mistakes?`, after ${L.mistakes} restart${L.mistakes>1?'s':''}`:''}${L.round>0&&L.revealed?', with the notes showing':''}.`;
+  $('lMsg').className='lmsg '+(clean?'ok':'');
+  L.revealed=true; linesRender();
+  if(clean) L.advance=setTimeout(linesNext,1100);
+}
+function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; LINES.round++; if(LINES.round>TRANSFER_KEYS) return linesFinish(false); linesRound(); }
+function linesFinish(quit){
+  const L=LINES; clearTimeout(L.advance); killBus(L.bus); L.active=false;
+  const learned=L.results.length>0, finished=L.round>TRANSFER_KEYS;
+  const stars=!learned?0:finished&&L.clean===TRANSFER_KEYS?3:finished&&L.clean>=4?2:1;
+  const prev=LDATA.stars[L.lick.id]||0; if(stars>prev) LDATA.stars[L.lick.id]=stars;
+  addXP(L.xp); saveLines();
+  $('lPlay').hidden=true; $('lResults').hidden=false;
+  const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b> ${i===0?'learned':r.clean?'clean':r.revealed?'with notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</li>`).join('');
+  $('lResults').innerHTML=`<h2>${quit?'Session ended':stars===3?'Perfect transfer':'Lick done'}</h2>${learned?`<div class="stars">${starStr(Math.max(stars,prev))}</div>`:''}
+    <ul class="lkeys">${rows}</ul><p>+${L.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five new keys clean.'}`:''}</p>
+    <button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
+  $('lAgain').onclick=()=>linesStart(L.lick.id); $('lBack').onclick=linesToMenu; $('lAgain').focus();
+}
+function linesToMenu(){
+  LINES.active=false; killBus(LINES.bus); clearTimeout(LINES.advance);
+  $('linesStage').hidden=true; document.body.classList.remove('linesmode');
+  side='lines'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
+}
+function linesKey(e){
+  if(!LINES.active) return false;
+  if(e.key==='Escape'){ LINES.results.length?linesFinish(true):linesToMenu(); return true; }
+  if(!$('lResults').hidden) return false;
+  if(e.key==='r'||e.key==='R'){ linesPlay(); return true; }
+  if(e.key==='n'||e.key==='N'){ LINES.revealed=true; linesRender(); return true; }
+  if((e.key==='Enter'||e.key===' ')&&LINES.done){ e.preventDefault(); linesNext(); return true; }
+  return false;
+}
+</script>
+<script>
 /* ---------------- menu ---------------- */
-let side=store.get('side','hands');
+/* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
+let side='home'; // 'home' | 'hands' | 'ears' | 'lines'
+const MODES=[
+  {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*3} stars`; }},
+  {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
+  {id:'groove',name:'Groove',blurb:'Comping in time: feel, pushes, kime, genre recipes',soon:true},
+  {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
+  {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',soon:true},
+  {id:'gig',name:'Gig',blurb:'A full song form with a band behind you',soon:true},
+];
+function renderHome(){
+  $('modes').innerHTML=MODES.map((m,i)=>`<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span></button>`).join('');
+}
 function renderMenu(){
   $('rankLine').textContent=rankLine();
-  $('sHands').setAttribute('aria-pressed',side==='hands'); $('sEars').setAttribute('aria-pressed',side==='ears');
-  $('handsPane').hidden=side!=='hands'; $('earsPane').hidden=side!=='ears';
+  ['home','hands','ears','lines'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  if(side==='home') renderHome();
   if(side==='ears') renderEarsPane();
-  document.body.classList.toggle('earsmode',side==='ears');
-  store.set('side',side);
+  if(side==='lines') renderLinesPane();
+  document.body.classList.toggle('nohud',side!=='hands');
   const bests=store.get('best2',{});
   $('mPractice').setAttribute('aria-pressed',mode==='practice'); $('mGame').setAttribute('aria-pressed',mode==='game');
   $('tierBox').classList.toggle('hide',mode!=='game');
@@ -1841,8 +2193,13 @@ function renderMenu(){
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
-$('sHands').onclick=()=>{side='hands';renderMenu();};
-$('sEars').onclick=()=>{side='ears';renderMenu();};
+$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
+$('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
+$('lHear').onclick=()=>linesPlay();
+$('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
+$('lNext').onclick=()=>linesNext();
+$('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
+bindLinesPane();
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);

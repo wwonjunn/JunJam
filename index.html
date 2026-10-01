@@ -29,9 +29,11 @@
       <div class="card wide">
         <h1>Jun Jam</h1>
         <p class="rank" id="rankLine"></p>
-        <div class="seg side" role="group" aria-label="Side"><button id="sHands">Hands: play chords</button><button id="sEars">Ears: hear them</button></div>
+        <div id="homePane"><div class="modes" id="modes"></div></div>
         <div id="earsPane" hidden></div>
-        <div id="handsPane">
+        <div id="linesPane" hidden></div>
+        <div id="handsPane" hidden>
+        <button class="back" data-home>← All modes</button><h2>Chords</h2>
         <p>Chord symbols fall toward your keyboard. Play any correct voicing before one lands. Rootless, extended, open and smoothly voice-led chords score more.</p>
         <div class="seg" role="group" aria-label="Mode"><button id="mPractice">Practice</button><button id="mGame">Game</button></div>
         <p class="fine" id="starLine" style="margin:0 0 12px"></p>
@@ -51,6 +53,18 @@
         <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
         </div>
       </div>
+    </div>
+    <div class="ears" id="linesStage" hidden>
+      <div id="lPlay">
+        <div class="etop"><span class="etitle" id="lTitle"></span><span id="lCount"></span></div>
+        <div class="lchords" id="lChords"></div>
+        <div class="esub" id="lSub"></div>
+        <div class="ldots" id="lDots"></div>
+        <div class="lstaff" id="lStaff"></div>
+        <div class="lmsg" id="lMsg"></div>
+        <div class="erow"><button class="ghost" id="lHear">Hear it (R)</button><button class="ghost" id="lShow">Show notes (N)</button><button class="go" id="lNext" hidden>Next (Enter)</button><button class="ghost" id="lQuit">End</button></div>
+      </div>
+      <div class="card eresults" id="lResults" hidden></div>
     </div>
     <div class="ears" id="earsStage" hidden>
       <div id="ePlay">
@@ -114,6 +128,8 @@
 <script src="js/ears/questions.js"></script>
 <script src="js/ears/levels.js"></script>
 <script src="js/ears/session.js"></script>
+<script src="js/lines/licks.js"></script>
+<script src="js/lines/session.js"></script>
 <script src="js/menu.js"></script>
 </body>
 </html>

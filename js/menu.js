@@ -1,12 +1,24 @@
 /* ---------------- menu ---------------- */
-let side=store.get('side','hands');
+/* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
+let side='home'; // 'home' | 'hands' | 'ears' | 'lines'
+const MODES=[
+  {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*3} stars`; }},
+  {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
+  {id:'groove',name:'Groove',blurb:'Comping in time: feel, pushes, kime, genre recipes',soon:true},
+  {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
+  {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',soon:true},
+  {id:'gig',name:'Gig',blurb:'A full song form with a band behind you',soon:true},
+];
+function renderHome(){
+  $('modes').innerHTML=MODES.map((m,i)=>`<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span></button>`).join('');
+}
 function renderMenu(){
   $('rankLine').textContent=rankLine();
-  $('sHands').setAttribute('aria-pressed',side==='hands'); $('sEars').setAttribute('aria-pressed',side==='ears');
-  $('handsPane').hidden=side!=='hands'; $('earsPane').hidden=side!=='ears';
+  ['home','hands','ears','lines'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  if(side==='home') renderHome();
   if(side==='ears') renderEarsPane();
-  document.body.classList.toggle('earsmode',side==='ears');
-  store.set('side',side);
+  if(side==='lines') renderLinesPane();
+  document.body.classList.toggle('nohud',side!=='hands');
   const bests=store.get('best2',{});
   $('mPractice').setAttribute('aria-pressed',mode==='practice'); $('mGame').setAttribute('aria-pressed',mode==='game');
   $('tierBox').classList.toggle('hide',mode!=='game');
@@ -37,8 +49,13 @@ function renderMenu(){
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
-$('sHands').onclick=()=>{side='hands';renderMenu();};
-$('sEars').onclick=()=>{side='ears';renderMenu();};
+$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
+$('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
+$('lHear').onclick=()=>linesPlay();
+$('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
+$('lNext').onclick=()=>linesNext();
+$('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
+bindLinesPane();
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);

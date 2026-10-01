@@ -116,7 +116,7 @@ function newGame(){
   fillQueue(); renderAhead(); updateHud();
 }
 function start(){
-  document.body.classList.remove('earsmode');
+  document.body.classList.remove('earsmode','nohud');
   const tier=tierOf(tierId);
   if(mode==='game' && !tierUnlocked(tier)) return;
   synth.init();

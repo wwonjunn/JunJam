@@ -2,6 +2,7 @@
 const held=new Set(); let gesture=new Set(), settleTimer=null; const SETTLE=140;
 const draft=new Set();
 function noteOn(m,v){
+  if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.init(); held.add(m); synth.on(m,v); linesNote(m); return; } // lines take single notes, not chords
   synth.init(); held.add(m); gesture.add(m); synth.on(m,v);
   kbMarks={}; paintKeys();
   clearTimeout(settleTimer); settleTimer=setTimeout(commitGesture,SETTLE);
@@ -19,6 +20,7 @@ function commitGesture(){
 }
 function toggleDraft(m){
   synth.init();
+  if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); linesNote(m); return; }
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
   kbMarks={}; paintKeys();
 }
@@ -50,6 +52,7 @@ const QWERTY={a:0,w:1,s:2,e:3,d:4,f:5,t:6,g:7,y:8,h:9,u:10,j:11,k:12,o:13,l:14,p
 let qOct=60;
 document.addEventListener('keydown',e=>{
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
+  if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
   if((e.key==='r'||e.key==='R') && G && G.running && G.enemies.length && G.enemies[0].t.req==='byear'){ playByEar(G.enemies[0].t); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();

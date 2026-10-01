@@ -5,9 +5,9 @@ vm.createContext(ctx);
 const load=f=>vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx,{filename:f});
 load('js/theory.js');
 vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
-load('js/ears/questions.js'); load('js/ears/levels.js');
+load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
-const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg})',ctx);
+const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,lickInstance})',ctx);
 const t=(pc,id)=>({root:T.defaultRoot(pc,T.Q[id].minor),q:T.Q[id]});
 ok(T.evaluate([53,56,60,63],t(5,'min7'),{rootless:true}).ok,'Fm7 root position');
 ok(T.evaluate([56,60,63,67],t(5,'min7'),{rootless:true}).ok,'Fm7 rootless');
@@ -42,5 +42,16 @@ for(const lv of Object.values(T.LEVELS)) for(let i=0;i<40;i++){
 // intervals: playing the second note back gives the right answer
 for(let i=0;i<200;i++){ const lv=T.LEVELS[['i4','i5','i6'][i%3]]; const q=T.GEN.interval(lv.p,{}); const second=q.reveal.notes[1];
   ok(q.fromMidi([second])===q.answer,`interval midi ${lv.id} ans ${q.answer} notes ${q.reveal.notes}`); }
+// licks: short, playable in every key, chords valid, The Lick spelled right in D
+ok(new Set(T.LICKS.map(l=>l.id)).size===T.LICKS.length,'lick ids unique');
+for(const l of T.LICKS){
+  ok(l.notes.length>=3&&l.notes.length<=16,`${l.id} is 3 to 16 notes`);
+  ok(l.notes.reduce((a,n)=>a+n[1],0)<=8,`${l.id} is at most two bars`);
+  for(let k=0;k<12;k++){ const li=T.lickInstance(l,k);
+    ok(li.chords.every(c=>c.q)&&li.notes.every(n=>n.midi>=48&&n.midi<=96&&n.name),`${l.id} in ${k}`);
+    ok(li.chords.reduce((a,c)=>a+c.beats,0)>=li.total-1e-6,`${l.id} chords cover the lick`); }
+}
+ok(T.lickInstance(T.LICKS.find(l=>l.id==='thelick'),2).notes.map(n=>n.name).join(' ')==='D E F G E C D','The Lick in D');
+ok(T.lickInstance(T.LICKS.find(l=>l.id==='c1235'),0).notes.map(n=>n.name).join(' ')==='C D E G','Coltrane 1-2-3-5 in C');
 console.log(fails?`${fails} failures`:'all theory and generator checks passed');
 process.exit(fails?1:0);

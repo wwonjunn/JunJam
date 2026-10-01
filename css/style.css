@@ -251,3 +251,62 @@ body.earsmode .ahead{display:none}
 .eresults .ghost{margin-left:8px}
 .enemy .rt.q{opacity:.9}
 .enemy .sf.q{font-size:34px;vertical-align:.35em;margin-left:4px}
+
+/* ---------------- home: mode cards ---------------- */
+body.nohud header .stat, body.nohud header .beat, body.nohud header #lives{display:none}
+body.nohud .ahead{display:none}
+.back{background:none;border:0;padding:0;margin:0 0 6px;font-family:var(--cond);font-weight:600;font-size:15px;color:var(--muted);cursor:pointer}
+.back:hover{color:var(--brass)}
+.modes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:6px 0 4px}
+.mode{position:relative;text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:12px 14px 12px;cursor:pointer;min-height:118px;display:flex;flex-direction:column}
+.mode:hover:not(.soon){border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)}
+.mode .mn{font-family:var(--cond);font-weight:700;font-size:13px;color:var(--muted)}
+.mode .mt{font-family:var(--hand);font-weight:700;font-size:28px;line-height:1.1}
+.mode .mb{font-size:14px;color:var(--muted);margin:2px 0 8px}
+.mode .ms{margin-top:auto;font-family:var(--cond);font-weight:600;font-size:14px;color:var(--brass)}
+.mode.soon{cursor:default;border-style:dashed;opacity:.6}
+.mode.soon .ms{color:var(--muted)}
+
+/* ---------------- Lines menu ---------------- */
+.chipsrow{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
+.chip{background:transparent;border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 11px;font-family:var(--cond);font-weight:600;font-size:15px;color:var(--muted);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--lane)}
+.licks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.lick{position:relative;text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:4px;padding:7px 10px;cursor:pointer}
+.lick:hover{border-color:var(--brass)}
+.lick .ln{display:block;font-family:var(--cond);font-weight:700;font-size:12px;color:var(--muted)}
+.lick .lt{display:block;font-family:var(--cond);font-weight:600;font-size:17px;line-height:1.15;padding-right:14px}
+.lick .lst{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.lick .lst b{color:var(--brass);font-weight:400;letter-spacing:1px;margin-right:4px}
+.lick .del{position:absolute;right:6px;top:3px;font-size:18px;color:var(--muted);padding:0 4px}
+.lick .del:hover{color:var(--wrong)}
+.import{margin-top:14px;border-top:1px solid var(--line-strong);padding-top:10px}
+.import summary{cursor:pointer;font-family:var(--cond);font-weight:600;font-size:17px}
+.irow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.irow input,.irow select{font:inherit;font-size:15px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:4px;padding:5px 8px}
+.irow input{flex:1;min-width:140px}
+.irow .ghost{margin-left:0}
+.recdot{width:10px;height:10px;border-radius:50%;background:var(--wrong);animation:rec 1s infinite}
+@keyframes rec{50%{opacity:.25}}
+
+/* ---------------- Lines stage ---------------- */
+body.linesmode .panel{display:none}
+#lPlay{width:100%;max-width:760px}
+.lchords{font-family:var(--hand);font-weight:700;font-size:34px;line-height:1.15;margin:8px 0 2px}
+.ldots{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.ldots i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.ldots i.on{background:var(--chord);box-shadow:none}
+.ldots i.cur{box-shadow:inset 0 0 0 2px var(--brass)}
+.lstaff{overflow-x:auto;min-height:60px;margin-bottom:6px}
+.lstaff svg{display:block}
+.lstaff .ln{stroke:var(--ink);stroke-width:1;opacity:.55}
+.lstaff .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
+.lstaff .acc{font-family:var(--body);font-size:15px;font-weight:600}
+.lstaff .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--muted)}
+.lmsg{min-height:1.4em;margin:0 0 12px;font-family:var(--hand);font-weight:700;font-size:20px}
+.lmsg.ok{color:var(--brass)} .lmsg.no{color:var(--wrong)}
+.lkeys{list-style:none;padding:0;margin:0 0 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 14px;color:var(--muted)}
+.lkeys b{color:var(--ink);font-family:var(--cond);font-size:17px;margin-right:6px}
+body.menu.nohud header .modetag{display:none}
+body.linesmode header .modetag{display:none}
+.lstaff svg{height:165px;width:auto;max-width:none}
