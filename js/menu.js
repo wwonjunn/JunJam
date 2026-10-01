@@ -55,7 +55,7 @@ $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ 
 $('lHear').onclick=()=>linesPlay();
 $('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
 $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender(); } };
-$('lFeel').onclick=()=>{ LDATA.feel=LDATA.feel==='swing'?'straight':'swing'; saveLines(); linesRender(); linesPlay(); };
+$('lFeel').onclick=()=>{ LDATA.feel={orig:'straight',straight:'swing',swing:'orig'}[LDATA.feel]; saveLines(); linesRender(); linesPlay(); };
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();

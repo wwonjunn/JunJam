@@ -36,59 +36,61 @@ for melid, perf, title, feel, tempo, trackid, inst in solos:
         notes = ev[st:en + 1]
         n = len(notes)
         if n < 5 or n > 14: continue
-        bd = sorted(x[3] for x in notes)[n // 2]   # local beat length (s)
-        if not bd or bd <= 0: continue
-        # durations in beats: inter-onset times, rounded to 16ths; no rests longer than 3/4 beat inside the line
-        iois = [(notes[i + 1][0] - notes[i][0]) / bd for i in range(n - 1)]
-        gaps = [(notes[i + 1][0] - notes[i][0] - notes[i][2]) / bd for i in range(n - 1)]
-        if max(gaps) > 0.75: continue
-        d = [min(2.0, max(0.25, round(x * 4) / 4)) for x in iois]
-        if swing:  # a swung 8th pair (long-short) is written as two straight 8ths and played back swung
-            i = 0
-            while i < len(d) - 1:
-                if d[i] == 0.75 and d[i + 1] == 0.25: d[i] = d[i + 1] = 0.5; i += 2
-                else: i += 1
-        last = min(2.0, max(0.5, round(notes[-1][2] / bd * 2) / 2))
-        d.append(last)
-        total = sum(d)
-        if total < 1.5 or total > 8: continue
+        # Real positions in beats, read off the transcription's own beat times (so swing and phrasing survive)
+        bo = [b[0] for b in beats]
+        if len(bo) < 2: continue
+        def pos(t):
+            lo, hi = 0, len(bo) - 2
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                if bo[mid] <= t: lo = mid
+                else: hi = mid - 1
+            k = lo; span = bo[k + 1] - bo[k] or 1e-3
+            return k + (t - bo[k]) / span
+        ps = [pos(x[0]) for x in notes]
+        origin = int(ps[0] // 1)                      # the beat the phrase starts in (it may start off the beat)
+        ats = [round(p_ - origin, 2) for p_ in ps]
+        local = [(bo[min(int(p_), len(bo) - 2) + 1] - bo[min(int(p_), len(bo) - 2)]) or 1e-3 for p_ in ps]
+        own = [x[2] / lb for x, lb in zip(notes, local)]   # each note's own length in beats
+        if any(ats[i + 1] - (ats[i] + own[i]) > 0.75 for i in range(n - 1)): continue   # no long rests inside a line
+        d = [round(min(ats[i + 1] - ats[i], max(own[i], 0.05)), 2) for i in range(n - 1)]
+        d.append(min(2.0, max(0.25, round(own[-1] * 4) / 4)))
+        total = ats[-1] + d[-1]
+        if total < 1.5 or total > 8.25: continue
+        swing = (feel or '').startswith('SWING') or feel == 'TWOBEAT'
         pitches = [int(round(x[1])) for x in notes]
         if max(pitches) - min(pitches) > 22: continue
         leaps = [abs(pitches[i + 1] - pitches[i]) for i in range(n - 1)]
         if max(leaps) > 14: continue
-        # chords: the one under the first note, then each change before the last note
-        t0, tl = notes[0][0], notes[-1][0]
-        segs = []; curch = None
-        for bo, ch in beats:
-            if ch:
-                if bo <= t0 + 1e-3: curch = ch
+        # chords: the one in force on the phrase's first beat, then each change up to the last note, in whole beats
+        curch = None
+        for k in range(0, origin + 1):
+            if k < len(beats) and beats[k][1]: curch = beats[k][1]
         if not curch or curch == 'NC': continue
-        segs.append((0.0, curch))
-        last_ch = curch
-        for bo, ch in beats:
-            if t0 + 1e-3 < bo <= tl and ch and ch != last_ch:
-                if ch == 'NC': segs = None; break
-                segs.append((round((bo - t0) / bd * 2) / 2, ch)); last_ch = ch
+        segs = [(0, curch)]; last_ch = curch
+        for k in range(origin + 1, int(ps[-1] // 1) + 1):
+            if k < len(beats) and beats[k][1] and beats[k][1] != last_ch:
+                if beats[k][1] == 'NC': segs = None; break
+                segs.append((k - origin, beats[k][1])); last_ch = beats[k][1]
         if not segs or len(segs) > 3: continue
         parsed = []
         ok = True
-        for at, ch in segs:
-            p = parse_root(ch); q = p and qual(p[2])
+        for at, chs in segs:
+            p_ = parse_root(chs); q = p_ and qual(p_[2])
             if not q: ok = False; break
-            parsed.append((at, p[0], p[1], q))
+            parsed.append((at, p_[0], p_[1], q))
         if not ok: continue
         l0, pc0 = parsed[0][1], parsed[0][2]
         ch = []
         for i, (at, l, pc, q) in enumerate(parsed):
             end = parsed[i + 1][0] if i + 1 < len(parsed) else max(total, at + 1)
-            beatsz = max(0.5, end - at)
-            if i == len(parsed) - 1: beatsz = max(beatsz, total - at)
-            ch.append([(l - l0) % 7, (pc - pc0) % 12, q, beatsz])
-        if sum(c[3] for c in ch) < total - 1e-6: ch[-1][3] += total - sum(c[3] for c in ch)
+            ch.append([(l - l0) % 7, (pc - pc0) % 12, q, max(1, end - at)])
+        if sum(c[3] for c in ch) < total: ch[-1][3] += total - sum(c[3] for c in ch)
+        ch[-1][3] = round(ch[-1][3] * 4) / 4 + (0.25 if round(ch[-1][3] * 4) / 4 < ch[-1][3] else 0)
         semis = [p - 60 - pc0 for p in pitches]
-        nps = n / (total * bd)
+        nps = n / total
         cands[perf].append(dict(melid=melid, perf=perf, title=title, year=years.get(trackid, ''), swing=swing, ch=ch,
-                                notes=[[s, x] for s, x in zip(semis, d)], nps=nps, leap=max(leaps),
+                                notes=[[s, x, a] for s, x, a in zip(semis, d, ats)], nps=nps, leap=max(leaps),
                                 nleaps=sum(1 for x in leaps if x >= 5), pattern=tuple(pitches[i + 1] - pitches[i] for i in range(n - 1))))
 
 # Two per player (one with real jumps when there is one), plus extras from the richest players, no repeated shapes
@@ -111,7 +113,7 @@ for c in extra:
 
 # Difficulty at the app's own tempo: notes per beat, jumps and length (not the record's speed), split into thirds
 for c in picked:
-    beats = sum(x[1] for x in c['notes']); c['score'] = len(c['notes']) / beats + 0.25 * c['nleaps'] + 0.08 * len(c['notes'])
+    beats = c['notes'][-1][2] + c['notes'][-1][1]; c['score'] = len(c['notes']) / beats + 0.25 * c['nleaps'] + 0.08 * len(c['notes'])
 sc = sorted(c['score'] for c in picked); a, b = sc[len(sc) // 3], sc[2 * len(sc) // 3]
 for c in picked: c['diff'] = 1 if c['score'] <= a else 2 if c['score'] <= b else 3
 

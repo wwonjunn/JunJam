@@ -1,6 +1,7 @@
 /* Lines: the lick library. Pure data and helpers, no DOM. Tested by tests/theory.test.js
    A lick is short on purpose: a cell you can drop anywhere beats a memorised 4-bar solo.
-   notes: [semitones above the chord root (or the key, for multi-chord licks), length in beats]
+   notes: [semitones above the chord root (or the key, for multi-chord licks), length in beats, start in beats (optional)]
+          Without a start, notes follow each other. Licks from real solos and your recordings carry real start times.
    over:  the chord it sits on, or ch: [[letter steps, semitones, quality, beats], ...] for licks that cross chords
    src:   where the formula is documented; licks without one are Jun Jam originals
    artist: only when the lick really comes from that player. style is kept for the code, not shown. */
@@ -74,11 +75,11 @@ function lickInstance(l,refPc){
   const first=Q[l.ch?l.ch[0][2]:l.over], k=defaultRoot(refPc,!!(first&&first.minor));
   // Spell chord roots by letter from the reference, but never with a double sharp or flat (E𝄫7 becomes D7)
   const at=(s,i)=>{const lt=(k.l+s)%7;let a=mod12(refPc+i-LETTER_PC[lt]);if(a>6)a-=12;return Math.abs(a)>1?defaultRoot(mod12(refPc+i),false):mkRoot(lt,a);};
-  const total=l.notes.reduce((a,n)=>a+n[1],0);
+  const times=lickTimes(l), total=Math.max(...times.map(x=>x.at+x.dur));
   let t=0;
   const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b])=>{ const beats=b||Math.max(2,Math.ceil(total)); const c={root:at(s,i),q:Q[qid],at:t,beats}; t+=beats; return c; });
-  const R=60+mod12(refPc); t=0;
-  const raw=l.notes.map(([s,d])=>{ const n={midi:R+s,at:t,dur:d}; t+=d; return n; });
+  const R=60+mod12(refPc), grid=gridTimes(times);
+  const raw=l.notes.map(([s],i)=>({midi:R+s,...times[i],...grid[i]}));
   // Right-hand register: lowest note from middle C up when it fits, so the comp has room underneath
   const lo=Math.min(...raw.map(n=>n.midi)), hi=Math.max(...raw.map(n=>n.midi));
   let shift=12*Math.round((60-lo)/12); if(lo+shift<60) shift+=12;
@@ -89,7 +90,25 @@ function lickInstance(l,refPc){
   const plain=(m,sp)=>{ if(Math.abs(sp.a)<=1) return sp; const opts=spellingsFor(mod12(m)), pk=opts.find(([,a])=>a===0)||opts.find(([,a])=>k.a<0?a<0:a>0)||opts[0];
     const oct=Math.floor((m-pk[1])/12)-1; return {l:pk[0],a:pk[1],oct,di:oct*7+pk[0],name:LETTERS[pk[0]]+ACC[pk[1]]}; };
   const notes=raw.map(n=>{ const m=n.midi+shift, c=chords.filter(c=>c.at<=n.at+1e-6).pop()||chords[0], sp=plain(m,spellNote(m,c.root,qOf(c))); return {...n,midi:m,spell:{...sp,midi:m},name:sp.name}; });
-  return {notes,chords,total,ref:refPc};
+  return {notes,chords,total,ref:refPc,real:l.notes.some(n=>n.length>2)};
+}
+// Start and length of every note in beats: real starts when the lick has them, otherwise one after another
+function lickTimes(l){ let t=0; return l.notes.map(n=>{ const at=n.length>2?n[2]:t; t=at+n[1]; return {at,dur:n[1]}; }); }
+/* Grid versions of the timing, for Straight/Swing playback and for notation.
+   q: 16th grid, reading a swung 8th (2/3 of the beat) as the "and".
+   d: notation; a beat with a note on a triplet position is written as triplets, otherwise 16ths. */
+function gridTimes(times){
+  const q16=x=>{ const i=Math.floor(x+1e-6), f=x-i; return i+(Math.abs(f-2/3)<.08?.5:Math.abs(f-1/3)<.08?.25:Math.round(f*4)/4); };
+  const triBeat=new Set(times.filter(x=>{ const f=x.at-Math.floor(x.at+1e-6); return Math.abs(f-1/3)<.07||(Math.abs(f-2/3)<.07&&times.some(y=>Math.floor(y.at+1e-6)===Math.floor(x.at+1e-6)&&Math.abs(y.at-Math.floor(y.at+1e-6)-1/3)<.07)); }).map(x=>Math.floor(x.at+1e-6)));
+  const out=[]; let pq=-1, pd=-1;
+  times.forEach(x=>{ const b=Math.floor(x.at+1e-6), tri=triBeat.has(b);
+    let qat=q16(x.at); if(qat<=pq) qat=pq+.25;
+    let dat=tri?b+Math.round((x.at-b)*3)/3:qat; if(dat<=pd) dat=pd+(tri?1/3:.25);
+    out.push({qat,dat,tri}); pq=qat; pd=dat; });
+  out.forEach((o,i)=>{ const nx=out[i+1], last=Math.max(.25,Math.round(times[i].dur*4)/4);
+    o.qdur=nx?Math.min(nx.qat-o.qat,Math.max(.25,Math.round(times[i].dur*4)/4)):last;
+    o.ddur=nx?Math.min(nx.dat-o.dat,o.tri?Math.max(1/3,Math.round(times[i].dur*3)/3):Math.max(.25,Math.round(times[i].dur*4)/4)):(o.tri?1/3:last); });
+  return out;
 }
 const lickOver=l=>l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
 
@@ -111,7 +130,7 @@ const LEAP_COST=d=>d===0?.1:d<=2?0:d<=4?.3:d===5?.6:d===6?1.2:d===7?.8:d<=9?1.2:
 function rateLick(l){
   const chs=l.ch||[[0,0,l.over,99]]; let t=0;
   const tl=chs.map(([,semis,qid,b])=>{ const c={at:t,r:semis,q:Q[qid]}; t+=b||99; return c; });
-  const at=[]; t=0; l.notes.forEach(n=>{ at.push(t); t+=n[1]; });
+  const at=lickTimes(l).map(x=>x.at);
   let role=0, leaps=0, rhythm=0, worst=0, chrom=0, tension=0, altered=0, outside=0, wide=0, tritone=0, sixteenths=0, sync=0;
   const roles=l.notes.map(([s],i)=>{ const c=tl.filter(c=>c.at<=at[i]+1e-6).pop()||tl[0]; return noteRole(mod12(s-c.r),c.q); });
   l.notes.forEach(([s,d],i)=>{
@@ -129,8 +148,8 @@ function rateLick(l){
     }
     role+=cost; worst=Math.max(worst,cost);
     if(into!==null){ leaps+=LEAP_COST(into); if(into>=8) wide++; if(into===6) tritone++; }
-    if(Math.abs(d-.25)<1e-6){ rhythm+=.4; sixteenths++; } else if(Math.abs(d-.75)<1e-6) rhythm+=.3;
-    const f=at[i]-Math.floor(at[i]+1e-9); if((Math.abs(f-.25)<1e-6||Math.abs(f-.75)<1e-6)&&d>=.5-1e-6){ rhythm+=.3; sync++; } // off-beat 16th that's held
+    if(d<.3){ rhythm+=.4; sixteenths++; } else if(Math.abs(d-.75)<.06) rhythm+=.3;
+    const f=at[i]-Math.floor(at[i]+1e-9); if((Math.abs(f-.25)<.06||Math.abs(f-.75)<.06)&&d>=.45){ rhythm+=.3; sync++; } // off-beat 16th that's held
   });
   const score=role+leaps+.6*rhythm+.12*l.notes.length+.5*(tl.length-1);
   const tags=[];
