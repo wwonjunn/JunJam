@@ -34,52 +34,77 @@ function toMidiFile(score,played=null){
   return new Uint8Array([...head,...t0,...track(mel),...track(ch)]);
 }
 
-/* ---------------- MusicXML (one part, chord symbols, ties, triplets) ---------------- */
+/* ---------------- MusicXML (chord symbols, ties, tuplets) ----------------
+   840 divisions per quarter, so 32nds and tuplets of 3, 5, 6 and 7 are all whole numbers. */
+const XDIV=840, XBAR=4*XDIV;
+const XTYPES=[[4,'whole',0],[3,'half',1],[2,'half',0],[1.5,'quarter',1],[1,'quarter',0],[.75,'eighth',1],[.5,'eighth',0],[.375,'16th',1],[.25,'16th',0],[.125,'32nd',0],[.0625,'64th',0]];
+const XKIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'major-seventh',dom7:'dominant',min7:'minor-seventh',hdim:'half-diminished',
+  dim7:'diminished-seventh',six:'major-sixth',min6:'minor-sixth',sus7:'suspended-fourth',sus4:'suspended-fourth',sus2:'suspended-second',mmaj7:'major-minor',maj9:'major-ninth',dom9:'dominant-ninth',min9:'minor-ninth'};
+const xesc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const xfifths=k=>{ const order=[0,7,2,9,4,11,6,1,8,3,10,5]; let f=order.indexOf(mod12(k.minor?k.pc+3:k.pc)); if(f>6) f-=12; return f; };
+const xharmony=c=>{ const o=chordObj(c); return `<harmony><root><root-step>${LETTERS[o.root.l]}</root-step>${o.root.a?`<root-alter>${o.root.a}</root-alter>`:''}</root><kind text="${xesc(o.q.suf)}">${XKIND[o.q.id]||'major'}</kind></harmony>`; };
+// Split [s,e) (divisions) into writable pieces. In a beat written as a tuplet of D (tupAt(beat)), pieces are whole tuplet spots.
+function xmlPieces(s,e,tupAt=()=>0){
+  const out=[]; let t=s;
+  while(t<e-.5){
+    const beat=Math.floor(t/XDIV+1e-9), bEnd=(beat+1)*XDIV, D=tupAt(beat);
+    if(D){ const slot=XDIV/D, end=Math.min(e,bEnd), n=Math.round((end-t)/slot);
+      if(n>=1&&Math.abs(end-t-n*slot)<1&&Math.abs((t-beat*XDIV)/slot-Math.round((t-beat*XDIV)/slot))<1e-6){
+        const N=tupNormal(D); let left=n;
+        while(left>0){ const v=XTYPES.find(x=>x[0]*N<=left+1e-9&&Math.abs(x[0]*N-Math.round(x[0]*N))<1e-9)||XTYPES[XTYPES.length-1], k=Math.max(1,Math.round(v[0]*N));
+          out.push({d:k*slot,type:v,tup:D,N,beat}); left-=k; t+=k*slot; }
+        continue; } }
+    // plain values; don't run into the next tuplet beat
+    let lim=e; for(let b=beat+1;b*XDIV<e;b++) if(tupAt(b)){ lim=b*XDIV; break; }
+    if(D) lim=Math.min(lim,bEnd);
+    const left=lim-t, v=XTYPES.find(x=>x[0]*XDIV<=left+.5);
+    const d=v?Math.round(v[0]*XDIV):Math.round(left); out.push({d,type:v||XTYPES[XTYPES.length-1],tup:0}); t+=d;
+  }
+  return out;
+}
+// Tuplet brackets: start on the first piece of a beat's tuplet, stop on its last
+function xmlMarkTuplets(items){ items.forEach((it,i)=>{ if(!it.p||!it.p.tup) return; const same=o=>o&&o.p&&o.p.tup===it.p.tup&&o.p.beat===it.p.beat;
+  it.tStart=!same(items.slice(0,i).reverse().find(o=>o.p)); it.tStop=!same(items.slice(i+1).find(o=>o.p)); }); }
+function xmlNote({p,pitch='',rest=false,chord=false,tieStart=false,tieStop=false,voice=null,staff=null,tStart=false,tStop=false}){
+  const [,type,dot]=p.type, nots=(tieStop?'<tied type="stop"/>':'')+(tieStart?'<tied type="start"/>':'')+(!chord&&tStart?'<tuplet type="start" bracket="yes"/>':'')+(!chord&&tStop?'<tuplet type="stop"/>':'');
+  return `<note>${chord?'<chord/>':''}${rest?'<rest/>':pitch}<duration>${p.d}</duration>${tieStop?'<tie type="stop"/>':''}${tieStart?'<tie type="start"/>':''}${voice!=null?`<voice>${voice}</voice>`:''}<type>${type}</type>${dot?'<dot/>':''}`+
+    (p.tup?`<time-modification><actual-notes>${p.tup}</actual-notes><normal-notes>${p.N}</normal-notes></time-modification>`:'')+(staff!=null?`<staff>${staff}</staff>`:'')+
+    (nots?`<notations>${nots}</notations>`:'')+'</note>';
+}
+function xmlHead(score,partName){
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n`+
+    `<score-partwise version="4.0"><work><work-title>${xesc(score.title||'Transcription')}</work-title></work><identification><encoding><software>Jun Jam</software></encoding></identification>`+
+    `<part-list><score-part id="P1"><part-name>${xesc(partName)}</part-name></score-part></part-list><part id="P1">`;
+}
+const xmlTempo=score=>`<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${score.tempo||100}</per-minute></metronome></direction-type><sound tempo="${score.tempo||100}"/></direction>`;
+// which beats (numbered from the start of the piece) are written as tuplets, from the notes that start in them
+function xmlTupBeats(notes){ const m=new Map(); notes.forEach(n=>{ const t=n.tup||(n.tri?3:0); if(t) m.set(Math.floor(n.gat+1e-6),t); }); return b=>m.get(b)||0; }
+
 function toMusicXML(score){
   if(score.texture==='full') return toMusicXMLFull(score);
-  const DIV=12, BAR=48, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const TYPES=[[48,'whole',0],[36,'half',1],[24,'half',0],[18,'quarter',1],[12,'quarter',0],[9,'eighth',1],[6,'eighth',0],[3,'16th',0]];
-  const KIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'major-seventh',dom7:'dominant',min7:'minor-seventh',hdim:'half-diminished',
-    dim7:'diminished-seventh',six:'major-sixth',min6:'minor-sixth',sus7:'suspended-fourth',sus4:'suspended-fourth',sus2:'suspended-second',mmaj7:'major-minor',maj9:'major-ninth',dom9:'dominant-ninth',min9:'minor-ninth'};
-  const fifths=k=>{ const order=[0,7,2,9,4,11,6,1,8,3,10,5]; let f=order.indexOf(mod12(k.minor?k.pc+3:k.pc)); if(f>6) f-=12; return f; };
-  // melody as integer divisions, clipped to bars and with no overlaps
-  const mel=visibleMelody(score).map(n=>({...n,s:Math.round(n.gat*DIV),e:Math.round((n.gat+n.gdur)*DIV)})).sort((a,b)=>a.s-b.s);
+  const vis=visibleMelody(score), tupAt=xmlTupBeats(vis);
+  // melody as integer divisions, with no overlaps
+  const mel=vis.map(n=>({...n,s:Math.round(n.gat*XDIV),e:Math.round((n.gat+n.gdur)*XDIV)})).sort((a,b)=>a.s-b.s);
   mel.forEach((n,i)=>{ if(mel[i+1]&&n.e>mel[i+1].s) n.e=mel[i+1].s; if(n.e<=n.s) n.e=n.s+1; });
   const pitchXml=(midi,at)=>{ const sp=spellIn(score,midi,at); return `<pitch><step>${LETTERS[sp.l]}</step>${sp.a?`<alter>${sp.a}</alter>`:''}<octave>${sp.oct}</octave></pitch>`; };
-  const noteXml=(dur,body,{tri=false,tieStart=false,tieStop=false,rest=false}={})=>{
-    const base=tri?dur*3/2:dur, t=TYPES.find(x=>x[0]===base)||TYPES.find(x=>x[0]<=base)||TYPES[TYPES.length-1];
-    return `<note>${rest?'<rest/>':body}<duration>${dur}</duration>${tieStop?'<tie type="stop"/>':''}${tieStart?'<tie type="start"/>':''}<type>${t[1]}</type>${t[2]?'<dot/>':''}`+
-      (tri?'<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>':'')+
-      ((tieStart||tieStop)?`<notations>${tieStop?'<tied type="stop"/>':''}${tieStart?'<tied type="start"/>':''}</notations>`:'')+'</note>';
-  };
-  // split a length into writable values (whole, dotted, plain), plus 8th- and quarter-note triplets
-  const pieces=(len,tri)=>{ if(tri&&(len===4||len===8)) return [{d:len,tri:true}]; const out=[]; let left=len;
-    while(left>0){ const v=[48,36,24,18,12,9,6,3].find(x=>x<=left); if(!v){ out.push({d:left}); break; } out.push({d:v}); left-=v; } return out; };
-  let xml=`<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n`+
-    `<score-partwise version="4.0"><work><work-title>${esc(score.title||'Transcription')}</work-title></work><identification><encoding><software>Jun Jam</software></encoding></identification>`+
-    `<part-list><score-part id="P1"><part-name>${score.mode==='lead'?'Lead sheet':'Solo'}</part-name></score-part></part-list><part id="P1">`;
+  let xml=xmlHead(score,score.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[score.instrument]||{name:'Solo'}).name);
   for(let b=0;b<score.bars;b++){
-    const b0=b*BAR, b1=b0+BAR;
+    const b0=b*XBAR, b1=b0+XBAR;
     xml+=`<measure number="${b+1}">`;
-    if(b===0) xml+=`<attributes><divisions>${DIV}</divisions><key><fifths>${fifths(score.key||{pc:0})}</fifths>${score.key&&score.key.minor?'<mode>minor</mode>':''}</key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>`+
-      `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${score.tempo||100}</per-minute></metronome></direction-type><sound tempo="${score.tempo||100}"/></direction>`;
+    if(b===0) xml+=`<attributes><divisions>${XDIV}</divisions><key><fifths>${xfifths(score.key||{pc:0})}</fifths>${score.key&&score.key.minor?'<mode>minor</mode>':''}</key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>`+xmlTempo(score);
     if((score.soloBars||[]).includes(b)) xml+=`<direction placement="above"><direction-type><words>Solo</words></direction-type></direction>`;
-    // chord symbols and notes, in time order
-    const evs=[]; score.chords.filter(c=>Math.round(c.at*DIV)>=b0&&Math.round(c.at*DIV)<b1).forEach(c=>evs.push({t:Math.round(c.at*DIV),c}));
-    let t=b0;
-    const out=[];
-    const flushTo=to=>{ if(to>t){ pieces(to-t).forEach(p=>out.push({t,xml:noteXml(p.d,'',{rest:true})})); t=to; } };
+    let t=b0; const items=[];
+    const restTo=to=>{ if(to>t){ xmlPieces(t,to,tupAt).forEach(p=>{ items.push({t,p,rest:true}); t+=p.d; }); t=to; } };
     mel.filter(n=>n.e>b0&&n.s<b1).forEach(n=>{
-      const s=Math.max(n.s,b0), e=Math.min(n.e,b1);
-      flushTo(s);
-      const ps=pieces(e-s,n.tri&&n.s>=b0&&n.e<=b1);
-      ps.forEach((p,i)=>{ out.push({t,xml:noteXml(p.d,pitchXml(n.midi,n.gat),{tri:p.tri,tieStop:i>0||n.s<b0,tieStart:i<ps.length-1||n.e>b1})}); t+=p.d; });
+      const s=Math.max(n.s,b0,t), e=Math.min(n.e,b1); if(e<=s) return;
+      restTo(s); const ps=xmlPieces(s,e,tupAt);
+      ps.forEach((p,i)=>{ items.push({t,p,pitch:pitchXml(n.midi,n.gat),tieStop:i>0||n.s<b0,tieStart:i<ps.length-1||n.e>b1}); t+=p.d; });
     });
-    flushTo(b1);
-    // place each chord symbol before the first note or rest at or after its time
-    evs.forEach(ev=>{ const i=out.findIndex(o=>o.t>=ev.t), c=chordObj(ev.c), sym=symText({root:c.root,q:c.q});
-      const h=`<harmony><root><root-step>${LETTERS[c.root.l]}</root-step>${c.root.a?`<root-alter>${c.root.a}</root-alter>`:''}</root><kind text="${esc(c.q.suf)}">${KIND[c.q.id]||'major'}</kind></harmony>`;
-      out.splice(i<0?out.length:i,0,{t:ev.t,xml:h,sym}); });
+    restTo(b1); xmlMarkTuplets(items);
+    const out=items.map(it=>({t:it.t,xml:xmlNote(it)}));
+    // each chord symbol goes before the first note or rest at or after its time
+    score.chords.filter(c=>Math.round(c.at*XDIV)>=b0&&Math.round(c.at*XDIV)<b1).forEach(c=>{ const ct=Math.round(c.at*XDIV), i=out.findIndex(o=>o.t>=ct);
+      out.splice(i<0?out.length:i,0,{t:ct,xml:xharmony(c)}); });
     xml+=out.map(o=>o.xml).join('')+'</measure>';
   }
   return xml+'</part></score-partwise>\n';
@@ -87,48 +112,32 @@ function toMusicXML(score){
 
 // Full parts: chords as <chord/> stacks; piano on two staves (right hand treble, left hand bass), one rhythm per staff
 function toMusicXMLFull(score){
-  const DIV=12, BAR=48, esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const TYPES=[[48,'whole',0],[36,'half',1],[24,'half',0],[18,'quarter',1],[12,'quarter',0],[9,'eighth',1],[6,'eighth',0],[3,'16th',0]];
-  const KIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'major-seventh',dom7:'dominant',min7:'minor-seventh',hdim:'half-diminished',
-    dim7:'diminished-seventh',six:'major-sixth',min6:'minor-sixth',sus7:'suspended-fourth',sus4:'suspended-fourth',sus2:'suspended-second',mmaj7:'major-minor',maj9:'major-ninth',dom9:'dominant-ninth',min9:'minor-ninth'};
-  const fifths=k=>{ const order=[0,7,2,9,4,11,6,1,8,3,10,5]; let f=order.indexOf(mod12(k.minor?k.pc+3:k.pc)); if(f>6) f-=12; return f; };
-  const staves=score.grand?2:1, staffOf=m=>staves===2&&m<60?2:1;
-  const pieces=(len,tri)=>{ if(tri&&(len===4||len===8)) return [{d:len,tri:true}]; const out=[]; let left=len;
-    while(left>0){ const v=[48,36,24,18,12,9,6,3].find(x=>x<=left); if(!v){ out.push({d:left}); break; } out.push({d:v}); left-=v; } return out; };
-  const note=({chord=false,pitch='',rest=false,d,tri=false,tieStart=false,tieStop=false,voice,staff})=>{
-    const base=tri?d*3/2:d, t=TYPES.find(x=>x[0]===base)||TYPES.find(x=>x[0]<=base)||TYPES[TYPES.length-1];
-    return `<note>${chord?'<chord/>':''}${rest?'<rest/>':pitch}<duration>${d}</duration>${tieStop?'<tie type="stop"/>':''}${tieStart?'<tie type="start"/>':''}<voice>${voice}</voice><type>${t[1]}</type>${t[2]?'<dot/>':''}`+
-      (tri?'<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>':'')+`<staff>${staff}</staff>`+
-      ((tieStart||tieStop)?`<notations>${tieStop?'<tied type="stop"/>':''}${tieStart?'<tied type="start"/>':''}</notations>`:'')+'</note>';
-  };
+  const staves=score.grand?2:1, staffOf=m=>staves===2&&m<60?2:1, vis=visibleMelody(score);
   const pitchXml=(midi,at)=>{ const sp=spellIn(score,midi,at); return `<pitch><step>${LETTERS[sp.l]}</step>${sp.a?`<alter>${sp.a}</alter>`:''}<octave>${sp.oct}</octave></pitch>`; };
-  const vis=visibleMelody(score);
-  let xml=`<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n`+
-    `<score-partwise version="4.0"><work><work-title>${esc(score.title||'Transcription')}</work-title></work><identification><encoding><software>Jun Jam</software></encoding></identification>`+
-    `<part-list><score-part id="P1"><part-name>${(TR_INSTRUMENTS[score.instrument]||{name:'Part'}).name}</part-name></score-part></part-list><part id="P1">`;
+  let xml=xmlHead(score,(TR_INSTRUMENTS[score.instrument]||{name:'Part'}).name);
   for(let b=0;b<score.bars;b++){
-    const b0=b*BAR, b1=b0+BAR;
+    const b0=b*XBAR, b1=b0+XBAR;
     xml+=`<measure number="${b+1}">`;
-    if(b===0) xml+=`<attributes><divisions>${DIV}</divisions><key><fifths>${fifths(score.key||{pc:0})}</fifths>${score.key&&score.key.minor?'<mode>minor</mode>':''}</key><time><beats>4</beats><beat-type>4</beat-type></time>`+
-      (staves===2?'<staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>':'<clef><sign>G</sign><line>2</line></clef>')+'</attributes>'+
-      `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${score.tempo||100}</per-minute></metronome></direction-type><sound tempo="${score.tempo||100}"/></direction>`;
+    if(b===0) xml+=`<attributes><divisions>${XDIV}</divisions><key><fifths>${xfifths(score.key||{pc:0})}</fifths>${score.key&&score.key.minor?'<mode>minor</mode>':''}</key><time><beats>4</beats><beat-type>4</beat-type></time>`+
+      (staves===2?'<staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>':'<clef><sign>G</sign><line>2</line></clef>')+'</attributes>'+xmlTempo(score);
     for(let st=1;st<=staves;st++){
-      if(st>1) xml+=`<backup><duration>${BAR}</duration></backup>`;
-      const voice=st===1?1:5, ns=vis.filter(n=>staffOf(n.midi)===st&&Math.round(n.gat*DIV)>=b0&&Math.round(n.gat*DIV)<b1);
+      if(st>1) xml+=`<backup><duration>${XBAR}</duration></backup>`;
+      const voice=st===1?1:5, all=vis.filter(n=>staffOf(n.midi)===st), tupAt=xmlTupBeats(all), ns=all.filter(n=>Math.round(n.gat*XDIV)>=b0&&Math.round(n.gat*XDIV)<b1);
       // stacks: notes starting together; each lasts until the next stack on this staff (or the bar line)
-      const by=new Map(); ns.forEach(n=>{ const k=Math.round(n.gat*DIV); if(!by.has(k)) by.set(k,[]); by.get(k).push(n); });
+      const by=new Map(); ns.forEach(n=>{ const k=Math.round(n.gat*XDIV); if(!by.has(k)) by.set(k,[]); by.get(k).push(n); });
       const stacks=[...by.entries()].sort((x,y)=>x[0]-y[0]);
-      const out=[]; let t=b0;
-      const rest=to=>{ if(to>t){ pieces(to-t).forEach(p=>out.push({t,x:note({rest:true,d:p.d,voice,staff:st})})); t=to; } };
+      const items=[]; let t=b0;
+      const restTo=to=>{ if(to>t){ xmlPieces(t,to,tupAt).forEach(p=>{ items.push({t,p,rest:true,voice,staff:st}); t+=p.d; }); t=to; } };
       stacks.forEach(([k,group],i)=>{
-        rest(k); const next=i+1<stacks.length?stacks[i+1][0]:b1, hold=Math.round(Math.max(...group.map(n=>n.gdur))*DIV);
-        const end=Math.min(next,b1,Math.max(k+1,k+hold)), tri=group.some(n=>n.tri), ps=pieces(end-k,tri);
-        const sorted=group.sort((x,y)=>x.midi-y.midi);
-        ps.forEach((p,j)=>{ out.push({t,x:sorted.map((n,c)=>note({chord:c>0,pitch:pitchXml(n.midi,n.gat),d:p.d,tri:p.tri,tieStart:j<ps.length-1,tieStop:j>0,voice,staff:st})).join('')}); t+=p.d; });
+        if(k<t) return; restTo(k);
+        const next=i+1<stacks.length?stacks[i+1][0]:b1, hold=Math.round(Math.max(...group.map(n=>n.gdur))*XDIV), end=Math.min(next,b1,Math.max(k+1,k+hold));
+        const sorted=group.sort((x,y)=>x.midi-y.midi), ps=xmlPieces(k,end,tupAt);
+        ps.forEach((p,j)=>{ items.push({t,p,notes:sorted,tieStart:j<ps.length-1,tieStop:j>0,voice,staff:st}); t+=p.d; });
       });
-      rest(b1);
-      if(st===1) score.chords.filter(c=>Math.round(c.at*DIV)>=b0&&Math.round(c.at*DIV)<b1).forEach(c=>{ const ct=Math.round(c.at*DIV), o=chordObj(c), i=out.findIndex(e=>e.t>=ct);
-        out.splice(i<0?out.length:i,0,{t:ct,x:`<harmony><root><root-step>${LETTERS[o.root.l]}</root-step>${o.root.a?`<root-alter>${o.root.a}</root-alter>`:''}</root><kind text="${esc(o.q.suf)}">${KIND[o.q.id]||'major'}</kind></harmony>`}); });
+      restTo(b1); xmlMarkTuplets(items);
+      const out=items.map(it=>({t:it.t,x:it.rest?xmlNote(it):it.notes.map((n,c)=>xmlNote({...it,chord:c>0,pitch:pitchXml(n.midi,n.gat)})).join('')}));
+      if(st===1) score.chords.filter(c=>Math.round(c.at*XDIV)>=b0&&Math.round(c.at*XDIV)<b1).forEach(c=>{ const ct=Math.round(c.at*XDIV), i=out.findIndex(e=>e.t>=ct);
+        out.splice(i<0?out.length:i,0,{t:ct,x:xharmony(c)}); });
       xml+=out.map(e=>e.x).join('');
     }
     xml+='</measure>';

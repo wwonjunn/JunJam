@@ -8,6 +8,19 @@ function fillBeats(beats,duration){
   while(b[b.length-1]+gap<duration+gap) b.push(b[b.length-1]+gap);
   return b;
 }
+// Beat trackers jitter: each beat can land 10-40 ms off (Beat This! works in 20 ms frames), a whole tuplet spot in a
+// fast run. Real tempo changes smoothly, so each beat is moved onto a straight line fitted through its neighbours
+// (a beat each side): the jitter averages out, and speeding up or slowing down is still followed.
+function smoothBeats(res,{half=1,cap=.15}={}){
+  const b=res.beats; if(b.length<2*half+2) return res;
+  const spb=b.slice(1).map((x,i)=>x-b[i]).sort((x,y)=>x-y)[(b.length-1)>>1];
+  const nb=b.map((t,i)=>{ let sw=0,sx=0,sy=0,sxx=0,sxy=0;
+    for(let j=Math.max(0,i-half);j<=Math.min(b.length-1,i+half);j++){ const w=half+1-Math.abs(j-i); sw+=w; sx+=w*j; sy+=w*b[j]; sxx+=w*j*j; sxy+=w*j*b[j]; }
+    const k=(sw*sxy-sx*sy)/(sw*sxx-sx*sx||1), c=(sy-k*sx)/sw, f=c+k*i;
+    return Math.round((t+Math.max(-cap*spb,Math.min(cap*spb,f-t)))*1000)/1000; });
+  const at=t=>{ let k=0; for(let i=1;i<b.length;i++) if(Math.abs(b[i]-t)<Math.abs(b[k]-t)) k=i; return nb[k]+(t-b[k]); };
+  return {...res,beats:nb,downbeats:(res.downbeats||[]).map(at),smoothed:true};
+}
 // Seconds → beats, following the detected beats (so a recording that drifts in tempo still lines up)
 function beatMapper(beats,shift=0){
   const b=beats.length>1?beats:[0,.5], gap=(b[b.length-1]-b[0])/(b.length-1);
@@ -18,41 +31,73 @@ function beatMapper(beats,shift=0){
     return lo+(t-b[lo])/(b[lo+1]-b[lo])-shift;
   };
 }
-// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps
-function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
+// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps.
+// byConf (notes the helper's models voted on): at each onset the best-supported note wins, the top one on a near tie
+function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127,byConf=false}={}){
   const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
-  const out=[];
+  const out=[]; let g0=null;
   for(const n of ok){
     const last=out[out.length-1];
-    if(last&&n.s-last.s<.04){ if(n.p>last.p) out[out.length-1]={...n}; continue; } // same moment: the top note wins
+    if(last&&n.s-g0<.04){ // same moment
+      if(byConf?n.c>last.c+.1:n.p>last.p) out[out.length-1]={...n}; continue; }
+    g0=n.s;
     if(last&&last.e>n.s) last.e=n.s;                                                     // cut the one before
     out.push({...n});
   }
   return out.filter(n=>n.e-n.s>=.03);
 }
+/* Rhythm: each beat is split into the number of equal parts that fits its notes best: 1, 2, 4 or 8 (up to 32nds),
+   3 (triplets), 5, 6 or 7 (quintuplets, sextuplets, septuplets). Simple divisions are preferred unless the timing
+   clearly says otherwise, and a run keeps its division from one beat to the next (changing costs a little).
+   times: [{at,dur}] in beats, in order. Returns [{gat,gdur,tri,tup}]: tup is the division when it isn't 1, 2, 4 or 8. */
+// a tuplet of D in a beat is written in the next value down: 3 as 8ths, 5 to 7 as 16ths, 9 and up as 32nds
+const tupNormal=D=>D<4?2:D<8?4:8;
+const TUP_COST={1:0,2:.01,4:.03,3:.05,8:.08,6:.08,5:.12,7:.13};
+function tupletGrid(times,{divs=[1,2,4,3,8,6,5,7],change=.01,cost=TUP_COST,slide=.06,slideCost=.3}={}){
+  const beatOf=x=>Math.floor(x.at+.04), beats=[...new Set(times.map(beatOf))].sort((a,b)=>a-b), idx=new Map(beats.map(b=>[b,[]]));
+  times.forEach((x,i)=>idx.get(beatOf(x)).push(i));
+  // the detected beat itself can be a little off: each beat may also slide its frame slightly (at a small cost)
+  const slides=[0]; for(let d=.02;d<=slide+1e-9;d+=.02) slides.push(d,-d);
+  const fit=(fs,D)=>{ let best=null; for(const dl of slides){ const sl=fs.map(f=>Math.max(0,Math.round((f-dl)*D))); let e=Math.abs(dl)*slideCost*fs.length;
+      fs.forEach((f,k)=>e+=Math.abs(f-dl-sl[k]/D)); e+=(sl.length-new Set(sl).size)*.5;   // two notes on one spot: that doesn't fit
+      if(!best||e<best.e) best={e,sl}; } return best; };
+  const FIT=beats.map(b=>{ const fs=idx.get(b).map(i=>times[i].at-b); return divs.map(D=>fit(fs,D)); });
+  const C=FIT.map(r=>r.map((x,j)=>x.e+cost[divs[j]]));
+  // best division per beat over the whole line (Viterbi): neighbouring beats pay to change division
+  const V=C.map(r=>r.slice()), back=C.map(r=>r.map(()=>0));
+  for(let k=1;k<beats.length;k++){ const near=beats[k]-beats[k-1]===1;
+    divs.forEach((D,j)=>{ let best=1e9, arg=0; divs.forEach((E,i)=>{ const v=V[k-1][i]+(near&&i!==j?change:0); if(v<best){ best=v; arg=i; } }); V[k][j]+=best; back[k][j]=arg; }); }
+  const pick=Array(beats.length); if(beats.length){ let j=V[beats.length-1].indexOf(Math.min(...V[beats.length-1]));
+    for(let k=beats.length-1;k>=0;k--){ pick[k]=divs[j]; j=back[k][j]; } }
+  const D=Array(times.length), pos=Array(times.length);
+  beats.forEach((b,k)=>{ const sl=FIT[k][divs.indexOf(pick[k])].sl; idx.get(b).forEach((i,q)=>{ D[i]=pick[k]; pos[i]=b+sl[q]/pick[k]; }); });
+  for(let i=1;i<pos.length;i++) if(pos[i]<=pos[i-1]+1e-6) pos[i]=pos[i-1]+1/D[i-1];   // keep order, one note per spot
+  return times.map((x,i)=>{ const unit=1/D[i], own=Math.max(unit,Math.round(x.dur/unit)*unit), nx=pos[i+1], t=[1,2,4,8].includes(D[i])?0:D[i];
+    return {gat:pos[i],gdur:nx!==undefined?Math.min(nx-pos[i],own):own,tri:t===3,tup:t,div:D[i]}; });
+}
 // Every note also keeps when it was really played (seconds into the selection), for the As played view
 const asPlayed=(s,e)=>({sec:Math.round(s*1000)/1000,dsec:Math.round(Math.max(.03,e-s)*1000)/1000});
-// The written melody in beats, cleaned up like the licks (gridTimes); lead sheets also drop ornaments
+// The written melody in beats on the tuplet grid (tupletGrid); lead sheets keep simple rhythms and drop ornaments
 function melodyBeats(line,toBeat,lead){
   let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c,s:n.s,e:n.e})).filter(n=>n.at>-.25);
   if(lead) notes=notes.filter((n,i)=>n.dur>=.2||(notes[i+1]&&notes[i+1].at-n.at>=.4));       // grace notes and turns go
-  const g=gridTimes(notes.map(n=>({at:Math.max(0,n.at),dur:n.dur})));
-  return notes.map((n,i)=>({midi:n.midi,gat:lead?Math.round(g[i].gat*2)/2:g[i].gat,gdur:g[i].gdur,tri:!lead&&g[i].tri,...asPlayed(n.s,n.e)}))
+  const g=tupletGrid(notes.map(n=>({at:Math.max(0,n.at),dur:n.dur})),lead?{divs:[1,2]}:{});
+  return notes.map((n,i)=>({midi:n.midi,gat:g[i].gat,gdur:g[i].gdur,tri:g[i].tri,tup:g[i].tup,...asPlayed(n.s,n.e)}))
     .filter((n,i,a)=>!lead||i===0||n.gat>a[i-1].gat).map((n,i,a)=>lead&&a[i+1]?{...n,gdur:Math.min(Math.max(n.gdur,.5),a[i+1].gat-n.gat)}:n);
 }
 // Full parts (piano or guitar with chords): keep every note. Notes that start together are one chord; the chords'
-// starts are cleaned up like a line (gridTimes), and each note keeps its own length, so held notes can overlap.
+// starts go on the tuplet grid like a line (tupletGrid), and each note keeps its own length, so held notes can overlap.
 function partBeats(notes,toBeat,{minConf=.3,minLen=.06,lo=21,hi=108}={}){
   const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s);
   const evs=[]; ok.forEach(n=>{ const last=evs[evs.length-1]; if(last&&n.s-last.s<.045) last.notes.push(n); else evs.push({s:n.s,notes:[n]}); });
   // overtones: a note exactly one or two octaves above a much louder note that starts with it (real octaves are about as loud)
   evs.forEach(e=>{ e.notes=e.notes.filter(n=>!e.notes.some(m=>m!==n&&(n.p-m.p===12||n.p-m.p===24)&&n.c<m.c*.7)); });
   const at=e=>Math.max(0,toBeat(e.s)), len=n=>Math.max(.05,toBeat(n.e)-toBeat(n.s));
-  const g=gridTimes(evs.map(e=>({at:at(e),dur:Math.max(...e.notes.map(len))})));
+  const g=tupletGrid(evs.map(e=>({at:at(e),dur:Math.max(...e.notes.map(len))})));
   const out=[], seen=new Set();
-  evs.forEach((e,i)=>{ if(toBeat(e.s)<=-.25) return; const unit=g[i].tri?1/3:.25;
+  evs.forEach((e,i)=>{ if(toBeat(e.s)<=-.25) return; const unit=1/g[i].div;
     e.notes.forEach(n=>{ const k=n.p+'@'+g[i].gat; if(seen.has(k)) return; seen.add(k);
-      out.push({midi:n.p,gat:g[i].gat,gdur:Math.min(8,Math.max(unit,Math.round(len(n)/unit)*unit)),tri:g[i].tri,...asPlayed(n.s,n.e)}); }); });
+      out.push({midi:n.p,gat:g[i].gat,gdur:Math.min(8,Math.max(unit,Math.round(len(n)/unit)*unit)),tri:g[i].tri,tup:g[i].tup,...asPlayed(n.s,n.e)}); }); });
   return out.sort((a,b)=>a.gat-b.gat||b.midi-a.midi);
 }
 // Chords: score every root and chord type against how much each pitch class sounds in the window
@@ -101,21 +146,24 @@ function guessKey(notes){
 function mergeFragments(notes,gap=.05){
   const byP=new Map(); notes.forEach(n=>{ if(!byP.has(n.p)) byP.set(n.p,[]); byP.get(n.p).push({...n}); });
   const out=[]; byP.forEach(ns=>{ ns.sort((a,b)=>a.s-b.s); let cur=null;
-    ns.forEach(n=>{ if(cur&&n.s-cur.e<gap&&n.s>=cur.s&&(n.e-n.s<.15||n.c<cur.c*.8)){ cur.e=Math.max(cur.e,n.e); } else { if(cur) out.push(cur); cur=n; } }); if(cur) out.push(cur); });
+    ns.forEach(n=>{ if(cur&&n.s-cur.e<gap&&n.s>=cur.s&&(n.e-n.s<.04||n.c<cur.c*.8)){ cur.e=Math.max(cur.e,n.e); } else { if(cur) out.push(cur); cur=n; } }); if(cur) out.push(cur); });
   return out.sort((a,b)=>a.s-b.s);
 }
 // "Notes: fewer ↔ more": how confident and how long a note must be to count
-const TR_SENS=[{c:.5,l:.12},{c:.4,l:.09},{c:.3,l:.065},{c:.24,l:.05},{c:.18,l:.04}];
+// shortest kept note: a 32nd at 120 bpm lasts 62 ms, so 'Normal' keeps notes down to 40 ms
+const TR_SENS=[{c:.5,l:.09},{c:.4,l:.06},{c:.3,l:.04},{c:.24,l:.03},{c:.18,l:.025}];
 // Half-time / double-time: beat trackers often lock onto half or double the real tempo
 function scaleBeats(beats,k){ if(k===1||beats.length<2) return beats; if(k<1) return beats.filter((_,i)=>i%2===0);
   const out=[]; beats.forEach((b,i)=>{ out.push(b); if(i+1<beats.length) out.push((b+beats[i+1])/2); }); return out; }
-// Instruments: which stem the helper should transcribe, and the range the line lives in
-const TR_INSTRUMENTS={piano:{name:'Piano',stem:'piano',lo:55,hi:100,full:[21,108],grand:true},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88,full:[40,88]},
-  sax:{name:'Saxophone',stem:'other',lo:44,hi:84},trumpet:{name:'Trumpet',stem:'other',lo:52,hi:84},voice:{name:'Voice',stem:'vocals',lo:45,hi:84},bass:{name:'Bass',stem:'bass',lo:24,hi:60}};
+// Instruments: the range the line lives in (and, for full parts, the range of the whole part)
+const TR_INSTRUMENTS={piano:{name:'Piano / e-piano',lo:55,hi:100,full:[21,108],grand:true},synth:{name:'Synth lead',lo:36,hi:100,full:[21,108],grand:true},
+  guitar:{name:'Guitar',lo:40,hi:88,full:[40,88]},sax:{name:'Saxophone',lo:44,hi:84},trumpet:{name:'Trumpet',lo:52,hi:84},voice:{name:'Voice',lo:45,hi:84},bass:{name:'Bass',lo:24,hi:60}};
 /* Which beat is beat 1? Beat trackers find the beats but not the bar. Try each of the four phases and keep the one
    where the music acts most like a downbeat: chords change there, the bass plays there, strong notes start there. */
 function guessDownbeat(res){
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),0), n=Math.max(4,Math.ceil(toBeat(res.duration)));
+  // the helper's beat model also says where beat 1 is: take the phase most of its downbeats agree on
+  if(res.downbeats&&res.downbeats.length>=2){ const v=[0,0,0,0]; res.downbeats.forEach(d=>v[mod12(Math.round(toBeat(d)))%4]++); return v.indexOf(Math.max(...v)); }
   const onset=Array(n+1).fill(0), bassOn=Array(n+1).fill(0), prof=[...Array(n+1)].map(()=>Array(12).fill(0));
   const strength=x=>x.c*Math.min(1,(x.e-x.s)*2);
   const on=(arr,x)=>{ const t=toBeat(x.s), b=Math.round(t); if(b>=0&&b<=n&&Math.abs(t-b)<.2) arr[b]+=strength(x); };
@@ -146,13 +194,13 @@ function scoreMaps(res,score){
 }
 function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='line',sens=2,beatScale=1}){
   const res={...res0,beats:scaleBeats(res0.beats,beatScale),tempo:res0.tempo*beatScale,
-    notes:{...res0.notes,target:mergeFragments(res0.notes.target),bass:mergeFragments(res0.notes.bass),harmony:mergeFragments(res0.notes.harmony)}};
+    notes:{...res0.notes,target:res0.engine==='vote'?res0.notes.target:mergeFragments(res0.notes.target),bass:mergeFragments(res0.notes.bass),harmony:mergeFragments(res0.notes.harmony)}};
   const S=TR_SENS[Math.max(0,Math.min(4,sens))];
   if(shift===null) shift=shiftFor(guessDownbeat(res));
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const full=!lead&&texture==='full'&&inst.full;
   const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1],minConf:S.c,minLen:S.l})
-    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l}),toBeat,lead);
+    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l,byConf:res.engine==='vote'}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   const toSec=inverseMap(toBeat,res.duration); // beats back to seconds for the chord windows

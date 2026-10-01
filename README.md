@@ -14,10 +14,15 @@ A jazz piano trainer with two sides:
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
   backdoor, line clichés, pedal point, Coltrane changes, negative harmony, melody reharm...). Each has a card (what, why, where you hear it), before/after audio, a drill
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
-- **Transcribe** (button on the home screen): drop in an mp3, choose a solo transcription or a lead sheet, select
-  the part, and get editable sheet music with chords. Edit in a piano roll, either on the beat or as played (every note where it really was, over the recording's waveform), export MusicXML or MIDI (on the grid or as played), or send a phrase
-  to Lines. Needs the local helper in `tools/transcriber` (Basic Pitch + librosa; Demucs separation is optional and off), installed once with
-  `bash tools/transcriber/install.sh`; Jun Jam.app starts it automatically. Everything else works without it.
+- **Transcribe** (button on the home screen): drop in an mp3 (or record a browser tab), choose a solo transcription or a
+  lead sheet, select the part, and get editable sheet music with chords. Rhythms are written down to 32nds, with triplets,
+  quintuplets, sextuplets and septuplets. Edit in a piano roll, either on the beat or as played (every note where it
+  really was, over the recording's waveform); play the transcription, the original, or both, with pause, click-to-seek and
+  loops; export MusicXML or MIDI (on the grid or as played), or send a phrase to Lines.
+  Needs the local helper in `tools/transcriber`, installed once with `bash tools/transcriber/install.sh` (about 2 GB;
+  Jun Jam.app starts it automatically). It takes the drums out (Demucs), finds beats and beat 1 (Beat This!), and in
+  Best mode lets three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Quick mode
+  uses Basic Pitch alone. Everything else in Jun Jam works without it.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
 

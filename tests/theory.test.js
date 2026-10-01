@@ -7,7 +7,7 @@ load('js/theory.js');
 vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
 load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js'); load('js/reharm/moves.js'); load('js/transcribe/analyze.js'); load('js/transcribe/export.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
-const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile})',ctx);
+const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile,tupletGrid,XDIV,XBAR})',ctx);
 const t=(pc,id)=>({root:T.defaultRoot(pc,T.Q[id].minor),q:T.Q[id]});
 ok(T.evaluate([53,56,60,63],t(5,'min7'),{rootless:true}).ok,'Fm7 root position');
 ok(T.evaluate([56,60,63,67],t(5,'min7'),{rootless:true}).ok,'Fm7 rootless');
@@ -93,5 +93,18 @@ ok(T.REHARM_MOVES.length===30,'30 moves');
   ok(sc.melody.map(n=>n.gat).join()==='0,1,2'&&sc.chords[0].root===0,'score from helper output');
   const xml=T.toMusicXML(sc); ok(xml.includes('<harmony>')&&xml.includes('<step>C</step>')&&(xml.match(/<measure /g)||[]).length===sc.bars,'MusicXML has chords, notes and every bar');
   const mid=T.toMidiFile(sc); ok(mid[0]===0x4d&&mid[1]===0x54&&mid[2]===0x68&&mid[3]===0x64,'MIDI header'); }
+// rhythm: sextuplets, 32nds and quintuplets are found from slightly uneven timing, and plain 8ths stay plain
+{ const jit=[.01,-.012,.008,-.006,.011,-.009,.004,-.01];
+  const run=(D,b0)=>[...Array(D)].map((_,k)=>({at:b0+k/D+jit[k]*.5,dur:1/D}));
+  const g=T.tupletGrid([...run(6,0),...run(8,1),...run(5,2),{at:3.02,dur:.5},{at:3.55,dur:.45}]);
+  ok(g.slice(0,6).every(x=>x.tup===6)&&Math.abs(g[3].gat-.5)<1e-9,'sextuplet beat');
+  ok(g.slice(6,14).every(x=>x.tup===0&&x.div===8)&&Math.abs(g[7].gat-1.125)<1e-9,'32nds');
+  ok(g.slice(14,19).every(x=>x.tup===5),'quintuplet beat');
+  ok(g[19].gat===3&&g[20].gat===3.5&&!g[20].tup,'a swung pair of 8ths is written as straight 8ths');
+  const sc2={v:1,title:'t',mode:'solo',instrument:'piano',texture:'line',tempo:100,bars:1,key:{pc:0,minor:false},chords:[{at:0,root:0,qid:'maj7'}],soloBars:[],
+    melody:g.map((x,i)=>({midi:60+i%12,gat:x.gat,gdur:x.gdur,tri:x.tri,tup:x.tup}))};
+  const x2=T.toMusicXML(sc2), durs=[...x2.matchAll(/<duration>(\d+)<\/duration>/g)].map(m=>+m[1]);
+  ok(durs.reduce((a,b)=>a+b,0)===T.XBAR,'a bar of tuplets adds up to four beats in MusicXML');
+  ok(x2.includes('<actual-notes>6</actual-notes><normal-notes>4</normal-notes>')&&x2.includes('<actual-notes>5</actual-notes>')&&x2.includes('<type>32nd</type>')&&(x2.match(/<tuplet type="start"/g)||[]).length===2,'MusicXML writes the tuplets and 32nds'); }
 console.log(fails?`${fails} failures`:'all theory and generator checks passed');
 process.exit(fails?1:0);

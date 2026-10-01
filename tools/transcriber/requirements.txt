@@ -1,5 +1,10 @@
-# Jun Jam transcriber helper. Installed by install.sh into a private environment.
-demucs        # Meta's instrument separation (htdemucs_6s: drums, bass, vocals, guitar, piano, other)
-basic-pitch   # Spotify's audio-to-notes model
-librosa       # beat tracking
-soundfile     # reading and writing WAV without ffmpeg
+# Jun Jam transcriber helper. Installed by install.sh into a private environment (Python 3.10 or newer).
+demucs                         # Meta's instrument separation: used to take the drums out
+basic-pitch                    # Spotify's audio-to-notes model (any instrument)
+piano_transcription_inference  # Kong et al.'s piano model (checkpoint downloaded by install.sh)
+mt3-infer                      # YourMT3+, many instruments (checkpoint downloaded by install.sh)
+transformers==4.45.2           # YourMT3+ was built against this; newer versions break its decoder
+pretty_midi
+beat_this @ https://github.com/CPJKU/beat_this/archive/main.zip   # beats and downbeats (CPJKU, ISMIR 2024)
+librosa                        # fallback beat tracking, resampling
+soundfile                      # reading and writing WAV without ffmpeg
