@@ -1,6 +1,7 @@
 /* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
    Grading follows the notes in order, in any octave; rhythm is free for now. */
 let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
+if(LDATA.feel!=='swing'&&LDATA.feel!=='straight') LDATA.feel='swing'; // playback feel for every lick, the player's choice
 if(!['all','solo','orig','user'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||'';
 const saveLines=()=>store.set('lines',LDATA);
 const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
@@ -19,7 +20,7 @@ function renderLinesPane(){
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
-    ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
+    ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')} ${seg([['straight','Straight'],['swing','Swing']],LDATA.feel,'feel')}
     <div class="chipsrow">${[['all','All'],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
     <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
@@ -48,6 +49,7 @@ function bindLinesPane(){
     if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
     if(b.dataset.diff!==undefined){ LDATA.diff=+b.dataset.diff; saveLines(); renderLinesPane(); }
     else if(b.dataset.tempo){ LDATA.tempo=+b.dataset.tempo; saveLines(); renderLinesPane(); }
+    else if(b.dataset.feel){ LDATA.feel=b.dataset.feel; saveLines(); renderLinesPane(); }
     else if(b.dataset.from){ LDATA.from=b.dataset.from; saveLines(); renderLinesPane(); }
     else if(b.dataset.lick) linesStart(b.dataset.lick);
     else if(b.id==='iRec'){ LINES.rec={notes:[],name:$('iName').value,root:+$('iRoot').value,qual:$('iQual').value,diff:+$('iDiff').value}; synth.init(); renderLinesPane(); keepImportFields(); }
@@ -97,7 +99,7 @@ function linesRender(){
     :'Same lick, new key. Play it without looking; press N if you need the notes.';
   $('lDots').innerHTML=inst.notes.map((_,i)=>`<i class="${i<L.idx?'on':i===L.idx&&!L.done?'cur':''}"></i>`).join('');
   $('lStaff').innerHTML=L.revealed?lineStaffSVG(inst,L.idx,L.done):'<p class="fine">Notes hidden. Hear it with R, or press N to show them.</p>';
-  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done;
+  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done; $('lFeel').textContent=LDATA.feel==='swing'?'Feel: swing':'Feel: straight';
   if(learn&&!L.done){ kbMarks={}; const n=inst.notes[L.idx]; kbMarks[n.midi+(L.offset??0)]='k-hint'; }
   paintKeys();
 }
@@ -120,7 +122,10 @@ function lineStaffSVG(inst,idx,done){
 }
 // Play the lick over its chords: soft comp an octave down, bass, melody on top. Jazz licks swing their 8ths.
 function playLine(inst,lick,bus,t0,bpm){
-  const spb=60/bpm, T=b=>{ const f=b-Math.floor(b); return t0+(Math.floor(b)+(lick.swing&&Math.abs(f-.5)<1e-6?2/3:f))*spb; };
+  // Swing stretches the first half of each beat to 2/3 and squeezes the second half into the last 1/3, so every
+  // 16th moves in proportion (the 'a' stays after the 'and' instead of crashing into it)
+  const swing=LDATA.feel==='swing', spb=60/bpm;
+  const T=b=>{ const i=Math.floor(b+1e-9), f=b-i, g=!swing?f:f<=.5?f*4/3:2/3+(f-.5)*2/3; return t0+(i+g)*spb; };
   // Comp: the 3rd, 7th and a colour tone packed just under the lick's lowest note (down to C3), root in the bass
   const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
   inst.chords.forEach(c=>{

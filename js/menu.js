@@ -52,6 +52,7 @@ $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!
 $('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
 $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
 $('lHear').onclick=()=>linesPlay();
+$('lFeel').onclick=()=>{ LDATA.feel=LDATA.feel==='swing'?'straight':'swing'; saveLines(); linesRender(); linesPlay(); };
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
