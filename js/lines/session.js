@@ -103,20 +103,67 @@ function linesRender(){
   if(learn&&!L.done){ kbMarks={}; const n=inst.notes[L.idx]; kbMarks[n.midi+(L.offset??0)]='k-hint'; }
   paintKeys();
 }
-// A one-line treble staff, spaced by rhythm, chord symbols above
+// The lick in real rhythm notation on one treble staff: stems, flags, beams per beat, dots, ties, bar lines every 4 beats.
+// Written values come from the lick's lengths in beats; anything that isn't a single note value is tied.
+const NOTE_VALUES=[4,3,2,1.5,1,.75,.5,.25];
+function splitDur(at,d){
+  const out=[]; let t=at, left=d;
+  while(left>1e-6){
+    const f=t-Math.floor(t+1e-9);
+    // keep notes inside the beat unless they start on it or are a normal syncopation (8th-offbeat quarter or dotted quarter)
+    let room=f>1e-6&&!(Math.abs(f-.5)<1e-6&&(Math.abs(left-1)<1e-6||Math.abs(left-1.5)<1e-6))?Math.min(left,Math.ceil(t-1e-9)-t):left;
+    room=Math.min(room,Math.floor(t/4+1e-9)*4+4-t); // and never across a bar line
+    const v=NOTE_VALUES.find(x=>x<=room+1e-6)||.25;
+    out.push({at:t,d:v}); t+=v; left-=v;
+  }
+  return out;
+}
 function lineStaffSVG(inst,idx,done){
-  const xs=[]; let x=58; inst.notes.forEach(n=>{ xs.push(x); x+=Math.max(26,n.dur*52); });
-  const W=Math.max(320,x+10), y=di=>34+(38-di)*5;
-  let s=`<svg viewBox="0 0 ${W} 130" width="${W}" height="130" aria-label="The lick on a staff">`;
-  for(let i=0;i<5;i++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*i)}" y2="${y(38-2*i)}"/>`;
+  const BW=78, X0=60, y=di=>40+(38-di)*5, xOf=t=>X0+t*BW;
+  const total=inst.notes.reduce((a,n)=>Math.max(a,n.at+n.dur),0), W=Math.max(320,xOf(total)+24);
+  // pieces: each note split into writable values, tied together
+  const P=[]; inst.notes.forEach((n,i)=>splitDur(n.at,n.dur).forEach((pc,k,arr)=>P.push({...pc,n,i,first:k===0,tie:k<arr.length-1})));
+  const col=i=>done||i<idx?'var(--chord)':i===idx?'var(--brass)':'var(--ink)';
+  let s=`<svg viewBox="0 0 ${W} 140" width="${W}" height="140" aria-label="The lick on a staff">`;
+  for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*k)}" y2="${y(38-2*k)}"/>`;
   s+=`<text class="clef" x="10" y="${y(32)+9}" font-size="44">𝄞</text>`;
-  inst.chords.forEach(c=>{ const i=inst.notes.findIndex(n=>n.at>=c.at-1e-6); if(i>=0) s+=`<text class="csym" x="${xs[i]-6}" y="14">${symText(c)}</text>`; });
-  inst.notes.forEach((n,i)=>{
-    const di=n.spell.di, cy=y(di), cx=xs[i], col=done||i<idx?'var(--chord)':i===idx?'var(--brass)':'var(--ink)';
+  if(LDATA.feel==='swing') s+=`<text class="csym" x="10" y="12">Swing</text>`;
+  for(let b=4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b)-8}" x2="${xOf(b)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
+  inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="${LDATA.feel==='swing'&&c.at===0?26:14}">${symText(c)}</text>`; });
+  // beam groups: consecutive notes shorter than a beat inside the same beat
+  const groups=[]; let g=null;
+  P.forEach((p,k)=>{ const short=p.d<1-1e-6, beat=Math.floor(p.at+1e-9);
+    if(short&&g&&g.beat===beat&&P[k-1].d<1-1e-6) g.items.push(k); else { g=short?{beat,items:[k]}:null; if(g) groups.push(g); } });
+  const inGroup=new Map(); groups.forEach(gr=>gr.items.forEach(k=>inGroup.set(k,gr)));
+  const stemUp=ks=>ks.reduce((a,k)=>a+P[k].n.spell.di,0)/ks.length<34;
+  P.forEach((p,k)=>{
+    const di=p.n.spell.di, cx=xOf(p.at), cy=y(di), c=col(p.i), open=p.d>=2-1e-6;
     for(let d=28;d>=di;d-=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
     for(let d=40;d<=di;d+=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
-    s+=`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${col}"/>`;
-    if(n.spell.a) s+=`<text class="acc" x="${cx-13}" y="${cy+5}" text-anchor="middle" fill="${col}">${ACC[n.spell.a]}</text>`;
+    s+=open?`<ellipse cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${c}" stroke-width="1.8"/>`
+           :`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${c}"/>`;
+    if(p.first&&p.n.spell.a) s+=`<text class="acc" x="${cx-13}" y="${cy+5}" text-anchor="middle" fill="${c}">${ACC[p.n.spell.a]}</text>`;
+    if([.75,1.5,3].some(v=>Math.abs(p.d-v)<1e-6)) s+=`<circle cx="${cx+10}" cy="${cy-(di%2===0?5:0)}" r="1.8" fill="${c}"/>`;
+    if(p.tie){ const nx=xOf(p.at+p.d), dn=di>=34; s+=`<path d="M${cx+4} ${cy+(dn?-7:7)} Q${(cx+nx)/2} ${cy+(dn?-16:16)} ${nx-4} ${cy+(dn?-7:7)}" fill="none" stroke="${c}" stroke-width="1.4"/>`; }
+    if(p.d>=4-1e-6) return; // whole note: no stem
+    const gr=inGroup.get(k);
+    if(gr&&gr.items.length>1) return; // beamed below
+    const up=stemUp([k]), sx=up?cx+5.6:cx-5.6, ey=up?cy-34:cy+34;
+    s+=`<line x1="${sx}" x2="${sx}" y1="${cy}" y2="${ey}" stroke="${c}" stroke-width="1.4"/>`;
+    const flags=p.d<=.25+1e-6?2:p.d<1-1e-6?1:0;
+    for(let f=0;f<flags;f++){ const fy=ey+(up?f*7:-f*7); s+=`<path d="M${sx} ${fy} q9 ${up?8:-8} 7 ${up?20:-20}" fill="none" stroke="${c}" stroke-width="2"/>`; }
+  });
+  groups.filter(gr=>gr.items.length>1).forEach(gr=>{
+    const ks=gr.items, up=stemUp(ks), cys=ks.map(k=>y(P[k].n.spell.di));
+    const by=up?Math.min(...cys)-32:Math.max(...cys)+32, xs=ks.map(k=>xOf(P[k].at)+(up?5.6:-5.6));
+    ks.forEach((k,j)=>{ s+=`<line x1="${xs[j]}" x2="${xs[j]}" y1="${cys[j]}" y2="${by}" stroke="${col(P[k].i)}" stroke-width="1.4"/>`; });
+    const bc=col(P[ks[0]].i), th=4, off=up?7:-7;
+    s+=`<rect x="${xs[0]}" y="${up?by:by-th}" width="${xs[xs.length-1]-xs[0]}" height="${th}" fill="${bc}"/>`;
+    ks.forEach((k,j)=>{ if(P[k].d>.25+1e-6) return; // 16ths: second beam to a 16th neighbour, or a stub
+      const nxt=j+1<ks.length&&P[ks[j+1]].d<=.25+1e-6, prv=j>0&&P[ks[j-1]].d<=.25+1e-6;
+      if(nxt) s+=`<rect x="${xs[j]}" y="${(up?by:by-th)+off}" width="${xs[j+1]-xs[j]}" height="${th}" fill="${bc}"/>`;
+      else if(!prv){ const w=9, x1=j===ks.length-1?xs[j]-w:xs[j]; s+=`<rect x="${x1}" y="${(up?by:by-th)+off}" width="${w}" height="${th}" fill="${bc}"/>`; }
+    });
   });
   return s+'</svg>';
 }
