@@ -26,13 +26,16 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
   const staffs=grand?[{y:yT,lo:30,hi:38,mid:34,notes:notes.filter(n=>n.midi>=60),clef:'𝄞',cy:yT(32)+9,cs:44},{y:yB,lo:18,hi:26,mid:22,notes:notes.filter(n=>n.midi<60),clef:'𝄢',cy:yB(24)+8,cs:32}]
                 :bass1?[{y:yT,lo:18,hi:26,mid:22,notes,clef:'𝄢',cy:yT(24)+8,cs:32}]:[{y:yT,lo:30,hi:38,mid:34,notes,clef:'𝄞',cy:yT(32)+9,cs:44}];
   const ink='var(--ink)';
-  let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-label="Sheet music">`;
+  // chord symbols go above the highest notehead or stem on the top staff; the picture grows upwards when they need room
+  const st0=staffs[0], tops=st0.notes.map(n=>st0.y(n.spell.di)-(n.spell.di<st0.mid?36:10));
+  const cy=Math.min(14,(tops.length?Math.min(...tops):99)-6), vy=Math.min(0,cy-14);
+  let s=`<svg viewBox="0 ${vy} ${W} ${H-vy}" width="${W}" height="${H-vy}" aria-label="Sheet music">`;
   staffs.forEach(st=>{ for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${st.y(st.hi-2*k)}" y2="${st.y(st.hi-2*k)}"/>`;
     s+=`<text class="clef" x="12" y="${st.cy}" font-size="${st.cs}">${st.clef}</text>`; });
   const top=staffs[0].y(staffs[0].hi), bottom=grand?yB(18):staffs[0].y(staffs[0].lo);
   s+=`<line class="ln" x1="8" x2="8" y1="${top}" y2="${bottom}"/>`;
   for(let b=4;b<=beats;b+=4){ const x=X0+cum[b]-8; s+=`<line class="ln" x1="${x}" x2="${x}" y1="${top}" y2="${bottom}"/>`; }
-  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="14">${symText(c)}</text>`; });
+  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
   staffs.forEach(st=>{
     const stacks=gsStacks(st.notes,beats);
     // beam groups: notes shorter than a quarter within one beat

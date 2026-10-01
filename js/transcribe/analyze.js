@@ -31,15 +31,14 @@ function beatMapper(beats,shift=0){
     return lo+(t-b[lo])/(b[lo+1]-b[lo])-shift;
   };
 }
-// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps.
-// byConf (notes the helper's models voted on): at each onset the best-supported note wins, the top one on a near tie
-function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127,byConf=false}={}){
+// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps
+function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
   const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
   const out=[]; let g0=null;
   for(const n of ok){
     const last=out[out.length-1];
     if(last&&n.s-g0<.04){ // same moment
-      if(byConf?n.c>last.c+.1:n.p>last.p) out[out.length-1]={...n}; continue; }
+      if(n.p>last.p) out[out.length-1]={...n}; continue; }
     g0=n.s;
     if(last&&last.e>n.s) last.e=n.s;                                                     // cut the one before
     out.push({...n});
@@ -77,6 +76,23 @@ function tupletGrid(times,{divs=[1,2,4,3,8,6,5,7],change=.01,cost=TUP_COST,slide
 }
 // Every note also keeps when it was really played (seconds into the selection), for the As played view
 const asPlayed=(s,e)=>({sec:Math.round(s*1000)/1000,dsec:Math.round(Math.max(.03,e-s)*1000)/1000});
+/* One line from notes the helper's models voted on: follow the solo's contour.
+   1. Notes that start together are a group. Each group's best-supported note (the top one on a near tie) marks where
+      the line is; the line at any moment is the median of those marks within 0.6 s, once there are at least two.
+   2. In each group only notes within 10 semitones of the line count (octave ghosts above, comping below drop out),
+      a chord of four or more sitting under the line is comping and is skipped, and the best-supported note wins. */
+function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above=10,chord=4,anchor=.45}={}){
+  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
+  const groups=[]; ok.forEach(n=>{ const g=groups[groups.length-1]; if(g&&n.s-g[0].s<.04) g.push(n); else groups.push([n]); });
+  const marks=groups.filter(g=>g.length<chord).map(g=>g.reduce((a,b)=>b.c>a.c+.05||(Math.abs(b.c-a.c)<=.05&&b.p>a.p)?b:a)).filter(n=>n.c>=anchor);
+  const lineAt=t=>{ const ps=marks.filter(m=>Math.abs(m.s-t)<=win).map(m=>m.p).sort((x,y)=>x-y); return ps.length>=2?ps[ps.length>>1]:null; };
+  const out=[];
+  groups.forEach(g=>{ const r=lineAt(g[0].s), cand=r===null?g:g.filter(n=>n.p>=r-below&&n.p<=r+above);
+    if(!cand.length||(g.length>=chord&&r!==null&&Math.max(...g.map(n=>n.p))<r-3)) return;
+    const top=Math.max(...cand.map(n=>n.p)), best=cand.reduce((a,b)=>b.c+(b.p===top?.1:0)>a.c+(a.p===top?.1:0)?b:a);
+    const last=out[out.length-1]; if(last&&last.e>best.s) last.e=best.s; out.push({...best}); });
+  return out.filter(n=>n.e-n.s>=.03);
+}
 // The written melody in beats on the tuplet grid (tupletGrid); lead sheets keep simple rhythms and drop ornaments
 function melodyBeats(line,toBeat,lead){
   let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c,s:n.s,e:n.e})).filter(n=>n.at>-.25);
@@ -200,7 +216,7 @@ function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='l
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const full=!lead&&texture==='full'&&inst.full;
   const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1],minConf:S.c,minLen:S.l})
-    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l,byConf:res.engine==='vote'}),toBeat,lead);
+    :melodyBeats((res.engine==='vote'?leadLine:topLine)(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   const toSec=inverseMap(toBeat,res.duration); // beats back to seconds for the chord windows

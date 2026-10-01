@@ -404,6 +404,44 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .kuse{fill:color-mix(in srgb, var(--chord) 30%, var(--white-key))} .kbk.kuse{fill:color-mix(in srgb, var(--chord) 55%, var(--black-key))}
 .ksel{fill:var(--brass)}
 .klab{font-family:var(--cond);font-weight:600;font-size:9px;fill:#56618a;pointer-events:none} .klab.on{fill:var(--ink);font-size:10px}
+
+/* Transcribe: setup form, editor top bar, sticky transport, fix row, export menu, toasts, sheet-music playhead */
+#trBody .seg{margin:0}
+.trtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;font-family:var(--cond);font-weight:600}
+.trtop .ghost,.trbar .ghost,.trfix .ghost,.trctl .ghost{margin-left:0}
+.trtop .etitle{margin-right:0;cursor:text}
+.trspace{flex:1}
+.trform{display:grid;grid-template-columns:max-content 1fr;gap:12px 16px;align-items:center;margin:4px 0 8px}
+.trform>label{font-family:var(--cond);font-weight:600;font-size:15px;color:var(--muted);align-self:start;padding-top:8px}
+.trform .trmodes{margin:0}
+.trctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.trctl:first-child{margin-top:0}
+.trctl .fine,.trbar .fine,.trfix .fine,.trtop .fine{margin:0}
+.trctl select{font:inherit;font-size:15px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:4px;padding:6px 8px}
+.trright{margin-left:auto!important}
+.trgo{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:6px}
+.trbar{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px;margin:0 -8px 8px;background:var(--panel);border-bottom:1px solid var(--line-strong)}
+.trplay{min-width:52px;padding:8px 14px;font-size:20px}
+.trpos{font-family:var(--cond);font-weight:700;font-size:18px;min-width:58px;text-align:center;font-variant-numeric:tabular-nums}
+.trgrp{display:inline-flex;align-items:center;gap:6px}
+.trbar .seg button,.trfix .seg button{padding:5px 12px;font-size:16px}
+.ghost.tgl[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 18%, transparent)}
+.ghost.ic{padding:6px 11px;font-size:18px}
+.ghost:disabled,.seg button:disabled{opacity:.4;cursor:default}
+.trfix{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 10px}
+.trmenu{position:relative}
+.trmenulist{position:absolute;right:0;top:calc(100% + 4px);z-index:20;background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:4px;min-width:240px;box-shadow:0 6px 22px rgba(0,0,0,.25)}
+.trmenulist button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:4px;padding:8px 10px;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--ink);cursor:pointer}
+.trmenulist button:hover{background:color-mix(in srgb, var(--brass) 18%, transparent)}
+.trmenulist .fine{display:block;font-weight:400}
+.trtoast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);max-width:min(640px,90vw);background:var(--ink);color:var(--lane);padding:10px 16px;border-radius:8px;font-family:var(--cond);font-weight:600;font-size:16px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+.trtoast.show{opacity:1;transform:translate(-50%,0)} .trtoast.no{background:var(--wrong);color:#fff} .trtoast.ok{background:var(--brass);color:var(--lane)}
+.trscore{cursor:pointer}
+.trshead{position:absolute;top:0;bottom:0;width:2px;background:var(--wrong);opacity:.8;display:none;pointer-events:none}
+.trpop.trhelp{display:block;padding:12px 14px} .trhelp{max-width:420px;font-size:14px;line-height:1.45}
+.trhelp ul{margin:4px 0 10px;padding-left:18px}
+kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:3px;padding:0 4px}
+@media (max-width:700px){ .trform{grid-template-columns:1fr} .trform>label{padding-top:0} }
 </style>
 </head>
 <body>
@@ -2935,15 +2973,14 @@ function beatMapper(beats,shift=0){
     return lo+(t-b[lo])/(b[lo+1]-b[lo])-shift;
   };
 }
-// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps.
-// byConf (notes the helper's models voted on): at each onset the best-supported note wins, the top one on a near tie
-function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127,byConf=false}={}){
+// One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps
+function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
   const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
   const out=[]; let g0=null;
   for(const n of ok){
     const last=out[out.length-1];
     if(last&&n.s-g0<.04){ // same moment
-      if(byConf?n.c>last.c+.1:n.p>last.p) out[out.length-1]={...n}; continue; }
+      if(n.p>last.p) out[out.length-1]={...n}; continue; }
     g0=n.s;
     if(last&&last.e>n.s) last.e=n.s;                                                     // cut the one before
     out.push({...n});
@@ -2981,6 +3018,23 @@ function tupletGrid(times,{divs=[1,2,4,3,8,6,5,7],change=.01,cost=TUP_COST,slide
 }
 // Every note also keeps when it was really played (seconds into the selection), for the As played view
 const asPlayed=(s,e)=>({sec:Math.round(s*1000)/1000,dsec:Math.round(Math.max(.03,e-s)*1000)/1000});
+/* One line from notes the helper's models voted on: follow the solo's contour.
+   1. Notes that start together are a group. Each group's best-supported note (the top one on a near tie) marks where
+      the line is; the line at any moment is the median of those marks within 0.6 s, once there are at least two.
+   2. In each group only notes within 10 semitones of the line count (octave ghosts above, comping below drop out),
+      a chord of four or more sitting under the line is comping and is skipped, and the best-supported note wins. */
+function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above=10,chord=4,anchor=.45}={}){
+  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
+  const groups=[]; ok.forEach(n=>{ const g=groups[groups.length-1]; if(g&&n.s-g[0].s<.04) g.push(n); else groups.push([n]); });
+  const marks=groups.filter(g=>g.length<chord).map(g=>g.reduce((a,b)=>b.c>a.c+.05||(Math.abs(b.c-a.c)<=.05&&b.p>a.p)?b:a)).filter(n=>n.c>=anchor);
+  const lineAt=t=>{ const ps=marks.filter(m=>Math.abs(m.s-t)<=win).map(m=>m.p).sort((x,y)=>x-y); return ps.length>=2?ps[ps.length>>1]:null; };
+  const out=[];
+  groups.forEach(g=>{ const r=lineAt(g[0].s), cand=r===null?g:g.filter(n=>n.p>=r-below&&n.p<=r+above);
+    if(!cand.length||(g.length>=chord&&r!==null&&Math.max(...g.map(n=>n.p))<r-3)) return;
+    const top=Math.max(...cand.map(n=>n.p)), best=cand.reduce((a,b)=>b.c+(b.p===top?.1:0)>a.c+(a.p===top?.1:0)?b:a);
+    const last=out[out.length-1]; if(last&&last.e>best.s) last.e=best.s; out.push({...best}); });
+  return out.filter(n=>n.e-n.s>=.03);
+}
 // The written melody in beats on the tuplet grid (tupletGrid); lead sheets keep simple rhythms and drop ornaments
 function melodyBeats(line,toBeat,lead){
   let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c,s:n.s,e:n.e})).filter(n=>n.at>-.25);
@@ -3104,7 +3158,7 @@ function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='l
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const full=!lead&&texture==='full'&&inst.full;
   const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1],minConf:S.c,minLen:S.l})
-    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l,byConf:res.engine==='vote'}),toBeat,lead);
+    :melodyBeats((res.engine==='vote'?leadLine:topLine)(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   const toSec=inverseMap(toBeat,res.duration); // beats back to seconds for the chord windows
@@ -3291,13 +3345,16 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
   const staffs=grand?[{y:yT,lo:30,hi:38,mid:34,notes:notes.filter(n=>n.midi>=60),clef:'𝄞',cy:yT(32)+9,cs:44},{y:yB,lo:18,hi:26,mid:22,notes:notes.filter(n=>n.midi<60),clef:'𝄢',cy:yB(24)+8,cs:32}]
                 :bass1?[{y:yT,lo:18,hi:26,mid:22,notes,clef:'𝄢',cy:yT(24)+8,cs:32}]:[{y:yT,lo:30,hi:38,mid:34,notes,clef:'𝄞',cy:yT(32)+9,cs:44}];
   const ink='var(--ink)';
-  let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-label="Sheet music">`;
+  // chord symbols go above the highest notehead or stem on the top staff; the picture grows upwards when they need room
+  const st0=staffs[0], tops=st0.notes.map(n=>st0.y(n.spell.di)-(n.spell.di<st0.mid?36:10));
+  const cy=Math.min(14,(tops.length?Math.min(...tops):99)-6), vy=Math.min(0,cy-14);
+  let s=`<svg viewBox="0 ${vy} ${W} ${H-vy}" width="${W}" height="${H-vy}" aria-label="Sheet music">`;
   staffs.forEach(st=>{ for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${st.y(st.hi-2*k)}" y2="${st.y(st.hi-2*k)}"/>`;
     s+=`<text class="clef" x="12" y="${st.cy}" font-size="${st.cs}">${st.clef}</text>`; });
   const top=staffs[0].y(staffs[0].hi), bottom=grand?yB(18):staffs[0].y(staffs[0].lo);
   s+=`<line class="ln" x1="8" x2="8" y1="${top}" y2="${bottom}"/>`;
   for(let b=4;b<=beats;b+=4){ const x=X0+cum[b]-8; s+=`<line class="ln" x1="${x}" x2="${x}" y1="${top}" y2="${bottom}"/>`; }
-  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="14">${symText(c)}</text>`; });
+  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
   staffs.forEach(st=>{
     const stacks=gsStacks(st.notes,beats);
     // beam groups: notes shorter than a quarter within one beat
@@ -3396,7 +3453,9 @@ async function trCheck(){
   const ok=await trHelperOk(); TR.helper=ok; if(!$('trStatus')) return;
   $('trStatus').textContent=ok?'Helper ready':'Helper not running'; $('trStatus').className=ok?'trok':'trno';
   if(ok&&TR.health.version<2){ $('trStatus').textContent='Helper is out of date: quit and reopen Jun Jam.app, or run the install again'; $('trStatus').className='trno'; }
-  if($('trEngBest')){ $('trEngBest').disabled=!trCanBest(); if(!trCanBest()&&TR.engine==='best') $('trEngNote').textContent='Best needs the newer helper: run the install command again (it adds two extra models, about 1 GB more).'; }
+  const bb=document.querySelector('#trBody [data-eng="best"]');
+  if(bb){ bb.disabled=!trCanBest(); if(!trCanBest()&&TR.engine!=='quick') $('trEngNote').textContent='Best needs the newer helper: run the install command again (it adds two extra models, about 1 GB more). Quick works now.'; }
+  if(TR.buf&&$('trEst')) trDrawWave();
   if($('trGuide')) $('trGuide').innerHTML=ok?'':trInstallGuide();
   if($('trGo')) $('trGo').disabled=!ok;
 }
@@ -3442,30 +3501,32 @@ async function trLoad(file){
   trSetupRender();
 }
 const fmtT=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}.${Math.floor((s%1)*10)}`;
+// Setup: what to write, the instrument, how carefully to listen, and which part of the recording
+const trSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,tip])=>`<button data-${attr}="${v}" aria-pressed="${cur===v}"${tip?` title="${tip}"`:''}>${t}</button>`).join('')}</div>`;
 function trSetupRender(){
-  const T=TR;
-  $('trBody').innerHTML=`<div class="etop"><span class="etitle">${T.title.replace(/</g,'&lt;')}</span><span id="trStatus"></span></div>
-    <div class="sec">1. What do you want to see?</div>
-    <div class="trmodes"><button class="trpick" data-mode="solo" aria-pressed="${T.mode==='solo'}"><b>Solo transcription</b><span>One instrument's line, note for note, with the chords under it.</span></button>
-      <button class="trpick" data-mode="lead" aria-pressed="${T.mode==='lead'}"><b>Lead sheet</b><span>The tune's melody and chord changes. Mark solo sections afterwards to leave them out.</span></button></div>
-    <div class="irow">${T.mode==='solo'?`<span>Instrument</span><select id="trInst">${Object.entries(TR_INSTRUMENTS).map(([k,v])=>`<option value="${k}"${k===T.instrument?' selected':''}>${v.name}</option>`).join('')}</select>
-      ${TR_INSTRUMENTS[T.instrument].full?`<div class="seg" role="group"><button data-tex="line" aria-pressed="${T.texture==='line'}">Single line</button><button data-tex="full" aria-pressed="${T.texture==='full'}">With chords${TR_INSTRUMENTS[T.instrument].grand?' (both hands)':''}</button></div>`:''}`:'<span>The melody is taken from the vocals, or the lead instrument if there are none.</span>'}</div>
-    <div class="irow"><span>Listening</span><div class="seg" role="group"><button id="trEngBest" data-eng="best" aria-pressed="${T.engine!=='quick'}">Best</button><button data-eng="quick" aria-pressed="${T.engine==='quick'}">Quick</button></div>
-      <span class="fine" id="trEngNote">${T.engine==='quick'?'One model, drums taken out first. A few seconds.':'Three models listen and vote on every note. Takes about as long as the part you select.'}</span></div>
-    <div class="sec">2. Select the part to transcribe <span class="fine" id="trSelT"></span></div>
-    <div class="trwavewrap" id="trWaveWrap"><canvas class="trwave" id="trWave" height="110"></canvas>
-      <i class="trhandle" id="trH0" title="Drag to set the start"></i><i class="trhandle" id="trH1" title="Drag to set the end"></i><i class="trwhead" id="trWHead"></i></div>
-    <div class="erow"><button class="ghost" id="trPlaySel">Play selection</button><button class="ghost" id="trAll">Whole song</button>
-      <div class="seg" role="group">${[[.5,'50%'],[.75,'75%'],[1,'100%']].map(([v,t])=>`<button data-rate="${v}" aria-pressed="${(T.rate||1)===v}">${t}</button>`).join('')}</div></div>
-    <p class="fine">Drag the two handles to set the start and end (or click the waveform to move the nearest one). About 30 to 90 seconds works best for a solo.</p>
-    <div class="erow"><button class="go" id="trGo">Transcribe</button><button class="ghost" id="trBack">Back</button></div>`;
-  $('trBack').onclick=trOpen; $('trGo').onclick=trRun;
+  const T=TR, inst=TR_INSTRUMENTS[T.instrument]||TR_INSTRUMENTS.piano, best=T.engine!=='quick';
+  $('trBody').innerHTML=`<div class="trtop"><button class="ghost" id="trBack">← Back</button><span class="etitle">${T.title.replace(/</g,'&lt;')}</span><span id="trStatus"></span></div>
+    <div class="trform">
+      <label>Write it as</label><div class="trmodes"><button class="trpick" data-mode="solo" aria-pressed="${T.mode==='solo'}"><b>Solo transcription</b><span>One instrument's part, note for note, with the chords under it.</span></button>
+        <button class="trpick" data-mode="lead" aria-pressed="${T.mode==='lead'}"><b>Lead sheet</b><span>The tune's melody and chord changes. Mark solo sections afterwards to leave them out.</span></button></div>
+      ${T.mode==='solo'?`<label for="trInst">Instrument</label><div class="trctl"><select id="trInst">${Object.entries(TR_INSTRUMENTS).map(([k,v])=>`<option value="${k}"${k===T.instrument?' selected':''}>${v.name}</option>`).join('')}</select>
+        ${inst.full?trSeg('tex',[['line','Single line','The top line only: the solo'],['full',`With chords${inst.grand?' (both hands)':''}`,'Every note, chords stacked'+(inst.grand?', on a grand staff':'')]],T.texture):''}</div>`
+        :`<label>Melody</label><div class="trctl fine">Taken from the vocals, or the lead instrument if there are none.</div>`}
+      <label>Listening</label><div class="trctl">${trSeg('eng',[['best','Best'],['quick','Quick']],best?'best':'quick')}<span class="fine" id="trEngNote">${best?'Three models listen and vote on every note.':'One model. A few seconds.'}</span></div>
+      <label>Part</label><div><div class="trwavewrap" id="trWaveWrap"><canvas class="trwave" id="trWave" height="110"></canvas>
+          <i class="trhandle" id="trH0" title="Drag to set the start"></i><i class="trhandle" id="trH1" title="Drag to set the end"></i><i class="trwhead" id="trWHead"></i></div>
+        <div class="trctl"><button class="ghost" id="trPlaySel">▶ Play part</button><button class="ghost" id="trAll">Whole recording</button>
+          <span class="fine">Speed</span>${trSeg('rate',[[.5,'50%'],[.75,'75%'],[1,'100%']],T.rate||1)}<span class="fine trright" id="trSelT"></span></div>
+        <p class="fine">Drag the handles to set the start and end, or click the waveform to move the nearer one. 30 to 90 seconds works best for a solo.</p></div>
+    </div>
+    <div class="trgo"><span class="fine" id="trEst"></span><button class="go" id="trGo">Transcribe</button></div>`;
+  $('trBack').onclick=()=>{ trStopAll(); trOpen(); }; $('trGo').onclick=trRun;
   $('trBody').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ T.mode=b.dataset.mode; trSetupRender(); });
-  $('trBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ T.rate=+b.dataset.rate; trSetupRender(); });
-  if($('trInst')) $('trInst').onchange=e=>{ T.instrument=e.target.value; trSetupRender(); };
+  $('trBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ T.rate=+b.dataset.rate; if(TR.audio) TR.audio.playbackRate=T.rate; $('trBody').querySelectorAll('[data-rate]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+  if($('trInst')) $('trInst').onchange=e=>{ T.instrument=e.target.value; if(!TR_INSTRUMENTS[T.instrument].full) T.texture='line'; trSetupRender(); };
   $('trBody').querySelectorAll('[data-eng]').forEach(b=>b.onclick=()=>{ T.engine=b.dataset.eng; store.set('trEngine',T.engine); trSetupRender(); });
   $('trBody').querySelectorAll('[data-tex]').forEach(b=>b.onclick=()=>{ T.texture=b.dataset.tex; trSetupRender(); });
-  $('trPlaySel').onclick=()=>trPlayOriginal(T.sel[0],T.sel[1]);
+  $('trPlaySel').onclick=()=>{ if(TR.audio&&!TR.audio.paused) trStopAll(); else trPlayOriginal(T.sel[0],T.sel[1]); };
   $('trAll').onclick=()=>{ T.sel=[0,T.buf.duration]; trDrawWave(); };
   trDrawWave(); trWaveDrag(); trCheck();
 }
@@ -3478,6 +3539,7 @@ function trDrawWave(){
   for(let x=0;x<w;x++){ let mx=0; for(let i=x*step;i<(x+1)*step&&i<d.length;i+=4) mx=Math.max(mx,Math.abs(d[i]));
     g.fillStyle=x>=x0&&x<=x1?css.getPropertyValue('--brass'):css.getPropertyValue('--muted'); g.fillRect(x,h/2-mx*h/2,1,Math.max(1,mx*h)); }
   if($('trSelT')) $('trSelT').textContent=`${fmtT(T.sel[0])} to ${fmtT(T.sel[1])} (${Math.round(T.sel[1]-T.sel[0])} s)`;
+  if($('trEst')){ const d=T.sel[1]-T.sel[0], q=T.engine==='quick'||!trCanBest(); $('trEst').textContent=`About ${Math.max(q?3:10,Math.round(d*(q?.15:1.3)))} s`; }
   const pc=x=>(x/T.buf.duration*100)+'%'; if($('trH0')){ $('trH0').style.left=pc(T.sel[0]); $('trH1').style.left=pc(T.sel[1]); }
 }
 // Two handles, start and end; clicking the waveform moves the nearer one there
@@ -3496,7 +3558,8 @@ function trPlayOriginal(from,to){
   const au=TR.audio||(TR.audio=new Audio()); if(au.src!==TR.url) au.src=TR.url;
   au.preservesPitch=true; au.playbackRate=TR.rate||1; au.currentTime=from; au.play();
   clearInterval(TR.audioTimer); TR.audioTimer=setInterval(()=>{ if(au.currentTime>=to){ au.pause(); clearInterval(TR.audioTimer); }
-    const wh=$('trWHead'); if(wh&&TR.buf){ wh.style.left=(au.currentTime/TR.buf.duration*100)+'%'; wh.style.display=au.paused?'none':'block'; } },40);
+    const wh=$('trWHead'); if(wh&&TR.buf){ wh.style.left=(au.currentTime/TR.buf.duration*100)+'%'; wh.style.display=au.paused?'none':'block'; }
+    const pb=$('trPlaySel'); if(pb) pb.textContent=au.paused?'▶ Play part':'■ Stop'; },40);
 }
 function trStopAll(){ if(TR.audio){ TR.audio.onplaying=null; TR.audio.pause(); } TR.token=(TR.token||0)+1; clearInterval(TR.audioTimer); killBus(TR.bus); TR.bus=null; cancelAnimationFrame(TR.raf); TR.playing=false; }
 
@@ -3534,42 +3597,78 @@ async function trRun(){
 
 /* ---------------- the editor ---------------- */
 const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to set beat 1) sits above the chord lane
+/* The editor. Top: what it is, and Save / Export / Lines / Close. Under it a transport bar that stays in view
+   (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
+   sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
 function trEdit(score,res,savedIndex){
-  trStopAll(); Object.assign(TR,{active:true,step:'edit',score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false});
+  trStopAll(); Object.assign(TR,{active:true,step:'edit',score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
-  $('trBody').innerHTML=`<div class="etop"><span class="etitle" id="trTitle"></span><span id="trInfo"></span></div>
-    <div class="erow trtools"><button class="go" id="trPlay" title="Space">▶ Play</button><button class="ghost" id="trStop" title="Stop and go back to the start">■ Stop</button>
-      ${TR.url&&TR.res?`<div class="seg" role="group" title="What Play plays">${[['notes','Transcription'],['orig','Original'],['both','Both']].map(([v,t])=>`<button data-src="${v}" aria-pressed="${(TR.src||'notes')===v}">${t}</button>`).join('')}</div>`:''}
-      <button class="ghost" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop the stretch you dragged across the beat numbers (or the current bar)">Loop</button>
-      <div class="seg" role="group">${[[.5,'50%'],[.75,'75%'],[1,'100%']].map(([v,t])=>`<button data-speed="${v}" aria-pressed="${TR.speed===v}">${t}</button>`).join('')}</div>
-      ${TR.res?'<button class="ghost" id="trShiftL" title="Move the bar lines one beat earlier">◀ bar line</button><button class="ghost" id="trShiftR" title="One beat later">bar line ▶</button>':''}
-      <button class="ghost" id="trUndo">Undo</button>${TR.buf&&TR.res?'<button class="ghost" id="trSettings">← Settings</button>':''}</div>
-    ${TR.res?`<div class="erow trtools"><span class="fine">Notes</span><div class="seg" role="group">${['Fewest','Fewer','Normal','More','Most'].map((t,i)=>`<button data-sens="${i}" aria-pressed="${(score.sens??2)===i}">${t}</button>`).join('')}</div>
-      <span class="fine">Tempo</span><div class="seg" role="group">${[[.5,'Half time'],[1,'As heard'],[2,'Double time']].map(([v,t])=>`<button data-bs="${v}" aria-pressed="${(score.beatScale||1)===v}">${t}</button>`).join('')}</div></div>`:''}
-    <div class="erow trtools"><span class="fine">Timing</span><div class="seg" role="group"><button data-tm="played" aria-pressed="${TR.timing==='played'}" title="Notes where they were really played, over the recording">As played</button><button data-tm="beat" aria-pressed="${TR.timing!=='played'}" title="Notes on the beat grid, like the sheet music">On the beat</button></div>
-      <button class="ghost" id="trBacking" aria-pressed="${!!TR.backing}" title="Chords and bass under the notes when you press Play">Backing chords: ${TR.backing?'on':'off'}</button></div>
+  const R=!!TR.res, A=!!(TR.url&&TR.res);
+  $('trBody').innerHTML=`<div class="trtop">${TR.buf&&R?'<button class="ghost" id="trSettings" title="Back to what to write, instrument and part">← Settings</button>':''}
+      <span class="etitle" id="trTitle" title="Click to rename"></span><span class="fine" id="trInfo"></span><span class="trspace"></span><span class="fine" id="trDirty"></span>
+      <button class="go" id="trSave" title="Cmd+S">Save</button>
+      <div class="trmenu"><button class="ghost" id="trExportBtn" aria-haspopup="true">Export ▾</button><div class="trmenulist" id="trExportList" hidden>
+        <button data-exp="xml">MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">MIDI, on the beat</button>${R?'<button data-exp="midp">MIDI, as played</button>':''}</div></div>
+      <button class="ghost" id="trLick" title="Select 3 to 16 notes in the piano roll first">→ Lines</button><button class="ghost" id="trClose">Close</button></div>
+    <div class="trbar" id="trBar">
+      <button class="go trplay" id="trPlay" title="Play / pause (Space)">▶</button><button class="ghost" id="trStop" title="Stop, back to the start">■</button>
+      <span class="trpos" id="trPos">1 · 1</span>
+      ${A?`<span class="trgrp"><span class="fine">Hear</span>${trSeg('src',[['notes','Notes'],['orig','Recording'],['both','Both']],TR.src||'notes')}</span>`:''}
+      <span class="trgrp"><span class="fine">Speed</span>${trSeg('speed',[[.5,'50%'],[.75,'75%'],[1,'100%']],TR.speed)}</span>
+      <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (L). Drag across the beat numbers to choose the bars">⟳ Loop</button>
+      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
+      <span class="trspace"></span>
+      <button class="ghost ic" id="trUndo" title="Undo (Cmd+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+Cmd+Z)">↷</button>
+      <button class="ghost ic" id="trHelpBtn" title="How to edit, and keyboard shortcuts">?</button></div>
+    <div class="trfix">${R?`<span class="trgrp"><span class="fine">Notes</span>${trSeg('sens',['Fewest','Fewer','Normal','More','Most'].map((t,i)=>[i,t]),score.sens??2)}</span>
+      <span class="trgrp"><span class="fine">Tempo</span>${trSeg('bs',[[.5,'Half'],[1,'As heard'],[2,'Double']],score.beatScale||1)}</span>
+      <span class="trgrp"><span class="fine">Bar lines</span><span class="seg"><button id="trShiftL" title="Move every bar line one beat earlier">◀ Earlier</button><button id="trShiftR" title="One beat later">Later ▶</button></span></span>`:''}
+      <span class="trgrp"><span class="fine">Roll</span>${trSeg('tm',[['beat','On the beat','Notes on the grid, like the sheet music'],['played','As played','Notes where they really were, over the recording']],TR.timing==='played'?'played':'beat')}</span></div>
     <div class="trscore" id="trScore"></div>
-    <div class="sec">Click the beat numbers to play from there, drag across them to loop. Edit: drag notes to move them, drag their right edge to change length, double-click to add, Delete to remove, ↑/↓ to transpose. Click a chord to change it.${TR.res?' Beat 1 in the wrong place? Double-click the beat number that should be 1.':''}</div>
-    <div class="trroll" id="trRoll"></div>
-    <div class="lmsg" id="trMsg"></div>
-    <div class="erow"><button class="go" id="trSave">Save</button><button class="ghost" id="trXml">Export MusicXML</button><button class="ghost" id="trMid">Export MIDI</button><button class="ghost" id="trLick">Selected notes → Lines</button><button class="ghost" id="trClose">Close</button></div>`;
+    <div class="trroll" id="trRoll"></div>`;
   const B=$('trBody');
   $('trPlay').onclick=trToggle; $('trStop').onclick=()=>{ trStopAll(); TR.posB=TR.looping&&TR.loop?TR.loop.a:0; trHead(TR.posB); };
-  B.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{ TR.src=b.dataset.src; B.querySelectorAll('[data-src]').forEach(x=>x.setAttribute('aria-pressed',x===b)); trResume(); });
-  $('trLoopBtn').onclick=()=>{ TR.looping=!TR.looping; if(TR.looping&&!TR.loop){ const a=Math.floor((TR.posB||0)/4)*4; TR.loop={a,b:a+4}; } $('trLoopBtn').setAttribute('aria-pressed',TR.looping); trRollView(); trResume(); };
-  B.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{ TR.speed=+b.dataset.speed; TR.rate=TR.speed; B.querySelectorAll('[data-speed]').forEach(x=>x.setAttribute('aria-pressed',x===b)); trResume(); });
+  B.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{ TR.src=b.dataset.src; trPress('src',b.dataset.src); trResume(); });
+  $('trLoopBtn').onclick=trLoopToggle;
+  B.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{ TR.speed=+b.dataset.speed; TR.rate=TR.speed; trPress('speed',b.dataset.speed); trResume(); });
+  $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); trResume(); };
+  $('trUndo').onclick=trUndo; $('trRedo').onclick=trRedo; $('trHelpBtn').onclick=trHelp;
   if($('trShiftL')){ $('trShiftL').onclick=()=>trReshift(-1); $('trShiftR').onclick=()=>trReshift(1); }
-  if($('trSettings')) $('trSettings').onclick=()=>{ trStopAll(); TR.step='setup'; trSetupRender(); };
+  if($('trSettings')) $('trSettings').onclick=()=>trLeave(()=>{ trStopAll(); TR.step='setup'; trSetupRender(); },'Go back to the settings?');
   B.querySelectorAll('[data-sens]').forEach(b=>b.onclick=()=>trRebuild({sens:+b.dataset.sens},`Notes: ${b.textContent.toLowerCase()}.`));
-  B.querySelectorAll('[data-bs]').forEach(b=>b.onclick=()=>trRebuild({beatScale:+b.dataset.bs,shift:null},b.dataset.bs==='1'?'Tempo as heard.':`Read in ${b.textContent.toLowerCase()}.`));
-  B.querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{ TR.timing=b.dataset.tm; store.set('trTiming',TR.timing); B.querySelectorAll('[data-tm]').forEach(x=>x.setAttribute('aria-pressed',x===b)); trRender();
-    trMsg(TR.timing==='played'?'As played: every note where it was really played, over the recording. Edits here move the sheet music too.':'On the beat: notes on the grid, like the sheet music.'); trResume(); });
-  $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); $('trBacking').textContent=`Backing chords: ${TR.backing?'on':'off'}`; trResume(); };
-  $('trUndo').onclick=trUndo; $('trSave').onclick=trSave; $('trXml').onclick=()=>trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
-  $('trMid').onclick=()=>trDownload(toMidiFile(TR.score,TR.timing==='played'?trMaps():null),'mid','audio/midi'); $('trLick').onclick=trToLick; $('trClose').onclick=trOpen;
-  trRender();
+  B.querySelectorAll('[data-bs]').forEach(b=>b.onclick=()=>trRebuild({beatScale:+b.dataset.bs,shift:null},b.dataset.bs==='1'?'Tempo as heard.':`Read in ${b.textContent.toLowerCase()} time.`));
+  B.querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{ TR.timing=b.dataset.tm; store.set('trTiming',TR.timing); trPress('tm',TR.timing); trRollView();
+    trMsg(TR.timing==='played'?'As played: every note where it really was, over the recording. Edits here move the sheet music too.':'On the beat: notes on the grid, like the sheet music.'); trResume(); });
+  $('trSave').onclick=trSave; $('trLick').onclick=trToLick; $('trClose').onclick=()=>trLeave(trOpen,'Close this transcription?');
+  $('trTitle').onclick=()=>{ const t=prompt('Name',TR.score.title); if(t&&t.trim()){ TR.score.title=t.trim(); trSetDirty(); trInfo(); } };
+  const list=$('trExportList'); $('trExportBtn').onclick=e=>{ list.hidden=!list.hidden; e.stopPropagation(); };
+  document.addEventListener('pointerdown',e=>{ if(list&&!list.hidden&&!e.target.closest('.trmenu')) list.hidden=true; });
+  list.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>{ list.hidden=true; const k=b.dataset.exp;
+    if(k==='xml') trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
+    else trDownload(toMidiFile(TR.score,k==='midp'?trMaps():null),'mid','audio/midi'); });
+  trRender(); trHead(0);
 }
-function trRender(){ trFillSec(); trInfo(); trScoreView(); trRollView(); const m=$('trMid'); if(m) m.textContent=TR.timing==='played'?'Export MIDI (as played)':'Export MIDI'; }
+const trPress=(attr,v)=>$('trBody').querySelectorAll(`[data-${attr}]`).forEach(x=>x.setAttribute('aria-pressed',String(x.dataset[attr==='bs'?'bs':attr])===String(v)));
+function trLoopToggle(){ TR.looping=!TR.looping; if(TR.looping&&!TR.loop){ const a=Math.floor((TR.posB||0)/4)*4; TR.loop={a,b:a+4}; }
+  $('trLoopBtn').setAttribute('aria-pressed',TR.looping); trRollView(); if(TR.looping) trMsg(`Looping bar${TR.loop.b-TR.loop.a>4?'s':''} ${trBars(TR.loop)}. Drag across the beat numbers to loop other bars.`); trResume(); }
+const trBars=l=>{ const a=Math.floor(l.a/4)+1, b=Math.ceil(l.b/4); return b>a?`${a}–${b}`:`${a}`; };
+// leaving with unsaved edits asks first
+function trLeave(go,q){ if(TR.dirty&&!confirm(`${q} ${TR.saved==null?'This transcription isn\'t saved yet.':'Your changes since the last save will be lost.'}`)) return; trStopAll(); go(); }
+function trSetDirty(){ TR.dirty=true; const d=$('trDirty'); if(d) d.textContent='Not saved'; }
+function trHelp(){
+  document.querySelectorAll('.trpop').forEach(x=>x.remove());
+  const pop=document.createElement('div'); pop.className='trpop trhelp';
+  pop.innerHTML=`<b>Playing</b><ul><li><kbd>Space</kbd> play / pause from the playhead</li><li>Click the sheet music or the beat numbers to move the playhead there</li>
+    <li>Drag across the beat numbers to loop those bars; <kbd>L</kbd> turns the loop on and off</li><li><kbd>←</kbd> <kbd>→</kbd> move the playhead a beat (with <kbd>Shift</kbd>, a bar) when no notes are selected</li></ul>
+    <b>Editing (piano roll)</b><ul><li>Drag a note to move it, drag its right edge to change its length</li><li>Double-click to add a note; drag a box to select several</li>
+    <li><kbd>↑</kbd> <kbd>↓</kbd> transpose (with <kbd>Shift</kbd>, an octave); <kbd>←</kbd> <kbd>→</kbd> nudge the selected notes</li><li><kbd>Delete</kbd> removes; <kbd>Cmd+Z</kbd> undo, <kbd>Shift+Cmd+Z</kbd> redo; <kbd>Cmd+S</kbd> save</li>
+    <li>Click a chord to change it, or an empty spot in the chord lane to add one</li><li>Beat 1 in the wrong place? Double-click the beat number that should be 1, or use Bar lines</li></ul>
+    <button class="go" id="trHelpOk">OK</button>`;
+  document.body.appendChild(pop); const r=$('trHelpBtn').getBoundingClientRect(); pop.style.left=Math.max(8,Math.min(innerWidth-440,r.right-420))+'px'; pop.style.top=(r.bottom+8)+'px';
+  pop.querySelector('#trHelpOk').onclick=()=>pop.remove();
+  setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('pointerdown',f); } }),0);
+}
+function trRender(){ trFillSec(); trInfo(); trScoreView(); trRollView(); }
 // Beats ↔ seconds for the score on screen, and the As played view's scale (as wide per second as a beat is at this tempo)
 const trMaps=()=>scoreMaps(TR.res,{...TR.score,shift:TR.score.shift??TR.shift});
 const trPlayed=()=>TR.timing==='played';
@@ -3578,25 +3677,27 @@ const trBeatAtX=x=>trPlayed()?trMaps().toBeat(x/trPXS()):x/PXB;
 // notes added or saved before seconds were kept get them from the grid
 function trFillSec(){ const mp=trMaps(); TR.score.melody.forEach(n=>{ if(n.sec==null){ n.sec=Math.max(0,mp.toSec(n.gat)); n.dsec=Math.max(.05,mp.toSec(n.gat+n.gdur)-n.sec); } }); }
 function trInfo(){ const s=TR.score;
-  $('trTitle').textContent=s.title; $('trInfo').textContent=`${s.mode==='lead'?'Lead sheet':s.texture==='full'?'Full part':'Solo line'} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)} · ${s.bars} bars · ${s.melody.length} notes`; }
-// Undo keeps whole snapshots (notes, chords, bars, tempo, the Notes and Tempo settings, beat 1)
-function trPush(){ TR.undo.push(JSON.stringify({score:TR.score,sh:TR.shift})); if(TR.undo.length>80) TR.undo.shift(); }
-function trUndo(){ const u=TR.undo.pop(); if(!u) return; const o=JSON.parse(u); TR.score=o.score; TR.shift=o.sh; TR.selected.clear();
-  $('trBody').querySelectorAll('[data-sens]').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.sens===(TR.score.sens??2)));
-  $('trBody').querySelectorAll('[data-bs]').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.bs===(TR.score.beatScale||1)));
-  trRender(); }
-// Re-read the helper's answer with different settings (fewer or more notes, half or double time); undo goes back
-function trRebuild(over,msg){ if(!TR.res) return; trPush(); const s=TR.score;
-  const opts={mode:s.mode,instrument:s.instrument,title:s.title,texture:s.texture||'line',sens:s.sens??2,beatScale:s.beatScale||1,shift:TR.shift,...over};
-  TR.score={...buildScore(TR.res,opts),soloBars:s.soloBars}; TR.shift=TR.score.shift; TR.selected.clear();
-  $('trBody').querySelectorAll('[data-sens]').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.sens===TR.score.sens));
-  $('trBody').querySelectorAll('[data-bs]').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.bs===TR.score.beatScale));
-  trRender(); trMsg(msg); trResume(); }
-function trSetBeat1(beat){ if(!TR.res) return; const k=mod12(beat)%4; if(!k) return; let sh=(TR.shift||0)+k; while(sh>0) sh-=4; trApplyShift(sh,`Beat 1 set. The score is redrawn from there.`); }
-function trApplyShift(sh,msg){ trPush(); TR.shift=sh; const s=TR.score;
-  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,shift:TR.shift,title:s.title,texture:s.texture||'line',sens:s.sens??2,beatScale:s.beatScale||1}),soloBars:s.soloBars}; TR.selected.clear(); trRender(); trMsg(msg); }
-function trReshift(d){ if(!TR.res) return; let sh=(TR.shift||0)+d; while(sh>0) sh-=4; while(sh<=-4) sh+=4; trApplyShift(sh,`Bar lines moved ${d<0?'earlier':'later'}.`); }
-function trMsg(t,cls=''){ const m=$('trMsg'); if(m){ m.textContent=t; m.className='lmsg '+cls; } }
+  $('trTitle').textContent=s.title; $('trInfo').textContent=`${s.mode==='lead'?'Lead sheet':s.texture==='full'?'Full part':'Solo line'} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)} · ${s.bars} bars · ${s.melody.length} notes`;
+  const d=$('trDirty'); if(d) d.textContent=TR.dirty?'Not saved':'Saved';
+  const u=$('trUndo'), r=$('trRedo'); if(u) u.disabled=!TR.undo.length; if(r) r.disabled=!TR.redo.length; }
+// Undo keeps whole snapshots (notes, chords, bars, tempo, the Notes and Tempo settings, beat 1). edit: a change you made by hand
+const trSnap0=()=>JSON.stringify({score:TR.score,sh:TR.shift});
+function trPush(edit=true){ TR.undo.push(trSnap0()); if(TR.undo.length>80) TR.undo.shift(); TR.redo=[]; if(edit) TR.edited=true; trSetDirty(); }
+function trRestore(u){ const o=JSON.parse(u); TR.score=o.score; TR.shift=o.sh; TR.selected.clear(); trPress('sens',TR.score.sens??2); trPress('bs',TR.score.beatScale||1); trSetDirty(); trRender(); }
+function trUndo(){ const u=TR.undo.pop(); if(!u) return trMsg('Nothing to undo.'); TR.redo.push(trSnap0()); trRestore(u); }
+function trRedo(){ const u=TR.redo.pop(); if(!u) return trMsg('Nothing to redo.'); TR.undo.push(trSnap0()); trRestore(u); }
+// Re-read the helper's answer with different settings (fewer or more notes, half or double time, beat 1). Hand edits are
+// replaced, so say so; Undo brings them back.
+function trReread(opts,msg){ const s=TR.score, had=TR.edited; trPush(false);
+  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,title:s.title,texture:s.texture||'line',sens:s.sens??2,beatScale:s.beatScale||1,shift:TR.shift,...opts}),soloBars:s.soloBars};
+  TR.shift=TR.score.shift; TR.selected.clear(); TR.edited=false; trPress('sens',TR.score.sens); trPress('bs',TR.score.beatScale);
+  trRender(); trMsg(msg+(had?' Your note edits were replaced: Undo brings them back.':'')); trResume(); }
+function trRebuild(over,msg){ if(TR.res) trReread(over,msg); }
+function trSetBeat1(beat){ if(!TR.res) return; const k=mod12(beat)%4; if(!k) return trMsg('That beat is already beat 1.'); let sh=(TR.shift||0)+k; while(sh>0) sh-=4; trReread({shift:sh},'Beat 1 set. The score is redrawn from there.'); }
+function trReshift(d){ if(!TR.res) return; let sh=(TR.shift||0)+d; while(sh>0) sh-=4; while(sh<=-4) sh+=4; trReread({shift:sh},`Bar lines moved ${d<0?'earlier':'later'}.`); }
+// messages pop up at the bottom of the screen for a few seconds
+function trMsg(t,cls=''){ if(!t) return; let m=$('trToast'); if(!m){ m=document.createElement('div'); m.id='trToast'; document.body.appendChild(m); }
+  m.textContent=t; m.className='trtoast show '+cls; clearTimeout(TR.toastT); TR.toastT=setTimeout(()=>m.classList.remove('show'),cls==='no'?6000:4200); }
 
 // Sheet music: four bars to a line, chord symbols above, notes spelled from their chords
 function trScoreView(){
@@ -3604,7 +3705,7 @@ function trScoreView(){
   // up to four bars to a line, fewer when they're busy, so fast runs stay readable (beats widen like grandStaffSVG's)
   const per=Array(s.bars*4).fill(0); vis.forEach(n=>{ const b=Math.floor(n.gat+1e-6); if(b>=0&&b<per.length) per[b]++; });
   const barW=b=>[0,1,2,3].reduce((a,k)=>a+Math.max(44,per[b*4+k]*15+10),0), room=Math.max(560,($('trScore').clientWidth||900)-90);
-  const starts=[]; for(let b=0;b<s.bars;){ let n=1, w=barW(b); while(n<4&&b+n<s.bars&&w+barW(b+n)<=room){ w+=barW(b+n); n++; } starts.push([b,n]); b+=n; }
+  TR.lines=[]; const starts=[]; for(let b=0;b<s.bars;){ let n=1, w=barW(b); while(n<4&&b+n<s.bars&&w+barW(b+n)<=room){ w+=barW(b+n); n++; } starts.push([b,n]); b+=n; }
   starts.forEach(([b,nb])=>{
     const a=b*4, z=a+nb*4, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
       return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,tup:n.tup||0,spell:{...sp,midi:n.midi},name:sp.name}; });
@@ -3612,9 +3713,17 @@ function trScoreView(){
     const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+nb);
     const svg=s.texture==='full'?grandStaffSVG({notes,chords,beats:nb*4,grand:!!s.grand}):s.mode==='lead'?lineStaffSVG({notes,chords,total:nb*4},-1,false)
       :grandStaffSVG({notes,chords,beats:nb*4,grand:false,clef:low?'bass':'treble'});
-    lines.push(`<div class="trline"><span class="trbar">${b+1}${solo.length?` · solo ${solo.map(x=>x+1).join(', ')}`:''}</span>${svg}</div>`);
+    const bw=[...Array(nb*4)].map((_,k)=>Math.max(44,per[a+k]*15+10)), cum=[0]; bw.forEach(w=>cum.push(cum[cum.length-1]+w));
+    TR.lines.push({a,nb,bw,cum,X0:s.mode==='lead'&&s.texture!=='full'?null:64,W:64+cum[nb*4]+16});
+    lines.push(`<div class="trline" data-line="${TR.lines.length-1}"><span class="trbar">${b+1}${solo.length?` · solo ${solo.map(x=>x+1).join(', ')}`:''}</span>${svg}<i class="trshead"></i></div>`);
   });
   $('trScore').innerHTML=lines.join('');
+  if(s.mode==='lead'&&s.texture!=='full') TR.lines=null; // the lead sheet's staff is drawn by Lines (its own spacing)
+  // click the music to put the playhead there
+  $('trScore').onclick=e=>{ const el=e.target.closest('[data-line]'); if(!el||!TR.lines) return; const L=TR.lines[+el.dataset.line], svg=el.querySelector('svg'), r=svg.getBoundingClientRect();
+    const x=(e.clientX-r.left)*L.W/r.width-L.X0; let i=0; while(i<L.nb*4-1&&L.cum[i+1]<=x) i++;
+    TR.posB=Math.max(0,L.a+i+Math.max(0,Math.min(1,(x-L.cum[i])/L.bw[i]))); if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
+  trSheetHead(TR.posB||0);
 }
 // Piano roll with a chord lane; everything editable
 // x positions: on the beat, one beat is PXB wide; as played, the axis is the recording's seconds and the beats fall where they were heard
@@ -3686,7 +3795,7 @@ window.addEventListener('pointermove',e=>{ const r=TR.rdrag, head=$('trHeadSvg')
   const lb=$('trLoopBtn'); if(lb) lb.setAttribute('aria-pressed',true); trRollView(); });
 window.addEventListener('pointerup',e=>{ const r=TR.rdrag; if(!r) return; TR.rdrag=null; const head=$('trHeadSvg');
   if(!r.moved&&head){ TR.posB=Math.max(0,trBeatAtX(r.x0)); if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); }
-  else if(r.moved){ TR.posB=TR.loop.a; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); trMsg(`Looping bars ${Math.floor(TR.loop.a/4)+1}${Math.ceil(TR.loop.b/4)>Math.floor(TR.loop.a/4)+1?`–${Math.ceil(TR.loop.b/4)}`:''}. Loop turns it off.`); } });
+  else if(r.moved){ TR.posB=TR.loop.a; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); trMsg(`Looping bar${TR.loop.b-TR.loop.a>4?'s':''} ${trBars(TR.loop)}. L or ⟳ Loop turns it off.`); } });
 window.addEventListener('pointerup',()=>{ const d=TR.drag; if(!d) return; TR.drag=null; if(d.mode!=='box'&&d.moved!==false){ trTidy(); trRender(); } });
 function trRollEvents(){
   const svg=$('trSvg'), head=$('trHeadSvg'), s=TR.score;
@@ -3750,7 +3859,7 @@ function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.ke
    What it plays: the transcription, the original recording, or both together (then the notes keep their real timing,
    so you hear them against the recording). On the beat, notes play on the grid at a steady tempo; as played, when they
    were really played. Changing a setting while it plays carries on from the same spot (trResume). */
-function trToggle(){ if(TR.playing){ const p=TR.posB; trStopAll(); TR.posB=p; } else trPlayScore(); }
+function trToggle(){ if(TR.playing){ const p=TR.posB; trStopAll(); TR.posB=p; trHead(p); } else trPlayScore(); }
 function trResume(){ if(TR.playing) trPlayScore(TR.posB); }
 function trPlayScore(from){
   const s=TR.score; if(from==null) from=TR.posB||0; trStopAll();
@@ -3779,12 +3888,23 @@ function trPlayScore(from){
   au.play().catch(()=>{});
 }
 const trHeadX=b=>trPlayed()?Math.max(0,trMaps().toSec(b))*trPXS():b*PXB;
-function trHead(b){ const h=$('trHead'); if(!h) return; const x=trHeadX(b); h.setAttribute('x1',x); h.setAttribute('x2',x);
-  const roll=$('trRoll'); if(TR.playing&&roll&&(x<roll.scrollLeft||x>roll.scrollLeft+roll.clientWidth-40)) roll.scrollLeft=x-60; }
+// the playhead: in the piano roll, on the sheet music (a line over the bar being played), and as bar · beat
+function trHead(b){ const pos=$('trPos'); if(pos){ const bb=Math.max(0,b); pos.textContent=`${Math.floor(bb/4)+1} · ${Math.floor(bb%4)+1}`; }
+  const pb=$('trPlay'); if(pb) pb.textContent=TR.playing?'❚❚':'▶';
+  const h=$('trHead'); if(h){ const x=trHeadX(b); h.setAttribute('x1',x); h.setAttribute('x2',x);
+    const roll=$('trRoll'); if(TR.playing&&roll&&(x<roll.scrollLeft||x>roll.scrollLeft+roll.clientWidth-40)) roll.scrollLeft=x-60; }
+  trSheetHead(b); }
+function trSheetHead(b){ const sc=$('trScore'); if(!sc||!TR.lines) return;
+  TR.lines.forEach((L,k)=>{ const el=sc.querySelector(`[data-line="${k}"]`); if(!el) return; const hd=el.querySelector('.trshead'), svg=el.querySelector('svg');
+    const inside=b>=L.a-1e-6&&b<L.a+L.nb*4-1e-6&&(TR.playing||b>0);
+    if(!inside||!svg){ hd.style.display='none'; return; }
+    const i=Math.min(L.nb*4-1,Math.floor(b-L.a+1e-9)), x=L.X0+L.cum[i]+(b-L.a-i)*L.bw[i], sr=svg.getBoundingClientRect(), er=el.getBoundingClientRect();
+    hd.style.display='block'; hd.style.left=(sr.left-er.left+x*sr.width/L.W)+'px';
+    if(TR.playing){ const top=el.offsetTop, bot=top+el.offsetHeight; if(top<sc.scrollTop||bot>sc.scrollTop+sc.clientHeight) sc.scrollTop=top-6; } }); }
 function trSave(){
   const s=TR.score, item={...s,saved:Date.now()};
   if(TR.saved!=null&&TRDATA.list[TR.saved]) TRDATA.list[TR.saved]=item; else { TRDATA.list.unshift(item); TR.saved=0; if(TRDATA.list.length>40) TRDATA.list.pop(); }
-  saveTr(); trMsg('Saved. Find it under Saved transcriptions.','ok');
+  saveTr(); TR.dirty=false; trInfo(); trMsg('Saved. Find it under Saved transcriptions.','ok');
 }
 function trDownload(data,ext,type){
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type})); a.download=(TR.score.title||'transcription').replace(/[\\/:*?"<>|]/g,'')+'.'+ext;
@@ -3808,11 +3928,19 @@ function trToMenu(){ trStopAll(); TR.active=false; $('transStage').hidden=true; 
 function trKey(e){
   if(!TR.active) return false;
   if(e.target&&['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return true;
-  if(e.key==='Escape'){ document.querySelectorAll('.trpop').forEach(x=>x.remove()); TR.step==='edit'||TR.step==='setup'?trOpen():trToMenu(); return true; }
+  if(e.key==='Escape'){ const pops=document.querySelectorAll('.trpop,.trmenulist:not([hidden])');
+    if(pops.length){ pops.forEach(x=>x.classList.contains('trpop')?x.remove():x.hidden=true); return true; }
+    if(TR.step==='edit') trLeave(trOpen,'Close this transcription?'); else if(TR.step==='setup') trOpen(); else trToMenu(); return true; }
   if(TR.step!=='edit') return true;
-  const s=TR.score, sel=[...TR.selected];
+  const s=TR.score, sel=[...TR.selected], cmd=e.metaKey||e.ctrlKey;
   if(e.key===' '){ e.preventDefault(); trToggle(); return true; }
-  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); trUndo(); return true; }
+  if(cmd&&e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey?trRedo():trUndo(); return true; }
+  if(cmd&&e.key.toLowerCase()==='y'){ e.preventDefault(); trRedo(); return true; }
+  if(cmd&&e.key.toLowerCase()==='s'){ e.preventDefault(); trSave(); return true; }
+  if(!cmd&&e.key.toLowerCase()==='l'){ trLoopToggle(); return true; }
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ e.preventDefault(); const dir=e.key==='ArrowRight'?1:-1;
+    if(!sel.length){ const st=e.shiftKey?4:1; TR.posB=Math.max(0,Math.min(s.bars*4-1e-3,(dir>0?Math.floor(TR.posB/st+1e-6)+1:Math.ceil(TR.posB/st-1e-6)-1)*st)); if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); return true; }
+    trPush(); const mp=trMaps(); sel.forEach(i=>{ const n=s.melody[i], u=1/(n.tup||4), g=Math.max(0,n.gat+dir*u); n.sec=Math.max(0,n.sec+mp.toSec(g)-mp.toSec(n.gat)); n.gat=g; }); trTidy(); trRender(); return true; }
   if((e.key==='Delete'||e.key==='Backspace')&&sel.length){ trPush(); s.melody=s.melody.filter((n,i)=>!TR.selected.has(i)); TR.selected.clear(); trRender(); return true; }
   if((e.key==='ArrowUp'||e.key==='ArrowDown')&&sel.length){ e.preventDefault(); trPush(); const d=(e.key==='ArrowUp'?1:-1)*(e.shiftKey?12:1); sel.forEach(i=>s.melody[i].midi+=d); trRender(); return true; }
   return true; // nothing else in Jun Jam reacts to keys while transcribing
