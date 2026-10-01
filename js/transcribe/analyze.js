@@ -38,6 +38,21 @@ function melodyBeats(line,toBeat,lead){
   return notes.map((n,i)=>({midi:n.midi,gat:lead?Math.round(g[i].gat*2)/2:g[i].gat,gdur:g[i].gdur,tri:!lead&&g[i].tri}))
     .filter((n,i,a)=>!lead||i===0||n.gat>a[i-1].gat).map((n,i,a)=>lead&&a[i+1]?{...n,gdur:Math.min(Math.max(n.gdur,.5),a[i+1].gat-n.gat)}:n);
 }
+// Full parts (piano or guitar with chords): keep every note. Notes that start together are one chord; the chords'
+// starts are cleaned up like a line (gridTimes), and each note keeps its own length, so held notes can overlap.
+function partBeats(notes,toBeat,{minConf=.3,minLen=.06,lo=21,hi=108}={}){
+  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s);
+  const evs=[]; ok.forEach(n=>{ const last=evs[evs.length-1]; if(last&&n.s-last.s<.045) last.notes.push(n); else evs.push({s:n.s,notes:[n]}); });
+  // overtones: a note exactly one or two octaves above a much louder note that starts with it (real octaves are about as loud)
+  evs.forEach(e=>{ e.notes=e.notes.filter(n=>!e.notes.some(m=>m!==n&&(n.p-m.p===12||n.p-m.p===24)&&n.c<m.c*.7)); });
+  const at=e=>Math.max(0,toBeat(e.s)), len=n=>Math.max(.05,toBeat(n.e)-toBeat(n.s));
+  const g=gridTimes(evs.map(e=>({at:at(e),dur:Math.max(...e.notes.map(len))})));
+  const out=[], seen=new Set();
+  evs.forEach((e,i)=>{ if(toBeat(e.s)<=-.25) return; const unit=g[i].tri?1/3:.25;
+    e.notes.forEach(n=>{ const k=n.p+'@'+g[i].gat; if(seen.has(k)) return; seen.add(k);
+      out.push({midi:n.p,gat:g[i].gat,gdur:Math.min(8,Math.max(unit,Math.round(len(n)/unit)*unit)),tri:g[i].tri}); }); });
+  return out.sort((a,b)=>a.gat-b.gat||b.midi-a.midi);
+}
 // Chords: score every root and chord type against how much each pitch class sounds in the window
 const CHORD_TYPES=['maj','min','dom7','maj7','min7','hdim','dim7','sus7','six','min6'];
 function chordAt(bassNotes,harmNotes,t0,t1,minWeight=0){
@@ -80,7 +95,7 @@ function guessKey(notes){
   return best;
 }
 // Instruments: which stem the helper should transcribe, and the range the line lives in
-const TR_INSTRUMENTS={piano:{name:'Piano (right hand)',stem:'piano',lo:55,hi:100},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88},
+const TR_INSTRUMENTS={piano:{name:'Piano',stem:'piano',lo:55,hi:100,full:[21,108],grand:true},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88,full:[40,88]},
   sax:{name:'Saxophone',stem:'other',lo:44,hi:84},trumpet:{name:'Trumpet',stem:'other',lo:52,hi:84},voice:{name:'Voice',stem:'vocals',lo:45,hi:84},bass:{name:'Bass',stem:'bass',lo:24,hi:60}};
 /* Which beat is beat 1? Beat trackers find the beats but not the bar. Try each of the four phases and keep the one
    where the music acts most like a downbeat: chords change there, the bass plays there, strong notes start there. */
@@ -107,17 +122,18 @@ function guessDownbeat(res){
 // Shift for a chosen beat 1: notes before it become an opening pickup bar instead of being cut off
 const shiftFor=p=>p?p-4:0;
 // Build the whole score from the helper's answer
-function buildScore(res,{mode,instrument,shift=null,title='Untitled'}){
+function buildScore(res,{mode,instrument,shift=null,title='Untitled',texture='line'}){
   if(shift===null) shift=shiftFor(guessDownbeat(res));
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
-  const line=topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3});
-  const melody=melodyBeats(line,toBeat,lead);
+  const full=!lead&&texture==='full'&&inst.full;
+  const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1]})
+    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   // beats back to seconds for the chord windows
   const toSec=b=>{ let lo=-50,hi=res.duration+50; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(toBeat(m)<b) lo=m; else hi=m; } return (lo+hi)/2; };
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
-  const used=Math.max(melody.length?Math.floor((melody[melody.length-1].gat)/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
-  return {v:1,title,mode,instrument,tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
+  const used=Math.max(melody.length?Math.floor(Math.max(...melody.map(n=>n.gat))/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
+  return {v:1,title,mode,instrument,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
 }

@@ -46,7 +46,8 @@ js/lines/session.js   Lines drill (learn, then transfer to new keys), import you
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
 js/transcribe/analyze.js   helper notes (seconds) to a score: beats, top line, chords, key
-js/transcribe/export.js    spelling, MIDI and MusicXML export
+js/transcribe/export.js    spelling, MIDI and MusicXML export (one line, or a two-staff part with chords)
+js/transcribe/notation.js  sheet music for full parts: chords stacked, grand staff for piano
 js/transcribe/session.js   Transcribe screens: import, what to see, region, helper call, editor
 tools/transcriber/         the local helper: install.sh, requirements.txt, server.py
 js/menu.js            home screen of mode cards, menus, progress map, boot

@@ -377,3 +377,5 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmeter i{display:block;height:100%;width:0;background:var(--good);transition:width .08s}
 .rruler{fill:var(--panel);cursor:pointer} .rruler:hover{fill:color-mix(in srgb, var(--brass) 25%, var(--panel))}
 .rbeatn{font-family:var(--cond);font-weight:600;font-size:10px;fill:var(--muted);pointer-events:none} .rbeatn.one{fill:var(--ink)}
+.trrollhead{position:sticky;top:0;z-index:2;line-height:0}
+.trrollhead svg{display:block}

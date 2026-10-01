@@ -387,6 +387,8 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmeter i{display:block;height:100%;width:0;background:var(--good);transition:width .08s}
 .rruler{fill:var(--panel);cursor:pointer} .rruler:hover{fill:color-mix(in srgb, var(--brass) 25%, var(--panel))}
 .rbeatn{font-family:var(--cond);font-weight:600;font-size:10px;fill:var(--muted);pointer-events:none} .rbeatn.one{fill:var(--ink)}
+.trrollhead{position:sticky;top:0;z-index:2;line-height:0}
+.trrollhead svg{display:block}
 </style>
 </head>
 <body>
@@ -2925,6 +2927,21 @@ function melodyBeats(line,toBeat,lead){
   return notes.map((n,i)=>({midi:n.midi,gat:lead?Math.round(g[i].gat*2)/2:g[i].gat,gdur:g[i].gdur,tri:!lead&&g[i].tri}))
     .filter((n,i,a)=>!lead||i===0||n.gat>a[i-1].gat).map((n,i,a)=>lead&&a[i+1]?{...n,gdur:Math.min(Math.max(n.gdur,.5),a[i+1].gat-n.gat)}:n);
 }
+// Full parts (piano or guitar with chords): keep every note. Notes that start together are one chord; the chords'
+// starts are cleaned up like a line (gridTimes), and each note keeps its own length, so held notes can overlap.
+function partBeats(notes,toBeat,{minConf=.3,minLen=.06,lo=21,hi=108}={}){
+  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s);
+  const evs=[]; ok.forEach(n=>{ const last=evs[evs.length-1]; if(last&&n.s-last.s<.045) last.notes.push(n); else evs.push({s:n.s,notes:[n]}); });
+  // overtones: a note exactly one or two octaves above a much louder note that starts with it (real octaves are about as loud)
+  evs.forEach(e=>{ e.notes=e.notes.filter(n=>!e.notes.some(m=>m!==n&&(n.p-m.p===12||n.p-m.p===24)&&n.c<m.c*.7)); });
+  const at=e=>Math.max(0,toBeat(e.s)), len=n=>Math.max(.05,toBeat(n.e)-toBeat(n.s));
+  const g=gridTimes(evs.map(e=>({at:at(e),dur:Math.max(...e.notes.map(len))})));
+  const out=[], seen=new Set();
+  evs.forEach((e,i)=>{ if(toBeat(e.s)<=-.25) return; const unit=g[i].tri?1/3:.25;
+    e.notes.forEach(n=>{ const k=n.p+'@'+g[i].gat; if(seen.has(k)) return; seen.add(k);
+      out.push({midi:n.p,gat:g[i].gat,gdur:Math.min(8,Math.max(unit,Math.round(len(n)/unit)*unit)),tri:g[i].tri}); }); });
+  return out.sort((a,b)=>a.gat-b.gat||b.midi-a.midi);
+}
 // Chords: score every root and chord type against how much each pitch class sounds in the window
 const CHORD_TYPES=['maj','min','dom7','maj7','min7','hdim','dim7','sus7','six','min6'];
 function chordAt(bassNotes,harmNotes,t0,t1,minWeight=0){
@@ -2967,7 +2984,7 @@ function guessKey(notes){
   return best;
 }
 // Instruments: which stem the helper should transcribe, and the range the line lives in
-const TR_INSTRUMENTS={piano:{name:'Piano (right hand)',stem:'piano',lo:55,hi:100},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88},
+const TR_INSTRUMENTS={piano:{name:'Piano',stem:'piano',lo:55,hi:100,full:[21,108],grand:true},guitar:{name:'Guitar',stem:'guitar',lo:40,hi:88,full:[40,88]},
   sax:{name:'Saxophone',stem:'other',lo:44,hi:84},trumpet:{name:'Trumpet',stem:'other',lo:52,hi:84},voice:{name:'Voice',stem:'vocals',lo:45,hi:84},bass:{name:'Bass',stem:'bass',lo:24,hi:60}};
 /* Which beat is beat 1? Beat trackers find the beats but not the bar. Try each of the four phases and keep the one
    where the music acts most like a downbeat: chords change there, the bass plays there, strong notes start there. */
@@ -2994,19 +3011,20 @@ function guessDownbeat(res){
 // Shift for a chosen beat 1: notes before it become an opening pickup bar instead of being cut off
 const shiftFor=p=>p?p-4:0;
 // Build the whole score from the helper's answer
-function buildScore(res,{mode,instrument,shift=null,title='Untitled'}){
+function buildScore(res,{mode,instrument,shift=null,title='Untitled',texture='line'}){
   if(shift===null) shift=shiftFor(guessDownbeat(res));
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
-  const line=topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3});
-  const melody=melodyBeats(line,toBeat,lead);
+  const full=!lead&&texture==='full'&&inst.full;
+  const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1]})
+    :melodyBeats(topLine(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:lead?.35:.3}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   // beats back to seconds for the chord windows
   const toSec=b=>{ let lo=-50,hi=res.duration+50; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(toBeat(m)<b) lo=m; else hi=m; } return (lo+hi)/2; };
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
-  const used=Math.max(melody.length?Math.floor((melody[melody.length-1].gat)/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
-  return {v:1,title,mode,instrument,tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
+  const used=Math.max(melody.length?Math.floor(Math.max(...melody.map(n=>n.gat))/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
+  return {v:1,title,mode,instrument,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
 }
 </script>
 <script>
@@ -3045,6 +3063,7 @@ function toMidiFile(score){
 
 /* ---------------- MusicXML (one part, chord symbols, ties, triplets) ---------------- */
 function toMusicXML(score){
+  if(score.texture==='full') return toMusicXMLFull(score);
   const DIV=12, BAR=48, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const TYPES=[[48,'whole',0],[36,'half',1],[24,'half',0],[18,'quarter',1],[12,'quarter',0],[9,'eighth',1],[6,'eighth',0],[3,'16th',0]];
   const KIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'major-seventh',dom7:'dominant',min7:'minor-seventh',hdim:'half-diminished',
@@ -3092,6 +3111,129 @@ function toMusicXML(score){
   }
   return xml+'</part></score-partwise>\n';
 }
+
+// Full parts: chords as <chord/> stacks; piano on two staves (right hand treble, left hand bass), one rhythm per staff
+function toMusicXMLFull(score){
+  const DIV=12, BAR=48, esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const TYPES=[[48,'whole',0],[36,'half',1],[24,'half',0],[18,'quarter',1],[12,'quarter',0],[9,'eighth',1],[6,'eighth',0],[3,'16th',0]];
+  const KIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'major-seventh',dom7:'dominant',min7:'minor-seventh',hdim:'half-diminished',
+    dim7:'diminished-seventh',six:'major-sixth',min6:'minor-sixth',sus7:'suspended-fourth',sus4:'suspended-fourth',sus2:'suspended-second',mmaj7:'major-minor',maj9:'major-ninth',dom9:'dominant-ninth',min9:'minor-ninth'};
+  const fifths=k=>{ const order=[0,7,2,9,4,11,6,1,8,3,10,5]; let f=order.indexOf(mod12(k.minor?k.pc+3:k.pc)); if(f>6) f-=12; return f; };
+  const staves=score.grand?2:1, staffOf=m=>staves===2&&m<60?2:1;
+  const pieces=(len,tri)=>{ if(tri&&(len===4||len===8)) return [{d:len,tri:true}]; const out=[]; let left=len;
+    while(left>0){ const v=[48,36,24,18,12,9,6,3].find(x=>x<=left); if(!v){ out.push({d:left}); break; } out.push({d:v}); left-=v; } return out; };
+  const note=({chord=false,pitch='',rest=false,d,tri=false,tieStart=false,tieStop=false,voice,staff})=>{
+    const base=tri?d*3/2:d, t=TYPES.find(x=>x[0]===base)||TYPES.find(x=>x[0]<=base)||TYPES[TYPES.length-1];
+    return `<note>${chord?'<chord/>':''}${rest?'<rest/>':pitch}<duration>${d}</duration>${tieStop?'<tie type="stop"/>':''}${tieStart?'<tie type="start"/>':''}<voice>${voice}</voice><type>${t[1]}</type>${t[2]?'<dot/>':''}`+
+      (tri?'<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>':'')+`<staff>${staff}</staff>`+
+      ((tieStart||tieStop)?`<notations>${tieStop?'<tied type="stop"/>':''}${tieStart?'<tied type="start"/>':''}</notations>`:'')+'</note>';
+  };
+  const pitchXml=(midi,at)=>{ const sp=spellIn(score,midi,at); return `<pitch><step>${LETTERS[sp.l]}</step>${sp.a?`<alter>${sp.a}</alter>`:''}<octave>${sp.oct}</octave></pitch>`; };
+  const vis=visibleMelody(score);
+  let xml=`<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n`+
+    `<score-partwise version="4.0"><work><work-title>${esc(score.title||'Transcription')}</work-title></work><identification><encoding><software>Jun Jam</software></encoding></identification>`+
+    `<part-list><score-part id="P1"><part-name>${(TR_INSTRUMENTS[score.instrument]||{name:'Part'}).name}</part-name></score-part></part-list><part id="P1">`;
+  for(let b=0;b<score.bars;b++){
+    const b0=b*BAR, b1=b0+BAR;
+    xml+=`<measure number="${b+1}">`;
+    if(b===0) xml+=`<attributes><divisions>${DIV}</divisions><key><fifths>${fifths(score.key||{pc:0})}</fifths>${score.key&&score.key.minor?'<mode>minor</mode>':''}</key><time><beats>4</beats><beat-type>4</beat-type></time>`+
+      (staves===2?'<staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>':'<clef><sign>G</sign><line>2</line></clef>')+'</attributes>'+
+      `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${score.tempo||100}</per-minute></metronome></direction-type><sound tempo="${score.tempo||100}"/></direction>`;
+    for(let st=1;st<=staves;st++){
+      if(st>1) xml+=`<backup><duration>${BAR}</duration></backup>`;
+      const voice=st===1?1:5, ns=vis.filter(n=>staffOf(n.midi)===st&&Math.round(n.gat*DIV)>=b0&&Math.round(n.gat*DIV)<b1);
+      // stacks: notes starting together; each lasts until the next stack on this staff (or the bar line)
+      const by=new Map(); ns.forEach(n=>{ const k=Math.round(n.gat*DIV); if(!by.has(k)) by.set(k,[]); by.get(k).push(n); });
+      const stacks=[...by.entries()].sort((x,y)=>x[0]-y[0]);
+      const out=[]; let t=b0;
+      const rest=to=>{ if(to>t){ pieces(to-t).forEach(p=>out.push({t,x:note({rest:true,d:p.d,voice,staff:st})})); t=to; } };
+      stacks.forEach(([k,group],i)=>{
+        rest(k); const next=i+1<stacks.length?stacks[i+1][0]:b1, hold=Math.round(Math.max(...group.map(n=>n.gdur))*DIV);
+        const end=Math.min(next,b1,Math.max(k+1,k+hold)), tri=group.some(n=>n.tri), ps=pieces(end-k,tri);
+        const sorted=group.sort((x,y)=>x.midi-y.midi);
+        ps.forEach((p,j)=>{ out.push({t,x:sorted.map((n,c)=>note({chord:c>0,pitch:pitchXml(n.midi,n.gat),d:p.d,tri:p.tri,tieStart:j<ps.length-1,tieStop:j>0,voice,staff:st})).join('')}); t+=p.d; });
+      });
+      rest(b1);
+      if(st===1) score.chords.filter(c=>Math.round(c.at*DIV)>=b0&&Math.round(c.at*DIV)<b1).forEach(c=>{ const ct=Math.round(c.at*DIV), o=chordObj(c), i=out.findIndex(e=>e.t>=ct);
+        out.splice(i<0?out.length:i,0,{t:ct,x:`<harmony><root><root-step>${LETTERS[o.root.l]}</root-step>${o.root.a?`<root-alter>${o.root.a}</root-alter>`:''}</root><kind text="${esc(o.q.suf)}">${KIND[o.q.id]||'major'}</kind></harmony>`}); });
+      xml+=out.map(e=>e.x).join('');
+    }
+    xml+='</measure>';
+  }
+  return xml+'</part></score-partwise>\n';
+}
+</script>
+<script>
+/* Transcribe: sheet music for full parts, with chords stacked on one stem, on a grand staff (piano) or one staff.
+   Pure string building, no DOM. One rhythm per staff: each stack lasts until the next stack on that staff.
+   notes: [{midi,gat,gdur,tri,spell:{l,a,di}}] with gat measured from the start of the line; chords: [{root,q,at}] */
+const GS_VALUES=[4,3,2,1.5,1,.75,.5,.25];
+// Group a staff's notes into stacks (notes that start together) and give each a written length
+function gsStacks(notes,lineBeats){
+  const by=new Map(); notes.forEach(n=>{ const k=Math.round(n.gat*12); if(!by.has(k)) by.set(k,[]); by.get(k).push(n); });
+  const st=[...by.entries()].sort((a,b)=>a[0]-b[0]).map(([k,ns])=>({gat:k/12,notes:ns.sort((a,b)=>a.spell.di-b.spell.di),tri:ns.some(n=>n.tri),hold:Math.max(...ns.map(n=>n.gdur))}));
+  st.forEach((s,i)=>{ const next=i+1<st.length?st[i+1].gat:lineBeats, barEnd=(Math.floor(s.gat/4+1e-6)+1)*4;
+    let d=Math.min(s.hold,next-s.gat,barEnd-s.gat);
+    s.d=s.tri?(d>.5?2/3:1/3):(GS_VALUES.find(v=>v<=d+1e-6)||.25); });
+  return st;
+}
+function grandStaffSVG({notes,chords,beats=16,grand=true}){
+  const BW=44, X0=64, W=X0+beats*BW+16;
+  const T0=36, B0=grand?T0+100:null, H=grand?B0+76:T0+76;
+  const yT=di=>T0+(38-di)*5, yB=di=>B0+(26-di)*5;
+  const staffs=grand?[{y:yT,lo:30,hi:38,mid:34,notes:notes.filter(n=>n.midi>=60),clef:'𝄞',cy:yT(32)+9,cs:44},{y:yB,lo:18,hi:26,mid:22,notes:notes.filter(n=>n.midi<60),clef:'𝄢',cy:yB(24)+8,cs:32}]
+                    :[{y:yT,lo:30,hi:38,mid:34,notes,clef:'𝄞',cy:yT(32)+9,cs:44}];
+  const xOf=b=>X0+b*BW, ink='var(--ink)';
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-label="Sheet music">`;
+  staffs.forEach(st=>{ for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${st.y(st.hi-2*k)}" y2="${st.y(st.hi-2*k)}"/>`;
+    s+=`<text class="clef" x="12" y="${st.cy}" font-size="${st.cs}">${st.clef}</text>`; });
+  const top=yT(38), bottom=grand?yB(18):yT(30);
+  s+=`<line class="ln" x1="8" x2="8" y1="${top}" y2="${bottom}"/>`;
+  for(let b=4;b<=beats;b+=4) s+=`<line class="ln" x1="${xOf(b)-8}" x2="${xOf(b)-8}" y1="${top}" y2="${bottom}"/>`;
+  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="14">${symText(c)}</text>`; });
+  staffs.forEach(st=>{
+    const stacks=gsStacks(st.notes,beats);
+    // beam groups: short stacks within one beat
+    const groups=[]; let g=null;
+    stacks.forEach((k,i)=>{ const short=k.d<1-1e-6&&!(k.tri&&k.d>.5), beat=Math.floor(k.gat+1e-6);
+      if(short&&g&&g.beat===beat&&stacks[i-1].d<1-1e-6) g.items.push(i); else { g=short?{beat,items:[i]}:null; if(g) groups.push(g); } });
+    const inG=new Map(); groups.forEach(gr=>gr.items.forEach(i=>inG.set(i,gr)));
+    const upOf=ks=>{ const all=ks.flatMap(i=>stacks[i].notes.map(n=>n.spell.di)); return all.reduce((a,b)=>a+b,0)/all.length<st.mid; };
+    stacks.forEach((k,i)=>{
+      const x=xOf(k.gat), up=upOf(inG.get(i)&&inG.get(i).items.length>1?inG.get(i).items:[i]), open=k.d>=2-1e-6;
+      const dis=k.notes.map(n=>n.spell.di), lo=Math.min(...dis), hi=Math.max(...dis);
+      for(let d=st.lo-2;d>=lo;d-=2) s+=`<line class="ln" x1="${x-10}" x2="${x+10}" y1="${st.y(d)}" y2="${st.y(d)}"/>`;
+      for(let d=st.hi+2;d<=hi;d+=2) s+=`<line class="ln" x1="${x-10}" x2="${x+10}" y1="${st.y(d)}" y2="${st.y(d)}"/>`;
+      // seconds in a chord sit on the other side of the stem
+      let prev=-99, side=false; const accCols=[];
+      k.notes.forEach(n=>{ const di=n.spell.di; side=di-prev===1?!side:false; prev=di;
+        const cx=x+(side?(up?11:-11):0), cy=st.y(di);
+        s+=open?`<ellipse cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${ink}" stroke-width="1.8"/>`
+               :`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${ink}"/>`;
+        if(n.spell.a){ let c=0; while(accCols[c]!==undefined&&Math.abs(di-accCols[c])<6) c++; accCols[c]=di;
+          s+=`<text class="acc" x="${x-14-c*10}" y="${cy+5}" text-anchor="middle" fill="${ink}">${ACC[n.spell.a]}</text>`; }
+        if([.75,1.5,3].some(v=>Math.abs(k.d-v)<1e-6)) s+=`<circle cx="${x+(up?12:10)+ (side?11:0)}" cy="${cy-(di%2===0?5:0)}" r="1.8" fill="${ink}"/>`;
+      });
+      if(k.d>=4-1e-6) return;
+      const gr=inG.get(i); if(gr&&gr.items.length>1) return; // beamed below
+      const sx=up?x+5.6:x-5.6, y0=up?st.y(lo):st.y(hi), y1=up?st.y(hi)-34:st.y(lo)+34;
+      s+=`<line x1="${sx}" x2="${sx}" y1="${y0}" y2="${y1}" stroke="${ink}" stroke-width="1.4"/>`;
+      const flags=k.tri?(k.d>.5?0:1):k.d<=.25+1e-6?2:k.d<1-1e-6?1:0;
+      for(let f=0;f<flags;f++){ const fy=y1+(up?f*7:-f*7); s+=`<path d="M${sx} ${fy} q9 ${up?8:-8} 7 ${up?20:-20}" fill="none" stroke="${ink}" stroke-width="2"/>`; }
+    });
+    groups.filter(gr=>gr.items.length>1).forEach(gr=>{
+      const up=upOf(gr.items), ends=gr.items.map(i=>{ const dis=stacks[i].notes.map(n=>n.spell.di); return up?st.y(Math.max(...dis))-32:st.y(Math.min(...dis))+32; });
+      const by=up?Math.min(...ends):Math.max(...ends), xs=gr.items.map(i=>xOf(stacks[i].gat)+(up?5.6:-5.6)), th=4, off=up?7:-7;
+      gr.items.forEach((i,j)=>{ const dis=stacks[i].notes.map(n=>n.spell.di); s+=`<line x1="${xs[j]}" x2="${xs[j]}" y1="${st.y(up?Math.min(...dis):Math.max(...dis))}" y2="${by}" stroke="${ink}" stroke-width="1.4"/>`; });
+      s+=`<rect x="${xs[0]}" y="${up?by:by-th}" width="${xs[xs.length-1]-xs[0]}" height="${th}" fill="${ink}"/>`;
+      gr.items.forEach((i,j)=>{ if(stacks[i].d>.25+1e-6) return; const nxt=j+1<gr.items.length&&stacks[gr.items[j+1]].d<=.25+1e-6, prv=j>0&&stacks[gr.items[j-1]].d<=.25+1e-6;
+        if(nxt) s+=`<rect x="${xs[j]}" y="${(up?by:by-th)+off}" width="${xs[j+1]-xs[j]}" height="${th}" fill="${ink}"/>`;
+        else if(!prv){ const w=9, x1=j===gr.items.length-1?xs[j]-w:xs[j]; s+=`<rect x="${x1}" y="${(up?by:by-th)+off}" width="${w}" height="${th}" fill="${ink}"/>`; } });
+      if(stacks[gr.items[0]].tri) s+=`<text class="csym" x="${(xs[0]+xs[xs.length-1])/2}" y="${up?by-6:by+16}" text-anchor="middle">3</text>`;
+    });
+  });
+  return s+'</svg>';
+}
 </script>
 <script>
 /* Transcribe: mp3 in, editable sheet music out. The helper (tools/transcriber) does the listening on this Mac;
@@ -3124,7 +3266,7 @@ async function trOpen(){
     <div id="trGuide"></div>
     <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*" hidden><b>Choose an audio file</b><span>or drop it here</span></label>
     <div class="trhome"><button class="ghost" id="trRec" style="margin-left:0">Record from a tab</button><span>Playing it on YouTube or anywhere else in Chrome? Capture that tab's sound while you play the part you want.</span></div>
-    ${TRDATA.list.length?`<div class="sec" style="margin-top:14px">Saved transcriptions</div><div class="licks">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':'Solo: '+(TR_INSTRUMENTS[t.instrument]||{}).name} · ${t.bars} bars</span><span class="lt">${t.title}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>`:''}
+    ${TRDATA.list.length?`<div class="sec" style="margin-top:14px">Saved transcriptions</div><div class="licks">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[t.instrument]||{}).name+(t.texture==='full'?' with chords':' line')} · ${t.bars} bars</span><span class="lt">${t.title}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>`:''}
     <div class="erow" style="margin-top:14px"><button class="ghost" id="trHome">Back</button></div>`;
   $('trHome').onclick=trToMenu;
   const f=$('trFile'), drop=$('trDrop');
@@ -3182,7 +3324,7 @@ async function trLoad(file){
   say('Reading the file…');
   let buf; try{ buf=await c.decodeAudioData(await file.arrayBuffer()); }catch(e){ say("Couldn't read that file. Try an mp3, m4a or wav."); return; }
   if(TR.url) URL.revokeObjectURL(TR.url);
-  Object.assign(TR,{step:'setup',buf,file,url:URL.createObjectURL(file),title:file.name.replace(/\.[^.]+$/,''),sel:[0,Math.min(buf.duration,30)],mode:'solo',instrument:'piano'});
+  Object.assign(TR,{step:'setup',buf,file,url:URL.createObjectURL(file),title:file.name.replace(/\.[^.]+$/,''),sel:[0,Math.min(buf.duration,30)],mode:'solo',instrument:'piano',texture:'full'});
   trSetupRender();
 }
 const fmtT=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}.${Math.floor((s%1)*10)}`;
@@ -3192,7 +3334,8 @@ function trSetupRender(){
     <div class="sec">1. What do you want to see?</div>
     <div class="trmodes"><button class="trpick" data-mode="solo" aria-pressed="${T.mode==='solo'}"><b>Solo transcription</b><span>One instrument's line, note for note, with the chords under it.</span></button>
       <button class="trpick" data-mode="lead" aria-pressed="${T.mode==='lead'}"><b>Lead sheet</b><span>The tune's melody and chord changes. Mark solo sections afterwards to leave them out.</span></button></div>
-    <div class="irow">${T.mode==='solo'?`<span>Instrument</span><select id="trInst">${Object.entries(TR_INSTRUMENTS).map(([k,v])=>`<option value="${k}"${k===T.instrument?' selected':''}>${v.name}</option>`).join('')}</select>`:'<span>The melody is taken from the vocals, or the lead instrument if there are none.</span>'}</div>
+    <div class="irow">${T.mode==='solo'?`<span>Instrument</span><select id="trInst">${Object.entries(TR_INSTRUMENTS).map(([k,v])=>`<option value="${k}"${k===T.instrument?' selected':''}>${v.name}</option>`).join('')}</select>
+      ${TR_INSTRUMENTS[T.instrument].full?`<div class="seg" role="group"><button data-tex="line" aria-pressed="${T.texture==='line'}">Single line</button><button data-tex="full" aria-pressed="${T.texture==='full'}">With chords${TR_INSTRUMENTS[T.instrument].grand?' (both hands)':''}</button></div>`:''}`:'<span>The melody is taken from the vocals, or the lead instrument if there are none.</span>'}</div>
     <div class="sec">2. Select the part to transcribe <span class="fine" id="trSelT"></span></div>
     <canvas class="trwave" id="trWave" height="110"></canvas>
     <div class="erow"><button class="ghost" id="trPlaySel">Play selection</button><button class="ghost" id="trAll">Whole song</button>
@@ -3202,7 +3345,8 @@ function trSetupRender(){
   $('trBack').onclick=trOpen; $('trGo').onclick=trRun;
   $('trBody').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ T.mode=b.dataset.mode; trSetupRender(); });
   $('trBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ T.rate=+b.dataset.rate; trSetupRender(); });
-  if($('trInst')) $('trInst').onchange=e=>T.instrument=e.target.value;
+  if($('trInst')) $('trInst').onchange=e=>{ T.instrument=e.target.value; trSetupRender(); };
+  $('trBody').querySelectorAll('[data-tex]').forEach(b=>b.onclick=()=>{ T.texture=b.dataset.tex; trSetupRender(); });
   $('trPlaySel').onclick=()=>trPlayOriginal(T.sel[0],T.sel[1]);
   $('trAll').onclick=()=>{ T.sel=[0,T.buf.duration]; trDrawWave(); };
   trDrawWave(); trWaveDrag(); trCheck();
@@ -3261,7 +3405,7 @@ async function trRun(){
     // lead sheets: no vocals (an instrumental)? the melody comes from the lead instrument instead
     if(T.mode==='lead'&&res.notes.target.length<12&&res.notes.alt&&res.notes.alt.length>res.notes.target.length) res.notes.target=res.notes.alt;
     T.res=res;
-    const sc=buildScore(res,{mode:T.mode,instrument:T.mode==='lead'?'voice':T.instrument,title:T.title}); T.shift=sc.shift;
+    const sc=buildScore(res,{mode:T.mode,instrument:T.mode==='lead'?'voice':T.instrument,title:T.title,texture:T.texture}); T.shift=sc.shift;
     trEdit(sc,res,null);
   }catch(e){ clearInterval(tick); if(e.name==='AbortError') return; $('trBody').innerHTML=`<p class="lmsg no">${String(e.message||e).replace(/</g,'&lt;')}</p><div class="erow"><button class="go" id="trBack">Back</button></div>`; $('trBack').onclick=trSetupRender; }
 }
@@ -3291,12 +3435,12 @@ function trEdit(score,res,savedIndex){
 }
 function trRender(){ trInfo(); trScoreView(); trRollView(); }
 function trInfo(){ const s=TR.score;
-  $('trTitle').textContent=s.title; $('trInfo').textContent=`${s.mode==='lead'?'Lead sheet':'Solo'} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)} · ${s.bars} bars · ${s.melody.length} notes`; }
-function trPush(){ TR.undo.push(JSON.stringify({m:TR.score.melody,c:TR.score.chords,s:TR.score.soloBars})); if(TR.undo.length>80) TR.undo.shift(); }
-function trUndo(){ const u=TR.undo.pop(); if(!u) return; const o=JSON.parse(u); TR.score.melody=o.m; TR.score.chords=o.c; TR.score.soloBars=o.s; TR.selected.clear(); trRender(); }
+  $('trTitle').textContent=s.title; $('trInfo').textContent=`${s.mode==='lead'?'Lead sheet':s.texture==='full'?'Full part':'Solo line'} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)} · ${s.bars} bars · ${s.melody.length} notes`; }
+function trPush(){ TR.undo.push(JSON.stringify({m:TR.score.melody,c:TR.score.chords,s:TR.score.soloBars,b:TR.score.bars,sh:TR.shift})); if(TR.undo.length>80) TR.undo.shift(); }
+function trUndo(){ const u=TR.undo.pop(); if(!u) return; const o=JSON.parse(u); Object.assign(TR.score,{melody:o.m,chords:o.c,soloBars:o.s,bars:o.b??TR.score.bars,shift:o.sh}); TR.shift=o.sh; TR.selected.clear(); trRender(); }
 function trSetBeat1(beat){ if(!TR.res) return; const k=mod12(beat)%4; if(!k) return; let sh=(TR.shift||0)+k; while(sh>0) sh-=4; trApplyShift(sh,`Beat 1 set. The score is redrawn from there.`); }
 function trApplyShift(sh,msg){ trPush(); TR.shift=sh; const s=TR.score;
-  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,shift:TR.shift,title:s.title}),soloBars:s.soloBars}; TR.selected.clear(); trRender(); trMsg(msg); }
+  TR.score={...buildScore(TR.res,{mode:s.mode,instrument:s.instrument,shift:TR.shift,title:s.title,texture:s.texture||'line'}),soloBars:s.soloBars}; TR.selected.clear(); trRender(); trMsg(msg); }
 function trReshift(d){ if(!TR.res) return; let sh=(TR.shift||0)+d; while(sh>0) sh-=4; while(sh<=-4) sh+=4; trApplyShift(sh,`Bar lines moved ${d<0?'earlier':'later'}.`); }
 function trMsg(t,cls=''){ const m=$('trMsg'); if(m){ m.textContent=t; m.className='lmsg '+cls; } }
 
@@ -3308,58 +3452,69 @@ function trScoreView(){
       return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,spell:{...sp,midi:n.midi},name:sp.name}; });
     const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a}));
     const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+4);
-    lines.push(`<div class="trline"><span class="trbar">${b+1}${solo.length?` · solo ${solo.map(x=>x+1).join(', ')}`:''}</span>${lineStaffSVG({notes,chords,total:16},-1,false)}</div>`);
+    const svg=s.texture==='full'?grandStaffSVG({notes,chords,beats:16,grand:!!s.grand}):lineStaffSVG({notes,chords,total:16},-1,false);
+    lines.push(`<div class="trline"><span class="trbar">${b+1}${solo.length?` · solo ${solo.map(x=>x+1).join(', ')}`:''}</span>${svg}</div>`);
   }
   $('trScore').innerHTML=lines.join('');
 }
 // Piano roll with a chord lane; everything editable
 function trRollView(){
   const s=TR.score, mel=s.melody, ps=mel.map(n=>n.midi), lo=Math.min(...ps,60)-3, hi=Math.max(...ps,72)+3;
-  const W=s.bars*4*PXB+20, H=RULER+LANE+(hi-lo+1)*ROW, y=m=>RULER+LANE+(hi-m)*ROW;
+  const W=s.bars*4*PXB+20, HH=RULER+LANE, H=(hi-lo+1)*ROW, y=m=>(hi-m)*ROW;
+  // header (beat ruler + chord lane) stays pinned while the notes scroll underneath
+  let h=`<svg id="trHeadSvg" width="${W}" height="${HH}" viewBox="0 0 ${W} ${HH}">`;
+  for(let b=0;b<s.bars*4;b++) h+=`<rect x="${b*PXB}" y="0" width="${PXB}" height="${RULER}" class="rruler${b%4===0?' one':''}" data-beat="${b}"><title>${TR.res?'Click to make this beat 1':''}</title></rect><text x="${b*PXB+4}" y="12" class="rbeatn${b%4===0?' one':''}">${b%4===0?(b/4+1)+'.':''}${b%4+1}</text>`;
+  for(let b=0;b<s.bars;b++){ const solo=(s.soloBars||[]).includes(b);
+    h+=`<rect x="${b*4*PXB}" y="${RULER}" width="${4*PXB}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${b*4*PXB+4*PXB-4}" y="${RULER+16}" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
+  s.chords.forEach((c,i)=>{ h+=`<text x="${c.at*PXB+3}" y="${RULER+17}" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
+  h+='</svg>';
   let g=`<svg id="trSvg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
   for(let m=lo;m<=hi;m++) g+=`<rect x="0" y="${y(m)}" width="${W}" height="${ROW}" class="${isBlack(m)?'rbk':'rwh'}"/>${m%12===0?`<text x="2" y="${y(m)+ROW-2}" class="rlab">C${m/12-1}</text>`:''}`;
-  for(let b=0;b<=s.bars*4;b++) g+=`<line x1="${b*PXB}" x2="${b*PXB}" y1="${RULER+LANE}" y2="${H}" class="${b%4===0?'rbar':'rbeat'}"/>`;
-  for(let b=0;b<s.bars*4;b++) g+=`<rect x="${b*PXB}" y="0" width="${PXB}" height="${RULER}" class="rruler${b%4===0?' one':''}" data-beat="${b}"><title>${TR.res?'Click to make this beat 1':''}</title></rect><text x="${b*PXB+4}" y="12" class="rbeatn${b%4===0?' one':''}">${b%4===0?(b/4+1)+'.':''}${b%4+1}</text>`;
-  for(let b=0;b<s.bars;b++){ const solo=(s.soloBars||[]).includes(b);
-    g+=`<rect x="${b*4*PXB}" y="${RULER}" width="${4*PXB}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${b*4*PXB+4*PXB-4}" y="${RULER+16}" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
-  s.chords.forEach((c,i)=>{ g+=`<text x="${c.at*PXB+3}" y="${RULER+17}" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
+  for(let b=0;b<=s.bars*4;b++) g+=`<line x1="${b*PXB}" x2="${b*PXB}" y1="0" y2="${H}" class="${b%4===0?'rbar':'rbeat'}"/>`;
   mel.forEach((n,i)=>{ const hid=(s.soloBars||[]).includes(Math.floor(n.gat/4+1e-6));
     g+=`<rect x="${n.gat*PXB+1}" y="${y(n.midi)+1}" width="${Math.max(4,n.gdur*PXB-2)}" height="${ROW-2}" rx="2" class="rnote${TR.selected.has(i)?' sel':''}${hid?' hid':''}" data-i="${i}"/>`; });
   g+=`<line id="trHead" x1="-5" x2="-5" y1="0" y2="${H}" class="rhead"/></svg>`;
-  $('trRoll').innerHTML=g; TR.roll={lo,hi,y};
+  const roll=$('trRoll'), keep=roll.scrollTop, firstDraw=!TR.roll||TR.roll.score!==s;
+  roll.innerHTML=`<div class="trrollhead">${h}</div>${g}`; TR.roll={lo,hi,y,score:s}; roll.scrollTop=keep;
+  if(firstDraw&&ps.length){ const mid=ps.slice().sort((a,b)=>a-b)[ps.length>>1]; roll.scrollTop=Math.max(0,y(mid)+HH-roll.clientHeight/2); } // open centred on the notes
   trRollEvents();
 }
+// Dragging survives redraws: the drag lives in TR.drag and the window follows the pointer
+const trPt=(e,el)=>{ const r=el.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; };
+const trSnap=b=>Math.max(0,Math.round(b*4)/4);
+window.addEventListener('pointermove',e=>{ const d=TR.drag, svg=$('trSvg'); if(!d||!svg||!TR.active) return; const s=TR.score, p=trPt(e,svg), dx=(p.x-d.p0.x)/PXB, dy=Math.round((d.p0.y-p.y)/ROW);
+  if(d.mode==='move') d.orig.forEach(o=>{ s.melody[o.k]={...s.melody[o.k],gat:trSnap(o.gat+dx),midi:Math.max(21,Math.min(108,o.midi+dy))}; });
+  else if(d.mode==='len') d.orig.forEach(o=>{ s.melody[o.k]={...s.melody[o.k],gdur:Math.max(.25,trSnap(o.gdur+dx)),tri:false}; });
+  else { const x0=Math.min(p.x,d.p0.x), x1=Math.max(p.x,d.p0.x), y0=Math.min(p.y,d.p0.y), y1=Math.max(p.y,d.p0.y);
+    TR.selected=new Set(s.melody.map((n,i)=>i).filter(i=>{ const n=s.melody[i], ny=TR.roll.y(n.midi)+ROW/2; return n.gat*PXB<x1&&(n.gat+n.gdur)*PXB>x0&&ny>y0&&ny<y1; })); }
+  trRollView(); });
+window.addEventListener('pointerup',()=>{ const d=TR.drag; if(!d) return; TR.drag=null; if(d.mode!=='box'&&d.moved!==false){ trTidy(); trRender(); } });
 function trRollEvents(){
-  const svg=$('trSvg'), s=TR.score; let drag=null;
-  const pt=e=>{ const r=svg.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; };
-  const toPitch=py=>TR.roll.hi-Math.floor((py-RULER-LANE)/ROW), snap=b=>Math.max(0,Math.round(b*4)/4);
-  svg.onpointerdown=e=>{
-    const p=pt(e), nEl=e.target.closest('.rnote'), cEl=e.target.closest('[data-chord]'), sEl=e.target.closest('[data-solo]');
-    const rEl=e.target.closest('[data-beat]'); if(rEl){ trSetBeat1(+rEl.dataset.beat); return; }
+  const svg=$('trSvg'), head=$('trHeadSvg'), s=TR.score;
+  const pt=(e,el=svg)=>trPt(e,el);
+  const toPitch=py=>TR.roll.hi-Math.floor(py/ROW);
+  head.onpointerdown=e=>{
+    const rEl=e.target.closest('[data-beat]'), cEl=e.target.closest('[data-chord]'), sEl=e.target.closest('[data-solo]');
+    if(rEl){ trSetBeat1(+rEl.dataset.beat); return; }
     if(sEl){ trPush(); const b=+sEl.dataset.solo, sb=s.soloBars||(s.soloBars=[]); sb.includes(b)?sb.splice(sb.indexOf(b),1):sb.push(b); trRender(); return; }
     if(cEl){ trChordEdit(+cEl.dataset.chord,e); return; }
-    if(e.target.closest('.rlane')){ trChordAdd(Math.floor(p.x/PXB/4)*4,e); return; }
+    if(e.target.closest('.rlane')){ trChordAdd(Math.floor(pt(e,head).x/PXB/4)*4,e); return; }
+  };
+  svg.onpointerdown=e=>{
+    const p=pt(e), nEl=e.target.closest('.rnote');
     if(nEl){ const i=+nEl.dataset.i, n=s.melody[i];
       if(!e.shiftKey&&!TR.selected.has(i)) TR.selected.clear(); TR.selected.add(i);
       const edge=p.x>(n.gat+n.gdur)*PXB-7;
-      trPush(); drag={mode:edge?'len':'move',p0:p,orig:[...TR.selected].map(k=>({k,...s.melody[k]}))};
-      svg.setPointerCapture(e.pointerId); trRollView(); return; }
-    TR.selected.clear(); drag={mode:'box',p0:p}; svg.setPointerCapture(e.pointerId);
+      trPush(); TR.drag={mode:edge?'len':'move',p0:p,orig:[...TR.selected].map(k=>({k,...s.melody[k]}))};
+      trRollView(); e.preventDefault(); return; }
+    TR.selected.clear(); TR.drag={mode:'box',p0:p}; e.preventDefault();
   };
-  svg.onpointermove=e=>{ if(!drag) return; const p=pt(e), dx=(p.x-drag.p0.x)/PXB, dy=Math.round((drag.p0.y-p.y)/ROW);
-    if(drag.mode==='move') drag.orig.forEach(o=>{ s.melody[o.k]={...s.melody[o.k],gat:snap(o.gat+dx),midi:Math.max(21,Math.min(108,o.midi+dy))}; });
-    else if(drag.mode==='len') drag.orig.forEach(o=>{ s.melody[o.k]={...s.melody[o.k],gdur:Math.max(.25,snap(o.gdur+dx)),tri:false}; });
-    else { const x0=Math.min(p.x,drag.p0.x), x1=Math.max(p.x,drag.p0.x), y0=Math.min(p.y,drag.p0.y), y1=Math.max(p.y,drag.p0.y);
-      TR.selected=new Set(s.melody.map((n,i)=>i).filter(i=>{ const n=s.melody[i], ny=TR.roll.y(n.midi)+ROW/2; return n.gat*PXB<x1&&(n.gat+n.gdur)*PXB>x0&&ny>y0&&ny<y1; })); }
-    trRollView();
-  };
-  svg.onpointerup=()=>{ if(drag&&drag.mode!=='box'){ trTidy(); trRender(); } drag=null; };
-  svg.ondblclick=e=>{ if(e.target.closest('.rnote')||e.target.closest('.rlane')) return; const p=pt(e); trPush();
-    s.melody.push({midi:toPitch(p.y),gat:Math.floor(p.x/PXB*4)/4,gdur:.5,tri:false}); trTidy(); TR.selected=new Set([s.melody.findIndex(n=>n.gat===Math.floor(p.x/PXB*4)/4&&n.midi===toPitch(p.y))]); trRender(); };
+  svg.ondblclick=e=>{ if(e.target.closest('.rnote')) return; const p=pt(e); trPush();
+    const at=Math.floor(p.x/PXB*4)/4, m=toPitch(p.y); s.melody.push({midi:m,gat:at,gdur:.5,tri:false}); trTidy(); TR.selected=new Set([s.melody.findIndex(n=>n.gat===at&&n.midi===m)]); trRender(); };
 }
-// keep notes in time order, one line: a note can't run into the next one
+// keep notes in time order; a single line can't run into its next note (full parts can overlap: chords and held notes)
 function trTidy(){ const m=TR.score.melody; const sel=[...TR.selected].map(i=>m[i]); m.sort((a,b)=>a.gat-b.gat||b.midi-a.midi);
-  for(let i=0;i<m.length-1;i++) if(m[i].gat+m[i].gdur>m[i+1].gat) m[i].gdur=Math.max(.05,m[i+1].gat-m[i].gat);
+  if(TR.score.texture!=='full') for(let i=0;i<m.length-1;i++) if(m[i].gat+m[i].gdur>m[i+1].gat) m[i].gdur=Math.max(.05,m[i+1].gat-m[i].gat);
   TR.selected=new Set(sel.map(n=>m.indexOf(n)).filter(i=>i>=0)); }
 // chord symbols: click to change, click an empty spot in the lane to add one
 const TR_QUALS=['maj','min','dom7','maj7','min7','hdim','dim7','dim','aug','sus4','sus7','six','min6','mmaj7','maj9','dom9','min9','dom13','min11','d7b9','d7s9','alt','d7s11','add9','six9'];
@@ -3403,7 +3558,8 @@ function trDownload(data,ext,type){
 }
 // Selected notes become a lick in Lines, with the chords under them
 function trToLick(){
-  const s=TR.score, sel=[...TR.selected].sort((a,b)=>a-b).map(i=>s.melody[i]).filter(Boolean);
+  const s=TR.score; let sel=[...TR.selected].sort((a,b)=>a-b).map(i=>s.melody[i]).filter(Boolean);
+  if(s.texture==='full') sel=sel.filter((n,i,a)=>!a.some(o=>o!==n&&Math.abs(o.gat-n.gat)<1e-6&&o.midi>n.midi)); // a lick is one line: the top note of each chord
   if(sel.length<3||sel.length>16) return trMsg('Select 3 to 16 notes in the piano roll first (drag a box around them).','no');
   const start=Math.floor(sel[0].gat), end=Math.max(...sel.map(n=>n.gat+n.gdur)), c0=scoreChordAt(s,sel[0].gat)||{root:s.key.pc,qid:'maj7'};
   const chs=[c0,...s.chords.filter(c=>c.at>sel[0].gat+1e-6&&c.at<end-1e-6)], r0=chordObj(c0).root;
