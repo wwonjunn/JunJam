@@ -1,6 +1,6 @@
 /* ---------------- menu ---------------- */
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
-let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm'
+let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'settings'
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*3} stars`; }},
   {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
@@ -14,8 +14,10 @@ function renderHome(){
 }
 function renderMenu(){
   $('rankLine').textContent=rankLine();
-  ['home','hands','ears','lines','reharm'].forEach(s=>$(s+'Pane').hidden=side!==s);
-  if(side==='home') renderHome();
+  ['home','hands','ears','lines','reharm','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  document.querySelector('.homehead').hidden=side==='settings';
+  if(side==='home'){ renderHome(); renderProfileChip(); }
+  if(side==='settings') renderSettingsPane();
   if(side==='ears') renderEarsPane();
   if(side==='lines') renderLinesPane();
   if(side==='reharm') renderReharmPane();
@@ -60,6 +62,7 @@ $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
 bindLinesPane(); bindReharmPane();
 $('trOpenBtn').onclick=trOpen;
+$('profileChip').onclick=()=>{ side='settings'; renderMenu(); $('startOv').scrollTop=0; };
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();
 $('eQuit').onclick=()=>earsFinish(true);

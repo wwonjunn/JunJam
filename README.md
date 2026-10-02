@@ -23,6 +23,9 @@ A jazz piano trainer with two sides:
   Jun Jam.app starts it automatically). It takes the drums out (Demucs), finds beats and beat 1 (Beat This!), and lets
   three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Sensitivity (Lowest to
   Highest) sets how much agreement a note needs. Everything else in Jun Jam works without it.
+- **Themes** (Profile & settings, from the button on the home card): Classic (dark, light or follow the system),
+  Neon Grid (glowing grid floor, rainbow lines, 3D wireframes), Manuscript (parchment, ink, rust-red stamps) and
+  Studio (bold outlines, hard shadows, a pastel per mode). Your name lives there too.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
 
@@ -35,7 +38,9 @@ Chrome or Edge yourself (Web MIDI only works there). No server or build step nee
 ## Project layout
 ```
 index.html            page markup; loads everything below in order
-css/style.css         all styling (light and dark themes)
+css/style.css         all styling (the Classic look, light and dark)
+css/themes.css        the other themes: variables and component styles per data-theme
+js/theme.js           theme registry, fonts, Neon's 3D background, Profile & settings (runs in <head>)
 js/theory.js          chord rules, spelling, scoring, chord naming, progressions, requests (pure, no DOM)
 js/state.js           storage, mastery stats, smart mix weights, XP and ranks
 js/audio.js           electric piano synth, hi-hat, scheduled tones and timbres

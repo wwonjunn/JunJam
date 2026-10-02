@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/themes.css">
+<meta name="theme-color" content="#0d1636">
+<script src="js/theme.js"></script>
 </head>
 <body>
 <div class="app">
@@ -27,10 +30,11 @@
     <div class="ahead" id="ahead" aria-live="polite"></div>
     <div class="overlay" id="startOv">
       <div class="card wide">
-        <h1>Jun Jam</h1>
-        <p class="rank" id="rankLine"></p>
+        <div class="homehead"><div class="hometitle"><h1>Jun Jam</h1><p class="rank" id="rankLine"></p></div>
+          <button class="profilechip" id="profileChip" type="button"></button></div>
         <div id="homePane"><div class="modes" id="modes"></div>
           <div class="trhome"><button class="ghost" id="trOpenBtn" style="margin-left:0">Transcribe a recording</button><span>Turn an mp3 into editable sheet music with chords: a solo note for note, or a lead sheet.</span></div></div>
+        <div id="settingsPane" hidden></div>
         <div id="earsPane" hidden></div>
         <div id="linesPane" hidden></div>
         <div id="reharmPane" hidden></div>

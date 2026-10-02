@@ -127,7 +127,7 @@ function trDrawWave(){
   const g=cv.getContext('2d'), d=T.buf.getChannelData(0), step=Math.ceil(d.length/w), css=getComputedStyle(document.body);
   g.clearRect(0,0,w,h); g.fillStyle=css.getPropertyValue('--line-strong');
   const x0=T.sel[0]/T.buf.duration*w, x1=T.sel[1]/T.buf.duration*w;
-  g.fillStyle='rgba(224,169,59,.22)'; g.fillRect(x0,0,x1-x0,h);
+  g.fillStyle=css.getPropertyValue('--brass'); g.globalAlpha=.22; g.fillRect(x0,0,x1-x0,h); g.globalAlpha=1;
   for(let x=0;x<w;x++){ let mx=0; for(let i=x*step;i<(x+1)*step&&i<d.length;i+=4) mx=Math.max(mx,Math.abs(d[i]));
     g.fillStyle=x>=x0&&x<=x1?css.getPropertyValue('--brass'):css.getPropertyValue('--muted'); g.fillRect(x,h/2-mx*h/2,1,Math.max(1,mx*h)); }
   if($('trSelT')) $('trSelT').textContent=`${fmtT(T.sel[0])} to ${fmtT(T.sel[1])} (${Math.round(T.sel[1]-T.sel[0])} s)`;
@@ -202,7 +202,7 @@ function trEdit(score,res,savedIndex){
       <div class="trmenu"><button class="ghost" id="trExportBtn" aria-haspopup="true">Export ▾</button><div class="trmenulist" id="trExportList" hidden>
         <button data-exp="xml">MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">MIDI, on the beat</button>${R?'<button data-exp="midp">MIDI, as played</button>':''}</div></div>
       <button class="ghost" id="trLick" title="Select 3 to 16 notes in the piano roll first">→ Lines</button><button class="ghost" id="trClose">Close</button></div>
-    <div class="trbar" id="trBar">
+    <div class="trtransport" id="trBar">
       <button class="go trplay" id="trPlay" title="Play / pause (Space)">▶</button><button class="ghost" id="trStop" title="Stop, back to the start">■</button>
       <span class="trpos" id="trPos">1 · 1</span>
       ${A?`<span class="trgrp"><span class="fine">Hear</span>${trSeg('src',[['notes','Notes'],['orig','Recording'],['both','Both']],TR.src||'notes')}</span>`:''}
