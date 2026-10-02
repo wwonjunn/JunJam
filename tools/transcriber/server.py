@@ -1,12 +1,12 @@
 """Jun Jam transcriber helper: a small server on your own Mac that the Jun Jam page talks to.
 
   GET  /health                        -> {"ok": true, "engines": [...]}   (Jun Jam checks this to know the helper is running)
-  POST /transcribe?engine=best|quick   body: a WAV file of the part of the recording you selected
+  POST /transcribe                     body: a WAV file of the part of the recording you selected
 
 What it does with the audio:
   1. Beat This! finds the beats and which beat is 1 (librosa if Beat This! is missing).
   2. Demucs takes the drums out (bass and everything else stay), and Basic Pitch turns that into notes.
-  3. engine=best also runs a piano model (Kong et al.) and YourMT3+ (many instruments) on the full mix, then the three vote:
+  3. It also runs a piano model (Kong et al.) and YourMT3+ (many instruments) on the full mix, then the three vote:
      a note that two or three of them heard is almost always real; a note only one heard is kept with low confidence,
      more so if that model agrees with the others a lot on this recording. Jun Jam's Sensitivity setting decides
      how much agreement it needs. Measured on test clips with fast runs over loud drums and comping, voting
@@ -157,7 +157,7 @@ def vote(lists, tol=.05):
         out.append({'s': sorted(g['s'] for g in grp)[len(grp) // 2], 'e': max(g['e'] for g in grp), 'p': n['p'], 'c': c, 'v': v})
     return out, trust
 
-def transcribe(wav_bytes, engine='best'):
+def transcribe(wav_bytes):
     tmp = tempfile.mkdtemp(prefix='junjam-')
     try:
         wav = os.path.join(tmp, 'clip.wav')
@@ -173,11 +173,10 @@ def transcribe(wav_bytes, engine='best'):
             try: src = without_drums(wav, os.path.join(tmp, 'nodrums.wav')); used.append('no drums')
             except Exception: traceback.print_exc()
         lists = {'basic_pitch': basic_pitch(src)}; used.append('Basic Pitch')
-        if engine == 'best':
-            for name, fn, label in (('piano', piano, 'piano model'), ('yourmt3', yourmt3, 'YourMT3+')):
-                if name in have:
-                    try: lists[name] = fn(wav); used.append(label)
-                    except Exception: traceback.print_exc()
+        for name, fn, label in (('piano', piano, 'piano model'), ('yourmt3', yourmt3, 'YourMT3+')):
+            if name in have:
+                try: lists[name] = fn(wav); used.append(label)
+                except Exception: traceback.print_exc()
         if len(lists) > 1: notes, trust = vote(lists)
         else: notes, trust = lists['basic_pitch'], {}
         notes = [{'s': round(n['s'], 3), 'e': round(n['e'], 3), 'p': n['p'], 'c': round(n['c'], 3), **({'v': n['v']} if 'v' in n else {})}
@@ -212,7 +211,7 @@ class Handler(BaseHTTPRequestHandler):
             n = int(self.headers.get('Content-Length', 0))
             if n <= 44 or n > 400 * 1024 * 1024: return self._json(400, {'ok': False, 'error': 'send a WAV file up to 400 MB'})
             body = self.rfile.read(n)
-            with LOCK: res = transcribe(body, q.get('engine', ['best'])[0])
+            with LOCK: res = transcribe(body)
             self._json(200, res)
         except Exception as e:
             traceback.print_exc()

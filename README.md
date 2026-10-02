@@ -20,9 +20,9 @@ A jazz piano trainer with two sides:
   really was, over the recording's waveform); play the transcription, the original, or both, with pause, click-to-seek and
   loops; export MusicXML or MIDI (on the grid or as played), or send a phrase to Lines.
   Needs the local helper in `tools/transcriber`, installed once with `bash tools/transcriber/install.sh` (about 2 GB;
-  Jun Jam.app starts it automatically). It takes the drums out (Demucs), finds beats and beat 1 (Beat This!), and in
-  Best mode lets three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Quick mode
-  uses Basic Pitch alone. Everything else in Jun Jam works without it.
+  Jun Jam.app starts it automatically). It takes the drums out (Demucs), finds beats and beat 1 (Beat This!), and lets
+  three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Sensitivity (Lowest to
+  Highest) sets how much agreement a note needs. Everything else in Jun Jam works without it.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
 

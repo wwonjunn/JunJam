@@ -3,11 +3,11 @@
 const TR_URL='http://127.0.0.1:8771';
 let TRDATA=store.get('trans',{list:[]});
 const saveTr=()=>store.set('trans',TRDATA);
-const TR={active:false,engine:store.get('trEngine','best'),timing:store.get('trTiming','beat'),backing:store.get('trBacking',true)};
+const TR={active:false,timing:store.get('trTiming','beat'),backing:store.get('trBacking',true)};
 
 /* ---------------- helper status and install guide ---------------- */
 async function trHelperOk(){ try{ const c=new AbortController(); setTimeout(()=>c.abort(),1500); const r=await fetch(TR_URL+'/health',{signal:c.signal}), h=await r.json(); TR.health=h; return h.ok; }catch(e){ TR.health=null; return false; } }
-// Best needs the extra models (helper version 2 with the piano model and YourMT3+); otherwise Quick is all there is
+// The models vote when the helper has the extra ones (version 2: the piano model and YourMT3+); an older helper only has Basic Pitch
 const trCanBest=()=>!!(TR.health&&TR.health.version>=2&&(TR.health.engines||[]).some(e=>e==='piano'||e==='yourmt3'));
 function trProjectDir(){ if(location.protocol!=='file:') return null; const p=decodeURIComponent(location.pathname); return p.slice(0,p.lastIndexOf('/')); }
 function trInstallGuide(){
@@ -48,8 +48,7 @@ async function trCheck(){
   const ok=await trHelperOk(); TR.helper=ok; if(!$('trStatus')) return;
   $('trStatus').textContent=ok?'Helper ready':'Helper not running'; $('trStatus').className=ok?'trok':'trno';
   if(ok&&TR.health.version<2){ $('trStatus').textContent='Helper is out of date: quit and reopen Jun Jam.app, or run the install again'; $('trStatus').className='trno'; }
-  const bb=document.querySelector('#trBody [data-eng="best"]');
-  if(bb){ bb.disabled=!trCanBest(); if(!trCanBest()&&TR.engine!=='quick') $('trEngNote').textContent='Best needs the newer helper: run the install command again (it adds two extra models, about 1 GB more). Quick works now.'; }
+  if(ok&&!trCanBest()&&$('trEngNote')){ $('trEngNote').hidden=false; $('trEngNote').textContent='Your helper only has one of the three models: run the install command again for the full set (about 1 GB more).'; }
   if(TR.buf&&$('trEst')) trDrawWave();
   if($('trGuide')) $('trGuide').innerHTML=ok?'':trInstallGuide();
   if($('trGo')) $('trGo').disabled=!ok;
@@ -99,7 +98,7 @@ const fmtT=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}.$
 // Setup: what to write, the instrument, how carefully to listen, and which part of the recording
 const trSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,tip])=>`<button data-${attr}="${v}" aria-pressed="${cur===v}"${tip?` title="${tip}"`:''}>${t}</button>`).join('')}</div>`;
 function trSetupRender(){
-  const T=TR, inst=TR_INSTRUMENTS[T.instrument]||TR_INSTRUMENTS.piano, best=T.engine!=='quick';
+  const T=TR, inst=TR_INSTRUMENTS[T.instrument]||TR_INSTRUMENTS.piano;
   $('trBody').innerHTML=`<div class="trtop"><button class="ghost" id="trBack">← Back</button><span class="etitle">${T.title.replace(/</g,'&lt;')}</span><span id="trStatus"></span></div>
     <div class="trform">
       <label>Write it as</label><div class="trmodes"><button class="trpick" data-mode="solo" aria-pressed="${T.mode==='solo'}"><b>Solo transcription</b><span>One instrument's part, note for note, with the chords under it.</span></button>
@@ -107,19 +106,17 @@ function trSetupRender(){
       ${T.mode==='solo'?`<label for="trInst">Instrument</label><div class="trctl"><select id="trInst">${Object.entries(TR_INSTRUMENTS).map(([k,v])=>`<option value="${k}"${k===T.instrument?' selected':''}>${v.name}</option>`).join('')}</select>
         ${inst.full?trSeg('tex',[['line','Single line','The top line only: the solo'],['full',`With chords${inst.grand?' (both hands)':''}`,'Every note, chords stacked'+(inst.grand?', on a grand staff':'')]],T.texture):''}</div>`
         :`<label>Melody</label><div class="trctl fine">Taken from the vocals, or the lead instrument if there are none.</div>`}
-      <label>Listening</label><div class="trctl">${trSeg('eng',[['best','Best'],['quick','Quick']],best?'best':'quick')}<span class="fine" id="trEngNote">${best?'Three models listen and vote on every note.':'One model. A few seconds.'}</span></div>
       <label>Part</label><div><div class="trwavewrap" id="trWaveWrap"><canvas class="trwave" id="trWave" height="110"></canvas>
           <i class="trhandle" id="trH0" title="Drag to set the start"></i><i class="trhandle" id="trH1" title="Drag to set the end"></i><i class="trwhead" id="trWHead"></i></div>
         <div class="trctl"><button class="ghost" id="trPlaySel">▶ Play part</button><button class="ghost" id="trAll">Whole recording</button>
           <span class="fine">Speed</span>${trSeg('rate',[[.5,'50%'],[.75,'75%'],[1,'100%']],T.rate||1)}<span class="fine trright" id="trSelT"></span></div>
         <p class="fine">Drag the handles to set the start and end, or click the waveform to move the nearer one. 30 to 90 seconds works best for a solo.</p></div>
     </div>
-    <div class="trgo"><span class="fine" id="trEst"></span><button class="go" id="trGo">Transcribe</button></div>`;
+    <div class="trgo"><span class="fine" id="trEngNote" hidden></span><span class="fine" id="trEst"></span><button class="go" id="trGo">Transcribe</button></div>`;
   $('trBack').onclick=()=>{ trStopAll(); trOpen(); }; $('trGo').onclick=trRun;
   $('trBody').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ T.mode=b.dataset.mode; trSetupRender(); });
   $('trBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ T.rate=+b.dataset.rate; if(TR.audio) TR.audio.playbackRate=T.rate; $('trBody').querySelectorAll('[data-rate]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   if($('trInst')) $('trInst').onchange=e=>{ T.instrument=e.target.value; if(!TR_INSTRUMENTS[T.instrument].full) T.texture='line'; trSetupRender(); };
-  $('trBody').querySelectorAll('[data-eng]').forEach(b=>b.onclick=()=>{ T.engine=b.dataset.eng; store.set('trEngine',T.engine); trSetupRender(); });
   $('trBody').querySelectorAll('[data-tex]').forEach(b=>b.onclick=()=>{ T.texture=b.dataset.tex; trSetupRender(); });
   $('trPlaySel').onclick=()=>{ if(TR.audio&&!TR.audio.paused) trStopAll(); else trPlayOriginal(T.sel[0],T.sel[1]); };
   $('trAll').onclick=()=>{ T.sel=[0,T.buf.duration]; trDrawWave(); };
@@ -134,7 +131,7 @@ function trDrawWave(){
   for(let x=0;x<w;x++){ let mx=0; for(let i=x*step;i<(x+1)*step&&i<d.length;i+=4) mx=Math.max(mx,Math.abs(d[i]));
     g.fillStyle=x>=x0&&x<=x1?css.getPropertyValue('--brass'):css.getPropertyValue('--muted'); g.fillRect(x,h/2-mx*h/2,1,Math.max(1,mx*h)); }
   if($('trSelT')) $('trSelT').textContent=`${fmtT(T.sel[0])} to ${fmtT(T.sel[1])} (${Math.round(T.sel[1]-T.sel[0])} s)`;
-  if($('trEst')){ const d=T.sel[1]-T.sel[0], q=T.engine==='quick'||!trCanBest(); $('trEst').textContent=`About ${Math.max(q?3:10,Math.round(d*(q?.15:1.3)))} s`; }
+  if($('trEst')){ const d=T.sel[1]-T.sel[0], q=!trCanBest(); $('trEst').textContent=`About ${Math.max(q?3:10,Math.round(d*(q?.15:1.3)))} s`; }
   const pc=x=>(x/T.buf.duration*100)+'%'; if($('trH0')){ $('trH0').style.left=pc(T.sel[0]); $('trH1').style.left=pc(T.sel[1]); }
 }
 // Two handles, start and end; clicking the waveform moves the nearer one there
@@ -172,15 +169,15 @@ async function trWav(buf,from,to){ // the selection, resampled to 44.1 kHz stere
 async function trRun(){
   const T=TR; if(!(await trHelperOk())) return trCheck();
   trStopAll(); T.step='working';
-  const engine=T.engine==='quick'||!trCanBest()?'quick':'best', t0=performance.now();
+  const vote=trCanBest(), t0=performance.now();
   $('trBody').innerHTML=`<div class="etop"><span class="etitle">${T.title.replace(/</g,'&lt;')}</span></div>
-    <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">${engine==='best'?`Taking the drums out, then three models listen and vote on every note. Usually about ${Math.max(10,Math.round((T.sel[1]-T.sel[0])*1.3))} s for this part; the first time also loads the models.`:'Taking the drums out and finding the notes and the beat. Usually a few seconds; longer the very first time.'}</p>
+    <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">${vote?`Taking the drums out, then three models listen and vote on every note. Usually about ${Math.max(10,Math.round((T.sel[1]-T.sel[0])*1.3))} s for this part; the first time also loads the models.`:'Taking the drums out and finding the notes and the beat. Usually a few seconds; longer the very first time.'}</p>
     <div class="erow"><button class="ghost" id="trCancel">Cancel</button></div>`;
   const tick=setInterval(()=>{ if($('trEl')) $('trEl').textContent=Math.round((performance.now()-t0)/1000); },500);
   const ctl=new AbortController(); $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };
   try{
     const wav=await trWav(T.buf,T.sel[0],T.sel[1]);
-    const r=await fetch(`${TR_URL}/transcribe?engine=${engine}`,{method:'POST',body:wav,signal:ctl.signal}), res=await r.json();
+    const r=await fetch(`${TR_URL}/transcribe`,{method:'POST',body:wav,signal:ctl.signal}), res=await r.json();
     clearInterval(tick);
     if(!res.ok) throw new Error(res.error||'The helper could not transcribe this.');
     T.res=smoothBeats(res);
