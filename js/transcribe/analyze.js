@@ -11,6 +11,31 @@ function gapFill(beats){
     out.push(beats[i]); }
   return out;
 }
+/* Bars from the downbeats. The beat tracker can slip in a dense passage (a beat lost or added), and if bars were only
+   counted in fours from one beat 1, every bar after the slip would be off, chords and all. Beat This! also reports
+   each bar's downbeat, and those stay steady where the beats slip, so every bar starts on its own downbeat:
+   a bar that holds four beats keeps them; one that doesn't (a slip) is split into four even beats (or 8, 12... when a
+   downbeat was missed). A slip then only touches its own bar.
+   anchors: times where you said "beat 1 is here". From an anchor on, detected downbeats only count if they're a whole
+   number of bars from it, until the next anchor. */
+function barGrid(res,anchors=[]){
+  const b=gapFill(res.beats); if(b.length<8) return {...res,beats:b};
+  const med=b.slice(1).map((x,i)=>x-b[i]).sort((x,y)=>x-y)[(b.length-1)>>1];
+  const near=t=>{ let lo=0, hi=b.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(b[m]<=t) lo=m; else hi=m; } return Math.abs(b[lo]-t)<=Math.abs(b[hi]-t)?lo:hi; };
+  let di=[...new Set((res.downbeats||[]).map(near))].sort((x,y)=>x-y);
+  const ai=[...new Set(anchors.map(near))].sort((x,y)=>x-y);
+  ai.forEach((a,j)=>{ const next=j+1<ai.length?ai[j+1]:Infinity; di=di.filter(x=>x<a||x>=next||(x-a)%4===0); if(!di.includes(a)) di.push(a); di.sort((x,y)=>x-y); });
+  if(di.length<2) return {...res,beats:b};
+  const out=b.slice(0,di[0]+1);
+  for(let k=0;k+1<di.length;k++){ const i0=di[k], i1=di[k+1], t0=b[i0], t1=b[i1], n=i1-i0, bars=Math.max(1,Math.round((t1-t0)/(4*med)));
+    if(n===bars*4) for(let i=i0+1;i<=i1;i++) out.push(b[i]);
+    else for(let j=1;j<=bars*4;j++) out.push(Math.round((t0+(t1-t0)*j/(bars*4))*1000)/1000); }
+  for(let i=di[di.length-1]+1;i<b.length;i++) out.push(b[i]);
+  const db=[]; for(let i=di[0];i<out.length;i+=4) db.push(out[i]);
+  return {...res,beats:out,downbeats:db,anchors};
+}
+// The helper's answer, made ready for a score: beats smoothed, missing ones filled, bars from the downbeats
+const prepRes=(raw,anchors=[])=>barGrid(smoothBeats(raw),anchors);
 // Beat trackers often miss the first or last beats: extend the grid back to the start and on to the end
 function fillBeats(beats,duration){
   const b=beats.length>1?gapFill(beats):[0,.5], gap=(b[b.length-1]-b[0])/(b.length-1);
@@ -246,5 +271,5 @@ function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='l
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
   const used=Math.max(melody.length?Math.floor(Math.max(...melody.map(n=>n.gat))/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
-  return {v:1,title,mode,instrument,sens,beatScale,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift};
+  return {v:1,title,mode,instrument,sens,beatScale,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift,anchors:res0.anchors||[]};
 }

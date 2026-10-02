@@ -7,7 +7,7 @@ load('js/theory.js');
 vm.runInContext("function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; } const TIMBRES=['epiano']; function earWeight(){return 1;} function keyWeight(){return 1;}",ctx);
 load('js/ears/questions.js'); load('js/ears/levels.js'); load('js/lines/licks.js'); load('js/lines/solos.js'); load('js/reharm/moves.js'); load('js/transcribe/analyze.js'); load('js/transcribe/export.js');
 let fails=0; const ok=(c,msg)=>{ if(!c){fails++; console.log('FAIL',msg);} };
-const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile,tupletGrid,XDIV,XBAR,leadLine,gapFill})',ctx);
+const T=vm.runInContext('({QUALS,Q,evaluate,hintVoicing,defaultRoot,identify,symText,GEN,WORLDS,LEVELS,voiceChord,mod12,PROGS,progChords,voiceProg,LICKS,SOLO_LICKS,lickInstance,REHARM_MOVES,rhChords,rhAccepts,PROG,fillBeats,beatMapper,topLine,chordAt,buildScore,toMusicXML,toMidiFile,tupletGrid,XDIV,XBAR,leadLine,gapFill,barGrid})',ctx);
 const t=(pc,id)=>({root:T.defaultRoot(pc,T.Q[id].minor),q:T.Q[id]});
 ok(T.evaluate([53,56,60,63],t(5,'min7'),{rootless:true}).ok,'Fm7 root position');
 ok(T.evaluate([56,60,63,67],t(5,'min7'),{rootless:true}).ok,'Fm7 rootless');
@@ -103,6 +103,12 @@ ok(T.REHARM_MOVES.length===30,'30 moves');
   const V=(p,s,c)=>({p,s,e:s+.12,c}), oct=[[72,84],[74,86],[76,88],[77,89]].flatMap(([a,b],i)=>[V(a,i*.15,.95),V(b,i*.15,.75)]);
   ok(T.leadLine(oct,{lo:40,hi:100,octaves:true}).map(n=>n.p).join()==='84,86,88,89','octave doubling: the top is the melody');
   ok(T.leadLine(oct,{lo:40,hi:100}).map(n=>n.p).join()==='72,74,76,77','without the octave rule the better-heard note stays'); }
+// bars come from the downbeats: a beat the tracker lost in one bar doesn't move the bars after it
+{ const beats=[...Array(33).keys()].map(i=>i*.5).filter(i=>i!==5.5), downbeats=[0,2,4,6,8,10,12,14,16];  // beat lost at 5.5 s, inside bar 6
+  const g=T.barGrid({beats,downbeats});
+  ok(g.beats.length===33&&g.downbeats.every((d,i)=>Math.abs(g.beats[i*4]-d)<1e-6),'every bar starts on its downbeat after a lost beat');
+  const a=T.barGrid({beats:[...Array(33).keys()].map(i=>i*.5),downbeats},[9]);                      // 'beat 1 is here' at 9 s
+  ok(a.downbeats.some(d=>Math.abs(d-9)<1e-6)&&a.downbeats.every(d=>d<9||Math.abs((d-9)%2)<1e-6),'beat 1 set by hand: the bars from there on follow it'); }
 // rhythm: sextuplets, 32nds and quintuplets are found from slightly uneven timing, and plain 8ths stay plain
 { const jit=[.01,-.012,.008,-.006,.011,-.009,.004,-.01];
   const run=(D,b0)=>[...Array(D)].map((_,k)=>({at:b0+k/D+jit[k]*.5,dur:1/D}));

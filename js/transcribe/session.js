@@ -180,7 +180,7 @@ async function trRun(){
     const r=await fetch(`${TR_URL}/transcribe`,{method:'POST',body:wav,signal:ctl.signal}), res=await r.json();
     clearInterval(tick);
     if(!res.ok) throw new Error(res.error||'The helper could not transcribe this.');
-    T.res=smoothBeats(res);
+    T.raw=res; T.res=prepRes(res);
     // every part starts on Medium sensitivity
     const sc=buildScore(T.res,{mode:T.mode,instrument:T.mode==='lead'?'voice':T.instrument,title:T.title,texture:T.texture,sens:2}); T.shift=sc.shift;
     trEdit(sc,T.res,null);
@@ -260,7 +260,7 @@ function trHelp(){
     <li><b>● Rec</b>, then Play: what you play along is written into the transcription (one Undo takes it back)</li></ul>
     <b>Editing (piano roll)</b><ul><li>Drag a note to move it, drag its right edge to change its length</li><li>Double-click to add a note; drag a box to select several</li>
     <li><kbd>↑</kbd> <kbd>↓</kbd> transpose (with <kbd>Shift</kbd>, an octave); <kbd>←</kbd> <kbd>→</kbd> nudge the selected notes</li><li><kbd>Delete</kbd> removes; <kbd>Cmd+Z</kbd> undo, <kbd>Shift+Cmd+Z</kbd> redo; <kbd>Cmd+S</kbd> save</li>
-    <li>Click a chord to change it, or an empty spot in the chord lane to add one</li><li>Beat 1 in the wrong place? Double-click the beat number that should be 1, or use Bar lines</li></ul>
+    <li>Click a chord to change it, or an empty spot in the chord lane to add one</li><li>Beat 1 in the wrong place from some point on? Double-click the beat number that should be 1: the bars from there on start there, the ones before stay. Bar lines ◀ ▶ moves all of them</li></ul>
     <button class="go" id="trHelpOk">OK</button>`;
   document.body.appendChild(pop); const r=$('trHelpBtn').getBoundingClientRect(); pop.style.left=Math.max(8,Math.min(innerWidth-440,r.right-420))+'px'; pop.style.top=(r.bottom+8)+'px';
   pop.querySelector('#trHelpOk').onclick=()=>pop.remove();
@@ -281,7 +281,7 @@ function trInfo(){ const s=TR.score;
 // Undo keeps whole snapshots (notes, chords, bars, tempo, the Notes and Tempo settings, beat 1). edit: a change you made by hand
 const trSnap0=()=>JSON.stringify({score:TR.score,sh:TR.shift});
 function trPush(edit=true){ TR.undo.push(trSnap0()); if(TR.undo.length>80) TR.undo.shift(); TR.redo=[]; if(edit) TR.edited=true; trSetDirty(); }
-function trRestore(u){ const o=JSON.parse(u); TR.score=o.score; TR.shift=o.sh; TR.selected.clear(); trPress('sens',TR.score.sens??2); trPress('bs',TR.score.beatScale||1); trSetDirty(); trRender(); }
+function trRestore(u){ const o=JSON.parse(u); TR.score=o.score; TR.shift=o.sh; if(TR.raw) TR.res=prepRes(TR.raw,TR.score.anchors||[]); TR.selected.clear(); trPress('sens',TR.score.sens??2); trPress('bs',TR.score.beatScale||1); trSetDirty(); trRender(); }
 function trUndo(){ const u=TR.undo.pop(); if(!u) return trMsg('Nothing to undo.'); TR.redo.push(trSnap0()); trRestore(u); }
 function trRedo(){ const u=TR.redo.pop(); if(!u) return trMsg('Nothing to redo.'); TR.undo.push(trSnap0()); trRestore(u); }
 // Re-read the helper's answer with different settings (fewer or more notes, half or double time, beat 1). Hand edits are
@@ -291,7 +291,11 @@ function trReread(opts,msg){ const s=TR.score, had=TR.edited; trPush(false);
   TR.shift=TR.score.shift; TR.selected.clear(); TR.edited=false; trPress('sens',TR.score.sens); trPress('bs',TR.score.beatScale);
   trRender(); trMsg(msg+(had?' Your note edits were replaced: Undo brings them back.':'')); trResume(); }
 function trRebuild(over,msg){ if(TR.res) trReread(over,msg); }
-function trSetBeat1(beat){ if(!TR.res) return; const k=mod12(beat)%4; if(!k) return trMsg('That beat is already beat 1.'); let sh=(TR.shift||0)+k; while(sh>0) sh-=4; trReread({shift:sh},'Beat 1 set. The score is redrawn from there.'); }
+// "Beat 1 is here": from this point on the bars start here (earlier bars stay as they were). Undo takes it back.
+function trSetBeat1(beat){ if(!TR.res) return; if(mod12(Math.round(beat))%4===0) return trMsg('That beat is already beat 1.');
+  if(!TR.raw){ let sh=(TR.shift||0)+mod12(beat)%4; while(sh>0) sh-=4; return trReread({shift:sh},'Beat 1 set. The score is redrawn from there.'); }
+  const t=trMaps().toSec(Math.round(beat)), A=(TR.score.anchors||[]).filter(a=>Math.abs(a-t)>.25).concat(t).sort((x,y)=>x-y);
+  TR.res=prepRes(TR.raw,A); trReread({shift:null},`Beat 1 set at bar ${Math.floor(beat/4)+1}: the bars from here on start there.`); }
 function trReshift(d){ if(!TR.res) return; let sh=(TR.shift||0)+d; while(sh>0) sh-=4; while(sh<=-4) sh+=4; trReread({shift:sh},`Bar lines moved ${d<0?'earlier':'later'}.`); }
 // messages pop up at the bottom of the screen for a few seconds
 function trMsg(t,cls=''){ if(!t) return; let m=$('trToast'); if(!m){ m=document.createElement('div'); m.id='trToast'; document.body.appendChild(m); }
