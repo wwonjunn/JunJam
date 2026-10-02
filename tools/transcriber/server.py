@@ -8,7 +8,7 @@ What it does with the audio:
   2. Demucs takes the drums out (bass and everything else stay), and Basic Pitch turns that into notes.
   3. engine=best also runs a piano model (Kong et al.) and YourMT3+ (many instruments) on the full mix, then the three vote:
      a note that two or three of them heard is almost always real; a note only one heard is kept with low confidence,
-     more so if that model agrees with the others a lot on this recording. Jun Jam's "Notes: fewer / more" decides
+     more so if that model agrees with the others a lot on this recording. Jun Jam's Sensitivity setting decides
      how much agreement it needs. Measured on test clips with fast runs over loud drums and comping, voting
      scored 0.82 note F1 against 0.61 for Basic Pitch alone on the full mix.
 It answers with JSON: tempo, beat and downbeat times, and the notes (seconds, MIDI pitch, confidence 0-1).

@@ -165,9 +165,15 @@ function mergeFragments(notes,gap=.05){
     ns.forEach(n=>{ if(cur&&n.s-cur.e<gap&&n.s>=cur.s&&(n.e-n.s<.04||n.c<cur.c*.8)){ cur.e=Math.max(cur.e,n.e); } else { if(cur) out.push(cur); cur=n; } }); if(cur) out.push(cur); });
   return out.sort((a,b)=>a.s-b.s);
 }
-// "Notes: fewer ↔ more": how confident and how long a note must be to count
-// shortest kept note: a 32nd at 120 bpm lasts 62 ms, so 'Normal' keeps notes down to 40 ms
-const TR_SENS=[{c:.5,l:.09},{c:.4,l:.06},{c:.3,l:.04},{c:.24,l:.03},{c:.18,l:.025}];
+/* Sensitivity: how sure a note has to be (c) and how long (l, seconds) to be kept. Lowest → Highest; Medium is the default.
+   Best (the models voted): c .7 means two or more models heard it; a note only one model heard scores .3 to .5 by how
+   much that model agrees with the others on this recording, so .42 and .38 let in more of those, and .3 all of them.
+   Agreement is the strong filter, so even Low keeps notes down to 45 ms (a 32nd at 120 bpm is 62 ms). On test clips,
+   Low to Highest go from 96% of the shown notes being right (83% of the notes found) to 87% (90% found).
+   Quick (one model) needs length to filter the noise instead. */
+const TR_SENS={vote:[{c:.7,l:.07},{c:.7,l:.045},{c:.42,l:.04},{c:.38,l:.035},{c:.3,l:.025}],
+  one:[{c:.6,l:.1},{c:.5,l:.08},{c:.4,l:.06},{c:.3,l:.04},{c:.24,l:.03}]};
+const TR_SENS_NAMES=['Lowest','Low','Medium','High','Highest'];
 // Half-time / double-time: beat trackers often lock onto half or double the real tempo
 function scaleBeats(beats,k){ if(k===1||beats.length<2) return beats; if(k<1) return beats.filter((_,i)=>i%2===0);
   const out=[]; beats.forEach((b,i)=>{ out.push(b); if(i+1<beats.length) out.push((b+beats[i+1])/2); }); return out; }
@@ -211,7 +217,7 @@ function scoreMaps(res,score){
 function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='line',sens=2,beatScale=1}){
   const res={...res0,beats:scaleBeats(res0.beats,beatScale),tempo:res0.tempo*beatScale,
     notes:{...res0.notes,target:res0.engine==='vote'?res0.notes.target:mergeFragments(res0.notes.target),bass:mergeFragments(res0.notes.bass),harmony:mergeFragments(res0.notes.harmony)}};
-  const S=TR_SENS[Math.max(0,Math.min(4,sens))];
+  const S=TR_SENS[res0.engine==='vote'?'vote':'one'][Math.max(0,Math.min(4,sens))];
   if(shift===null) shift=shiftFor(guessDownbeat(res));
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const full=!lead&&texture==='full'&&inst.full;

@@ -392,7 +392,7 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trkeys{position:sticky;left:0;z-index:2;line-height:0;background:var(--panel)} .trkeys svg{display:block}
 .kwh{fill:var(--white-key);stroke:var(--key-edge);stroke-width:.5;cursor:pointer} .kbk{fill:var(--black-key);cursor:pointer}
 .kuse{fill:color-mix(in srgb, var(--chord) 30%, var(--white-key))} .kbk.kuse{fill:color-mix(in srgb, var(--chord) 55%, var(--black-key))}
-.ksel{fill:var(--brass)}
+.ksel{fill:var(--brass)} .kwh.kdown,.kbk.kdown{fill:var(--wrong)}
 .klab{font-family:var(--cond);font-weight:600;font-size:9px;fill:#56618a;pointer-events:none} .klab.on{fill:var(--ink);font-size:10px}
 
 /* Transcribe: setup form, editor top bar, sticky transport, fix row, export menu, toasts, sheet-music playhead */
@@ -432,3 +432,4 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trhelp ul{margin:4px 0 10px;padding-left:18px}
 kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:3px;padding:0 4px}
 @media (max-width:700px){ .trform{grid-template-columns:1fr} .trform>label{padding-top:0} }
+.ghost.trrec[aria-pressed="true"]{border-color:var(--wrong);color:var(--wrong);background:color-mix(in srgb, var(--wrong) 14%, transparent)}

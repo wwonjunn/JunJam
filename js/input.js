@@ -2,6 +2,7 @@
 const held=new Set(); let gesture=new Set(), settleTimer=null; const SETTLE=140;
 const draft=new Set();
 function noteOn(m,v){
+  if(typeof TR!=='undefined'&&TR.active){ synth.init(); held.add(m); synth.on(m,v); trMidi(m,v); return; } // transcribe: hear it, see it, record it
   if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.init(); held.add(m); synth.on(m,v); linesNote(m); return; } // lines take single notes, not chords
   synth.init(); held.add(m); gesture.add(m); synth.on(m,v);
   kbMarks={}; paintKeys();
@@ -9,6 +10,7 @@ function noteOn(m,v){
 }
 function noteOff(m){
   held.delete(m); synth.off(m);
+  if(typeof TR!=='undefined'&&TR.active){ trMidi(m,0); return; }
   if(held.size===0 && !settleTimer) gesture=new Set();
   paintKeys();
 }
