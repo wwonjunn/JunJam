@@ -126,6 +126,8 @@ def yourmt3(wav):
         out += [{'s': float(n.start), 'e': float(n.end), 'p': int(n.pitch), 'c': .6} for n in ins.notes]
     return out
 
+SHORT = {'basic_pitch': 'b', 'piano': 'p', 'yourmt3': 'y'}   # which models heard a note: 'bp' = Basic Pitch and the piano model
+
 def vote(lists, tol=.05):
     """Merge several models' notes: same pitch, starting within 50 ms, counts as one note heard by several models."""
     lists = {k: [n for n in v if n['c'] >= (.3 if k == 'basic_pitch' else .25)] for k, v in lists.items() if v}
@@ -154,7 +156,9 @@ def vote(lists, tol=.05):
         # 3 models: .95; 2: .75; 1: .3 to .5 by how much that model is trusted on this recording
         c = .95 if v >= 3 else .75 if v == 2 else .3 + .2 * trust[n['m']]
         if len(lists) == 2 and v == 2: c = .9
-        out.append({'s': sorted(g['s'] for g in grp)[len(grp) // 2], 'e': max(g['e'] for g in grp), 'p': n['p'], 'c': c, 'v': v})
+        out.append({'s': sorted(g['s'] for g in grp)[len(grp) // 2], 'e': max(g['e'] for g in grp), 'p': n['p'], 'c': c, 'v': v,
+                    'by': ''.join(sorted(SHORT[g['m']] for g in grp)),
+                    'q': {SHORT[g['m']]: round(g['c'], 2) for g in grp if g['m'] != 'yourmt3'}})   # each model's own confidence / loudness
     return out, trust
 
 def transcribe(wav_bytes):
@@ -179,7 +183,7 @@ def transcribe(wav_bytes):
                 except Exception: traceback.print_exc()
         if len(lists) > 1: notes, trust = vote(lists)
         else: notes, trust = lists['basic_pitch'], {}
-        notes = [{'s': round(n['s'], 3), 'e': round(n['e'], 3), 'p': n['p'], 'c': round(n['c'], 3), **({'v': n['v']} if 'v' in n else {})}
+        notes = [{'s': round(n['s'], 3), 'e': round(n['e'], 3), 'p': n['p'], 'c': round(n['c'], 3), **({'v': n['v'], 'by': n['by'], 'q': n['q']} if 'v' in n else {})}
                  for n in sorted(notes, key=lambda n: n['s'])]
         return {'ok': True, 'version': VERSION, 'engine': 'vote' if len(lists) > 1 else 'basic_pitch', 'used': used,
                 'trust': {k: round(v, 2) for k, v in trust.items()}, 'tempo': tempo, 'beats': beats, 'downbeats': downbeats, 'duration': dur,

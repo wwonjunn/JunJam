@@ -2946,9 +2946,19 @@ function rhKey(e){
 /* Transcribe: turn the helper's raw notes (seconds) into a score (beats, bars, chords). Pure, no DOM.
    Tested by tests/theory.test.js. The helper does the listening; this does the music. */
 
+// Beat trackers skip beats (on Jesus Molina's Spain, Beat This! left out 11 single beats in 51 s, often on accents and
+// stops), and every missing beat moves the bar lines. A gap that is close to two (or three...) beats gets them back.
+function gapFill(beats){
+  if(beats.length<4) return beats;
+  const d=beats.slice(1).map((x,i)=>x-beats[i]).sort((x,y)=>x-y), med=d[d.length>>1], out=[beats[0]];
+  for(let i=1;i<beats.length;i++){ const g=beats[i]-beats[i-1], k=Math.round(g/med);
+    if(k>=2&&k<=8&&Math.abs(g/k-med)<.2*med) for(let j=1;j<k;j++) out.push(Math.round((beats[i-1]+g*j/k)*1000)/1000);
+    out.push(beats[i]); }
+  return out;
+}
 // Beat trackers often miss the first or last beats: extend the grid back to the start and on to the end
 function fillBeats(beats,duration){
-  const b=beats.length>1?[...beats]:[0,.5], gap=(b[b.length-1]-b[0])/(b.length-1);
+  const b=beats.length>1?gapFill(beats):[0,.5], gap=(b[b.length-1]-b[0])/(b.length-1);
   while(b[0]-gap>-gap*.35) b.unshift(b[0]-gap);
   while(b[b.length-1]+gap<duration+gap) b.push(b[b.length-1]+gap);
   return b;
@@ -2957,7 +2967,7 @@ function fillBeats(beats,duration){
 // fast run. Real tempo changes smoothly, so each beat is moved onto a straight line fitted through its neighbours
 // (a beat each side): the jitter averages out, and speeding up or slowing down is still followed.
 function smoothBeats(res,{half=1,cap=.15}={}){
-  const b=res.beats; if(b.length<2*half+2) return res;
+  const b=gapFill(res.beats); if(b.length<2*half+2) return res;
   const spb=b.slice(1).map((x,i)=>x-b[i]).sort((x,y)=>x-y)[(b.length-1)>>1];
   const nb=b.map((t,i)=>{ let sw=0,sx=0,sy=0,sxx=0,sxy=0;
     for(let j=Math.max(0,i-half);j<=Math.min(b.length-1,i+half);j++){ const w=half+1-Math.abs(j-i); sw+=w; sx+=w*j; sy+=w*b[j]; sxx+=w*j*j; sxy+=w*j*b[j]; }
@@ -2996,8 +3006,9 @@ function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
    times: [{at,dur}] in beats, in order. Returns [{gat,gdur,tri,tup}]: tup is the division when it isn't 1, 2, 4 or 8. */
 // a tuplet of D in a beat is written in the next value down: 3 as 8ths, 5 to 7 as 16ths, 9 and up as 32nds
 const tupNormal=D=>D<4?2:D<8?4:8;
-const TUP_COST={1:0,2:.01,4:.03,3:.05,8:.08,6:.08,5:.12,7:.13};
-function tupletGrid(times,{divs=[1,2,4,3,8,6,5,7],change=.01,cost=TUP_COST,slide=.06,slideCost=.3}={}){
+// tuned on Jesus Molina's Spain (real playing is uneven, and an uneven 16th run fits a sextuplet too well) and on test clips full of tuplets
+const TUP_COST={1:0,2:.01,4:.03,3:.06,8:.08,6:.09,5:.14,7:.15};
+function tupletGrid(times,{divs=[1,2,4,3,8,6,5,7],change=.01,cost=TUP_COST,slide=.06,slideCost=.2}={}){
   const beatOf=x=>Math.floor(x.at+.04), beats=[...new Set(times.map(beatOf))].sort((a,b)=>a-b), idx=new Map(beats.map(b=>[b,[]]));
   times.forEach((x,i)=>idx.get(beatOf(x)).push(i));
   // the detected beat itself can be a little off: each beat may also slide its frame slightly (at a small cost)
@@ -3025,8 +3036,10 @@ const asPlayed=(s,e)=>({sec:Math.round(s*1000)/1000,dsec:Math.round(Math.max(.03
    1. Notes that start together are a group. Each group's best-supported note (the top one on a near tie) marks where
       the line is; the line at any moment is the median of those marks within 0.6 s, once there are at least two.
    2. In each group only notes within 10 semitones of the line count (octave ghosts above, comping below drop out),
-      a chord of four or more sitting under the line is comping and is skipped, and the best-supported note wins. */
-function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above=10,chord=4,anchor=.45}={}){
+      a chord of four or more sitting under the line is comping and is skipped, and the best-supported note wins.
+   3. If that note is doubled an octave up and two models heard the top, the top is the melody. On Jesus Molina's Spain
+      solo (real piano, octave-doubled lines) the models hear the lower note of the octave more surely. */
+function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above=10,chord=4,anchor=.45,octaves=false}={}){
   const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
   const groups=[]; ok.forEach(n=>{ const g=groups[groups.length-1]; if(g&&n.s-g[0].s<.04) g.push(n); else groups.push([n]); });
   const marks=groups.filter(g=>g.length<chord).map(g=>g.reduce((a,b)=>b.c>a.c+.05||(Math.abs(b.c-a.c)<=.05&&b.p>a.p)?b:a)).filter(n=>n.c>=anchor);
@@ -3034,7 +3047,9 @@ function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above
   const out=[];
   groups.forEach(g=>{ const r=lineAt(g[0].s), cand=r===null?g:g.filter(n=>n.p>=r-below&&n.p<=r+above);
     if(!cand.length||(g.length>=chord&&r!==null&&Math.max(...g.map(n=>n.p))<r-3)) return;
-    const top=Math.max(...cand.map(n=>n.p)), best=cand.reduce((a,b)=>b.c+(b.p===top?.1:0)>a.c+(a.p===top?.1:0)?b:a);
+    const top=Math.max(...cand.map(n=>n.p)); let best=cand.reduce((a,b)=>b.c+(b.p===top?.1:0)>a.c+(a.p===top?.1:0)?b:a);
+    // an octave doubling (pianists double the melody a lot): the top of the octave is the line, if two models heard it
+    if(octaves) for(let up;(up=g.find(n=>n.p===best.p+12&&n.c>=.7&&n.p<=hi));) best=up;
     const last=out[out.length-1]; if(last&&last.e>best.s) last.e=best.s; out.push({...best}); });
   return out.filter(n=>n.e-n.s>=.03);
 }
@@ -3123,7 +3138,9 @@ const TR_SENS_NAMES=['Lowest','Low','Medium','High','Highest'];
 function scaleBeats(beats,k){ if(k===1||beats.length<2) return beats; if(k<1) return beats.filter((_,i)=>i%2===0);
   const out=[]; beats.forEach((b,i)=>{ out.push(b); if(i+1<beats.length) out.push((b+beats[i+1])/2); }); return out; }
 // Instruments: the range the line lives in (and, for full parts, the range of the whole part)
-const TR_INSTRUMENTS={piano:{name:'Piano / e-piano',lo:55,hi:100,full:[21,108],grand:true},synth:{name:'Synth lead',lo:36,hi:100,full:[21,108],grand:true},
+// octaves: write the top of an octave doubling as the line (acoustic piano). The models can't tell a doubled melody
+// from an e-piano's or a synth's strong overtone an octave up, so only Piano does it.
+const TR_INSTRUMENTS={piano:{name:'Piano',lo:55,hi:100,full:[21,108],grand:true,octaves:true},epiano:{name:'E-piano / keys',lo:55,hi:100,full:[21,108],grand:true},synth:{name:'Synth lead',lo:36,hi:100,full:[21,108],grand:true},
   guitar:{name:'Guitar',lo:40,hi:88,full:[40,88]},sax:{name:'Saxophone',lo:44,hi:84},trumpet:{name:'Trumpet',lo:52,hi:84},voice:{name:'Voice',lo:45,hi:84},bass:{name:'Bass',lo:24,hi:60}};
 /* Which beat is beat 1? Beat trackers find the beats but not the bar. Try each of the four phases and keep the one
    where the music acts most like a downbeat: chords change there, the bass plays there, strong notes start there. */
@@ -3167,7 +3184,7 @@ function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='l
   const toBeat=beatMapper(fillBeats(res.beats,res.duration),shift), inst=TR_INSTRUMENTS[instrument]||TR_INSTRUMENTS.piano, lead=mode==='lead';
   const full=!lead&&texture==='full'&&inst.full;
   const melody=full?partBeats(res.notes.target,toBeat,{lo:inst.full[0],hi:inst.full[1],minConf:S.c,minLen:S.l})
-    :melodyBeats((res.engine==='vote'?leadLine:topLine)(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l}),toBeat,lead);
+    :melodyBeats((res.engine==='vote'?leadLine:topLine)(res.notes.target,{lo:inst.lo,hi:inst.hi,minConf:S.c+(lead?.05:0),minLen:S.l,octaves:!!inst.octaves}),toBeat,lead);
   const totalBeats=Math.max(4,...melody.map(n=>n.gat+n.gdur),toBeat(res.duration));
   const bars=Math.ceil(totalBeats/4);
   const toSec=inverseMap(toBeat,res.duration); // beats back to seconds for the chord windows
