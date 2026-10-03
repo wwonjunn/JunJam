@@ -189,35 +189,6 @@
 :root.skin-art .brand{color:var(--title-ink,var(--ink))}
 :root.skin-art header{text-shadow:var(--header-fx,none)}
 
-/* ===================================== GOLDEN HOUR ===================================== */
-:root[data-theme="golden"], .skinprev[data-skin="golden"]{
-  --bg:#f1907a; --lane:#fff6ec; --panel:#fff3e6; --ink:#24301f; --muted:#5d6b55;
-  --good:#2f8a3a; --brass:#d2552f; --chord:#2f63b5; --tension:#8a4dbf; --wrong:#c9302c; --root:#d2552f;
-  --line:rgba(36,48,31,.1); --line-strong:rgba(36,48,31,.26);
-  --white-key:#fffaf2; --black-key:#2c3527; --key-edge:#c9b9a2;
-  --kw1:#ffffff; --kw2:#fbf0df; --kw3:#d9c19c; --kb1:#55634b; --kb2:#1f271b; --kb3:#7a8a6a;
-  --hand:'Fraunces','Noto Music',Georgia,serif; --display:'Fraunces','Noto Music',Georgia,serif; --cond:'Nunito Sans','Noto Music',sans-serif; --body:'Nunito Sans','Noto Music',system-ui,sans-serif;
-  --radius:14px; --radius-lg:22px; --card-bg:rgba(255,248,238,.86);
-  --lane-bg:rgba(255,246,236,.08); --panel-bg:rgba(255,247,238,.92);
-  --surface:rgba(255,249,240,.86); --surface-solid:#fff8ee; --surface-border:1px solid rgba(255,255,255,.7);
-  --surface-shadow:0 30px 60px -28px rgba(80,30,60,.55),inset 0 1px 0 #fff;
-  --tile-bg:rgba(255,255,255,.62); --tile-hover:rgba(255,255,255,.92); --tile-border:1px solid rgba(36,48,31,.12); --tile-shadow:0 8px 20px -14px rgba(80,30,60,.5);
-  --btn-bg:linear-gradient(135deg,#f08a3b,#d2552f 60%,#b03a5b); --btn-ink:#fffaf2; --btn-shadow:0 10px 22px -10px rgba(176,58,91,.8);
-  --ghost-bg:rgba(255,255,255,.55); --ghost-border:1px solid rgba(36,48,31,.2); --seg-on:#24301f; --seg-on-ink:#fffaf2;
-  --header-fx:0 1px 10px rgba(255,240,220,.7);
-}
-:root[data-theme="golden"] .card h1{font-weight:800;font-size:56px;letter-spacing:-1.5px;font-variation-settings:'SOFT' 100}
-:root[data-theme="golden"] .card h1::after{content:"";display:inline-block;width:30px;height:30px;margin-left:8px;border-radius:50%;background:radial-gradient(circle,#ffe7a0 30%,#f08a3b 70%,rgba(240,138,59,0) 72%);vertical-align:2px}
-:root[data-theme="golden"] .card h2{font-weight:800;letter-spacing:-1px}
-:root[data-theme="golden"] .mode .mn{color:#b03a5b}
-:root[data-theme="golden"] .mode .mt{font-weight:700}
-:root[data-theme="golden"] .mode .ms{color:#d2552f}
-:root[data-theme="golden"] .rank{color:#b03a5b!important}
-:root[data-theme="golden"] .go{font-weight:700}
-:root[data-theme="golden"] .brand{font-weight:800}
-:root[data-theme="golden"] .enemy{font-weight:800;text-shadow:0 2px 12px rgba(255,248,238,.95)}
-:root[data-theme="golden"] .enemy.target{color:#d2552f}
-
 /* ===================================== PIXEL AUTUMN ===================================== */
 :root[data-theme="pixel"], .skinprev[data-skin="pixel"]{
   --bg:#ff9457; --lane:#ffe8c2; --panel:#ffe2b0; --ink:#3b2418; --muted:#7a4e30;

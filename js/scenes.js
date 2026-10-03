@@ -4,34 +4,6 @@
    Every scene uses a fixed random seed, so it looks the same each time. No images are loaded. */
 const SCENES={};
 function sceneRng(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-function scBlot(g,x,y,rad,rgb,a){ const gr=g.createRadialGradient(x,y,0,x,y,rad); gr.addColorStop(0,`rgba(${rgb},${a})`); gr.addColorStop(.55,`rgba(${rgb},${a*.45})`); gr.addColorStop(1,`rgba(${rgb},0)`);
-  g.fillStyle=gr; g.beginPath(); g.arc(x,y,rad,0,7); g.fill(); }
-// a ridge line across the width (hills, mountains)
-function scRidge(r,W,base,amp,oct=6){ const ph=[...Array(oct)].map(()=>r()*7), out=[]; for(let x=-10;x<=W+10;x+=6){ let y=base; for(let k=0;k<oct;k++) y+=Math.sin(x/W*Math.PI*(1.2+k*k*.9)+ph[k])*amp/(k*.9+1); out.push([x,y]); } return out; }
-
-/* =============================== GOLDEN HOUR (layered hills at sunset) =============================== */
-function scPine(g,x,y,h,col,lit){ g.fillStyle=col; g.fillRect(x-h*.025,y-h*.18,h*.05,h*.2); for(let k=0;k<5;k++){ const ty=y-h*.15-k*h*.17, tw=h*(.34-k*.055); g.beginPath(); g.moveTo(x-tw,ty); g.lineTo(x,ty-h*.3); g.lineTo(x+tw,ty); g.closePath(); g.fill();
-  if(lit){ g.fillStyle=lit; g.beginPath(); g.moveTo(x,ty-h*.3); g.lineTo(x+tw,ty); g.lineTo(x+tw*.45,ty); g.closePath(); g.fill(); g.fillStyle=col; } } }
-SCENES.golden=async(g,W,H,mini)=>{
-  const r=sceneRng(77), S=Math.min(W,H), sx=W*.84, sy=H*.3;
-  const sky=g.createLinearGradient(0,0,0,H*.62); [[0,'#2f2466'],[.25,'#6b3f9e'],[.5,'#c25d9a'],[.72,'#f1907a'],[.9,'#ffc58f'],[1,'#ffe2b2']].forEach(([o,c])=>sky.addColorStop(o,c)); g.fillStyle=sky; g.fillRect(0,0,W,H);
-  g.save(); g.globalCompositeOperation='lighter'; scBlot(g,sx,sy,S*.6,'255,170,90',.35); scBlot(g,sx,sy,S*.16,'255,235,190',.7); scBlot(g,sx,sy,S*.05,'255,255,240',1); g.restore();
-  // streaky clouds lit from below
-  for(let i=0;i<(mini?10:34);i++){ const x=r()*W, y=H*(.04+r()*.34), w=S*(.2+r()*.5), h=S*(.008+r()*.025);
-    g.save(); g.translate(x,y); g.rotate(-.06+r()*.05); g.scale(1,h/w); const cg=g.createRadialGradient(0,0,0,0,0,w); const warm=y/H;
-    cg.addColorStop(0,`rgba(${warm>.25?'255,170,150':'230,120,190'},${.35+r()*.3})`); cg.addColorStop(1,'rgba(255,150,170,0)'); g.fillStyle=cg; g.beginPath(); g.arc(0,0,w,0,7); g.fill(); g.restore(); }
-  // ridges from far to near, mist between them, pines on the nearer ones
-  const layers=[['#8a7fc2','#6f6aa8',.44,.05],['#7183b5','#5b6e9e',.5,.06],['#5f8a8e','#46707a',.57,.07],['#4f8a5c','#356b47',.65,.08],['#5a9a3f','#3c7a33',.75,.09],['#7bb043','#4d8f34',.87,.07]];
-  layers.forEach(([top,bot,base,amp],li)=>{ const ridge=scRidge(r,W,H*base,S*amp,6); g.beginPath(); g.moveTo(-10,H+10); ridge.forEach(([x,y])=>g.lineTo(x,y)); g.lineTo(W+10,H+10); g.closePath();
-    const lg=g.createLinearGradient(0,H*base-S*amp,0,H); lg.addColorStop(0,top); lg.addColorStop(1,bot); g.fillStyle=lg; g.fill();
-    if(li>=2){ g.save(); g.clip(); const lit=g.createLinearGradient(sx,0,0,0); lit.addColorStop(0,'rgba(255,210,120,.28)'); lit.addColorStop(1,'rgba(255,210,120,0)'); g.fillStyle=lit; g.fillRect(0,0,W,H); g.restore(); }
-    if(li>=2){ const n=mini?6+li*2:12+li*16, th=S*(.03+li*.022); for(let k=0;k<n;k++){ const i=Math.floor(r()*ridge.length), [px,py]=ridge[i]; scPine(g,px,py+th*.2+r()*th*.3,th*(.7+r()*.6),li>3?'#173b22':'#24503a',li>3?'rgba(160,200,90,.35)':null); } }
-    if(li<layers.length-1){ const my=H*(base+.05), mg=g.createLinearGradient(0,my-S*.08,0,my+S*.05); mg.addColorStop(0,'rgba(255,240,235,0)'); mg.addColorStop(.6,'rgba(255,236,230,.32)'); mg.addColorStop(1,'rgba(255,240,235,0)'); g.fillStyle=mg; g.fillRect(0,my-S*.08,W,S*.13); }
-  });
-  // grass strokes in the foreground and one big pine on the right
-  g.strokeStyle='rgba(200,230,120,.35)'; g.lineWidth=1; for(let i=0;i<(mini?40:420);i++){ const x=r()*W, y=H*(.9+r()*.1); g.beginPath(); g.moveTo(x,y); g.lineTo(x+(r()-.5)*4,y-S*(.01+r()*.02)); g.stroke(); }
-  scPine(g,W*.86,H*1.02,S*.62,'#13301c','rgba(150,190,80,.4)');
-};
 
 /* =============================== PIXEL AUTUMN (pixel art: a stone tower in an autumn wood) =============================== */
 SCENES.pixel=async(g,W,H,mini)=>{

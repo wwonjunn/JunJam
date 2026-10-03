@@ -9,8 +9,6 @@ const THEMES=[
   {id:'classic',name:'Classic',tier:'free',tag:'Midnight blue and brass, the original. Follows your system, or pick Dark or Light.',fonts:null},
   {id:'studio',name:'Studio',tier:'free',tag:'Clean, with character: bold outlines, hard shadows, a pastel for every mode.',
     fonts:'family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@500'},
-  {id:'golden',name:'Golden Hour',tier:'free',scene:true,tag:'Sunset over layered hills: pines, valley mist, a warm sky.',
-    fonts:'family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Nunito+Sans:wght@400;600;700'},
   {id:'neon',name:'Neon Grid',tier:'deluxe',tag:'Techno: a glowing grid, rainbow lines, 3D wireframes drifting behind everything.',
     fonts:'family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;700;800&family=JetBrains+Mono:wght@500;700'},
   {id:'pixel',name:'Pixel Autumn',tier:'deluxe',scene:true,tag:'Pixel art: a stone tower in an autumn wood, leaves drifting down.',
