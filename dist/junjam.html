@@ -6,16 +6,16 @@
 <title>Jun Jam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Noto+Music&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0d1636; --lane:#0a122e; --panel:#111c42; --ink:#ece5d3; --muted:#8e97b8;
   --good:#4fd18b; --brass:#e0a93b; --chord:#6fb2ff; --tension:#c49bff; --wrong:#ff6b5e; --root:#e0a93b;
   --line:rgba(236,229,211,.075); --line-strong:rgba(236,229,211,.18);
   --white-key:#e9e4d6; --black-key:#141a33; --key-edge:#2a3563;
-  --hand:'Kalam', 'Comic Sans MS', cursive;
-  --cond:'Barlow Condensed', 'Arial Narrow', sans-serif;
-  --body:'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --hand:'Kalam', 'Comic Sans MS', 'Noto Music', cursive;
+  --cond:'Barlow Condensed', 'Arial Narrow', 'Noto Music', sans-serif;
+  --body:'Barlow', 'Noto Music', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --display:var(--hand);  /* headings and titles; --hand stays the chord-symbol font */
   --radius:4px; --radius-lg:6px; --card-bg:transparent; --shadow:none;
   box-sizing:border-box;
@@ -89,7 +89,7 @@ body.menu .panel{display:none}
 /* look-ahead */
 .ahead{position:absolute;left:0;right:0;top:0;height:46px;z-index:2;background:var(--lane);border-bottom:1px solid var(--line-strong);display:flex;align-items:center;gap:18px;padding:0 14px;font-family:var(--hand);font-weight:700;color:var(--muted)}
 .ahead .lbl{font-family:var(--cond);font-weight:600;font-size:14px}
-.ahead .sym .rt{font-size:26px}.ahead .sym .ac{font-size:19px}.ahead .sym .sf{font-size:16px}
+.ahead .sym .rt{font-size:26px}.ahead .sym .ac{font-size:27px}.ahead .sym .sf{font-size:18px}
 .ahead .sym:first-of-type{color:var(--ink)}
 
 /* mode + tiers */
@@ -111,9 +111,15 @@ body.menu .panel{display:none}
 
 .enemy{position:absolute;left:0;top:0;font-family:var(--hand);font-weight:700;color:var(--ink);white-space:nowrap;line-height:1;will-change:transform;padding:4px 8px 6px;user-select:none}
 .enemy .rt{font-size:46px}
-.enemy .ac{font-size:32px;font-family:var(--body);font-weight:500;vertical-align:.45em;margin-left:1px}
+.enemy .ac{font-size:44px;font-family:'Noto Music',var(--body);font-weight:400;vertical-align:.18em;margin-left:2px}   /* nearly as tall as the root letter, raised a little */
+/* the root's ♯ / ♭, and ♯ ♭ inside the chord type, in the music font so they read as accidentals at any size */
+.ac,.sf .g.acc{font-family:'Noto Music','Bravura Text','Segoe UI Symbol','Apple Symbols',serif;font-style:normal;font-weight:400}
+.ahead .sym .ac{vertical-align:.15em;margin-left:1px}
+/* ø and ° are letters, bold and a little larger, so a half-diminished never looks like a sharp */
+.sf .g.qual{font-family:var(--body);font-weight:700;font-style:normal;font-size:1.12em}
 .enemy .sf{font-size:26px;vertical-align:.7em;margin-left:2px}
-.enemy .sf .g{font-family:var(--body);font-weight:500;font-size:20px}
+.enemy .sf .g.acc{font-size:31px} .enemy .sf .g.qual{font-size:28px}
+.sf .g.acc{font-size:1.2em;line-height:1}   /* a music glyph runs small next to letters of the same size */
 .enemy .sl{font-size:30px;margin-left:1px}
 .ahead .sym .sl{font-size:17px}
 .enemy.target{color:var(--brass)}
@@ -522,7 +528,7 @@ kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(
   --bg:#0d1636; --lane:#0a122e; --panel:#111c42; --ink:#ece5d3; --muted:#8e97b8;
   --good:#4fd18b; --brass:#e0a93b; --chord:#6fb2ff; --wrong:#ff6b5e; --line-strong:rgba(236,229,211,.18);
   --white-key:#e9e4d6; --black-key:#141a33; --key-edge:#2a3563; --card-bg:#111c42;
-  --hand:'Kalam',cursive; --display:'Kalam',cursive; --cond:'Barlow Condensed',sans-serif; --body:'Barlow',sans-serif; --radius:4px; --radius-lg:6px;
+  --hand:'Kalam', 'Noto Music', cursive; --display:'Kalam', 'Noto Music', cursive; --cond:'Barlow Condensed', 'Noto Music', sans-serif; --body:'Barlow', 'Noto Music', sans-serif; --radius:4px; --radius-lg:6px;
 }
 
 /* ===================================== NEON GRID ===================================== */
@@ -532,8 +538,8 @@ kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(
   --line:rgba(150,160,255,.09); --line-strong:rgba(150,160,255,.26);
   --white-key:#e9ebff; --black-key:#12102b; --key-edge:#2c2a5c;
   --grad:linear-gradient(100deg,#19e3ff 0%,#7b5cff 38%,#ff4fd8 70%,#ffb84d 100%);
-  --hand:'Unbounded','Space Grotesk',sans-serif; --display:'Unbounded','Space Grotesk',sans-serif;
-  --cond:'Space Grotesk',sans-serif; --body:'Space Grotesk',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --hand:'Unbounded', 'Space Grotesk', 'Noto Music', sans-serif; --display:'Unbounded', 'Space Grotesk', 'Noto Music', sans-serif;
+  --cond:'Space Grotesk', 'Noto Music', sans-serif; --body:'Space Grotesk', 'Noto Music', system-ui, sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
   --radius:8px; --radius-lg:14px; --card-bg:rgba(15,13,34,.62); --shadow:0 0 0 1px rgba(150,160,255,.12),0 18px 50px -20px rgba(123,92,255,.55);
 }
 :root[data-theme="neon"] body{
@@ -613,8 +619,8 @@ kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(
   --good:#3d6b25; --brass:#8e2f17; --chord:#2c4a6e; --tension:#6a3d74; --wrong:#a3231a; --root:#8e2f17;
   --line:rgba(42,27,12,.1); --line-strong:rgba(42,27,12,.32);
   --white-key:#f3e8c8; --black-key:#2a1b0c; --key-edge:#9b845c;
-  --hand:'IM Fell English','Iowan Old Style',Georgia,serif; --display:'IM Fell English SC','IM Fell English',Georgia,serif;
-  --cond:'IM Fell English SC','IM Fell English',Georgia,serif; --body:'IM Fell English','Iowan Old Style',Georgia,serif;
+  --hand:'IM Fell English', 'Iowan Old Style', Georgia, 'Noto Music', serif; --display:'IM Fell English SC', 'IM Fell English', Georgia, 'Noto Music', serif;
+  --cond:'IM Fell English SC', 'IM Fell English', Georgia, 'Noto Music', serif; --body:'IM Fell English', 'Iowan Old Style', Georgia, 'Noto Music', serif;
   --radius:2px; --radius-lg:3px; --card-bg:rgba(243,232,200,.55); --shadow:0 2px 0 rgba(42,27,12,.12),0 18px 40px -22px rgba(60,35,10,.6);
   --paper:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32  0 0 0 0 .22  0 0 0 0 .08  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --scratch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='480'%3E%3Cg stroke='%233a2510' stroke-opacity='.16' fill='none' stroke-linecap='round'%3E%3Cpath d='M40 60 L210 18' stroke-width='.7'/%3E%3Cpath d='M330 300 L560 255' stroke-width='.5'/%3E%3Cpath d='M90 410 q60 -6 130 -40' stroke-width='.6'/%3E%3Cpath d='M480 70 L600 140' stroke-width='.4'/%3E%3Cpath d='M250 160 l40 -9' stroke-width='.9'/%3E%3Cpath d='M15 250 q20 30 70 34' stroke-width='.5'/%3E%3C/g%3E%3C/svg%3E");
@@ -693,8 +699,8 @@ kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(
   --good:#16a35b; --brass:#ff5a36; --chord:#2f6bff; --tension:#8a4dff; --wrong:#e5383b; --root:#ff5a36;
   --line:rgba(20,20,20,.09); --line-strong:#141414;
   --white-key:#fffdf8; --black-key:#141414; --key-edge:#141414;
-  --hand:'Bricolage Grotesque','DM Sans',sans-serif; --display:'Bricolage Grotesque','DM Sans',sans-serif;
-  --cond:'DM Sans',system-ui,sans-serif; --body:'DM Sans',system-ui,sans-serif; --mono:'DM Mono',ui-monospace,monospace;
+  --hand:'Bricolage Grotesque', 'DM Sans', 'Noto Music', sans-serif; --display:'Bricolage Grotesque', 'DM Sans', 'Noto Music', sans-serif;
+  --cond:'DM Sans', 'Noto Music', system-ui, sans-serif; --body:'DM Sans', 'Noto Music', system-ui, sans-serif; --mono:'DM Mono',ui-monospace,monospace;
   --radius:10px; --radius-lg:16px; --card-bg:#fffdf8; --shadow:5px 5px 0 #141414;
   --squig:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='16' viewBox='0 0 220 16'%3E%3Cpath d='M2 9 C 20 1, 34 15, 52 8 S 86 2, 104 9 S 138 15, 156 7 S 192 2, 218 8' fill='none' stroke='%23ff5a36' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
 }
@@ -1704,7 +1710,7 @@ function symHTML(t){
   const acc=ACC[t.root.a];
   // By ear: the root is shown (naming a root from nothing needs perfect pitch); the chord type is what you hear
   if(t.req==='byear') return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}<span class="sf q">?</span>`;
-  const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
+  const suf=(t.suf??t.q.suf).replace(/[♭♯]/g,'<span class="g acc">$&</span>').replace(/[°ø]/g,'<span class="g qual">$&</span>');
   const sl=t.q.bass!=null?`<span class="sl">/${bassNote(t)}</span>`:'';
   return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}${sl}`;
 }

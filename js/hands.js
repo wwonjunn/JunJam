@@ -95,7 +95,7 @@ function symHTML(t){
   const acc=ACC[t.root.a];
   // By ear: the root is shown (naming a root from nothing needs perfect pitch); the chord type is what you hear
   if(t.req==='byear') return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}<span class="sf q">?</span>`;
-  const suf=(t.suf??t.q.suf).replace(/([♭♯°ø])/g,'<span class="g">$1</span>');
+  const suf=(t.suf??t.q.suf).replace(/[♭♯]/g,'<span class="g acc">$&</span>').replace(/[°ø]/g,'<span class="g qual">$&</span>');
   const sl=t.q.bass!=null?`<span class="sl">/${bassNote(t)}</span>`:'';
   return `<span class="rt">${LETTERS[t.root.l]}</span>${acc?`<span class="ac">${acc}</span>`:''}${suf?`<span class="sf">${suf}</span>`:''}${sl}`;
 }
