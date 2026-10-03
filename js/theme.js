@@ -7,6 +7,8 @@
    css/themes.css, and (optionally) a painter in js/scenes.js. */
 const THEMES=[
   {id:'classic',name:'Classic',tier:'free',tag:'Midnight blue and brass, the original. Follows your system, or pick Dark or Light.',fonts:null},
+  {id:'manuscript',name:'Manuscript',tier:'free',tag:'Old sheet music: parchment, faint staves, iron-gall ink, rust-red stamps.',
+    fonts:'family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=IM+Fell+DW+Pica:ital@0;1'},
   {id:'studio',name:'Studio',tier:'free',tag:'Clean, with character: bold outlines, hard shadows, a pastel for every mode.',
     fonts:'family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@500'},
   {id:'neon',name:'Neon Grid',tier:'deluxe',tag:'Techno: a glowing grid, rainbow lines, 3D wireframes drifting behind everything.',

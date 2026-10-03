@@ -24,7 +24,7 @@ A jazz piano trainer with two sides:
   three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Sensitivity (Lowest to
   Highest) sets how much agreement a note needs. Everything else in Jun Jam works without it.
 - **Themes** (Profile & settings, from the button on the home card): Classic (dark, light or follow the system),
-  Studio, Neon Grid and Pixel Autumn. Pixel Autumn paints its background in code (js/scenes.js), once, so it
+  Manuscript, Studio, Neon Grid and Pixel Autumn. Pixel Autumn paints its background in code (js/scenes.js), once, so it
   costs nothing while you play. Your name lives there too.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
