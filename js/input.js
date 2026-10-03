@@ -31,7 +31,7 @@ function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhN
 
 async function initMIDI(){
   const el=$('midi');
-  if(!navigator.requestMIDIAccess){el.textContent='No Web MIDI here. Try Chrome or Edge.';el.className='midi bad';return;}
+  if(!navigator.requestMIDIAccess){el.textContent='No Web MIDI here. Try Chrome or Edge.';el.className='midi bad';noMidi(true);return;}
   try{
     const acc=await navigator.requestMIDIAccess({sysex:false});
     const bind=()=>{
@@ -39,10 +39,11 @@ async function initMIDI(){
       acc.inputs.forEach(inp=>{inp.onmidimessage=onMsg; names.push(inp.name);});
       if(names.length){el.textContent=names[0].replace(/\s*MIDI.*$/i,'')+(names.length>1?` +${names.length-1}`:'');el.className='midi on';}
       else {el.textContent='No MIDI keyboard found';el.className='midi';}
+      noMidi(!names.length);
     };
     bind(); acc.onstatechange=bind;
   }catch(e){
-    el.textContent='MIDI blocked here. Open the page in its own Chrome tab.'; el.className='midi bad';
+    el.textContent='MIDI blocked here. Open the page in its own Chrome tab.'; el.className='midi bad'; noMidi(true);
   }
 }
 function onMsg(e){
@@ -52,6 +53,8 @@ function onMsg(e){
 }
 const QWERTY={a:0,w:1,s:2,e:3,d:4,f:5,t:6,g:7,y:8,h:9,u:10,j:11,k:12,o:13,l:14,p:15,';':16,"'":17};
 let qOct=60;
+// No MIDI keyboard: the on-screen keys show which computer key plays them, and a hint says how to play a chord
+function noMidi(on){ document.body.classList.toggle('nomidi',on); paintQwerty(); }
 document.addEventListener('keydown',e=>{
   if(typeof TR!=='undefined' && TR.active && trKey(e)) return;
   if(e.target&&(e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&!/checkbox|radio|range/.test(e.target.type)))) return; // typing in a field
@@ -67,8 +70,8 @@ document.addEventListener('keydown',e=>{
   if(e.key==='?'||e.key==='/'){ if(G&&G.running&&G.enemies.length){G.combo=0;G.hints++;updateHud();showHint(G.enemies[0].t);} e.preventDefault(); return;}
   if(e.key==='Enter'||e.key===' '){submitDraft();e.preventDefault();return;}
   if(e.key==='Backspace'){draft.clear();paintKeys();return;}
-  if(k==='z'){qOct=Math.max(36,qOct-12);return;}
-  if(k==='x'){qOct=Math.min(84,qOct+12);return;}
+  if(k==='z'){qOct=Math.max(36,qOct-12);paintQwerty();return;}
+  if(k==='x'){qOct=Math.min(84,qOct+12);paintQwerty();return;}
   if(k in QWERTY && !e.repeat){toggleDraft(qOct+QWERTY[k]);}
 });
 

@@ -19,10 +19,14 @@ A jazz piano trainer with two sides:
   quintuplets, sextuplets and septuplets. Edit in a piano roll, either on the beat or as played (every note where it
   really was, over the recording's waveform); play the transcription, the original, or both, with pause, click-to-seek and
   loops; export MusicXML or MIDI (on the grid or as played), or send a phrase to Lines.
-  Needs the local helper in `tools/transcriber`, installed once with `bash tools/transcriber/install.sh` (about 2 GB;
-  Jun Jam.app starts it automatically). It takes the drums out (Demucs), finds beats and beat 1 (Beat This!), and lets
-  three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Sensitivity (Lowest to
-  Highest) sets how much agreement a note needs. Everything else in Jun Jam works without it.
+  Needs a helper program on your computer (one-time install, about 4 GB with its models, 5 to 15 minutes; it fetches
+  its own Python, so you don't need one). Jun Jam shows these steps when the helper isn't running:
+  - **Mac:** in Terminal, `bash "<Jun Jam folder>/tools/transcriber/install.sh"`. After that, Jun Jam.app starts it for you.
+  - **Windows:** in PowerShell, `powershell -ExecutionPolicy Bypass -File "<Jun Jam folder>\tools\transcriber\install.ps1"`.
+    Then double-click **Start Jun Jam helper** on your Desktop whenever you want to transcribe. (The Windows installer
+    is new and not yet tested on a real PC; tell us if it trips.)
+  The helper takes the drums out (Demucs), finds beats and beat 1 (Beat This!), and lets three models vote on every
+  note: Basic Pitch, a piano model (Kong et al.) and YourMT3+.
 - **Themes** (Profile & settings, from the button on the home card): Classic (dark, light or follow the system),
   Manuscript, Studio, Neon Grid and Pixel Autumn. Pixel Autumn paints its background in code (js/scenes.js), once, so it
   costs nothing while you play. Your name lives there too.
@@ -34,6 +38,9 @@ Both sides share the sound engine, MIDI input, the chord rules, and XP.
 ## Run it
 Double-click `Jun Jam.app` to open it in Chrome (no Terminal window). Or open `index.html` in
 Chrome or Edge yourself (Web MIDI only works there). No server or build step needed.
+
+Click the **Jun Jam** logo (or use the browser's Back button) to get back to the home screen from anywhere.
+No MIDI keyboard? The on-screen keys show which computer key plays them: press the letters, then Enter.
 
 ## Project layout
 ```

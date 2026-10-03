@@ -46,6 +46,7 @@ SCENES.pixel=async(g,W,H,mini)=>{
 async function paintScene(cv,id,mini){
   const fn=SCENES[id]; if(!fn) return;
   const dpr=Math.min(mini?2:1.5,devicePixelRatio||1), W=cv.clientWidth||innerWidth, H=cv.clientHeight||innerHeight;
+  if(W<2||H<2) return;                         // a hidden or minimised window: paint on the next resize
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
   await fn(g,W,H,mini);
 }

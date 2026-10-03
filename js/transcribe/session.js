@@ -9,15 +9,21 @@ const TR={active:false,timing:store.get('trTiming','beat'),backing:store.get('tr
 async function trHelperOk(){ try{ const c=new AbortController(); setTimeout(()=>c.abort(),1500); const r=await fetch(TR_URL+'/health',{signal:c.signal}), h=await r.json(); TR.health=h; return h.ok; }catch(e){ TR.health=null; return false; } }
 // The models vote when the helper has the extra ones (version 2: the piano model and YourMT3+); an older helper only has Basic Pitch
 const trCanBest=()=>!!(TR.health&&TR.health.version>=2&&(TR.health.engines||[]).some(e=>e==='piano'||e==='yourmt3'));
-function trProjectDir(){ if(location.protocol!=='file:') return null; const p=decodeURIComponent(location.pathname); return p.slice(0,p.lastIndexOf('/')); }
+// the folder Jun Jam is in (when opened from disk), as this computer writes paths
+const trWin=/Win/.test(navigator.platform||navigator.userAgent);
+function trProjectDir(){ if(location.protocol!=='file:') return null; let p=decodeURIComponent(location.pathname); p=p.slice(0,p.lastIndexOf('/'));
+  return trWin?p.replace(/^\/([A-Za-z]:)/,'$1').replace(/\//g,'\\'):p; }
 function trInstallGuide(){
-  const dir=trProjectDir(), q=s=>`"${s}"`;
-  const install=`bash ${q((dir||'/path/to/Jun Jam')+'/tools/transcriber/install.sh')}`;
-  const start=`"$HOME/Library/Application Support/Jun Jam/transcriber-venv/bin/python" "$HOME/Library/Application Support/Jun Jam/server.py"`;
-  const cmd=(t,id)=>`<div class="trcmd"><code id="${id}">${t.replace(/</g,'&lt;')}</code><button class="ghost" data-copy="${id}">Copy</button></div>`;
-  return `<div class="trguide"><b>The transcriber helper isn't running.</b> Everything else in Jun Jam works without it; transcribing needs it once, on this Mac.
-    <ol><li>Open <b>Terminal</b> (Cmd+Space, type Terminal) and paste this to install it (about 2 GB with the models, 5 to 15 minutes, one time only):${cmd(install,'trCmd1')}${dir?'':'<span class="fine">Replace /path/to/Jun Jam with the folder Jun Jam is in.</span>'}</li>
-    <li>From then on <b>Jun Jam.app starts it for you</b>. If you open Jun Jam another way, start it with:${cmd(start,'trCmd2')}</li>
+  const dir=trProjectDir(), q=s=>`"${s}"`, cmd=(t,id)=>`<div class="trcmd"><code id="${id}">${t.replace(/</g,'&lt;')}</code><button class="ghost" data-copy="${id}">Copy</button></div>`;
+  const where=dir?'':`<span class="fine">Replace the path with the folder Jun Jam is in.</span>`;
+  const intro=`<b>Transcribing needs a helper program on this computer, and it isn't running.</b> Everything else in Jun Jam works without it. It's a one-time install (about 4 GB with its models, 5 to 15 minutes, nothing else needed, not even Python).`;
+  if(trWin) return `<div class="trguide">${intro}
+    <ol><li>Open <b>PowerShell</b> (press the Windows key, type PowerShell, press Enter) and paste this to install the helper:${cmd(`powershell -ExecutionPolicy Bypass -File ${q((dir||'C:\\path\\to\\Jun Jam')+'\\tools\\transcriber\\install.ps1')}`,'trCmd1')}${where}</li>
+    <li>When it's done, double-click <b>Start Jun Jam helper</b> on your Desktop. Leave that window open while you transcribe.</li>
+    <li><button class="go" id="trRecheck">Check again</button></li></ol></div>`;
+  return `<div class="trguide">${intro}
+    <ol><li>Open <b>Terminal</b> (Cmd+Space, type Terminal, press Enter) and paste this to install the helper:${cmd(`bash ${q((dir||'/path/to/Jun Jam')+'/tools/transcriber/install.sh')}`,'trCmd1')}${where}</li>
+    <li>From then on <b>Jun Jam.app starts it for you</b>. If you open Jun Jam another way, start the helper with:${cmd(`"$HOME/Library/Application Support/Jun Jam/transcriber-venv/bin/python" "$HOME/Library/Application Support/Jun Jam/server.py"`,'trCmd2')}</li>
     <li><button class="go" id="trRecheck">Check again</button></li></ol></div>`;
 }
 
@@ -51,7 +57,7 @@ async function trCheck(){
   if(ok&&!trCanBest()&&$('trEngNote')){ $('trEngNote').hidden=false; $('trEngNote').textContent='Your helper only has one of the three models: run the install command again for the full set (about 1 GB more).'; }
   if(TR.buf&&$('trEst')) trDrawWave();
   if($('trGuide')) $('trGuide').innerHTML=ok?'':trInstallGuide();
-  if($('trGo')) $('trGo').disabled=!ok;
+  if($('trGo')) $('trGo').classList.toggle('dim',!ok);   // still clickable: it explains what's missing
 }
 
 /* ---------------- record from a tab: Chrome's tab sharing, audio only ---------------- */
@@ -112,8 +118,10 @@ function trSetupRender(){
           <span class="fine">Speed</span>${trSeg('rate',[[.5,'50%'],[.75,'75%'],[1,'100%']],T.rate||1)}<span class="fine trright" id="trSelT"></span></div>
         <p class="fine">Drag the handles to set the start and end, or click the waveform to move the nearer one. 30 to 90 seconds works best for a solo.</p></div>
     </div>
+    <div id="trGuide"></div>
     <div class="trgo"><span class="fine" id="trEngNote" hidden></span><span class="fine" id="trEst"></span><button class="go" id="trGo">Transcribe</button></div>`;
-  $('trBack').onclick=()=>{ trStopAll(); trOpen(); }; $('trGo').onclick=trRun;
+  $('trBack').onclick=()=>{ trStopAll(); trOpen(); }; $('trGo').onclick=()=>TR.helper?trRun():(trCheck(),$('trGuide').scrollIntoView({behavior:'smooth',block:'center'}),trMsg('The helper isn\'t running yet: follow the steps above, then press Transcribe again.','no'));
+  $('trBody').onclick=e=>{ const c=e.target.closest('[data-copy]'); if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); } if(e.target.id==='trRecheck') trCheck(); };
   $('trBody').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ T.mode=b.dataset.mode; trSetupRender(); });
   $('trBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ T.rate=+b.dataset.rate; if(TR.audio) TR.audio.playbackRate=T.rate; $('trBody').querySelectorAll('[data-rate]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   if($('trInst')) $('trInst').onchange=e=>{ T.instrument=e.target.value; if(!TR_INSTRUMENTS[T.instrument].full) T.texture='line'; trSetupRender(); };
@@ -679,7 +687,7 @@ function trKey(e){
   if(!cmd&&e.shiftKey&&e.key.toLowerCase()==='l'){ trLoopToggle(); return true; }
   // the computer keys as a piano (as in Hands): A W S E D F T G Y H U J K O L P ; '   Z / X: octave down / up
   const qk=e.key.toLowerCase();
-  if(!cmd&&!e.altKey&&!e.shiftKey&&(qk==='z'||qk==='x')){ qOct=Math.max(36,Math.min(84,qOct+(qk==='x'?12:-12))); trMsg(`Computer keys play from C${qOct/12-1}.`); return true; }
+  if(!cmd&&!e.altKey&&!e.shiftKey&&(qk==='z'||qk==='x')){ qOct=Math.max(36,Math.min(84,qOct+(qk==='x'?12:-12))); paintQwerty(); trMsg(`Computer keys play from C${qOct/12-1}.`); return true; }
   if(!cmd&&!e.altKey&&!e.shiftKey&&qk in TR_QW){ if(!e.repeat){ TR.qDown=TR.qDown||{}; if(TR.qDown[qk]==null){ const m=qOct+TR_QW[qk]; TR.qDown[qk]=m; noteOn(m,90); } } return true; }
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ e.preventDefault(); const dir=e.key==='ArrowRight'?1:-1;
     if(!sel.length){ const st=e.shiftKey?4:1; TR.posB=Math.max(0,Math.min(s.bars*4-1e-3,(dir>0?Math.floor(TR.posB/st+1e-6)+1:Math.ceil(TR.posB/st-1e-6)-1)*st)); if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); return true; }

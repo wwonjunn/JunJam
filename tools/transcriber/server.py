@@ -20,7 +20,13 @@ from urllib.parse import urlparse, parse_qs
 
 PORT = 8771
 VERSION = 2
-HOME = os.environ.get('JJ_DIR') or os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'Jun Jam')
+def _home():
+    # where install.sh / install.ps1 put the environment and the models
+    if os.environ.get('JJ_DIR'): return os.environ['JJ_DIR']
+    if sys.platform == 'win32': return os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'Jun Jam')
+    if sys.platform == 'darwin': return os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'Jun Jam')
+    return os.path.join(os.path.expanduser('~'), '.local', 'share', 'jun-jam')
+HOME = _home()
 MODELS = os.path.join(HOME, 'models')
 KONG = os.path.join(MODELS, 'kong_piano.pth')
 os.environ.setdefault('MT3_CHECKPOINT_DIR', os.path.join(MODELS, '.mt3_checkpoints'))
@@ -30,9 +36,11 @@ _cache = {}
 def device():
     try:
         import torch
-        return 'mps' if torch.backends.mps.is_available() else 'cpu'
+        if torch.backends.mps.is_available(): return 'mps'      # Apple GPU
+        if torch.cuda.is_available(): return 'cuda'             # NVIDIA GPU
     except Exception:
-        return 'cpu'
+        pass
+    return 'cpu'
 
 def once(name, make):
     if name not in _cache: _cache[name] = make()

@@ -62,6 +62,21 @@ $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
 bindLinesPane(); bindReharmPane();
 $('trOpenBtn').onclick=trOpen;
+/* ---------- getting home: the logo, and the browser's Back button ----------
+   Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
+const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active);
+function goHome(){
+  if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
+  if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
+  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu();
+  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode'); ['earsStage','linesStage','reharmStage','transStage'].forEach(id=>$(id).hidden=true);
+  side='home'; LINES.rec=null; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); $('startOv').scrollTop=0; return true;
+}
+document.addEventListener('click',()=>setTimeout(()=>{ if(!atHome()&&!(history.state&&history.state.away)) history.pushState({away:1},''); }),true);
+addEventListener('popstate',()=>{ if(!atHome()&&!goHome()) history.pushState({away:1},''); });
+const brand=document.querySelector('.brand'); brand.setAttribute('role','link'); brand.tabIndex=0; brand.title='Home';
+brand.onclick=()=>{ if(!atHome()&&goHome()&&history.state&&history.state.away) history.replaceState(null,''); };
+brand.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); brand.onclick(); } };
 $('profileChip').onclick=()=>{ side='settings'; renderMenu(); $('startOv').scrollTop=0; };
 $('eReplay').onclick=earsReplay;
 $('eNext').onclick=()=>earsNext();

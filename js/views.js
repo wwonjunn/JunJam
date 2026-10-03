@@ -20,8 +20,16 @@ function buildKeyboard(){
   blacks.forEach(k=>{html+=`<rect class="b" data-m="${k.m}" x="${k.x}" y="1" width="${BW}" height="${BH}" rx="1.5"/><rect class="bshine" x="${k.x+1.5}" y="2" width="${BW-3}" height="${BH*.55}" rx="1"/>`;});
   svg.innerHTML=html;
   svg.querySelectorAll('rect[data-m]').forEach(r=>{keyEls[r.dataset.m]=r;});
+  if(typeof QWERTY!=='undefined') paintQwerty();
   svg.addEventListener('pointerdown',e=>{const m=e.target.dataset&&e.target.dataset.m; if(m) toggleDraft(+m);});
 }
+// the computer key for each on-screen key (A W S E D... from the current octave), shown when there's no MIDI keyboard
+function paintQwerty(){
+  const svg=$('kb'); if(!svg) return; svg.querySelectorAll('.qk').forEach(t=>t.remove());
+  if(!document.body.classList.contains('nomidi')) return;
+  Object.entries(QWERTY).forEach(([k,off])=>{ const el=keyEls[qOct+off]; if(!el) return; const x=+el.getAttribute('x')+(+el.getAttribute('width'))/2, blk=el.classList.contains('b');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('class','qk'+(blk?' qkb':'')); t.setAttribute('x',x); t.setAttribute('y',blk?+el.getAttribute('height')-6:WH-16);
+    t.setAttribute('text-anchor','middle'); t.textContent=k==="'"?"'":k.toUpperCase(); svg.appendChild(t); }); }
 let kbMarks={}; // midi -> class
 function paintKeys(){
   for(const m in keyEls){

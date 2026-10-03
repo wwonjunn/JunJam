@@ -34,7 +34,7 @@
         <div class="homehead"><div class="hometitle"><h1>Jun Jam</h1><p class="rank" id="rankLine"></p></div>
           <button class="profilechip" id="profileChip" type="button"></button></div>
         <div id="homePane"><div class="modes" id="modes"></div>
-          <div class="trhome"><button class="ghost" id="trOpenBtn" style="margin-left:0">Transcribe a recording</button><span>Turn an mp3 into editable sheet music with chords: a solo note for note, or a lead sheet.</span></div></div>
+          <div class="trhome"><button class="ghost" id="trOpenBtn" style="margin-left:0">Transcribe a recording</button><span>Turn an mp3 into editable sheet music with chords: a solo note for note, or a lead sheet. Needs a one-time helper install (it walks you through it).</span></div></div>
         <div id="settingsPane" hidden></div>
         <div id="earsPane" hidden></div>
         <div id="linesPane" hidden></div>
@@ -125,7 +125,7 @@
     </div>
   </div>
 
-  <div class="kbwrap"><svg class="kb" id="kb" role="group" aria-label="Keyboard"></svg></div>
+  <div class="kbwrap"><div class="qhint">No MIDI keyboard? Press the letters shown on the keys to pick notes, then <kbd>Enter</kbd> to play the chord. <kbd>Z</kbd> <kbd>X</kbd> move an octave, <kbd>Backspace</kbd> clears. You can click the keys too.</div><svg class="kb" id="kb" role="group" aria-label="Keyboard"></svg></div>
 </div>
 
 <script src="js/theory.js"></script>
