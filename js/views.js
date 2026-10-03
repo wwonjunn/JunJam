@@ -8,11 +8,18 @@ function buildKeyboard(){
     if(!isBlack(m)){whites.push({m,x});x+=WW;} else blacks.push({m,x:x-BW/2});
   }
   svg.setAttribute('viewBox',`0 0 ${x} ${WH+2}`); svg.setAttribute('preserveAspectRatio','none');
-  let html='';
+  // key gradients: colour stops come from theme variables (--kw*, --kb*, and each mark's colour), so every theme
+  // gives the keys its own finish; the piano roll's side keyboard uses the same ones (url(#kg...) works page-wide)
+  const grad=(id,stops)=>`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${stops.map(([o,c])=>`<stop offset="${o}" style="stop-color:${c}"/>`).join('')}</linearGradient>`;
+  const lit=v=>[[0,`color-mix(in srgb, var(${v}) 55%, #fff)`],[.55,`var(${v})`],[1,`color-mix(in srgb, var(${v}) 70%, #000)`]];
+  let html='<defs>'+grad('kgW',[[0,'var(--kw1)'],[.82,'var(--kw2)'],[.93,'var(--kw2)'],[1,'var(--kw3)']])
+    +grad('kgB',[[0,'var(--kb1)'],[.7,'var(--kb2)'],[.9,'var(--kb3)'],[1,'var(--kb2)']])
+    +grad('kgShine',[[0,'rgba(255,255,255,.28)'],[.45,'rgba(255,255,255,0)']])
+    +['root','chord','tension','wrong','brass','muted'].map(v=>grad('kg-'+v,lit('--'+v))).join('')+'</defs>';
   whites.forEach(k=>{html+=`<rect class="w" data-m="${k.m}" x="${k.x+.5}" y="1" width="${WW-1}" height="${WH}" rx="2"/>`; if(k.m%12===0) html+=`<text x="${k.x+WW/2}" y="${WH-6}" text-anchor="middle">C${k.m/12-1}</text>`;});
-  blacks.forEach(k=>{html+=`<rect class="b" data-m="${k.m}" x="${k.x}" y="1" width="${BW}" height="${BH}" rx="1.5"/>`;});
+  blacks.forEach(k=>{html+=`<rect class="b" data-m="${k.m}" x="${k.x}" y="1" width="${BW}" height="${BH}" rx="1.5"/><rect class="bshine" x="${k.x+1.5}" y="2" width="${BW-3}" height="${BH*.55}" rx="1"/>`;});
   svg.innerHTML=html;
-  svg.querySelectorAll('rect').forEach(r=>{keyEls[r.dataset.m]=r;});
+  svg.querySelectorAll('rect[data-m]').forEach(r=>{keyEls[r.dataset.m]=r;});
   svg.addEventListener('pointerdown',e=>{const m=e.target.dataset&&e.target.dataset.m; if(m) toggleDraft(+m);});
 }
 let kbMarks={}; // midi -> class

@@ -1,17 +1,30 @@
 /* ---------------- themes ----------------
    A theme is a set of CSS variables and component styles (css/themes.css, keyed by data-theme on <html>), its fonts,
-   and optionally a moving background. This file runs in <head>, before the page draws, so there is no flash of the
-   old look. The Profile & settings page (renderSettingsPane) shows each theme as a live preview: the preview tiles
-   carry data-skin, which css/themes.css styles with the same variables. Add a theme by adding an entry here and a
-   block in css/themes.css. */
+   and optionally background art: a painted scene (js/scenes.js, drawn once and kept still) or, for Neon Grid, a slow
+   wireframe animation. This file runs in <head>, before the page draws, so there is no flash of the old look.
+   The Profile & settings page shows each theme as a live preview tile (data-skin), painted by the same code.
+   tier: for a future shop ('free' now; 'deluxe' marks the most detailed ones). Add a theme here, a block in
+   css/themes.css, and (optionally) a painter in js/scenes.js. */
 const THEMES=[
-  {id:'classic',name:'Classic',tag:'Midnight blue and brass, the original. Follows your system, or pick Dark or Light.',fonts:null},
-  {id:'neon',name:'Neon Grid',tag:'Techno: a glowing grid, rainbow lines, 3D wireframes drifting behind everything.',
-    fonts:'family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;700;800&family=JetBrains+Mono:wght@500;700'},
-  {id:'manuscript',name:'Manuscript',tag:'Old sheet music: parchment, iron-gall ink, rust-red stamps, scratches and stains.',
-    fonts:'family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=IM+Fell+DW+Pica:ital@0;1'},
-  {id:'studio',name:'Studio',tag:'Clean, with character: bold outlines, hard shadows, a pastel for every mode.',
+  {id:'classic',name:'Classic',tier:'free',tag:'Midnight blue and brass, the original. Follows your system, or pick Dark or Light.',fonts:null},
+  {id:'studio',name:'Studio',tier:'free',tag:'Clean, with character: bold outlines, hard shadows, a pastel for every mode.',
     fonts:'family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@500'},
+  {id:'golden',name:'Golden Hour',tier:'free',scene:true,tag:'Sunset over layered hills: pines, valley mist, a warm sky.',
+    fonts:'family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Nunito+Sans:wght@400;600;700'},
+  {id:'neon',name:'Neon Grid',tier:'deluxe',tag:'Techno: a glowing grid floor, RGB-split wireframes turning slowly, scanlines.',
+    fonts:'family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;700;800&family=JetBrains+Mono:wght@500;700'},
+  {id:'prism',name:'Prism',tier:'deluxe',scene:true,tag:'Glass shards bursting around a glowing ring, in magenta, cyan and amber.',
+    fonts:'family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700'},
+  {id:'treasure',name:'Treasure Map',tier:'deluxe',scene:true,tag:'An old sea chart: inked coasts, a compass rose, rhumb lines, ships, burnt edges.',
+    fonts:'family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Pirata+One'},
+  {id:'manuscript',name:'Manuscript',tier:'deluxe',scene:true,tag:'A collage of old sheet music: torn pages, tape, tea stains, a faded photograph.',
+    fonts:'family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=IM+Fell+DW+Pica:ital@0;1'},
+  {id:'skyward',name:'Skyward',tier:'deluxe',scene:true,tag:'An anime sky: a swirling blue vortex, sunbeams, a sea of clouds at dusk.',
+    fonts:'family=M+PLUS+Rounded+1c:wght@400;500;700;800'},
+  {id:'cloudsea',name:'Cloudsea',tier:'deluxe',scene:true,tag:'Golden clouds and a serpent dragon winding through the light.',
+    fonts:'family=Cinzel:wght@500;700;800&family=Cormorant+Garamond:wght@500;600;700'},
+  {id:'pixel',name:'Pixel Autumn',tier:'deluxe',scene:true,tag:'Pixel art: a stone tower in an autumn wood, leaves drifting down.',
+    fonts:'family=Pixelify+Sans:wght@400;500;700&family=Silkscreen&family=Nunito:wght@400;600;700'},
 ];
 const themeGet=(k,d)=>{ try{ const v=localStorage.getItem('mtc:'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } };
 const themeSet=(k,v)=>{ try{ localStorage.setItem('mtc:'+k,JSON.stringify(v)); }catch(e){} };
@@ -23,40 +36,52 @@ function applyTheme(id,shade){
   if(shade==null) shade=themeGet('shade','auto');
   root.dataset.theme=t.id==='classic'?(shade==='auto'?'':shade):t.id;
   if(!root.dataset.theme) delete root.dataset.theme;
-  root.dataset.skin=t.id; themeFonts(t); themeSet('theme',t.id); themeSet('shade',shade);
+  root.dataset.skin=t.id; root.classList.toggle('skin-art',!!t.scene); themeFonts(t); themeSet('theme',t.id); themeSet('shade',shade);
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=getComputedStyle(root).getPropertyValue('--bg').trim()||'#0d1636';
-  skinMotion(t.id);
+  skinArt(t);
 }
 
-/* ---------- Neon Grid: wireframe solids rotating in 3D, edges in a moving rainbow ---------- */
+/* ---------- painted scenes: one still canvas behind the app, repainted only when the window size changes ---------- */
+const ART={cv:null,id:null,timer:0,leaves:null};
+function skinArt(t){
+  skinMotion(t.id);
+  if(!t.scene||typeof paintScene!=='function'){ if(ART.cv){ ART.cv.remove(); ART.cv=null; ART.id=null; } skinLeaves(false); return; }
+  const go=()=>{ if(!ART.cv){ ART.cv=document.createElement('canvas'); ART.cv.className='skinart'; ART.cv.setAttribute('aria-hidden','true'); document.body.prepend(ART.cv); }
+    ART.id=t.id; ART.cv.style.opacity=0; paintScene(ART.cv,t.id,false).then(()=>{ if(ART.id===t.id) ART.cv.style.opacity=1; }); skinLeaves(t.id==='pixel'); };
+  document.body?go():addEventListener('DOMContentLoaded',go,{once:true});
+}
+addEventListener('resize',()=>{ if(!ART.cv) return; clearTimeout(ART.timer); ART.timer=setTimeout(()=>paintScene(ART.cv,ART.id,false),250); });
+// Pixel Autumn's falling leaves: a dozen small elements moved by CSS only (transform), so they cost almost nothing
+function skinLeaves(on){
+  if(!on){ if(ART.leaves){ ART.leaves.remove(); ART.leaves=null; } return; }
+  if(ART.leaves) return; const box=document.createElement('div'); box.className='leaves'; box.setAttribute('aria-hidden','true');
+  box.innerHTML=[...Array(14)].map((_,i)=>`<i style="left:${(i*7.3+3)%100}%;animation-delay:${-(i*1.7)%12}s;animation-duration:${9+(i*3)%7}s;--sway:${20+(i*13)%50}px;--c:${['#e2552f','#f08a3b','#c8322a','#f7b84a','#7b5a2a'][i%5]}"></i>`).join('');
+  document.body.prepend(box); ART.leaves=box;
+}
+
+/* ---------- Neon Grid: wireframe solids turning in 3D, each edge split into red, green and blue like a VHS glitch ----------
+   Kept light: drawn at 1x resolution, 20 frames a second, stopped when the tab is hidden or motion is reduced. */
 const NEON={raf:0,cv:null,last:0};
 function neonSolids(){
   const p=(1+Math.sqrt(5))/2, ico=[[-1,p,0],[1,p,0],[-1,-p,0],[1,-p,0],[0,-1,p],[0,1,p],[0,-1,-p],[0,1,-p],[p,0,-1],[p,0,1],[-p,0,-1],[-p,0,1]];
   const edges=(vs,len)=>{ const e=[]; for(let i=0;i<vs.length;i++) for(let j=i+1;j<vs.length;j++){ const d=Math.hypot(vs[i][0]-vs[j][0],vs[i][1]-vs[j][1],vs[i][2]-vs[j][2]); if(Math.abs(d-len)<.01) e.push([i,j]); } return e; };
-  // a torus as rings and spokes
-  const tv=[], te=[], R=1.15, r=.45, U=18, V=8;
+  const tv=[], te=[], R=1.15, r=.45, U=14, V=6;
   for(let u=0;u<U;u++) for(let v=0;v<V;v++){ const a=u/U*2*Math.PI, b=v/V*2*Math.PI; tv.push([(R+r*Math.cos(b))*Math.cos(a),(R+r*Math.cos(b))*Math.sin(a),r*Math.sin(b)]);
     te.push([u*V+v,u*V+(v+1)%V],[u*V+v,((u+1)%U)*V+v]); }
-  // a stellated octahedron (two interlocked tetrahedra)
   const so=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1],[-1,-1,-1],[-1,1,1],[1,-1,1],[1,1,-1]], se=[];
   for(let i=0;i<4;i++) for(let j=i+1;j<4;j++){ se.push([i,j]); se.push([i+4,j+4]); }
-  return [{v:ico,e:edges(ico,2),x:.84,y:.2,s:.17,sp:[.13,.21,.05]},{v:tv,e:te,x:.1,y:.82,s:.15,sp:[.17,-.09,.11]},{v:so,e:se,x:.16,y:.22,s:.07,sp:[-.23,.16,.19]},{v:ico,e:edges(ico,2),x:.62,y:.9,s:.06,sp:[.3,.12,-.2]}];
+  return [{v:ico,e:edges(ico,2),x:.84,y:.22,s:.17,sp:[.11,.17,.04]},{v:tv,e:te,x:.1,y:.8,s:.15,sp:[.13,-.07,.09]},{v:so,e:se,x:.16,y:.22,s:.075,sp:[-.19,.13,.15]},{v:ico,e:edges(ico,2),x:.62,y:.9,s:.06,sp:[.24,.1,-.16]}];
 }
 function neonFrame(ts){
   const cv=NEON.cv; if(!cv) return; NEON.raf=requestAnimationFrame(neonFrame);
-  if(ts-NEON.last<33&&!NEON.still) return; NEON.last=ts;            // about 30 frames a second is plenty for a backdrop
-  const dpr=Math.min(2,devicePixelRatio||1), W=innerWidth, H=innerHeight;
-  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
-  const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H); g.globalCompositeOperation='lighter';
-  const t=ts/1000, S=Math.min(W,H);
+  if(ts-NEON.last<50&&!NEON.still) return; NEON.last=ts;
+  const W=innerWidth, H=innerHeight; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  const g=cv.getContext('2d'); g.clearRect(0,0,W,H); g.globalCompositeOperation='lighter'; g.lineWidth=1.2;
+  const t=ts/1000, S=Math.min(W,H), split=[[-1.6,0,'255,40,80'],[0,0,'40,255,140'],[1.6,.8,'60,120,255']];
   NEON.solids.forEach((o,k)=>{
-    const [ax,ay,az]=o.sp.map(v=>v*t), cx=o.x*W, cy=o.y*H+Math.sin(t*.4+k)*12, sc=o.s*S;
-    const P=o.v.map(([x,y,z])=>{ let X=x, Y=y*Math.cos(ax)-z*Math.sin(ax), Z=y*Math.sin(ax)+z*Math.cos(ax);
-      [X,Z]=[X*Math.cos(ay)+Z*Math.sin(ay),-X*Math.sin(ay)+Z*Math.cos(ay)]; [X,Y]=[X*Math.cos(az)-Y*Math.sin(az),X*Math.sin(az)+Y*Math.cos(az)];
-      const f=3.2/(3.2+Z*.55); return [cx+X*sc*f,cy+Y*sc*f,Z]; });
-    o.e.forEach(([i,j],n)=>{ const a=P[i], b=P[j], depth=(a[2]+b[2])/2, hue=(n*9+t*40+k*80)%360, al=.18+.32*(1-(depth+1.8)/3.6);
-      g.strokeStyle=`hsla(${hue},95%,62%,${Math.max(.06,al)*.35})`; g.lineWidth=4; g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke();
-      g.strokeStyle=`hsla(${hue},100%,72%,${Math.max(.08,al)})`; g.lineWidth=1.1; g.stroke(); });
+    const [ax,ay,az]=o.sp.map(v=>v*t), cx=o.x*W, cy=o.y*H+Math.sin(t*.4+k)*12, sc=o.s*S, ca=Math.cos(ax), sa=Math.sin(ax), cb=Math.cos(ay), sb=Math.sin(ay), cc=Math.cos(az), sc2=Math.sin(az);
+    const P=o.v.map(([x,y,z])=>{ let Y=y*ca-z*sa, Z=y*sa+z*ca, X=x*cb+Z*sb; Z=-x*sb+Z*cb; const X2=X*cc-Y*sc2, Y2=X*sc2+Y*cc, f=3.2/(3.2+Z*.55); return [cx+X2*sc*f,cy+Y2*sc*f,Z]; });
+    for(const [dx,dy,rgb] of split){ g.strokeStyle=`rgba(${rgb},.42)`; g.beginPath(); o.e.forEach(([i,j])=>{ g.moveTo(P[i][0]+dx,P[i][1]+dy); g.lineTo(P[j][0]+dx,P[j][1]+dy); }); g.stroke(); }
   });
   if(NEON.still){ cancelAnimationFrame(NEON.raf); NEON.raf=0; }
 }
@@ -71,7 +96,7 @@ document.addEventListener('visibilitychange',()=>{ if(!NEON.cv) return; if(docum
 
 /* ---------- Profile & settings (a pane on the home card) ---------- */
 function themePreview(t){
-  return `<span class="skinprev" data-skin="${t.id}" aria-hidden="true"><span class="sp-deco"></span>
+  return `<span class="skinprev" data-skin="${t.id}" aria-hidden="true">${t.scene?`<canvas class="sp-art" data-scene="${t.id}"></canvas>`:'<span class="sp-deco"></span>'}
     <span class="sp-card"><span class="sp-title">Jun Jam</span><span class="sp-chord">C<sup>maj7</sup></span><span class="sp-row"><span class="sp-btn">Start</span><span class="sp-ghost">Ears</span></span></span>
     <span class="sp-keys">${'<i></i>'.repeat(10)}</span><span class="sp-sw"><i style="background:var(--brass)"></i><i style="background:var(--chord)"></i><i style="background:var(--good)"></i><i style="background:var(--wrong)"></i></span></span>`;
 }
@@ -82,12 +107,14 @@ function renderSettingsPane(){
     <div class="profhead"><span class="avatar big" aria-hidden="true">${(name||'J').trim().charAt(0).toUpperCase()}</span>
       <div class="profinfo"><label class="fine" for="profName">Your name</label><input id="profName" maxlength="24" placeholder="Player" value="${name.replace(/"/g,'&quot;')}"><p class="rank">${rankLine()}</p></div></div>
     <h2>Look</h2><p>Pick a theme. It changes the whole app right away, and stays picked next time.</p>
-    <div class="skingrid">${THEMES.map(t=>`<button class="skintile" data-pick="${t.id}" aria-pressed="${t.id===cur}">${themePreview(t)}<span class="skinname">${t.name}</span><span class="skintag">${t.tag}</span></button>`).join('')}</div>
+    <div class="skingrid">${THEMES.map(t=>`<button class="skintile" data-pick="${t.id}" aria-pressed="${t.id===cur}">${themePreview(t)}<span class="skinname">${t.name}${t.tier==='deluxe'?'<span class="skintier">Deluxe</span>':''}</span><span class="skintag">${t.tag}</span></button>`).join('')}</div>
     <div class="shaderow" ${cur==='classic'?'':'hidden'}><span class="fine">Classic</span><div class="seg" role="group">${[['auto','Auto'],['dark','Dark'],['light','Light']].map(([v,l])=>`<button data-shade="${v}" aria-pressed="${shade===v}">${l}</button>`).join('')}</div></div>`;
   const P=$('settingsPane');
-  P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); renderSettingsPane(); renderProfileChip(); });
-  P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); renderSettingsPane(); });
+  P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
+  P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
+  // paint the scene previews one after another, so the page stays responsive
+  (async()=>{ for(const cv of P.querySelectorAll('canvas[data-scene]')){ await new Promise(r=>requestAnimationFrame(r)); if(cv.isConnected) await paintScene(cv,cv.dataset.scene,true); } })();
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');

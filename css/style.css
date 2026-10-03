@@ -3,6 +3,9 @@
   --good:#4fd18b; --brass:#e0a93b; --chord:#6fb2ff; --tension:#c49bff; --wrong:#ff6b5e; --root:#e0a93b;
   --line:rgba(236,229,211,.075); --line-strong:rgba(236,229,211,.18);
   --white-key:#e9e4d6; --black-key:#141a33; --key-edge:#2a3563;
+  /* key finish: white keys top to bottom (face, then the front lip), black keys (top, face, lip) */
+  --kw1:var(--white-key); --kw2:color-mix(in srgb, var(--white-key) 90%, var(--key-edge)); --kw3:color-mix(in srgb, var(--white-key) 55%, var(--key-edge));
+  --kb1:color-mix(in srgb, var(--black-key) 78%, #fff); --kb2:var(--black-key); --kb3:color-mix(in srgb, var(--black-key) 70%, #fff);
   --hand:'Kalam', 'Comic Sans MS', 'Noto Music', cursive;
   --cond:'Barlow Condensed', 'Arial Narrow', 'Noto Music', sans-serif;
   --body:'Barlow', 'Noto Music', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -183,12 +186,12 @@ body.menu .panel{display:none}
 .kbwrap{margin:0 18px 12px;background:var(--panel);padding:0 6px 6px;border-radius:0 0 6px 6px;overflow-x:auto}
 .kb{display:block;width:100%;min-width:640px;height:96px}
 .kb rect{cursor:pointer}
-.kb .w{fill:var(--white-key);stroke:var(--key-edge);stroke-width:1}
-.kb .b{fill:var(--black-key);stroke:var(--key-edge);stroke-width:1}
-.kb .draft{fill:color-mix(in srgb, var(--brass) 45%, var(--white-key))}
-.kb .b.draft{fill:color-mix(in srgb, var(--brass) 65%, var(--black-key))}
-.kb .held{fill:var(--muted)}
-.kb .k-root{fill:var(--root)} .kb .k-chord{fill:var(--chord)} .kb .k-tension{fill:var(--tension)} .kb .k-wrong{fill:var(--wrong)} .kb .k-hint{fill:color-mix(in srgb, var(--brass) 55%, var(--white-key))}
+.kb .w{fill:url(#kgW);stroke:var(--key-edge);stroke-width:1}
+.kb .b{fill:url(#kgB);stroke:var(--key-edge);stroke-width:1}
+.kb .bshine{fill:url(#kgShine);pointer-events:none}
+.kb .draft{fill:url(#kg-brass)}
+.kb .held{fill:url(#kg-muted)}
+.kb .k-root{fill:url(#kg-root)} .kb .k-chord{fill:url(#kg-chord)} .kb .k-tension{fill:url(#kg-tension)} .kb .k-wrong{fill:url(#kg-wrong)} .kb .k-hint{fill:color-mix(in srgb, var(--brass) 55%, var(--white-key))}
 .kb .b.k-hint{fill:color-mix(in srgb, var(--brass) 70%, var(--black-key))}
 .kb text{font-family:var(--cond);font-size:8px;fill:#56618a;pointer-events:none}
 
@@ -399,9 +402,9 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trcorner{position:sticky;left:0;top:0;z-index:4;background:var(--panel)}
 .trrollhead{z-index:3}
 .trkeys{position:sticky;left:0;z-index:2;line-height:0;background:var(--panel)} .trkeys svg{display:block}
-.kwh{fill:var(--white-key);stroke:var(--key-edge);stroke-width:.5;cursor:pointer} .kbk{fill:var(--black-key);cursor:pointer}
+.kwh{fill:url(#kgW);stroke:var(--key-edge);stroke-width:.5;cursor:pointer} .kbk{fill:url(#kgB);cursor:pointer}
 .kuse{fill:color-mix(in srgb, var(--chord) 30%, var(--white-key))} .kbk.kuse{fill:color-mix(in srgb, var(--chord) 55%, var(--black-key))}
-.ksel{fill:var(--brass)} .kwh.kdown,.kbk.kdown{fill:var(--wrong)}
+.ksel{fill:var(--brass)} .kwh.kdown,.kbk.kdown{fill:url(#kg-wrong)}
 .klab{font-family:var(--cond);font-weight:600;font-size:9px;fill:#56618a;pointer-events:none} .klab.on{fill:var(--ink);font-size:10px}
 
 /* Transcribe: setup form, editor top bar, sticky transport, fix row, export menu, toasts, sheet-music playhead */
@@ -504,4 +507,12 @@ kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(
 .sp-keys i:nth-child(2),.sp-keys i:nth-child(5),.sp-keys i:nth-child(9){background:var(--black-key)}
 .sp-sw{position:absolute;right:12px;bottom:38px;z-index:1;display:flex;gap:3px}
 .sp-sw i{width:10px;height:10px;border-radius:50%}
-.skincanvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.skincanvas,.skinart{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.skinart{transition:opacity .5s}
+.skintier{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;vertical-align:3px;background:linear-gradient(100deg,#f7d774,#e0a93b);color:#3a2600}
+.sp-art{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+/* Pixel Autumn's leaves: moved by CSS transforms only */
+.leaves{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.leaves i{position:absolute;top:-24px;width:8px;height:8px;background:var(--c);box-shadow:4px 4px 0 var(--c),-4px 4px 0 color-mix(in srgb, var(--c) 70%, #000);animation:leaf linear infinite;image-rendering:pixelated}
+@keyframes leaf{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(var(--sway),25vh) rotate(90deg)}50%{transform:translate(0,50vh) rotate(180deg)}75%{transform:translate(var(--sway),75vh) rotate(270deg)}100%{transform:translate(0,106vh) rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){ .leaves{display:none} }

@@ -24,8 +24,9 @@ A jazz piano trainer with two sides:
   three models vote on every note: Basic Pitch, a piano model (Kong et al.) and YourMT3+. Sensitivity (Lowest to
   Highest) sets how much agreement a note needs. Everything else in Jun Jam works without it.
 - **Themes** (Profile & settings, from the button on the home card): Classic (dark, light or follow the system),
-  Neon Grid (glowing grid floor, rainbow lines, 3D wireframes), Manuscript (parchment, ink, rust-red stamps) and
-  Studio (bold outlines, hard shadows, a pastel per mode). Your name lives there too.
+  Studio, Golden Hour, and the Deluxe ones: Neon Grid, Prism, Treasure Map, Manuscript, Skyward, Cloudsea and
+  Pixel Autumn. Their background art is painted in code (js/scenes.js), drawn once and kept still, so it costs
+  nothing while you play; Neon's wireframes are the only animation (about 0.1 ms a frame). Your name lives there too.
 - **Ears**: functional ear training in four worlds (pitch, scale degrees, intervals, chord qualities),
   with stars, bosses, and a weakness drill built from your mix-ups.
 
@@ -40,6 +41,7 @@ Chrome or Edge yourself (Web MIDI only works there). No server or build step nee
 index.html            page markup; loads everything below in order
 css/style.css         all styling (the Classic look, light and dark)
 css/themes.css        the other themes: variables and component styles per data-theme
+js/scenes.js          each theme's background art, painted in code (also draws the preview tiles)
 js/theme.js           theme registry, fonts, Neon's 3D background, Profile & settings (runs in <head>)
 js/theory.js          chord rules, spelling, scoring, chord naming, progressions, requests (pure, no DOM)
 js/state.js           storage, mastery stats, smart mix weights, XP and ranks
