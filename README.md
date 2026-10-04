@@ -18,7 +18,8 @@ A jazz piano trainer with two sides:
   lead sheet, select the part, and get editable sheet music with chords. Rhythms are written down to 32nds, with triplets,
   quintuplets, sextuplets and septuplets. Edit in a piano roll, either on the beat or as played (every note where it
   really was, over the recording's waveform); play the transcription, the original, or both, with pause, click-to-seek and
-  loops; export MusicXML or MIDI (on the grid or as played), or send a phrase to Lines.
+  loops; save it in Jun Jam with its recording (it reopens ready to play, under Your transcriptions), as a PDF,
+  as MusicXML or MIDI (on the grid or as played), or send a phrase to Lines.
   Needs a helper program on your computer (one-time install, about 4 GB with its models, 5 to 15 minutes; it fetches
   its own Python, so you don't need one). Jun Jam shows these steps when the helper isn't running:
   - **Mac:** in Terminal, `bash "<Jun Jam folder>/tools/transcriber/install.sh"`. After that, Jun Jam.app starts it for you.

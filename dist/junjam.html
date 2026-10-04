@@ -446,6 +446,8 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmenulist button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:4px;padding:8px 10px;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--ink);cursor:pointer}
 .trmenulist button:hover{background:color-mix(in srgb, var(--brass) 18%, transparent)}
 .trmenulist .fine{display:block;font-weight:400}
+.trmenulist hr{border:0;border-top:1px solid var(--line-strong);margin:4px 6px}
+.trlib{margin-bottom:6px} .trlib .lst b{color:var(--brass);font-weight:600;letter-spacing:0}
 .trtoast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);max-width:min(640px,90vw);background:var(--ink);color:var(--lane);padding:10px 16px;border-radius:8px;font-family:var(--cond);font-weight:600;font-size:16px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
 .trtoast.show{opacity:1;transform:translate(-50%,0)} .trtoast.no{background:var(--wrong);color:#fff} .trtoast.ok{background:var(--brass);color:var(--lane)}
 .trscore{cursor:pointer}
@@ -4057,6 +4059,13 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
 const TR_URL='http://127.0.0.1:8771';
 let TRDATA=store.get('trans',{list:[]});
 const saveTr=()=>store.set('trans',TRDATA);
+/* A saved transcription keeps its recording and the helper's reading too, so it reopens ready to play, hear and re-read
+   without importing the audio again. They live in IndexedDB on this computer (audio is too big for localStorage). */
+const trDB=(()=>{ let p; const open=()=>p||(p=new Promise((ok,no)=>{ const r=indexedDB.open('junjam',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('trmedia'); r.onsuccess=()=>ok(r.result); r.onerror=()=>no(r.error); }));
+  const tx=(mode,f)=>open().then(db=>new Promise((ok,no)=>{ const t=db.transaction('trmedia',mode), q=f(t.objectStore('trmedia')); t.oncomplete=()=>ok(q.result); t.onerror=()=>no(t.error); }));
+  return {get:k=>tx('readonly',st=>st.get(k)).catch(()=>null), put:(k,v)=>tx('readwrite',st=>st.put(v,k)), del:k=>tx('readwrite',st=>st.delete(k)).catch(()=>{})}; })();
+const trEsc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const TR={active:false,timing:store.get('trTiming','beat'),backing:store.get('trBacking',true)};
 
 /* ---------------- helper status and install guide ---------------- */
@@ -4086,11 +4095,12 @@ async function trOpen(){
   trStopAll(); Object.assign(TR,{active:true,step:'start'});
   synth.init(); hideOv(); document.body.classList.add('nohud','trmode'); document.body.classList.remove('menu'); $('transStage').hidden=false;
   $('trBody').innerHTML=`<div class="etop"><span class="etitle">Transcribe a recording</span><span id="trStatus">Checking the helper…</span></div>
+    ${TRDATA.list.length?`<div class="sec">Your transcriptions</div><div class="licks trlib">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[t.instrument]||{}).name+(t.texture==='full'?' with chords':' line')} · ${t.bars} bars</span><span class="lt">${trEsc(t.title)}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}${t.media?' · <b title="The recording is saved with it">♫ with recording</b>':''}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>
+    <div class="sec" style="margin-top:16px">New transcription</div>`:''}
     <p>Drop in an mp3 (or any audio file you own). Choose what you want to see, select the part of the song, and it comes back as sheet music with chords that you can fix and save.</p>
     <div id="trGuide"></div>
     <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*" hidden><b>Choose an audio file</b><span>or drop it here</span></label>
     <div class="trhome"><button class="ghost" id="trRec" style="margin-left:0">Record from a tab</button><span>Playing it on YouTube or anywhere else in Chrome? Capture that tab's sound while you play the part you want.</span></div>
-    ${TRDATA.list.length?`<div class="sec" style="margin-top:14px">Saved transcriptions</div><div class="licks">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[t.instrument]||{}).name+(t.texture==='full'?' with chords':' line')} · ${t.bars} bars</span><span class="lt">${t.title}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>`:''}
     <div class="erow" style="margin-top:14px"><button class="ghost" id="trHome">Back</button></div>`;
   $('trHome').onclick=trToMenu;
   const f=$('trFile'), drop=$('trDrop');
@@ -4098,8 +4108,8 @@ async function trOpen(){
   drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); }; drop.ondragleave=()=>drop.classList.remove('over');
   drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); const file=e.dataTransfer.files[0]; if(file) trLoad(file); };
   $('trBody').onclick=e=>{ const d=e.target.closest('[data-del]'), o=e.target.closest('[data-open]'), c=e.target.closest('[data-copy]');
-    if(d){ e.stopPropagation(); if(confirm('Delete this transcription?')){ TRDATA.list.splice(+d.dataset.del,1); saveTr(); trOpen(); } return; }
-    if(o){ trEdit(JSON.parse(JSON.stringify(TRDATA.list[+o.dataset.open])),null,+o.dataset.open); return; }
+    if(d){ e.stopPropagation(); if(confirm('Delete this transcription?')){ const [t]=TRDATA.list.splice(+d.dataset.del,1); if(t&&t.id) trDB.del(t.id); saveTr(); trOpen(); } return; }
+    if(o){ trOpenSaved(+o.dataset.open); return; }
     if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
     if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trRec') trTabRecord(); };
   trCheck();
@@ -4251,7 +4261,7 @@ async function trRun(){
 
 /* ---------------- the editor ---------------- */
 const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to set beat 1) sits above the chord lane
-/* The editor. Top: what it is, and Save / Export / Lines / Close. Under it a transport bar that stays in view
+/* The editor. Top: what it is, and Save (in Jun Jam, PDF, MusicXML, MIDI) / Lines / Close. Under it a transport bar that stays in view
    (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
    sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
 function trEdit(score,res,savedIndex){
@@ -4260,8 +4270,9 @@ function trEdit(score,res,savedIndex){
   const R=!!TR.res, A=!!(TR.url&&TR.res);
   $('trBody').innerHTML=`<div class="trtop">${TR.buf&&R?'<button class="ghost" id="trSettings" title="Back to what to write, instrument and part">← Settings</button>':''}
       <span class="etitle" id="trTitle" title="Click to rename"></span><span class="fine" id="trInfo"></span><span class="trspace"></span><span class="fine" id="trDirty"></span>
-      <button class="go" id="trSave" title="Cmd+S">Save</button>
-      <div class="trmenu"><button class="ghost" id="trExportBtn" aria-haspopup="true">Export ▾</button><div class="trmenulist" id="trExportList" hidden>
+      <div class="trmenu"><button class="go" id="trExportBtn" aria-haspopup="true">Save ▾</button><div class="trmenulist" id="trExportList" hidden>
+        <button data-exp="app">In Jun Jam <span class="fine">With the recording, under Your transcriptions (Cmd+S)</span></button>
+        <button data-exp="pdf">PDF <span class="fine">The sheet music, to print or send</span></button><hr>
         <button data-exp="xml">MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">MIDI, on the beat</button>${R?'<button data-exp="midp">MIDI, as played</button>':''}</div></div>
       <button class="ghost" id="trLick" title="Select 3 to 16 notes in the piano roll first">→ Lines</button><button class="ghost" id="trClose">Close</button></div>
     <div class="trtransport" id="trBar">
@@ -4307,12 +4318,13 @@ function trEdit(score,res,savedIndex){
   B.querySelectorAll('[data-bs]').forEach(b=>b.onclick=()=>trRebuild({beatScale:+b.dataset.bs,shift:null},b.dataset.bs==='1'?'Tempo as heard.':`Read in ${b.textContent.toLowerCase()} time.`));
   B.querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{ TR.timing=b.dataset.tm; store.set('trTiming',TR.timing); trPress('tm',TR.timing); trRollView();
     trMsg(TR.timing==='played'?'As played: every note where it really was, over the recording. Edits here move the sheet music too.':'On the beat: notes on the grid, like the sheet music.'); trResume(); });
-  $('trSave').onclick=trSave; $('trLick').onclick=trToLick; $('trClose').onclick=()=>trLeave(trOpen,'Close this transcription?');
+  $('trLick').onclick=trToLick; $('trClose').onclick=()=>trLeave(trOpen,'Close this transcription?');
   $('trTitle').onclick=()=>{ const t=prompt('Name',TR.score.title); if(t&&t.trim()){ TR.score.title=t.trim(); trSetDirty(); trInfo(); } };
   const list=$('trExportList'); $('trExportBtn').onclick=e=>{ list.hidden=!list.hidden; e.stopPropagation(); };
   document.addEventListener('pointerdown',e=>{ if(list&&!list.hidden&&!e.target.closest('.trmenu')) list.hidden=true; });
   list.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>{ list.hidden=true; const k=b.dataset.exp;
-    if(k==='xml') trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
+    if(k==='app') trSave(); else if(k==='pdf') trPDF();
+    else if(k==='xml') trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
     else trDownload(toMidiFile(TR.score,k==='midp'?trMaps():null),'mid','audio/midi'); });
   // scrolling a view yourself pauses its following for a moment
   ['trRoll','trScore'].forEach(id=>['wheel','touchmove'].forEach(ev=>$(id).addEventListener(ev,()=>{ TR.holdUntil=performance.now()+2500; },{passive:true})));
@@ -4332,7 +4344,7 @@ const TR_GUIDE=[
    <li>Is beat 1 in the right place? Watch the chords and bar lines while it plays. If they're off, see <a data-gt="fix">Fixing the reading</a>.</li>
    <li>Too many stray notes, or too few? Change <b>Sensitivity</b>.</li>
    <li>Fix single notes in the piano roll: see <a data-gt="edit">Editing notes</a>.</li>
-   <li><b>Save</b> keeps it in Jun Jam; <b>Export</b> makes a file for MuseScore or a DAW.</li></ol>`],
+   <li><b>Save ▾</b> keeps it in Jun Jam with its recording, or makes a PDF, or a file for MuseScore or a DAW.</li></ol>`],
  ['play','Playing',`<ul><li><kbd>Space</kbd> plays and pauses from the playhead (the red line). <b>■</b> goes back to the start.</li>
    <li>Click the <b>beat numbers</b> above the piano roll, or anywhere in the <b>sheet music</b>, to move the playhead there.</li>
    <li><b>Loop</b>: drag across the beat numbers to loop those bars. <kbd>Shift+L</kbd> or ⟳ Loop turns it on and off.</li>
@@ -4360,8 +4372,9 @@ const TR_GUIDE=[
    <li>Lead sheets: <b>solo?</b> at the end of each bar marks it as a solo bar, which leaves it out of the sheet music and exports.</li></ul>`],
  ['keys','Your keyboard',`<ul><li>Play your <b>MIDI keyboard</b>, or the computer keys <kbd>A</kbd> <kbd>W</kbd> <kbd>S</kbd> <kbd>E</kbd> <kbd>D</kbd> <kbd>F</kbd>… (<kbd>Z</kbd> <kbd>X</kbd> change octave). The keys light up on the piano roll's keyboard.</li>
    <li><b>● Rec</b>, then Play: what you play along is written into the transcription, on the snap grid. One Undo takes back the whole take.</li></ul>`],
- ['save','Saving & export',`<ul><li><b>Save</b> (<kbd>Cmd+S</kbd>) keeps it under Saved transcriptions. "Not saved" next to it means you have changes.</li>
-   <li><b>Export</b>: <b>MusicXML</b> opens in MuseScore, Sibelius, Finale and Dorico (tuplets, ties and chord symbols included). <b>MIDI, on the beat</b> is the grid version; <b>MIDI, as played</b> keeps the real timing, for a DAW.</li>
+ ['save','Saving & export',`<ul><li><b>Save ▾ → In Jun Jam</b> (<kbd>Cmd+S</kbd>) keeps it under <b>Your transcriptions</b> on the Transcribe page, with the recording, so it reopens ready to play, hear the recording and re-read, without importing the audio again. "Not saved" means you have changes.</li>
+   <li><b>PDF</b>: the sheet music on white paper. In the print window, set Destination to <b>Save as PDF</b>.</li>
+   <li><b>MusicXML</b> opens in MuseScore, Sibelius, Finale and Dorico (tuplets, ties and chord symbols included). <b>MIDI, on the beat</b> is the grid version; <b>MIDI, as played</b> keeps the real timing, for a DAW.</li>
    <li><b>→ Lines</b>: select 3 to 16 notes and save them as a lick to practise in all keys.</li>
    <li><b>← Settings</b> goes back to choose a different part of the recording or instrument (it asks first if you have unsaved changes).</li></ul>`],
  ['shortcuts','Shortcuts',`<table class="trkeytable"><tr><td><kbd>Space</kbd></td><td>play / pause</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>playhead a beat (<kbd>Shift</kbd>: a bar), or nudge selected notes</td></tr>
@@ -4702,10 +4715,41 @@ function trSheetHead(b){ const sc=$('trScore'); if(!sc||!TR.lines) return;
     const i=Math.min(L.nb*4-1,Math.floor(b-L.a+1e-9)), x=L.X0+L.cum[i]+(b-L.a-i)*L.bw[i], sr=svg.getBoundingClientRect(), er=el.getBoundingClientRect();
     hd.style.display='block'; hd.style.left=(sr.left-er.left+x*sr.width/L.W)+'px';
     if(TR.playing&&trFollow()){ const er=el.getBoundingClientRect(), cr=sc.getBoundingClientRect(); if(er.top<cr.top||er.bottom>cr.bottom) sc.scrollTop+=er.top-cr.top-6; } }); }
-function trSave(){
-  const s=TR.score, item={...s,saved:Date.now()};
-  if(TR.saved!=null&&TRDATA.list[TR.saved]) TRDATA.list[TR.saved]=item; else { TRDATA.list.unshift(item); TR.saved=0; if(TRDATA.list.length>40) TRDATA.list.pop(); }
-  saveTr(); TR.dirty=false; trInfo(); trMsg('Saved. Find it under Saved transcriptions.','ok');
+async function trSave(){
+  const s=TR.score; if(!s.id) s.id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const old=TR.saved!=null&&TRDATA.list[TR.saved], withMedia=!!(TR.file&&TR.raw&&TR.res);
+  if(withMedia&&TR.mediaFor!==s.id+'|'+TR.sel){   // the recording goes in once (and again only if the part changed)
+    try{ await trDB.put(s.id,{file:TR.file,sel:TR.sel,raw:TR.raw,shift:TR.shift}); TR.mediaFor=s.id+'|'+TR.sel; navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }
+    catch(e){ trMsg("The notes are saved, but there wasn't room to keep the recording with them.",'no'); } }
+  const item={...s,saved:Date.now(),media:withMedia&&TR.mediaFor===s.id+'|'+TR.sel||!!(old&&old.media)};
+  if(old) TRDATA.list[TR.saved]=item; else { TRDATA.list.unshift(item); TR.saved=0; if(TRDATA.list.length>40){ const t=TRDATA.list.pop(); if(t.id) trDB.del(t.id); } }
+  saveTr(); TR.dirty=false; trInfo(); trMsg(item.media?'Saved with the recording. It\'s under Your transcriptions in Transcribe.':'Saved. It\'s under Your transcriptions in Transcribe.','ok');
+}
+// Reopen a saved one: with its recording when that was kept, so playback, Hear recording and re-reading all work again
+async function trOpenSaved(i){
+  const sc=JSON.parse(JSON.stringify(TRDATA.list[i])), m=sc.id&&sc.media?await trDB.get(sc.id):null;
+  if(m&&m.file){ try{ trMsg('Opening…'); const buf=await synth.ctx.decodeAudioData(await m.file.arrayBuffer()); if(TR.url) URL.revokeObjectURL(TR.url);
+      Object.assign(TR,{buf,file:m.file,url:URL.createObjectURL(m.file),title:sc.title,sel:m.sel,mode:sc.mode,instrument:sc.mode==='lead'?'piano':sc.instrument,texture:sc.texture,raw:m.raw,shift:m.shift,mediaFor:sc.id+'|'+m.sel});
+      return trEdit(sc,prepRes(m.raw,sc.anchors||[]),i); }catch(e){ trMsg("Couldn't open its recording, so it opens as notes only.",'no'); } }
+  Object.assign(TR,{buf:null,file:null,raw:null,res:null,mediaFor:null}); if(TR.url){ URL.revokeObjectURL(TR.url); TR.url=null; }
+  trEdit(sc,null,i);
+}
+// PDF: the sheet music on white paper in a print window, where Chrome offers Save as PDF
+function trPDF(){
+  const s=TR.score, lines=[...$('trScore').querySelectorAll('.trline')].map(el=>{ const c=el.cloneNode(true); c.querySelectorAll('.trshead').forEach(x=>x.remove()); return c.outerHTML; }).join('');
+  const cs=getComputedStyle(document.documentElement), v=k=>cs.getPropertyValue(k).trim(), fonts=[...document.querySelectorAll('link[rel=stylesheet][href*="fonts.googleapis"]')].map(l=>l.outerHTML).join('');
+  const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
+  const d=f.contentDocument; d.open(); d.write(`<!doctype html><html><head><meta charset="utf-8"><title>${trEsc(s.title)}</title>${fonts}<style>
+    @page{margin:14mm} :root{--ink:#111} body{margin:0;font-family:${v('--body')};color:#111}
+    h1{font-family:${v('--hand')};font-size:30px;margin:0 0 2px;text-align:center} .sub{text-align:center;font-size:13px;color:#555;margin:0 0 14px}
+    .trline{position:relative;break-inside:avoid;margin-bottom:6px} .trline svg{max-width:100%;height:auto;display:block}
+    .trbar{position:absolute;left:4px;top:0;font-size:10px;color:#666} .ln{stroke:#111;stroke-width:1;opacity:.6}
+    .clef{fill:#111;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif} .acc{font-family:'Noto Music',${v('--body')};font-size:15px;font-weight:600}
+    .csym{font-family:${v('--hand')};font-weight:700;font-size:15px;fill:#111} .foot{text-align:center;font-size:10px;color:#999;margin-top:14px}</style></head>
+    <body><h1>${trEsc(s.title)}</h1><p class="sub">${s.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[s.instrument]||{}).name||''} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)}</p>${lines}<p class="foot">Transcribed with Jun Jam</p></body></html>`); d.close();
+  const title=document.title; trMsg('In the print window, set Destination to "Save as PDF".');
+  const go=()=>{ document.title=s.title; f.contentWindow.focus(); f.contentWindow.print(); document.title=title; setTimeout(()=>f.remove(),1000); };
+  Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,1500))]).then(()=>setTimeout(go,50));
 }
 function trDownload(data,ext,type){
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type})); a.download=(TR.score.title||'transcription').replace(/[\\/:*?"<>|]/g,'')+'.'+ext;

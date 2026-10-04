@@ -436,6 +436,8 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmenulist button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:4px;padding:8px 10px;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--ink);cursor:pointer}
 .trmenulist button:hover{background:color-mix(in srgb, var(--brass) 18%, transparent)}
 .trmenulist .fine{display:block;font-weight:400}
+.trmenulist hr{border:0;border-top:1px solid var(--line-strong);margin:4px 6px}
+.trlib{margin-bottom:6px} .trlib .lst b{color:var(--brass);font-weight:600;letter-spacing:0}
 .trtoast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);max-width:min(640px,90vw);background:var(--ink);color:var(--lane);padding:10px 16px;border-radius:8px;font-family:var(--cond);font-weight:600;font-size:16px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
 .trtoast.show{opacity:1;transform:translate(-50%,0)} .trtoast.no{background:var(--wrong);color:#fff} .trtoast.ok{background:var(--brass);color:var(--lane)}
 .trscore{cursor:pointer}
