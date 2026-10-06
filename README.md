@@ -7,10 +7,13 @@ A jazz piano trainer with two sides:
 - **Progressions**: 13 common J-pop, city pop and jazz progressions (Royal Road, Just the Two of Us,
   Canon, Komuro, passing diminished, minor iv, turnarounds, ii–V–I...) to play in every key in Hands,
   with J-pop style degrees (IVmaj7 V7 IIIm7 VIm7), and to name by ear in the Ears Progressions world.
-- **Gig**: lead sheets to play from (chord changes only), about 40 built in: jazz standards, blues, Latin, funk,
-  J-pop and city pop progression charts, pop. Search, filter by genre, 🎲 a random one, transpose, chord names or
-  Roman numerals, the current chord lit up on the keyboard, and a simple pad that plays the changes. Paste in any chart
-  you find (bar lines, chord-over-lyrics text or ChordPro) and it's kept under Yours. A band will play from the same charts later.
+- **Gig**: lead sheets to play from (chord changes only), about 100 real songs: J-pop and city pop (IRIS OUT, Pretender,
+  夜に駆ける, 紅蓮華, Plastic Love…), pop and rock (Paramore, Olivia Rodrigo, Billie Eilish, Coldplay, Stevie Wonder…),
+  jazz standards, blues heads, Latin and bossa (Recorda Me, A Night in Tunisia, Jobim…), funk and soul. Jazz, Latin and
+  classic pop/soul come from iReal Pro's community charts; J-pop and recent pop from U-FRET and Ultimate Guitar charts
+  (those mark no bar lines, so chord lengths there are approximate). Search, filter, 🎲 random, transpose, chord names
+  or Roman numerals, the current chord lit on the keyboard, a simple pad that plays the changes. Paste in any chart you
+  find and it's kept under Yours. A band will play from the same charts later.
 - **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords name the note your left
   hand has to put at the bottom (C/E, G/B…): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean

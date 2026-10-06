@@ -7,12 +7,12 @@ GDATA.mine=GDATA.mine||[]; GDATA.fav=GDATA.fav||{}; GDATA.tr=GDATA.tr||{}; GDATA
 if(!GDATA.genre) GDATA.genre='all'; if(!GDATA.view) GDATA.view='chords'; if(!GDATA.size) GDATA.size=1; if(GDATA.tones==null) GDATA.tones=true; if(GDATA.click==null) GDATA.click=true;
 const saveGig=()=>{ try{ localStorage.setItem('mtc:gig',JSON.stringify(GDATA)); return true; }catch(e){ return false; } };
 const GIG={active:false,view:'list',song:null,playing:false};
-const GIG_GENRES=[['all','All'],['J-pop','J-pop & city pop'],['Jazz','Jazz standards'],['Latin','Latin'],['Blues','Blues'],['Funk','Funk & soul'],['Pop','Pop'],['mine','Yours'],['fav','♥ Favourites']];
+const GIG_GENRES=[['all','All'],['J-pop','J-pop & city pop'],['Pop','Pop & rock'],['Jazz','Jazz standards'],['Latin','Latin & bossa'],['Blues','Blues'],['Funk','Funk & soul'],['mine','Yours'],['fav','♥ Favourites']];
 
 /* ---------------- reading chord symbols ---------------- */
 const GIG_SUF={'':'maj',M:'maj',maj:'maj',m:'min',min:'min','-':'min','7':'dom7',maj7:'maj7',M7:'maj7','Δ7':'maj7','Δ':'maj7',ma7:'maj7',j7:'maj7',
   m7:'min7',min7:'min7','-7':'min7','m7♭5':'hdim','ø':'hdim','ø7':'hdim','m7-5':'hdim','-7♭5':'hdim','min7♭5':'hdim','°':'dim',dim:'dim',o:'dim','°7':'dim7',dim7:'dim7',o7:'dim7',
-  '+':'aug',aug:'aug','♯5':'aug','+5':'aug',sus:'sus4',sus4:'sus4',sus2:'sus2','6':'six',M6:'six',maj6:'six',m6:'min6','-6':'min6','7sus4':'sus7','7sus':'sus7','9sus4':'sus7','9sus':'sus7','13sus4':'sus7','13sus':'sus7',
+  '+':'aug',aug:'aug','♯5':'aug','+5':'aug',sus:'sus4',sus4:'sus4',sus2:'sus2','2':'sus2','6':'six',M6:'six',maj6:'six',m6:'min6','-6':'min6','7sus4':'sus7','7sus':'sus7','9sus4':'sus7','9sus':'sus7','13sus4':'sus7','13sus':'sus7',
   mmaj7:'mmaj7',mM7:'mmaj7','-Δ7':'mmaj7',minmaj7:'mmaj7',maj9:'maj9',M9:'maj9','Δ9':'maj9','9':'dom9',m9:'min9','-9':'min9','13':'dom13','11':'sus7',m11:'min11','-11':'min11',
   '7♭9':'d7b9','7♯9':'d7s9',alt:'alt','7alt':'alt','7♭13':'d7b13','7♯11':'d7s11','9♯11':'d7s11','13♯11':'d7s11','maj7♯11':'mj7s11','Δ7♯11':'mj7s11','maj7♯5':'mj7s5','+maj7':'mj7s5','Δ7♯5':'mj7s5',
   add9:'add9',add2:'add9',madd9:'madd9','m(add9)':'madd9',madd2:'madd9','6/9':'six9','69':'six9','m69':'min6','m6/9':'min6'};
@@ -30,7 +30,7 @@ function gigChord(tok){
 }
 
 /* ---------------- reading a chart ---------------- */
-const GIG_META=['title','by','artist','composer','genre','style','feel','tempo','bpm','key','time','form','tags','check'];
+const GIG_META=['title','by','artist','composer','genre','style','feel','tempo','bpm','key','time','form','tags','check','source'];
 /* Text → song. Lines: "name: value" settings, [Section] or "Chorus:" headings, bars between | |.
    Also takes pasted chord-site text: a line of chords without bar lines is one bar per chord, lyric lines are skipped,
    and ChordPro's [Am] inline chords are picked out of lyrics. */
@@ -64,7 +64,7 @@ function gigParse(text,id){
   }
   song.sections=song.sections.filter(s=>s.bars.length);
   const M=song.meta; song.title=M.title||'Untitled chart'; song.by=M.by||M.artist||M.composer||''; song.genre=M.genre||M.style||'';
-  song.feel=M.feel||''; song.tempo=Math.max(30,Math.min(320,parseInt(M.tempo||M.bpm,10)||100)); song.check=!!M.check; song.tags=M.tags||'';
+  song.feel=M.feel||''; song.tempo=Math.max(30,Math.min(320,parseInt(M.tempo||M.bpm,10)||100)); song.check=!!M.check; song.tags=M.tags||''; song.source=M.source||'';
   const ts=/^(\d+)\s*\/\s*(\d+)/.exec(M.time||''); song.beats=ts?(+ts[2]===8?Math.max(2,Math.round(+ts[1]/3)):+ts[1]):4;
   const k=gigChord((M.key||'').replace(/\s*(major|maj)$/i,'').replace(/\s*minor$/i,'m'));
   song.key=k?{pc:k.root.pc,minor:Q[k.qid].minor?1:0,root:k.root}:null;
@@ -145,7 +145,7 @@ function gigShow(id){
   $('gigBody').innerHTML=`<div class="trtop"><button class="ghost" id="gigBack">← All charts</button><span class="etitle">${trEsc(s.title)}</span>
       <span class="gfav${GDATA.fav[id]?' on':''}" id="gigFav" title="Favourite">${GDATA.fav[id]?'♥':'♡'}</span><span class="trspace"></span>
       <button class="ghost" id="gigRand" title="Another random chart">🎲</button><button class="ghost" id="gigEditBtn">${s.mine?'Edit':'Edit a copy'}</button></div>
-    <p class="gigsub">${trEsc(s.by)}${s.genre?` · ${trEsc(s.genre)}`:''}${s.feel?` · ${trEsc(s.feel)}`:''}${s.beats!==4?` · ${s.beats} beats a bar`:''}${s.tags?` · ${trEsc(s.tags)}`:''}</p>
+    <p class="gigsub">${trEsc(s.by)}${s.genre?` · ${trEsc(s.genre)}`:''}${s.feel?` · ${trEsc(s.feel)}`:''}${s.beats!==4?` · ${s.beats} beats a bar`:''}${s.tags?` · ${trEsc(s.tags)}`:''}${s.source?` · <span class="fine">Chords from a ${trEsc(s.source)}${/U-FRET|Ultimate/.test(s.source)?'; chord lengths approximate':''}</span>`:''}</p>
     ${s.check?'<p class="fine gigcheck">⚠ Written from memory: worth checking against a chart you trust. <b>Edit a copy</b> to fix anything.</p>':''}
     <div class="gigbar trtransport">
       <button class="go trplay" id="gigPlay" title="Play the changes (Space)">▶</button><span class="trpos" id="gigPos">1</span>
