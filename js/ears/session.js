@@ -43,7 +43,7 @@ function earsGen(){
 function earsNext(){
   clearTimeout(EARS.advanceTimer);
   if(EARS.idx>=EARS.total || EARS.lives<=0){ earsFinish(); return; }
-  killBus(EARS.bus); EARS.q=earsGen(); EARS.answered=false; EARS.idx++;
+  clearDraft(); killBus(EARS.bus); EARS.q=earsGen(); EARS.answered=false; EARS.idx++;
   const q=EARS.q;
   $('ePrompt').textContent=q.prompt; $('eSub').textContent=q.sub||'';
   $('eOpts').innerHTML=q.options.map((o,i)=>`<button class="eopt" data-id="${o.id}"><span class="k">${i<9?i+1:''}</span>${o.label}</button>`).join('');
@@ -147,7 +147,7 @@ function earsHud(){
   $('eBar').classList.toggle('boss',!!EARS.lv.boss);
   $('eTimerWrap').classList.toggle('hide',!EARS.lv.boss);
 }
-function earsFinish(quit){
+function earsFinish(quit){ clearDraft();
   EARS.active=false; clearTimeout(EARS.advanceTimer); cancelAnimationFrame(EARS.timerRaf); killBus(EARS.bus);
   const lv=EARS.lv, done=EARS.idx-(EARS.answered?0:1), acc=done?EARS.correct/done:0;
   const avg=EARS.times.length?EARS.times.reduce((a,b)=>a+b,0)/EARS.times.length:null;
@@ -179,7 +179,7 @@ function earsFinish(quit){
   $('eMap').onclick=earsToMenu;
   $('eAgain').focus();
 }
-function earsToMenu(){
+function earsToMenu(){ clearDraft();
   EARS.active=false; killBus(EARS.bus); cancelAnimationFrame(EARS.timerRaf); clearTimeout(EARS.advanceTimer);
   $('earsStage').hidden=true; document.body.classList.remove('earsmode');
   side='ears'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu();

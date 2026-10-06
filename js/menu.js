@@ -66,6 +66,7 @@ $('trOpenBtn').onclick=trOpen;
    Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
 const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active);
 function goHome(){
+  clearDraft();
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
   if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu();

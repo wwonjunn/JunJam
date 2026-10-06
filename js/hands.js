@@ -160,7 +160,7 @@ function tick(now){
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
-    const e=G.enemies.shift(); e.el.remove(); renderAhead(); if(e.t.req==='byear') stopByEar();
+    const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
@@ -280,8 +280,8 @@ function updateHud(){
 }
 function pause(){ G.running=false; G.paused=true; cancelAnimationFrame(G.raf); metro.stop(); $('pauseOv').hidden=false; $('quitBtn').textContent=G.practice?'End session':'End run'; $('resumeBtn').focus(); }
 function resume(){ $('pauseOv').hidden=true; G.paused=false; G.running=true; G.last=performance.now(); G.raf=requestAnimationFrame(tick); metro.start(); }
-function hideOv(){ ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
-function gameOver(){
+function hideOv(){ clearDraft(); ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
+function gameOver(){ clearDraft();
   G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar();
   const acc=G.attempts?Math.round(100*(G.attempts-G.fails)/G.attempts):0;
   const avg=G.times.length?(G.times.reduce((a,b)=>a+b,0)/G.times.length).toFixed(1):'–';

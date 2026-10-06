@@ -58,7 +58,7 @@ function rhDrillStart(id){
   rhShow(); rhRound();
 }
 function rhRound(){
-  rhStop(); const R=REHARM, m=R.move, key=R.keys[R.round];
+  rhStop(); clearDraft(); const R=REHARM, m=R.move, key=R.keys[R.round];
   const after=rhChords(m.after,key,m.minor), before=rhChords(m.before,key,m.minor);
   Object.assign(R,{after,before,mel:rhMel(m,key),voiced:voiceProg(after),slotPos:0,solved:new Set(),mistakes:0,hinted:R.round===0,done:false});
   rhRender(); R.timer=setTimeout(rhPlayToSlot,350);
@@ -112,7 +112,7 @@ function rhRoundDone(endT){
   R.timer=setTimeout(rhNext,Math.max(800,(endT-now())*1000+500)); // hear it resolve, then the next key
 }
 function rhNext(){ const R=REHARM; if(!R.active||!R.done) return; R.round++; if(R.round>RH_KEYS) return rhFinish(false); rhRound(); }
-function rhFinish(quit){
+function rhFinish(quit){ clearDraft();
   const R=REHARM; rhStop(); R.active=false;
   const learned=R.results.length>0, finished=R.round>RH_KEYS;
   const stars=!learned?0:finished&&R.clean===RH_KEYS?3:finished&&R.clean>=4?2:1;
@@ -131,7 +131,7 @@ function rhEarStart(){
   rhShow(); rhEarNext();
 }
 function rhEarNext(){
-  const R=REHARM; rhStop();
+  const R=REHARM; rhStop(); clearDraft();
   if(R.n>=R.total) return rhEarFinish();
   if(!R.deck.length) R.deck=shuffled(REHARM_MOVES.map(m=>m.id));
   const m=RHMOVE[R.deck.pop()], key=pickKeyPc();
@@ -163,7 +163,7 @@ function rhEarFinish(){
   $('rhAgain').onclick=rhEarStart; $('rhMenu').onclick=rhToMenu;
 }
 
-function rhToMenu(){
+function rhToMenu(){ clearDraft();
   rhStop(); REHARM.active=false; $('reharmStage').hidden=true;
   side='reharm'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
 }

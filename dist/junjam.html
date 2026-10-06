@@ -1745,6 +1745,8 @@ function toggleDraft(m){
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
   kbMarks={}; paintKeys();
 }
+// keys you clicked but didn't play yet are let go when the question, round or game changes
+function clearDraft(){ if(draft.size){ draft.clear(); paintKeys(); } }
 function submitDraft(){ if(!draft.size) return; const n=[...draft]; draft.clear(); routeNotes(n); }
 function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else submit(n); }
 
@@ -1958,7 +1960,7 @@ function tick(now){
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
-    const e=G.enemies.shift(); e.el.remove(); renderAhead(); if(e.t.req==='byear') stopByEar();
+    const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
@@ -2078,8 +2080,8 @@ function updateHud(){
 }
 function pause(){ G.running=false; G.paused=true; cancelAnimationFrame(G.raf); metro.stop(); $('pauseOv').hidden=false; $('quitBtn').textContent=G.practice?'End session':'End run'; $('resumeBtn').focus(); }
 function resume(){ $('pauseOv').hidden=true; G.paused=false; G.running=true; G.last=performance.now(); G.raf=requestAnimationFrame(tick); metro.start(); }
-function hideOv(){ ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
-function gameOver(){
+function hideOv(){ clearDraft(); ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
+function gameOver(){ clearDraft();
   G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar();
   const acc=G.attempts?Math.round(100*(G.attempts-G.fails)/G.attempts):0;
   const avg=G.times.length?(G.times.reduce((a,b)=>a+b,0)/G.times.length).toFixed(1):'–';
@@ -2425,7 +2427,7 @@ function earsGen(){
 function earsNext(){
   clearTimeout(EARS.advanceTimer);
   if(EARS.idx>=EARS.total || EARS.lives<=0){ earsFinish(); return; }
-  killBus(EARS.bus); EARS.q=earsGen(); EARS.answered=false; EARS.idx++;
+  clearDraft(); killBus(EARS.bus); EARS.q=earsGen(); EARS.answered=false; EARS.idx++;
   const q=EARS.q;
   $('ePrompt').textContent=q.prompt; $('eSub').textContent=q.sub||'';
   $('eOpts').innerHTML=q.options.map((o,i)=>`<button class="eopt" data-id="${o.id}"><span class="k">${i<9?i+1:''}</span>${o.label}</button>`).join('');
@@ -2529,7 +2531,7 @@ function earsHud(){
   $('eBar').classList.toggle('boss',!!EARS.lv.boss);
   $('eTimerWrap').classList.toggle('hide',!EARS.lv.boss);
 }
-function earsFinish(quit){
+function earsFinish(quit){ clearDraft();
   EARS.active=false; clearTimeout(EARS.advanceTimer); cancelAnimationFrame(EARS.timerRaf); killBus(EARS.bus);
   const lv=EARS.lv, done=EARS.idx-(EARS.answered?0:1), acc=done?EARS.correct/done:0;
   const avg=EARS.times.length?EARS.times.reduce((a,b)=>a+b,0)/EARS.times.length:null;
@@ -2561,7 +2563,7 @@ function earsFinish(quit){
   $('eMap').onclick=earsToMenu;
   $('eAgain').focus();
 }
-function earsToMenu(){
+function earsToMenu(){ clearDraft();
   EARS.active=false; killBus(EARS.bus); cancelAnimationFrame(EARS.timerRaf); clearTimeout(EARS.advanceTimer);
   $('earsStage').hidden=true; document.body.classList.remove('earsmode');
   side='ears'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu();
@@ -3424,7 +3426,7 @@ function rhDrillStart(id){
   rhShow(); rhRound();
 }
 function rhRound(){
-  rhStop(); const R=REHARM, m=R.move, key=R.keys[R.round];
+  rhStop(); clearDraft(); const R=REHARM, m=R.move, key=R.keys[R.round];
   const after=rhChords(m.after,key,m.minor), before=rhChords(m.before,key,m.minor);
   Object.assign(R,{after,before,mel:rhMel(m,key),voiced:voiceProg(after),slotPos:0,solved:new Set(),mistakes:0,hinted:R.round===0,done:false});
   rhRender(); R.timer=setTimeout(rhPlayToSlot,350);
@@ -3478,7 +3480,7 @@ function rhRoundDone(endT){
   R.timer=setTimeout(rhNext,Math.max(800,(endT-now())*1000+500)); // hear it resolve, then the next key
 }
 function rhNext(){ const R=REHARM; if(!R.active||!R.done) return; R.round++; if(R.round>RH_KEYS) return rhFinish(false); rhRound(); }
-function rhFinish(quit){
+function rhFinish(quit){ clearDraft();
   const R=REHARM; rhStop(); R.active=false;
   const learned=R.results.length>0, finished=R.round>RH_KEYS;
   const stars=!learned?0:finished&&R.clean===RH_KEYS?3:finished&&R.clean>=4?2:1;
@@ -3497,7 +3499,7 @@ function rhEarStart(){
   rhShow(); rhEarNext();
 }
 function rhEarNext(){
-  const R=REHARM; rhStop();
+  const R=REHARM; rhStop(); clearDraft();
   if(R.n>=R.total) return rhEarFinish();
   if(!R.deck.length) R.deck=shuffled(REHARM_MOVES.map(m=>m.id));
   const m=RHMOVE[R.deck.pop()], key=pickKeyPc();
@@ -3529,7 +3531,7 @@ function rhEarFinish(){
   $('rhAgain').onclick=rhEarStart; $('rhMenu').onclick=rhToMenu;
 }
 
-function rhToMenu(){
+function rhToMenu(){ clearDraft();
   rhStop(); REHARM.active=false; $('reharmStage').hidden=true;
   side='reharm'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
 }
@@ -4864,6 +4866,7 @@ $('trOpenBtn').onclick=trOpen;
    Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
 const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active);
 function goHome(){
+  clearDraft();
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
   if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu();

@@ -26,6 +26,8 @@ function toggleDraft(m){
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
   kbMarks={}; paintKeys();
 }
+// keys you clicked but didn't play yet are let go when the question, round or game changes
+function clearDraft(){ if(draft.size){ draft.clear(); paintKeys(); } }
 function submitDraft(){ if(!draft.size) return; const n=[...draft]; draft.clear(); routeNotes(n); }
 function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else submit(n); }
 
