@@ -72,6 +72,15 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
     g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.04);
     g.gain.setValueAtTime(pk*0.8,t+dur); g.gain.exponentialRampToValueAtTime(0.0001,end);
     nodes.push(o1,o2);
+  } else if(timbre==='bass'){ // a clean electric-bass note: round sine body, a little triangle for definition, a soft pluck that settles
+    const o=c.createOscillator(), o2=c.createOscillator(), g2=c.createGain(), lp=c.createBiquadFilter();
+    o.type='sine'; o.frequency.value=f; o2.type='triangle'; o2.frequency.value=f; g2.gain.value=0.3;
+    lp.type='lowpass'; lp.Q.value=0.6; lp.frequency.setValueAtTime(Math.min(2000,f*12),t); lp.frequency.exponentialRampToValueAtTime(Math.max(220,f*3),t+0.3);
+    o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g);
+    const pk=0.25+0.3*v, hold=Math.max(0.3,dur-0.06);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.006); g.gain.exponentialRampToValueAtTime(pk*0.6,t+0.28);
+    g.gain.setValueAtTime(pk*0.6,t+hold); g.gain.exponentialRampToValueAtTime(0.0001,t+hold+0.12);
+    nodes.push(o,o2);
   } else if(timbre==='pluck'){
     const o=c.createOscillator(), lp=c.createBiquadFilter();
     o.type='sawtooth'; o.frequency.value=f; lp.type='lowpass'; lp.Q.value=2;

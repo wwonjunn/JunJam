@@ -5,7 +5,8 @@
 let GDATA=store.get('gig',{});
 GDATA.mine=GDATA.mine||[]; GDATA.fav=GDATA.fav||{}; GDATA.tr=GDATA.tr||{}; GDATA.tempo=GDATA.tempo||{};
 if(!GDATA.genre) GDATA.genre='all'; if(!GDATA.view) GDATA.view='chords'; if(!GDATA.size) GDATA.size=1; if(GDATA.tones==null) GDATA.tones=true; if(GDATA.click==null) GDATA.click=true;
-if(GDATA.pad==null) GDATA.pad=true; if(GDATA.bass==null) GDATA.bass=true; if(!GDATA.sound) GDATA.sound='epiano';
+if(GDATA.pad==null) GDATA.pad=true; if(GDATA.bass==null) GDATA.bass=true; if(!['epiano','mellow'].includes(GDATA.sound)) GDATA.sound='epiano';
+if(typeof GDATA.click!=='string') GDATA.click=GDATA.click===false?'off':'24';   // the click: off, on 2 and 4, or every beat
 const saveGig=()=>{ try{ localStorage.setItem('mtc:gig',JSON.stringify(GDATA)); return true; }catch(e){ return false; } };
 const GIG={active:false,view:'list',song:null,playing:false};
 const GIG_GENRES=[['all','All'],['J-pop','J-pop & city pop'],['Pop','Pop & rock'],['Jazz','Jazz standards'],['Latin','Latin & bossa'],['Blues','Blues'],['Funk','Funk & soul'],['mine','Yours'],['fav','♥ Favourites']];
@@ -161,8 +162,9 @@ function gigShow(id){
       <span class="trgrp">${gigSeg('gview',[['chords','Chords'],['numbers','Numbers','Roman numerals in this key, like the J-pop degrees in Chords'],['both','Both']],GDATA.view)}</span>
       <span class="trgrp">${gigSeg('gsize',[[.85,'A'],[1,'A'],[1.25,'A']],GDATA.size)}</span>
       <button class="ghost tgl" id="gigTones" aria-pressed="${GDATA.tones}" title="Light up the current chord's notes on the keyboard">Chord tones</button>
-      <span class="trgrp"><span class="fine">Backing</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}" title="Chords under you while it plays">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}" title="Bass notes while it plays">Bass</button><button class="ghost tgl" id="gigClick" aria-pressed="${GDATA.click}" title="Hi-hat on 2 and 4 while it plays">Click</button></span>
-      <span class="trgrp"><span class="fine">Sound</span>${gigSeg('gsound',[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held'],['pluck','Pluck','Short synth']],GDATA.sound)}</span></div>
+      <span class="trgrp"><span class="fine">Backing</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}" title="Chords under you while it plays">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}" title="Bass notes while it plays">Bass</button></span>
+      <span class="trgrp"><span class="fine">Click</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4'],['all','Every beat']],GDATA.click)}</span>
+      <span class="trgrp"><span class="fine">Sound</span>${gigSeg('gsound',[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held']],GDATA.sound)}</span></div>
     <div class="gigform">Form: ${s.form.map((n,i)=>`<span class="gform" data-fi="${i}">${trEsc(n)}</span>`).join('')}</div>
     <div class="gigsheet" id="gigSheet" style="--gs:${GDATA.size}">${s.sections.map(sec=>`<div class="gsec"><div class="gsecname">${trEsc(sec.name)}${occ[sec.name]>1?` <span class="fine">×${occ[sec.name]}</span>`:''}${!occ[sec.name]?' <span class="fine">(not in the form)</span>':''}</div>
       <div class="gbars" style="--per:${s.beats===3?4:4}">${sec.bars.map((b,bi)=>`<div class="gbar" data-sec="${trEsc(sec.name)}" data-bi="${bi}">${b.rep?'<span class="grep">𝄎</span>':(bt=>b.chords.map((c,k)=>`<span class="gslot" style="flex:${bt[k]}">${gigChordHTML(c,s)}</span>`).join(''))(gigBeats(b,s.beats))}</div>`).join('')}</div></div>`).join('')}</div>
@@ -175,7 +177,8 @@ function gigShow(id){
   $('gigUp').onclick=()=>gigTranspose(1); $('gigDown').onclick=()=>gigTranspose(-1); if($('gigOrig')) $('gigOrig').onclick=()=>{ delete GDATA.tr[id]; saveGig(); re(); };
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
-  [['gigClick','click'],['gigPad','pad'],['gigBass','bass']].forEach(([el,k])=>$(el).onclick=()=>{ GDATA[k]=!GDATA[k]; saveGig(); $(el).setAttribute('aria-pressed',GDATA[k]); if(GIG.playing) gigPlay(GIG.pos); });
+  $('gigBody').querySelectorAll('[data-gclick]').forEach(b=>b.onclick=()=>{ GDATA.click=b.dataset.gclick; saveGig(); $('gigBody').querySelectorAll('[data-gclick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
+  [['gigPad','pad'],['gigBass','bass']].forEach(([el,k])=>$(el).onclick=()=>{ GDATA[k]=!GDATA[k]; saveGig(); $(el).setAttribute('aria-pressed',GDATA[k]); if(GIG.playing) gigPlay(GIG.pos); });
   $('gigBody').querySelectorAll('[data-gsound]').forEach(b=>b.onclick=()=>{ GDATA.sound=b.dataset.gsound; saveGig(); $('gigBody').querySelectorAll('[data-gsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
   $('gigBody').querySelectorAll('[data-gview]').forEach(b=>b.onclick=()=>{ GDATA.view=b.dataset.gview; saveGig(); re(); });
   $('gigBody').querySelectorAll('[data-gsize]').forEach(b=>b.onclick=()=>{ GDATA.size=+b.dataset.gsize; saveGig(); re(); });
@@ -200,15 +203,15 @@ function gigPlay(from=0){
   gigStop(); const s=GIG.song, tl=GIG.tl; if(!s||!tl.length) return; synth.init();
   const bus=GIG.bus=newBus(); if(!bus) return; GIG.playing=true; $('gigPlay').textContent='❚❚';
   const spb=60/(GDATA.tempo[s.id]||s.tempo), sh=gigShift(s), total=tl.length;
-  let i=from%total, t=now()+.12, prev=null; const cue=[], snd=GDATA.sound, vel=snd==='mellow'?50:snd==='pluck'?58:62;
+  let i=from%total, t=now()+.12, prev=null; const cue=[], snd=GDATA.sound, vel=snd==='mellow'?50:62;
   const sched=()=>{ if(!GIG.playing) return;
     while(t<now()+.25){ const bar=tl[i];
       bar.chords.forEach(ch=>{ const at=t+(ch.at-bar.beat)*spb, d=ch.dur*spb*.96; if(!ch.c) return;
         const r=mod12(ch.c.root.pc+sh), bpc=mod12((ch.c.bass||ch.c.root).pc+sh);
         if(GDATA.pad){ prev=gigVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
-        if(GDATA.bass) tone(36+mod12(bpc-36),at,d,72,snd==='pluck'?'pluck':'mellow',bus);
+        if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.2),84,'bass',bus);
         cue.push({at,bar:i,ch}); });
-      if(GDATA.click) for(let k=1;k<s.beats;k+=2) hat(t+k*spb);
+      if(GDATA.click!=='off') for(let k=GDATA.click==='all'?0:1;k<s.beats;k+=GDATA.click==='all'?1:2) hat(t+k*spb);
       t+=s.beats*spb; i=(i+1)%total; } };
   const draw=()=>{ if(!GIG.playing) return; while(cue.length&&cue[0].at<=now()+.02){ const c=cue.shift(); if(GIG.pos!==c.bar||GIG.markAt!==c.at){ GIG.pos=c.bar; GIG.markAt=c.at; gigMark(c.bar); gigLight(c.ch); } } GIG.raf=requestAnimationFrame(draw); };
   sched(); GIG.timer=setInterval(sched,40); GIG.raf=requestAnimationFrame(draw);
