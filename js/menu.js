@@ -7,7 +7,7 @@ const MODES=[
   {id:'groove',name:'Groove',blurb:'Comping in time: feel, pushes, kime, genre recipes',soon:true},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
-  {id:'gig',name:'Gig',blurb:'A full song form with a band behind you',soon:true},
+  {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
 ];
 function renderHome(){
   $('modes').innerHTML=MODES.map((m,i)=>`<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span></button>`).join('');
@@ -52,7 +52,7 @@ function renderMenu(){
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
-$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
 $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
 $('lHear').onclick=()=>linesPlay();
 $('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
@@ -64,13 +64,13 @@ bindLinesPane(); bindReharmPane();
 $('trOpenBtn').onclick=trOpen;
 /* ---------- getting home: the logo, and the browser's Back button ----------
    Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
-const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active);
+const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active)&&!GIG.active;
 function goHome(){
   clearDraft();
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
-  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu();
-  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode'); ['earsStage','linesStage','reharmStage','transStage'].forEach(id=>$(id).hidden=true);
+  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(GIG.active) gigClose();
+  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode'); ['earsStage','linesStage','reharmStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
   side='home'; LINES.rec=null; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); $('startOv').scrollTop=0; return true;
 }
 document.addEventListener('click',()=>setTimeout(()=>{ if(!atHome()&&!(history.state&&history.state.away)) history.pushState({away:1},''); }),true);

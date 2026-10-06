@@ -7,6 +7,10 @@ A jazz piano trainer with two sides:
 - **Progressions**: 13 common J-pop, city pop and jazz progressions (Royal Road, Just the Two of Us,
   Canon, Komuro, passing diminished, minor iv, turnarounds, ii–V–I...) to play in every key in Hands,
   with J-pop style degrees (IVmaj7 V7 IIIm7 VIm7), and to name by ear in the Ears Progressions world.
+- **Gig**: lead sheets to play from (chord changes only), about 40 built in: jazz standards, blues, Latin, funk,
+  J-pop and city pop progression charts, pop. Search, filter by genre, 🎲 a random one, transpose, chord names or
+  Roman numerals, the current chord lit up on the keyboard, and a simple pad that plays the changes. Paste in any chart
+  you find (bar lines, chord-over-lyrics text or ChordPro) and it's kept under Yours. A band will play from the same charts later.
 - **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords name the note your left
   hand has to put at the bottom (C/E, G/B…): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
@@ -71,6 +75,8 @@ js/transcribe/export.js    spelling, MIDI and MusicXML export (one line, or a tw
 js/transcribe/notation.js  sheet music for full parts: chords stacked, grand staff for piano
 js/transcribe/session.js   Transcribe screens: import, what to see, region, helper call, editor
 tools/transcriber/         the local helper: install.sh, requirements.txt, server.py
+js/gig/sheets.js      Gig: the built-in lead sheets (chord charts as text)
+js/gig/session.js     Gig: reading charts, the library, the sheet, playing the changes, adding your own
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript

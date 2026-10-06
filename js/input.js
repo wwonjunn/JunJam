@@ -4,6 +4,7 @@ const draft=new Set();
 function noteOn(m,v){
   if(typeof TR!=='undefined'&&TR.active){ synth.init(); held.add(m); synth.on(m,v); trMidi(m,v); return; } // transcribe: hear it, see it, record it
   if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.init(); held.add(m); synth.on(m,v); linesNote(m); return; } // lines take single notes, not chords
+  if(typeof GIG!=='undefined'&&GIG.active){ synth.init(); held.add(m); synth.on(m,v); paintKeys(); return; } // gig: just play
   synth.init(); held.add(m); gesture.add(m); synth.on(m,v);
   kbMarks={}; paintKeys();
   clearTimeout(settleTimer); settleTimer=setTimeout(commitGesture,SETTLE);
@@ -23,6 +24,7 @@ function commitGesture(){
 function toggleDraft(m){
   synth.init();
   if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); linesNote(m); return; }
+  if(typeof GIG!=='undefined'&&GIG.active){ synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500); return; }
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
   kbMarks={}; paintKeys();
 }
@@ -59,6 +61,7 @@ let qOct=60;
 function noMidi(on){ document.body.classList.toggle('nomidi',on); paintQwerty(); }
 document.addEventListener('keydown',e=>{
   if(typeof TR!=='undefined' && TR.active && trKey(e)) return;
+  if(typeof GIG!=='undefined' && GIG.active && gigKey(e)) return;
   if(e.target&&(e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&!/checkbox|radio|range/.test(e.target.type)))) return; // typing in a field
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
   if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
