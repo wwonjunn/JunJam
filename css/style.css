@@ -570,7 +570,7 @@ body.gigmode header .modetag{display:none}
 .gsecname{display:inline-block;font-family:var(--cond);font-weight:700;font-size:15px;color:var(--lane);background:var(--brass);border-radius:4px;padding:1px 9px;margin-bottom:6px}
 .gsecname .fine{color:inherit;opacity:.8}
 .gbars{display:grid;grid-template-columns:repeat(4,1fr);border-left:2px solid var(--line-strong)}
-.gbar{display:flex;align-items:baseline;justify-content:space-around;gap:6px;min-height:calc(58px * var(--gs));padding:8px 6px;border-right:2px solid var(--line-strong);border-bottom:1px solid color-mix(in srgb, var(--line-strong) 45%, transparent);cursor:pointer;flex-wrap:wrap}
+.gslot{display:flex;justify-content:center;min-width:0} .gbar{display:flex;align-items:baseline;justify-content:space-around;gap:6px;min-height:calc(58px * var(--gs));padding:8px 6px;border-right:2px solid var(--line-strong);border-bottom:1px solid color-mix(in srgb, var(--line-strong) 45%, transparent);cursor:pointer;flex-wrap:wrap}
 .gbar:hover{background:color-mix(in srgb, var(--brass) 8%, transparent)}
 .gbar.on{background:color-mix(in srgb, var(--brass) 24%, transparent);box-shadow:inset 0 -3px 0 var(--brass)}
 .gch{display:inline-flex;flex-direction:column;align-items:flex-start;font-family:var(--hand);font-weight:700;color:var(--ink);line-height:1.05;white-space:nowrap}
