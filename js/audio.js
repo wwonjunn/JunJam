@@ -102,4 +102,21 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   }
   nodes.forEach(n=>{n.start(t); n.stop(end+0.05);});
 }
+/* Backing voicing (Gig and Transcribe): open and spread, so busy chords don't turn to mush. The 3rd (or the sus note) and the 7th
+   (or 6th; the 5th on a triad, or when it's altered), then one colour tone the symbol asks for, stacked so no two
+   neighbours are closer than a minor 3rd. The bass plays the root, so it's left out up here. Each chord sits as
+   close as it can to the one before. r: the root's pitch class; lo0..lo1: where the lowest note may start; top: the
+   highest note allowed (Transcribe keeps it low, under the solo). */
+function spreadVoice(q,r,prev,lo0=52,lo1=60,top=79){
+  const ct=q.ct, has=x=>ct.includes(x);
+  const third=[3,4,5,2].find(has), sev=[10,11].find(has)??(q.id==='dim7'||q.id==='six'||q.id==='min6'||q.id==='six9'?9:null);
+  const fifth=[6,8].find(has)??(sev==null?7:null);
+  const colour=(q.id==='alt'?[1,8]:q.req).find(x=>![0,third,sev,fifth,7].includes(x));
+  const ivs=[third,sev,fifth,colour].filter(x=>x!=null); if(ivs.length<3&&has(7)&&!ivs.includes(7)) ivs.push(7); // two notes sound thin: add the 5th on top
+  const pcs=ivs.map(x=>mod12(r+x));
+  const build=lo=>{ const out=[]; let m=lo; pcs.forEach((pc,k)=>{ m=k?out[k-1]+3:lo; while(mod12(m)!==pc) m++; out.push(m); }); return out; };
+  const target=prev?prev.reduce((a,b)=>a+b,0)/prev.length:(lo0+top)/2-3, avg=v=>v.reduce((a,b)=>a+b,0)/v.length;
+  let best=null; for(let lo=lo0;lo<=lo1;lo++){ const v=build(lo); if(v[v.length-1]>top) continue; if(!best||Math.abs(avg(v)-target)<Math.abs(avg(best)-target)) best=v; }
+  return best||build(lo0);
+}
 function playChord(notes,when,dur,timbre,bus,vel=80){ notes.forEach(m=>tone(m,when,dur,vel,timbre,bus)); }

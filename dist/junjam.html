@@ -1651,6 +1651,23 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   }
   nodes.forEach(n=>{n.start(t); n.stop(end+0.05);});
 }
+/* Backing voicing (Gig and Transcribe): open and spread, so busy chords don't turn to mush. The 3rd (or the sus note) and the 7th
+   (or 6th; the 5th on a triad, or when it's altered), then one colour tone the symbol asks for, stacked so no two
+   neighbours are closer than a minor 3rd. The bass plays the root, so it's left out up here. Each chord sits as
+   close as it can to the one before. r: the root's pitch class; lo0..lo1: where the lowest note may start; top: the
+   highest note allowed (Transcribe keeps it low, under the solo). */
+function spreadVoice(q,r,prev,lo0=52,lo1=60,top=79){
+  const ct=q.ct, has=x=>ct.includes(x);
+  const third=[3,4,5,2].find(has), sev=[10,11].find(has)??(q.id==='dim7'||q.id==='six'||q.id==='min6'||q.id==='six9'?9:null);
+  const fifth=[6,8].find(has)??(sev==null?7:null);
+  const colour=(q.id==='alt'?[1,8]:q.req).find(x=>![0,third,sev,fifth,7].includes(x));
+  const ivs=[third,sev,fifth,colour].filter(x=>x!=null); if(ivs.length<3&&has(7)&&!ivs.includes(7)) ivs.push(7); // two notes sound thin: add the 5th on top
+  const pcs=ivs.map(x=>mod12(r+x));
+  const build=lo=>{ const out=[]; let m=lo; pcs.forEach((pc,k)=>{ m=k?out[k-1]+3:lo; while(mod12(m)!==pc) m++; out.push(m); }); return out; };
+  const target=prev?prev.reduce((a,b)=>a+b,0)/prev.length:(lo0+top)/2-3, avg=v=>v.reduce((a,b)=>a+b,0)/v.length;
+  let best=null; for(let lo=lo0;lo<=lo1;lo++){ const v=build(lo); if(v[v.length-1]>top) continue; if(!best||Math.abs(avg(v)-target)<Math.abs(avg(best)-target)) best=v; }
+  return best||build(lo0);
+}
 function playChord(notes,when,dur,timbre,bus,vel=80){ notes.forEach(m=>tone(m,when,dur,vel,timbre,bus)); }
 </script>
 <script>
@@ -4784,7 +4801,7 @@ function trChordPopup(e,c,onSave,onDel,title){
     <div class="tproots">${[...Array(12).keys()].map(pc=>`<button data-tpr="${pc}" aria-pressed="${pc===root}">${rootName(defaultRoot(pc,false))}</button>`).join('')}</div>
     <div class="tprow"><select id="tpQ" title="Chord type">${TR_QUALS.map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
     <button class="ghost ic" id="tpHear" title="Hear it">▶</button><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
-  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(compUnder({root:t.root,q:t.q},58),now()+.03,1.2,'mellow',bus,70); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
+  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(spreadVoice(t.q,root,null,48,54,69),now()+.03,1.2,'mellow',bus,70); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
   const show=()=>{ pop.querySelector('#tpSym').textContent=symText(chordObj({root,qid})); pop.querySelectorAll('[data-tpr]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.tpr===root)); };
   pop.querySelectorAll('[data-tpr]').forEach(b=>b.onclick=()=>{ root=+b.dataset.tpr; show(); hear(); });
   pop.querySelector('#tpQ').onchange=ev=>{ qid=ev.target.value; show(); hear(); };
@@ -4820,9 +4837,9 @@ function trPlayScore(from){
   const go=t0=>{
     if(src!=='orig'){
       visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; tone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,'epiano',bus); });
-      if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
+      let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
-        playChord(compUnder({root:t.root,q:t.q},58),t0+a,(z-a)*.95,'mellow',bus,42); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
+        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,'mellow',bus,42); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
     const step=()=>{ if(!TR.playing) return; const el=now()-t0;
       TR.posB=Math.min(endB,real?mp.toBeat(sec0+Math.max(0,el)*sp):from+Math.max(0,el)*sp/spb); trHead(TR.posB);
       if(el<endT) TR.raf=requestAnimationFrame(step); else if(loop) trPlayScore(loop.a); else { trStopAll(); TR.posB=0; trHead(0); } };
@@ -7024,29 +7041,13 @@ function gigPlay(from=0){
     while(t<now()+.25){ const bar=tl[i];
       bar.chords.forEach(ch=>{ const at=t+(ch.at-bar.beat)*spb, d=ch.dur*spb*.96; if(!ch.c) return;
         const r=mod12(ch.c.root.pc+sh), bpc=mod12((ch.c.bass||ch.c.root).pc+sh);
-        if(GDATA.pad){ prev=gigVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
+        if(GDATA.pad){ prev=spreadVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
         if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.2),84,'bass',bus);
         cue.push({at,bar:i,ch}); });
       if(GDATA.click!=='off') for(let k=GDATA.click==='all'?0:1;k<s.beats;k+=GDATA.click==='all'?1:2) hat(t+k*spb);
       t+=s.beats*spb; i=(i+1)%total; } };
   const draw=()=>{ if(!GIG.playing) return; while(cue.length&&cue[0].at<=now()+.02){ const c=cue.shift(); if(GIG.pos!==c.bar||GIG.markAt!==c.at){ GIG.pos=c.bar; GIG.markAt=c.at; gigMark(c.bar); gigLight(c.ch); } } GIG.raf=requestAnimationFrame(draw); };
   sched(); GIG.timer=setInterval(sched,40); GIG.raf=requestAnimationFrame(draw);
-}
-/* The backing's voicing: open and spread, so busy chords don't turn to mush. The 3rd (or the sus note) and the 7th
-   (or 6th; the 5th on a triad, or when it's altered), then one colour tone the symbol asks for, stacked so no two
-   neighbours are closer than a minor 3rd. The bass plays the root, so it's left out up here. Each chord sits as
-   close as it can to the one before. */
-function gigVoice(q,r,prev){
-  const ct=q.ct, has=x=>ct.includes(x);
-  const third=[3,4,5,2].find(has), sev=[10,11].find(has)??(q.id==='dim7'||q.id==='six'||q.id==='min6'||q.id==='six9'?9:null);
-  const fifth=[6,8].find(has)??(sev==null?7:null);
-  const colour=(q.id==='alt'?[1,8]:q.req).find(x=>![0,third,sev,fifth,7].includes(x));
-  const ivs=[third,sev,fifth,colour].filter(x=>x!=null); if(ivs.length<3&&has(7)&&!ivs.includes(7)) ivs.push(7); // two notes sound thin: add the 5th on top
-  const pcs=ivs.map(x=>mod12(r+x));
-  const build=lo=>{ const out=[]; let m=lo; pcs.forEach((pc,k)=>{ m=k?out[k-1]+3:lo; while(mod12(m)!==pc) m++; out.push(m); }); return out; };
-  const target=prev?prev.reduce((a,b)=>a+b,0)/prev.length:63, avg=v=>v.reduce((a,b)=>a+b,0)/v.length;
-  let best=null; for(let lo=52;lo<=60;lo++){ const v=build(lo); if(v[v.length-1]>79) continue; if(!best||Math.abs(avg(v)-target)<Math.abs(avg(best)-target)) best=v; }
-  return best||build(52);
 }
 function gigStop(){ GIG.playing=false; clearInterval(GIG.timer); cancelAnimationFrame(GIG.raf); killBus(GIG.bus); GIG.bus=null; if($('gigPlay')) $('gigPlay').textContent='▶'; }
 
