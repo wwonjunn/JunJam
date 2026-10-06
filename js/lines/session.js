@@ -183,7 +183,7 @@ function playLine(inst,lick,bus,t0,bpm){
   inst.chords.forEach(c=>{
     const at=T(c.at), d=c.beats*spb*.95;
     playChord(compUnder(c,ceil),at,d,'mellow',bus,44);
-    tone(40+mod12(c.root.pc-40),at,d,58,'mellow',bus);
+    tone(40+mod12(c.root.pc-40),at,Math.min(d,2.2),70,'bass',bus);
   });
   let end=0;
   inst.notes.forEach(n=>{ const a=T(startOf(n)), e=T(startOf(n)+lenOf(n)); end=Math.max(end,e); tone(n.midi,a,Math.max(.1,(e-a)*.92),96,'epiano',bus); });
