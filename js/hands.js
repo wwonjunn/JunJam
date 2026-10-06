@@ -14,17 +14,37 @@ function tierUnlocked(t){
 const isProgStage=()=>typeof stageN==='string';
 
 /* ---------------- stars (Game mode only, no locks) ----------------
-   Per chord stage and per progression. Each star needs the ones before it. */
-const STAR_RUN=16;
-const STAR_GOALS=['Clear 16 chords in one Game run.','Clear 16 with 90% right on the first try.','Do that at Cherokee tempo or faster without losing a life.'];
+   Per chord stage and per progression, five each. Each star needs the ones before it.
+   ★ and ★★ are about knowing the chords. From ★★ on, some chords come "on fire": they name the note that has to be
+   at the bottom (the 3rd, then also the 5th, then also the 7th), so your left hand learns more than the root.
+   ★★★★★ is every inversion at Cherokee tempo without losing a life. */
+const STAR_RUN=16, STAR_MAX=5, FIRE_RUN=4;   // a fire star needs at least this many fire chords cleared in the run
+const STAR_GOALS=['Clear 16 chords in one Game run.','Clear 16 with 90% right on the first try.',
+  `Same again with 🔥 chords, which want the 3rd as the lowest note (clear at least ${FIRE_RUN}).`,
+  `Same again, with 🔥 chords asking for the 3rd or the 5th in the bass.`,
+  'With every inversion (3rd, 5th and 7th in the bass) at Cherokee tempo or faster, without losing a life.'];
 let HSTARS=store.get('hstars',{});
+// the old ★★★ (Cherokee tempo, no inversions) counts as ★★ on the five-star ladder
+if(store.get('hstarsV',1)<2){ Object.keys(HSTARS).forEach(k=>{ if(HSTARS[k]>2) HSTARS[k]=2; }); store.set('hstars',HSTARS); store.set('hstarsV',2); }
 const starsOf=id=>HSTARS[String(id)]||0;
+// what the fire chords ask for while you work on the next star: 0 none, 1 the 3rd, 2 the 3rd or 5th, 3 the 3rd, 5th or 7th
+const fireLevel=id=>Math.max(0,Math.min(3,starsOf(id)-1));
+const FIRE_LABEL={3:'3rd in the bass',5:'5th in the bass',7:'7th in the bass'};
+function fireFor(t,lvl){
+  const q=t.q; if(q.bass!=null) return null;   // slash chords already say their bass
+  const iv={3:q.ct.find(x=>x===3||x===4),5:q.ct.find(x=>x>=6&&x<=8),7:q.ct.find(x=>x===10||x===11)??(q.id==='dim7'?9:undefined)};
+  const kinds=[3,5,7].slice(0,lvl).filter(k=>iv[k]!=null); if(!kinds.length) return null;
+  const k=kinds[Math.floor(Math.random()*kinds.length)], name=spellNote(60+mod12(t.root.pc+iv[k]),t.root,q).name;
+  return {k,iv:iv[k],name};
+}
 const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),'p:mix'];
 function runStars(){
   if(G.practice||G.kills<STAR_RUN) return 0;
   const tries=G.kills+G.escapes;
   if(!tries||G.firstTry/tries<0.9) return 1;
-  return G.tier.bpm>=240&&G.escapes===0?3:2;
+  if(!G.fireLvl||G.fireCleared<FIRE_RUN) return 2;
+  if(G.fireLvl<3) return G.fireLvl+2;
+  return G.tier.bpm>=240&&G.escapes===0?5:4;
 }
 function checkStars(){
   const n=runStars(), id=String(stageN);
@@ -33,12 +53,12 @@ function checkStars(){
 function starToast(n){
   const el=document.createElement('div'); el.className='pop startoast';
   el.style.left='50%'; el.style.top=(STRIP+30)+'px';
-  el.innerHTML=`<b>${starStr(n)}</b><span>New star on this ${isProgStage()?'progression':'stage'}</span>`;
+  el.innerHTML=`<b>${starStr(n,STAR_MAX)}</b><span>New star on this ${isProgStage()?'progression':'stage'}</span>`;
   $('lane').appendChild(el); setTimeout(()=>el.remove(),2300);
 }
 // "Next up" on the menu: the first thing in a J-pop band keys order that still has stars to earn
 const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','7','p:mix'];
-function nextUp(){ for(const need of [1,2,3]){ const id=NEXT_ORDER.find(x=>starsOf(x)<need); if(id) return id; } return null; }
+function nextUp(){ for(let need=1;need<=STAR_MAX;need++){ const id=NEXT_ORDER.find(x=>starsOf(x)<need); if(id) return id; } return null; }
 function nextChords(){
   const st=stageN;
   // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
@@ -69,6 +89,8 @@ function nextChords(){
 }
 function withReq(c){
   const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null};
+  // fire chords: about one in three, never more than three plain chords in a row
+  if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
   if(Math.random()<0.25){
     const list=requestsFor(t,{rootless:opts.rootless,sequence:isProgStage()});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
@@ -111,7 +133,7 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0};
+     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:fireLevel(stageN),fireGap:0,fireCleared:0};
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -130,7 +152,9 @@ function spawn(){
   const t=G.queue.shift(); fillQueue(); renderAhead();
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
-  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'');
+  el.innerHTML=symHTML(t)+(t.fire?`<span class="slash">/${t.fire.name}</span>`:'')+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
+    +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'');
+  if(t.fire) el.classList.add('fire');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);
@@ -174,6 +198,9 @@ function submit(notes){
   if(!G.enemies.length) return;
   const e=G.enemies[0];
   const ev=evaluate(notes,e.t,opts);
+  // a fire chord also needs its note at the bottom
+  if(ev.ok&&e.t.fire&&mod12(Math.min(...notes)-e.t.root.pc)!==e.t.fire.iv){ ev.ok=false;
+    ev.reasons=[`Right notes, but this one is on fire: ${e.t.fire.name} (the ${e.t.fire.k===3?'3rd':e.t.fire.k===5?'5th':'7th'}) has to be your lowest note.`]; }
   G.attempts++;
   if(!ev.ok){
     G.fails++; G.combo=0; e.misses++; recordStat(e.t,'miss');
@@ -198,6 +225,7 @@ function submit(notes){
     if(meetsRequest(e.req,ev,e.t,G.prev)){ res.tags.push({t:'Request met',p:res.total}); res.total*=2; G.reqMet=(G.reqMet||0)+1; }
     else reqNote=`The request was ${REQ_LABEL[e.req]}, so no double points this time.`;
   }
+  if(e.t.fire){ res.tags.push({t:`🔥 ${FIRE_LABEL[e.t.fire.k]}`,p:res.total*2}); res.total*=3; G.fireCleared++; }
   if(!G.practice) res.total=Math.round(res.total*G.tier.mult);
   recordStat(e.t,'clear',(performance.now()-e.born)/1000,e.misses===0);
   G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();
@@ -293,7 +321,7 @@ function gameOver(){ clearDraft();
   $('overTitle').textContent=G.practice?'Practice session':newBest?'New best':'Run over';
   $('results').innerHTML=G.practice
     ? `<div><b>${G.kills}</b>chords played</div><div><b>${acc}%</b>of attempts correct</div><div><b>${avg}s</b>average per chord</div>`
-    : `<div><b>${G.score.toLocaleString()}</b>score</div><div><b>${G.kills}</b>chords cleared</div><div><b>${acc}%</b>of attempts correct</div><div><b>${G.bpm}</b>tempo reached</div><div><b>${G.maxCombo}</b>best combo</div><div><b class="stars">${starStr(starsOf(stageN))}</b>stars here</div>`;
+    : `<div><b>${G.score.toLocaleString()}</b>score</div><div><b>${G.kills}</b>chords cleared</div><div><b>${acc}%</b>of attempts correct</div><div><b>${G.bpm}</b>tempo reached</div><div><b>${G.maxCombo}</b>best combo</div><div><b class="stars">${starStr(starsOf(stageN),STAR_MAX)}</b>stars here</div>`;
   $('bestV').innerHTML=G.best?`<div class="sym">${G.best.sym}</div><div>${G.best.notes.join(' ')}, worth ${G.best.total}${G.best.tags.length?`. ${G.best.tags.join(', ')}.`:''}</div>`:'<div>No chords cleared this time.</div>';
   let weak='';
   if(G.practice){
@@ -303,7 +331,8 @@ function gameOver(){ clearDraft();
   const trouble={}; Object.entries(G.escaped).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v*2); Object.entries(G.missed).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v);
   const top=Object.entries(trouble).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
   if(top.length) weak+=(weak?' ':'')+`Most missed: ${top.join(', ')}.`;
-  if(!G.practice&&starsOf(stageN)<3) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
+  if(!G.practice&&G.fireCleared) weak+=(weak?' ':'')+`🔥 chords cleared: ${G.fireCleared}.`;
+  if(!G.practice&&starsOf(stageN)<STAR_MAX) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;
   $('overOv').hidden=false; $('againBtn').focus();
   renderMenu();

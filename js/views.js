@@ -117,7 +117,8 @@ function showAnalysis(ev,target,result,extra){
   paintKeys();
 }
 function showHint(target){
-  const notes=hintVoicing(target,opts);
+  let notes=hintVoicing(target,opts);
+  if(target.fire){ const pc=mod12(target.root.pc+target.fire.iv); let b=Math.min(...notes)-1; while(mod12(b)!==pc) b--; notes=[b,...notes.filter(m=>m>b)]; } // the fire note goes underneath
   const ev=evaluate(notes,target,opts);
   kbMarks={}; notes.forEach(m=>kbMarks[m]='k-hint');
   $('staff').innerHTML=staffSVG(ev.per.map(p=>({...p.spell,midi:p.midi})),ev.per.map(()=>'hint'));

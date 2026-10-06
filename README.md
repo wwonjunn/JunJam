@@ -7,6 +7,8 @@ A jazz piano trainer with two sides:
 - **Progressions**: 13 common J-pop, city pop and jazz progressions (Royal Road, Just the Two of Us,
   Canon, Komuro, passing diminished, minor iv, turnarounds, ii–V–I...) to play in every key in Hands,
   with J-pop style degrees (IVmaj7 V7 IIIm7 VIm7), and to name by ear in the Ears Progressions world.
+- **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords name the note your left
+  hand has to put at the bottom (C/E, G/B…): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
