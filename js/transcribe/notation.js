@@ -35,7 +35,7 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
   const top=staffs[0].y(staffs[0].hi), bottom=grand?yB(18):staffs[0].y(staffs[0].lo);
   s+=`<line class="ln" x1="8" x2="8" y1="${top}" y2="${bottom}"/>`;
   for(let b=4;b<=beats;b+=4){ const x=X0+cum[b]-8; s+=`<line class="ln" x1="${x}" x2="${x}" y1="${top}" y2="${bottom}"/>`; }
-  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
+  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym"${c.i!=null?` data-c="${c.i}"`:''} x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
   staffs.forEach(st=>{
     const stacks=gsStacks(st.notes,beats);
     // beam groups: notes shorter than a quarter within one beat

@@ -1,5 +1,6 @@
 /* ---------------- state ---------------- */
 const $=id=>document.getElementById(id);
+const MODK=/Mac|iPhone|iPad|iPod/.test(navigator.platform||navigator.userAgent)?'Cmd':'Ctrl'; // the shortcut key, as this computer names it
 const store={get(k,d){try{const v=localStorage.getItem('mtc:'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('mtc:'+k,JSON.stringify(v));}catch(e){}}};
 const opts={rootless:store.get('rootless',true),weird:store.get('weird',false),sound:store.get('sound',true),metro:store.get('metro',false)};
 // stageN: a chord stage number, or 'p:<progression id>' / 'p:mix' for Progressions

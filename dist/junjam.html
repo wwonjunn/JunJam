@@ -447,7 +447,21 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmenulist button:hover{background:color-mix(in srgb, var(--brass) 18%, transparent)}
 .trmenulist .fine{display:block;font-weight:400}
 .trmenulist hr{border:0;border-top:1px solid var(--line-strong);margin:4px 6px}
-.trlib{margin-bottom:6px} .trlib .lst b{color:var(--brass);font-weight:600;letter-spacing:0}
+.trlib .lst b{color:var(--brass);font-weight:600;letter-spacing:0}
+.trlibbar{display:flex;align-items:center;gap:8px;margin-bottom:6px} .trlibbar .sec{margin:0}
+.trfolder{border-radius:8px;margin-bottom:6px;transition:background .12s} .trfolder.over{background:color-mix(in srgb, var(--brass) 14%, transparent);outline:2px dashed var(--brass)}
+#trLib.dragging .trtoplevel{min-height:44px;outline:1.5px dashed var(--line-strong);border-radius:8px}
+.trfhead{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1.5px solid var(--line-strong);border-radius:6px;cursor:pointer;user-select:none;margin-bottom:6px}
+.trfhead:hover{border-color:var(--brass)} .trfhead b{font-family:var(--cond);font-size:17px} .trcaret{width:12px;color:var(--muted)}
+.trsm{margin:0;padding:3px 10px;font-size:14px} .trloose{margin:8px 0 4px} .trfolder>.licks{padding-left:16px} .trfempty{margin:0 0 8px 22px}
+.lick .more{position:absolute;right:24px;top:2px;font-size:17px;color:var(--muted);padding:0 4px;line-height:1.2} .lick .more:hover{color:var(--ink)}
+.trlib .lick .lt,#trLib .lick .lt{padding-right:40px}
+.trscore .csym[data-c]{cursor:pointer} .trscore .csym[data-c]:hover{fill:var(--brass)} .trscore{user-select:none}
+.trchordpop{display:block;width:330px} .tptitle{display:flex;align-items:baseline;gap:10px;margin-bottom:8px} .tptitle b{font-family:var(--hand);font-size:24px}
+.tproots{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px}
+.tproots button{font-family:var(--cond);font-weight:600;font-size:16px;background:transparent;color:var(--ink);border:1.5px solid var(--line-strong);border-radius:4px;padding:4px 0;cursor:pointer}
+.tproots button[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 22%, transparent)}
+.tprow{display:flex;gap:6px;align-items:center} .tprow .go,.tprow .ghost{margin:0}
 .trtoast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);max-width:min(640px,90vw);background:var(--ink);color:var(--lane);padding:10px 16px;border-radius:8px;font-family:var(--cond);font-weight:600;font-size:16px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
 .trtoast.show{opacity:1;transform:translate(-50%,0)} .trtoast.no{background:var(--wrong);color:#fff} .trtoast.ok{background:var(--brass);color:var(--lane)}
 .trscore{cursor:pointer}
@@ -1416,6 +1430,7 @@ function meetsRequest(kind,ev,t,prev){
 <script>
 /* ---------------- state ---------------- */
 const $=id=>document.getElementById(id);
+const MODK=/Mac|iPhone|iPad|iPod/.test(navigator.platform||navigator.userAgent)?'Cmd':'Ctrl'; // the shortcut key, as this computer names it
 const store={get(k,d){try{const v=localStorage.getItem('mtc:'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('mtc:'+k,JSON.stringify(v));}catch(e){}}};
 const opts={rootless:store.get('rootless',true),weird:store.get('weird',false),sound:store.get('sound',true),metro:store.get('metro',false)};
 // stageN: a chord stage number, or 'p:<progression id>' / 'p:mix' for Progressions
@@ -4007,7 +4022,7 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
   const top=staffs[0].y(staffs[0].hi), bottom=grand?yB(18):staffs[0].y(staffs[0].lo);
   s+=`<line class="ln" x1="8" x2="8" y1="${top}" y2="${bottom}"/>`;
   for(let b=4;b<=beats;b+=4){ const x=X0+cum[b]-8; s+=`<line class="ln" x1="${x}" x2="${x}" y1="${top}" y2="${bottom}"/>`; }
-  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym" x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
+  (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym"${c.i!=null?` data-c="${c.i}"`:''} x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
   staffs.forEach(st=>{
     const stacks=gsStacks(st.notes,beats);
     // beam groups: notes shorter than a quarter within one beat
@@ -4059,8 +4074,11 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
 /* Transcribe: mp3 in, editable sheet music out. The helper (tools/transcriber) does the listening on this Mac;
    this screen imports the recording, asks what you want to see, sends the selection, and lets you fix the result. */
 const TR_URL='http://127.0.0.1:8771';
-let TRDATA=store.get('trans',{list:[]});
-const saveTr=()=>store.set('trans',TRDATA);
+let TRDATA=store.get('trans',{list:[]}); TRDATA.folders=TRDATA.folders||[];
+const trNewId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+TRDATA.list.forEach(t=>{ if(!t.id) t.id=trNewId('t'); });
+// false when the browser's storage is full
+const saveTr=()=>{ try{ localStorage.setItem('mtc:trans',JSON.stringify(TRDATA)); return true; }catch(e){ return false; } };
 /* A saved transcription keeps its recording and the helper's reading too, so it reopens ready to play, hear and re-read
    without importing the audio again. They live in IndexedDB on this computer (audio is too big for localStorage). */
 const trDB=(()=>{ let p; const open=()=>p||(p=new Promise((ok,no)=>{ const r=indexedDB.open('junjam',1);
@@ -4087,7 +4105,7 @@ function trInstallGuide(){
     <li>When it's done, double-click <b>Start Jun Jam helper</b> on your Desktop. Leave that window open while you transcribe.</li>
     <li><button class="go" id="trRecheck">Check again</button></li></ol></div>`;
   return `<div class="trguide">${intro}
-    <ol><li>Open <b>Terminal</b> (Cmd+Space, type Terminal, press Enter) and paste this to install the helper:${cmd(`bash ${q((dir||'/path/to/Jun Jam')+'/tools/transcriber/install.sh')}`,'trCmd1')}${where}</li>
+    <ol><li>Open <b>Terminal</b> (${MODK}+Space, type Terminal, press Enter) and paste this to install the helper:${cmd(`bash ${q((dir||'/path/to/Jun Jam')+'/tools/transcriber/install.sh')}`,'trCmd1')}${where}</li>
     <li>From then on <b>Jun Jam.app starts it for you</b>. If you open Jun Jam another way, start the helper with:${cmd(`"$HOME/Library/Application Support/Jun Jam/transcriber-venv/bin/python" "$HOME/Library/Application Support/Jun Jam/server.py"`,'trCmd2')}</li>
     <li><button class="go" id="trRecheck">Check again</button></li></ol></div>`;
 }
@@ -4097,8 +4115,7 @@ async function trOpen(){
   trStopAll(); Object.assign(TR,{active:true,step:'start'});
   synth.init(); hideOv(); document.body.classList.add('nohud','trmode'); document.body.classList.remove('menu'); $('transStage').hidden=false;
   $('trBody').innerHTML=`<div class="etop"><span class="etitle">Transcribe a recording</span><span id="trStatus">Checking the helper…</span></div>
-    ${TRDATA.list.length?`<div class="sec">Your transcriptions</div><div class="licks trlib">${TRDATA.list.map((t,i)=>`<button class="lick" data-open="${i}"><span class="ln">${t.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[t.instrument]||{}).name+(t.texture==='full'?' with chords':' line')} · ${t.bars} bars</span><span class="lt">${trEsc(t.title)}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}${t.media?' · <b title="The recording is saved with it">♫ with recording</b>':''}</span><span class="del" data-del="${i}" title="Delete">×</span></button>`).join('')}</div>
-    <div class="sec" style="margin-top:16px">New transcription</div>`:''}
+    <div id="trLib"></div>${TRDATA.list.length||TRDATA.folders.length?'<div class="sec" style="margin-top:16px">New transcription</div>':''}
     <p>Drop in an mp3 (or any audio file you own). Choose what you want to see, select the part of the song, and it comes back as sheet music with chords that you can fix and save.</p>
     <div id="trGuide"></div>
     <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*" hidden><b>Choose an audio file</b><span>or drop it here</span></label>
@@ -4109,12 +4126,52 @@ async function trOpen(){
   f.onchange=()=>f.files[0]&&trLoad(f.files[0]);
   drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); }; drop.ondragleave=()=>drop.classList.remove('over');
   drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); const file=e.dataTransfer.files[0]; if(file) trLoad(file); };
-  $('trBody').onclick=e=>{ const d=e.target.closest('[data-del]'), o=e.target.closest('[data-open]'), c=e.target.closest('[data-copy]');
-    if(d){ e.stopPropagation(); if(confirm('Delete this transcription?')){ const [t]=TRDATA.list.splice(+d.dataset.del,1); if(t&&t.id) trDB.del(t.id); saveTr(); trOpen(); } return; }
-    if(o){ trOpenSaved(+o.dataset.open); return; }
+  trLibRender();
+  $('trBody').onclick=e=>{ const c=e.target.closest('[data-copy]');
     if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
     if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trRec') trTabRecord(); };
   trCheck();
+}
+/* ---------------- your transcriptions: folders, rename, move, delete (all kept inside Jun Jam) ---------------- */
+function trLibCard(t,i){ return `<button class="lick" draggable="true" data-open="${i}" title="Open. Drag onto a folder to move it; right-click for more"><span class="ln">${t.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[t.instrument]||{}).name+(t.texture==='full'?' with chords':' line')} · ${t.bars} bars</span><span class="lt">${trEsc(t.title)}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}${t.media?' · <b title="The recording is saved with it">♫ with recording</b>':''}</span><span class="more" data-more="${i}" title="Rename, move, delete">⋯</span><span class="del" data-del="${i}" title="Delete">×</span></button>`; }
+function trLibRender(){
+  const el=$('trLib'); if(!el) return; const L=TRDATA.list, F=TRDATA.folders, known=new Set(F.map(f=>f.id));
+  if(!L.length&&!F.length){ el.innerHTML=''; return; }
+  const cards=fid=>L.map((t,i)=>[t,i]).filter(([t])=>(known.has(t.folder)?t.folder:'')===fid).map(([t,i])=>trLibCard(t,i)).join('');
+  el.innerHTML=`<div class="trlibbar"><span class="sec">Your transcriptions</span><span class="trspace"></span><button class="ghost trsm" id="trNewFolder">+ New folder</button></div>
+    ${F.map(f=>{ const n=L.filter(t=>t.folder===f.id).length, c=cards(f.id);
+      return `<div class="trfolder" data-drop="${f.id}"><div class="trfhead" data-ftoggle="${f.id}"><span class="trcaret">${f.closed?'▸':'▾'}</span><b>📁 ${trEsc(f.name)}</b><span class="fine">${n||'empty'}</span><span class="trspace"></span>
+        <button class="ghost trsm" data-frename="${f.id}">Rename</button><button class="ghost trsm" data-fdel="${f.id}">Delete</button></div>
+        ${f.closed?'':c?`<div class="licks">${c}</div>`:'<p class="fine trfempty">Drag transcriptions here, or use ⋯ → Move.</p>'}</div>`; }).join('')}
+    <div class="trfolder trtoplevel" data-drop="">${cards('')?`${F.length?'<div class="fine trloose">Not in a folder</div>':''}<div class="licks">${cards('')}</div>`:F.length?'<p class="fine trfempty">Drag a transcription here to take it out of its folder.</p>':''}</div>`;
+  const commit=msg=>{ if(!saveTr()) trMsg("Couldn't save that: this browser's storage is full.",'no'); else if(msg) trMsg(msg,'ok'); trLibRender(); };
+  const move=(i,fid)=>{ const t=L[i]; if(!t) return; if(fid) t.folder=fid; else delete t.folder; const f=F.find(x=>x.id===fid); if(f) f.closed=false; commit(`Moved to ${f?f.name:'the top level'}.`); };
+  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete "${t.title}"? This can't be undone.`)) return; L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
+  const rename=i=>{ const t=L[i], n=t&&prompt('Name',t.title); if(n&&n.trim()){ t.title=n.trim(); commit(); } };
+  const cardMenu=(e,i)=>{ const t=L[i]; trMenu(e,[{t:'Open',f:()=>trOpenSaved(i)},{t:'Rename',f:()=>rename(i)},null,
+    ...F.filter(f=>f.id!==t.folder).map(f=>({t:`Move to 📁 ${trEsc(f.name)}`,f:()=>move(i,f.id)})),...(t.folder&&known.has(t.folder)?[{t:'Move out of the folder',f:()=>move(i,'')}]:[]),
+    {t:'New folder with this in it',f:()=>{ const n=prompt('Folder name'); if(n&&n.trim()){ const f={id:trNewId('f'),name:n.trim()}; F.push(f); move(i,f.id); } }},null,{t:'Delete',f:()=>del(i)}]); };
+  const delFolder=(e,fid)=>{ const f=F.find(x=>x.id===fid), inside=L.filter(t=>t.folder===fid);
+    const drop=keep=>{ if(!keep){ inside.forEach(t=>{ if(t.id) trDB.del(t.id); }); TRDATA.list=L.filter(t=>t.folder!==fid); } else inside.forEach(t=>delete t.folder);
+      TRDATA.folders=F.filter(x=>x!==f); commit(keep?`Folder deleted; its transcriptions are at the top level now.`:'Folder deleted.'); };
+    if(!inside.length) return drop(true);
+    trMenu(e,[{t:`Delete the folder, keep its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>drop(true)},
+      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete "${f.name}" and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
+  $('trNewFolder').onclick=()=>{ const n=prompt('Folder name'); if(n&&n.trim()){ F.push({id:trNewId('f'),name:n.trim()}); commit(); } };
+  el.onclick=e=>{ const g=k=>e.target.closest(`[data-${k}]`);
+    if(g('del')) return del(+g('del').dataset.del);
+    if(g('more')) return cardMenu(e,+g('more').dataset.more);
+    if(g('frename')){ const f=F.find(x=>x.id===g('frename').dataset.frename), n=prompt('Folder name',f.name); if(n&&n.trim()){ f.name=n.trim(); commit(); } return; }
+    if(g('fdel')) return delFolder(e,g('fdel').dataset.fdel);
+    if(g('ftoggle')){ const f=F.find(x=>x.id===g('ftoggle').dataset.ftoggle); f.closed=!f.closed; commit(); return; }
+    if(g('open')) trOpenSaved(+g('open').dataset.open); };
+  el.oncontextmenu=e=>{ const c=e.target.closest('[data-open]'); if(c){ e.preventDefault(); cardMenu(e,+c.dataset.open); } };
+  // drag a card onto a folder (or below the folders, to take it out)
+  el.ondragstart=e=>{ const c=e.target.closest('[data-open]'); if(c){ e.dataTransfer.setData('text/plain',c.dataset.open); e.dataTransfer.effectAllowed='move'; el.classList.add('dragging'); } };
+  el.ondragend=()=>{ el.classList.remove('dragging'); el.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); };
+  el.ondragover=e=>{ const d=e.target.closest('[data-drop]'); if(!d) return; e.preventDefault(); el.querySelectorAll('.over').forEach(x=>x!==d&&x.classList.remove('over')); d.classList.add('over'); };
+  el.ondrop=e=>{ const d=e.target.closest('[data-drop]'), i=e.dataTransfer.getData('text/plain'); if(!d||i==='') return; e.preventDefault();
+    if((L[+i].folder||'')!==d.dataset.drop) move(+i,d.dataset.drop); else trLibRender(); };
 }
 async function trCheck(){
   const ok=await trHelperOk(); TR.helper=ok; if(!$('trStatus')) return;
@@ -4273,7 +4330,7 @@ function trEdit(score,res,savedIndex){
   $('trBody').innerHTML=`<div class="trtop">${TR.buf&&R?'<button class="ghost" id="trSettings" title="Back to what to write, instrument and part">← Settings</button>':''}
       <span class="etitle" id="trTitle" title="Click to rename"></span><span class="fine" id="trInfo"></span><span class="trspace"></span><span class="fine" id="trDirty"></span>
       <div class="trmenu"><button class="go" id="trExportBtn" aria-haspopup="true">Save ▾</button><div class="trmenulist" id="trExportList" hidden>
-        <button data-exp="app">In Jun Jam <span class="fine">With the recording, under Your transcriptions (Cmd+S)</span></button>
+        <button data-exp="app">In Jun Jam <span class="fine">With the recording, under Your transcriptions (${MODK}+S)</span></button>
         <button data-exp="pdf">PDF <span class="fine">The sheet music, to print or send</span></button><hr>
         <button data-exp="xml">MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">MIDI, on the beat</button>${R?'<button data-exp="midp">MIDI, as played</button>':''}</div></div>
       <button class="ghost" id="trLick" title="Select 3 to 16 notes in the piano roll first">→ Lines</button><button class="ghost" id="trClose">Close</button></div>
@@ -4286,7 +4343,7 @@ function trEdit(score,res,savedIndex){
       <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
       <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
       <span class="trspace"></span>
-      <button class="ghost ic" id="trUndo" title="Undo (Cmd+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+Cmd+Z)">↷</button>
+      <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button>
       <button class="ghost" id="trHelpBtn" title="How everything here works">? Guide</button></div>
     <div class="trfix">${R?`<span class="trgrp" title="How sure a note has to be to show. Lower: cleaner, can miss quiet or very fast notes. Higher: catches more, and more stray notes."><span class="fine">Sensitivity</span>${trSeg('sens',TR_SENS_NAMES.map((t,i)=>[i,t]),score.sens??2)}</span>
       <span class="trgrp"><span class="fine">Tempo</span>${trSeg('bs',[[.5,'Half'],[1,'As heard'],[2,'Double']],score.beatScale||1)}</span>
@@ -4367,21 +4424,21 @@ const TR_GUIDE=[
    <li><b>Snap</b>: where notes land when you add or move them (quarter, 8th, 16th, 32nd, triplets). Notes in a tuplet beat keep to its spots.</li>
    <li>With notes selected: <b>▲ ▼</b> (<kbd>↑</kbd> <kbd>↓</kbd>) a half step, <b>+8 −8</b> (<kbd>Shift+↑</kbd> <kbd>Shift+↓</kbd>) an octave, <kbd>←</kbd> <kbd>→</kbd> nudge in time, <b>🗑</b> (<kbd>Delete</kbd>) removes.</li>
    <li><b>Right-click</b> a note or a beat for everything you can do there.</li>
-   <li>Click a key on the side keyboard, or a note, to hear it. <kbd>Cmd+Z</kbd> undoes, <kbd>Shift+Cmd+Z</kbd> redoes.</li></ul>`],
- ['chords','Chords',`<ul><li>The chord lane is the strip above the notes. <b>Click a chord</b> to change its root and type, or remove it.</li>
-   <li><b>Click an empty spot</b> in the lane to add a chord at the start of that bar. Right-click for the same choices.</li>
+   <li>Click a key on the side keyboard, or a note, to hear it. <kbd>${MODK}+Z</kbd> undoes, <kbd>Shift+${MODK}+Z</kbd> redoes.</li></ul>`],
+ ['chords','Chords',`<ul><li>The chord lane is the strip above the notes. <b>Click a chord</b> there, or on the sheet music, to change it: pick the root and the type (you hear each choice), then OK. <b>Remove</b> takes it out.</li>
+   <li><b>Click an empty spot</b> in the lane to add a chord on that beat, so a bar can have two or more. Right-click for the same choices.</li>
    <li>Chords are guessed one per bar. Reharmonised passages are often simplified, so check them by ear with <b>Chords</b> on.</li>
    <li>Lead sheets: <b>solo?</b> at the end of each bar marks it as a solo bar, which leaves it out of the sheet music and exports.</li></ul>`],
  ['keys','Your keyboard',`<ul><li>Play your <b>MIDI keyboard</b>, or the computer keys <kbd>A</kbd> <kbd>W</kbd> <kbd>S</kbd> <kbd>E</kbd> <kbd>D</kbd> <kbd>F</kbd>… (<kbd>Z</kbd> <kbd>X</kbd> change octave). The keys light up on the piano roll's keyboard.</li>
    <li><b>● Rec</b>, then Play: what you play along is written into the transcription, on the snap grid. One Undo takes back the whole take.</li></ul>`],
- ['save','Saving & export',`<ul><li><b>Save ▾ → In Jun Jam</b> (<kbd>Cmd+S</kbd>) keeps it under <b>Your transcriptions</b> on the Transcribe page, with the recording, so it reopens ready to play, hear the recording and re-read, without importing the audio again. "Not saved" means you have changes.</li>
+ ['save','Saving & export',`<ul><li><b>Save ▾ → In Jun Jam</b> (<kbd>${MODK}+S</kbd>) keeps it under <b>Your transcriptions</b> on the Transcribe page, with the recording, so it reopens ready to play, hear the recording and re-read, without importing the audio again. "Not saved" means you have changes.</li>
    <li><b>PDF</b>: the sheet music on white paper. In the print window, set Destination to <b>Save as PDF</b>.</li>
    <li><b>MusicXML</b> opens in MuseScore, Sibelius, Finale and Dorico (tuplets, ties and chord symbols included). <b>MIDI, on the beat</b> is the grid version; <b>MIDI, as played</b> keeps the real timing, for a DAW.</li>
    <li><b>→ Lines</b>: select 3 to 16 notes and save them as a lick to practise in all keys.</li>
    <li><b>← Settings</b> goes back to choose a different part of the recording or instrument (it asks first if you have unsaved changes).</li></ul>`],
  ['shortcuts','Shortcuts',`<table class="trkeytable"><tr><td><kbd>Space</kbd></td><td>play / pause</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>playhead a beat (<kbd>Shift</kbd>: a bar), or nudge selected notes</td></tr>
    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>selected notes a half step (<kbd>Shift</kbd>: an octave)</td></tr><tr><td><kbd>Delete</kbd></td><td>delete selected notes</td></tr>
-   <tr><td><kbd>Shift+L</kbd></td><td>loop on / off</td></tr><tr><td><kbd>Cmd+Z</kbd> / <kbd>Shift+Cmd+Z</kbd></td><td>undo / redo</td></tr><tr><td><kbd>Cmd+S</kbd></td><td>save</td></tr>
+   <tr><td><kbd>Shift+L</kbd></td><td>loop on / off</td></tr><tr><td><kbd>${MODK}+Z</kbd> / <kbd>Shift+${MODK}+Z</kbd></td><td>undo / redo</td></tr><tr><td><kbd>${MODK}+S</kbd></td><td>save</td></tr>
    <tr><td><kbd>A</kbd> <kbd>W</kbd> <kbd>S</kbd>… <kbd>Z</kbd> <kbd>X</kbd></td><td>play notes, change octave</td></tr><tr><td><kbd>Esc</kbd></td><td>close a menu, then the transcription</td></tr></table>`]];
 function trGuide(topic='start'){
   document.querySelectorAll('.trguidebox').forEach(x=>x.remove());
@@ -4438,7 +4495,7 @@ function trScoreView(){
   starts.forEach(([b,nb])=>{
     const a=b*4, z=a+nb*4, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
       return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,tup:n.tup||0,spell:{...sp,midi:n.midi},name:sp.name}; });
-    const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a}));
+    const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a,i:s.chords.indexOf(c)}));
     const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+nb);
     const svg=s.texture==='full'?grandStaffSVG({notes,chords,beats:nb*4,grand:!!s.grand}):s.mode==='lead'?lineStaffSVG({notes,chords,total:nb*4},-1,false)
       :grandStaffSVG({notes,chords,beats:nb*4,grand:false,clef:low?'bass':'treble'});
@@ -4449,7 +4506,8 @@ function trScoreView(){
   $('trScore').innerHTML=lines.join('');
   if(s.mode==='lead'&&s.texture!=='full') TR.lines=null; // the lead sheet's staff is drawn by Lines (its own spacing)
   // click the music to put the playhead there
-  $('trScore').onclick=e=>{ const el=e.target.closest('[data-line]'); if(!el||!TR.lines) return; const L=TR.lines[+el.dataset.line], svg=el.querySelector('svg'), r=svg.getBoundingClientRect();
+  $('trScore').onclick=e=>{ const ce=e.target.closest('[data-c]'); if(ce) return trChordEdit(+ce.dataset.c,e);
+    const el=e.target.closest('[data-line]'); if(!el||!TR.lines) return; const L=TR.lines[+el.dataset.line], svg=el.querySelector('svg'), r=svg.getBoundingClientRect();
     const x=(e.clientX-r.left)*L.W/r.width-L.X0; let i=0; while(i<L.nb*4-1&&L.cum[i+1]<=x) i++;
     TR.posB=Math.max(0,L.a+i+Math.max(0,Math.min(1,(x-L.cum[i])/L.bw[i]))); if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
   trSheetHead(TR.posB||0);
@@ -4544,7 +4602,7 @@ function trRollEvents(){
     const beatAt=trBeatAtX;
     if(sEl){ trPush(); const b=+sEl.dataset.solo, sb=s.soloBars||(s.soloBars=[]); sb.includes(b)?sb.splice(sb.indexOf(b),1):sb.push(b); trRender(); return; }
     if(cEl){ trChordEdit(+cEl.dataset.chord,e); return; }
-    if(e.target.closest('.rlane')){ trChordAdd(Math.max(0,Math.floor(beatAt(pt(e,head).x)/4)*4),e); return; }
+    if(e.target.closest('.rlane')){ trChordAdd(Math.max(0,Math.floor(beatAt(pt(e,head).x)+1e-6)),e); return; }
   };
   head.ondblclick=e=>{ const rEl=e.target.closest('[data-beat]'); if(rEl) trSetBeat1(+rEl.dataset.beat); };
   head.oncontextmenu=e=>{ e.preventDefault(); const cEl=e.target.closest('[data-chord]');
@@ -4554,7 +4612,7 @@ function trRollEvents(){
     if(e.target.closest('[data-anchor]')) return trHint('Beat 1 was set here by hand — click the flag to take it away');
     if(e.target.closest('[data-beat]')) return trHint(`${trWhere(b)} — click: play from here · drag: loop · double-click: this is beat 1 · right-click: more`);
     if(e.target.closest('[data-chord]')) return trHint('Chord — click to change it · right-click to remove it');
-    if(e.target.closest('.rlane')) return trHint(`Chord lane, bar ${Math.floor(Math.max(0,b)/4)+1} — click an empty spot to add a chord`); };
+    if(e.target.closest('.rlane')) return trHint(`Chord lane, bar ${Math.floor(Math.max(0,b)/4)+1} — click an empty spot to add a chord on that beat`); };
   head.onpointerleave=()=>trHint('');
   svg.onpointerdown=e=>{
     const p=pt(e), nEl=e.target.closest('.rnote');
@@ -4610,7 +4668,7 @@ function trNoteMenu(e){ const n=TR.score.melody[[...TR.selected][0]], b=n?n.gat:
 function trBeatMenu(e,b){ const bar=Math.floor(Math.max(0,b)/4);
   trMenu(e,[{t:'Play from here',f:()=>{ TR.posB=Math.max(0,b); trPlayScore(TR.posB); }},{t:`Loop bar ${bar+1}`,f:()=>{ TR.loop={a:bar*4,b:bar*4+4}; TR.looping=false; trLoopToggle(); }},null,
     {t:'Beat 1 is here (bars from here on)',off:!TR.res,f:()=>trSetBeat1(Math.round(b))},{t:'Bars from here: one beat earlier',off:!TR.res,f:()=>trNudgeBars(-1,b)},{t:'Bars from here: one beat later',off:!TR.res,f:()=>trNudgeBars(1,b)},null,
-    {t:'Add a chord in this bar',f:()=>trChordAdd(bar*4,e)}]); }
+    {t:'Add a chord on this beat',f:()=>trChordAdd(Math.max(0,Math.floor(b+1e-6)),e)}]); }
 function trDropAnchor(i){ if(!TR.raw) return; const A=(TR.score.anchors||[]).filter((_,k)=>k!==i);
   TR.res=prepRes(TR.raw,A); trReread({shift:null},'Beat 1 mark removed: those bars follow the detected downbeats again.'); }
 // move the bar lines one beat, from the bar at b on (from the start: all of them)
@@ -4631,21 +4689,32 @@ function trRetuple(m){ const by=new Map(); m.forEach(n=>{ const b=Math.floor(n.g
     const all=D&&ns.every(n=>on(n,D)); ns.forEach(n=>{ const t=all||(D&&on(n,D)&&!on(n,8))?D:0; n.tup=t; n.tri=t===3; }); }); }
 // chord symbols: click to change, click an empty spot in the lane to add one
 const TR_QUALS=['maj','min','dom7','maj7','min7','hdim','dim7','dim','aug','sus4','sus7','six','min6','mmaj7','maj9','dom9','min9','dom13','min11','d7b9','d7s9','alt','d7s11','add9','six9'];
-function trChordPopup(e,c,onSave,onDel){
+// Pick a root and a chord type; you hear each choice. Enter = OK, Escape = cancel
+function trChordPopup(e,c,onSave,onDel,title){
   document.querySelectorAll('.trpop').forEach(x=>x.remove());
-  const pop=document.createElement('div'); pop.className='trpop';
-  pop.innerHTML=`<select id="tpR">${[...Array(12).keys()].map(pc=>`<option value="${pc}"${pc===c.root?' selected':''}>${rootName(defaultRoot(pc,false))}</option>`).join('')}</select>
-    <select id="tpQ">${TR_QUALS.map(id=>`<option value="${id}"${id===c.qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
-    <button class="go" id="tpOk">OK</button>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}`;
-  document.body.appendChild(pop); pop.style.left=Math.min(innerWidth-300,e.clientX)+'px'; pop.style.top=(e.clientY+12)+'px';
-  pop.querySelector('#tpOk').onclick=()=>{ onSave(+pop.querySelector('#tpR').value,pop.querySelector('#tpQ').value); pop.remove(); };
+  const pop=document.createElement('div'); pop.className='trpop trchordpop'; let root=c.root, qid=c.qid||'maj7', bus=null;
+  pop.innerHTML=`<div class="tptitle"><b id="tpSym"></b><span class="fine">${title||''}</span></div>
+    <div class="tproots">${[...Array(12).keys()].map(pc=>`<button data-tpr="${pc}" aria-pressed="${pc===root}">${rootName(defaultRoot(pc,false))}</button>`).join('')}</div>
+    <div class="tprow"><select id="tpQ" title="Chord type">${TR_QUALS.map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
+    <button class="ghost ic" id="tpHear" title="Hear it">▶</button><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
+  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(compUnder({root:t.root,q:t.q},58),now()+.03,1.2,'mellow',bus,70); tone(36+mod12(root-36),now()+.03,1.2,60,'mellow',bus); };
+  const show=()=>{ pop.querySelector('#tpSym').textContent=symText(chordObj({root,qid})); pop.querySelectorAll('[data-tpr]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.tpr===root)); };
+  pop.querySelectorAll('[data-tpr]').forEach(b=>b.onclick=()=>{ root=+b.dataset.tpr; show(); hear(); });
+  pop.querySelector('#tpQ').onchange=ev=>{ qid=ev.target.value; show(); hear(); };
+  pop.querySelector('#tpHear').onclick=hear; show();
+  document.body.appendChild(pop);
+  const w=pop.offsetWidth, h=pop.offsetHeight; let y=e.clientY+12; if(y+h>innerHeight-8) y=Math.max(8,e.clientY-h-12);
+  pop.style.left=Math.max(8,Math.min(innerWidth-w-8,e.clientX-20))+'px'; pop.style.top=y+'px';
+  pop.onkeydown=ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); pop.querySelector('#tpOk').click(); } };
+  pop.querySelector('#tpOk').onclick=()=>{ onSave(root,qid); pop.remove(); };
+  pop.querySelector('#tpOk').focus();
   if(onDel) pop.querySelector('#tpDel').onclick=()=>{ onDel(); pop.remove(); };
   setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('pointerdown',f); } }),0);
 }
 function trChordEdit(i,e){ const s=TR.score, c=s.chords[i];
-  trChordPopup(e,c,(root,qid)=>{ trPush(); s.chords[i]={...c,root,qid}; trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); }); }
+  trChordPopup(e,c,(root,qid)=>{ trPush(); s.chords[i]={...c,root,qid}; trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); },trWhere(c.at)); }
 function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.key.pc,qid:'maj7'};
-  trChordPopup(e,{...prev},(root,qid)=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); s.chords.push({at,root,qid}); s.chords.sort((a,b)=>a.at-b.at); trRender(); }); }
+  trChordPopup(e,{...prev},(root,qid)=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); s.chords.push({at,root,qid}); s.chords.sort((a,b)=>a.at-b.at); trRender(); },null,`New chord, ${trWhere(at)}`); }
 
 /* ---------------- playback, save, export, to Lines ---------------- */
 /* Playback from the playhead (TR.posB, in beats). Space plays and pauses where it is; Stop goes back to the start.
@@ -4724,8 +4793,10 @@ async function trSave(){
     try{ await trDB.put(s.id,{file:TR.file,sel:TR.sel,raw:TR.raw,shift:TR.shift}); TR.mediaFor=s.id+'|'+TR.sel; navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }
     catch(e){ trMsg("The notes are saved, but there wasn't room to keep the recording with them.",'no'); } }
   const item={...s,saved:Date.now(),media:withMedia&&TR.mediaFor===s.id+'|'+TR.sel||!!(old&&old.media)};
-  if(old) TRDATA.list[TR.saved]=item; else { TRDATA.list.unshift(item); TR.saved=0; if(TRDATA.list.length>40){ const t=TRDATA.list.pop(); if(t.id) trDB.del(t.id); } }
-  saveTr(); TR.dirty=false; trInfo(); trMsg(item.media?'Saved with the recording. It\'s under Your transcriptions in Transcribe.':'Saved. It\'s under Your transcriptions in Transcribe.','ok');
+  const was=old?TRDATA.list[TR.saved]:null;
+  if(old) TRDATA.list[TR.saved]=item; else TRDATA.list.unshift(item);
+  if(!saveTr()){ if(old) TRDATA.list[TR.saved]=was; else TRDATA.list.shift(); return trMsg("Couldn't save: this browser's storage is full. Delete a few transcriptions on the Transcribe page, then try again.",'no'); }
+  if(!old) TR.saved=0; TR.dirty=false; trInfo(); trMsg(item.media?'Saved with the recording. It\'s under Your transcriptions in Transcribe.':'Saved. It\'s under Your transcriptions in Transcribe.','ok');
 }
 // Reopen a saved one: with its recording when that was kept, so playback, Hear recording and re-reading all work again
 async function trOpenSaved(i){
