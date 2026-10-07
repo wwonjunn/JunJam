@@ -152,7 +152,7 @@ function spawn(){
   const t=G.queue.shift(); fillQueue(); renderAhead();
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
-  el.innerHTML=symHTML(t)+(t.fire?`<span class="slash">/${t.fire.name}</span>`:'')+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
+  el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
     +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'');
   if(t.fire) el.classList.add('fire');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
@@ -200,7 +200,8 @@ function submit(notes){
   const ev=evaluate(notes,e.t,opts);
   // a fire chord also needs its note at the bottom
   if(ev.ok&&e.t.fire&&mod12(Math.min(...notes)-e.t.root.pc)!==e.t.fire.iv){ ev.ok=false;
-    ev.reasons=[`Right notes, but this one is on fire: ${e.t.fire.name} (the ${e.t.fire.k===3?'3rd':e.t.fire.k===5?'5th':'7th'}) has to be your lowest note.`]; }
+    const which=e.t.fire.k===3?'3rd':e.t.fire.k===5?'5th':'7th';   // you work out the note; it's named after a second miss
+    ev.reasons=[e.misses?`Right notes, but the ${which}, ${e.t.fire.name}, has to be your lowest note.`:`Right notes, but this one is on fire: the ${which} has to be your lowest note.`]; }
   G.attempts++;
   if(!ev.ok){
     G.fails++; G.combo=0; e.misses++; recordStat(e.t,'miss');
@@ -225,7 +226,7 @@ function submit(notes){
     if(meetsRequest(e.req,ev,e.t,G.prev)){ res.tags.push({t:'Request met',p:res.total}); res.total*=2; G.reqMet=(G.reqMet||0)+1; }
     else reqNote=`The request was ${REQ_LABEL[e.req]}, so no double points this time.`;
   }
-  if(e.t.fire){ res.tags.push({t:`🔥 ${FIRE_LABEL[e.t.fire.k]}`,p:res.total*2}); res.total*=3; G.fireCleared++; }
+  if(e.t.fire){ res.tags.push({t:`🔥 ${e.t.fire.name} in the bass`,p:res.total*2}); res.total*=3; G.fireCleared++; }
   if(!G.practice) res.total=Math.round(res.total*G.tier.mult);
   recordStat(e.t,'clear',(performance.now()-e.born)/1000,e.misses===0);
   G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();

@@ -32,7 +32,7 @@ function renderMenu(){
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
   const nx=nextUp(), total=STAR_IDS().reduce((a,id)=>a+starsOf(id),0);
-  $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*STAR_MAX} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try. From then on 🔥 chords name the note your left hand has to put at the bottom: ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ any of them (7th too) at Cherokee tempo without losing a life. Everything stays open either way.`;
+  $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*STAR_MAX} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try. From then on 🔥 chords say which chord tone your left hand has to put at the bottom (you work out the note): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ any of them (7th too) at Cherokee tempo without losing a life. Everything stays open either way.`;
   const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];

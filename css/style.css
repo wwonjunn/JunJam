@@ -546,7 +546,6 @@ body.nomidi:not(.menu):not(.trmode):not(.earsmode):not(.linesmode):not(.gigmode)
   background:radial-gradient(60% 55% at 30% 100%,rgba(255,200,60,.75),transparent 70%),radial-gradient(50% 70% at 70% 100%,rgba(255,110,30,.7),transparent 70%),radial-gradient(70% 90% at 50% 100%,rgba(220,40,20,.55),transparent 75%);
   filter:blur(5px);transform-origin:50% 100%;animation:flame 1.1s ease-in-out infinite alternate}
 @keyframes flame{0%{transform:scaleY(.92) scaleX(1);opacity:.85}50%{transform:scaleY(1.06) scaleX(.97);opacity:1}100%{transform:scaleY(.97) scaleX(1.03);opacity:.9}}
-.enemy .slash{font-size:36px;color:#ffb066;margin-left:2px}
 .enemy .req.firelab{background:#ff6a2b;color:#2c0905}
 @media (prefers-reduced-motion:reduce){.enemy.fire::before{animation:none}}
 

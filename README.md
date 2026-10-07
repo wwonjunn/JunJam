@@ -14,8 +14,8 @@ A jazz piano trainer with two sides:
   (those mark no bar lines, so chord lengths there are approximate). Search, filter, 🎲 random, transpose, chord names
   or Roman numerals, the current chord lit on the keyboard, a simple pad that plays the changes. Paste in any chart you
   find and it's kept under Yours. A band will play from the same charts later.
-- **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords name the note your left
-  hand has to put at the bottom (C/E, G/B…): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
+- **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords say which chord tone your
+  left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
