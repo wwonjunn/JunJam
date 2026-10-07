@@ -25,7 +25,7 @@ function bindReharmPane(){
 function rhShow(){ synth.init(); hideOv(); document.body.classList.add('nohud'); document.body.classList.remove('menu'); $('reharmStage').hidden=false; }
 function rhPlay(voiced,from,to,t0,mel=null){ // play chords [from,to) of a voiced progression (plus a held melody note); returns the end time
   const bus=REHARM.bus||(REHARM.bus=newBus()); if(!bus) return t0;
-  for(let i=from;i<to;i++){ const at=t0+(i-from)*RH_BAR; playChord(voiced[i].upper,at,RH_BAR*.95,'epiano',bus,70); tone(voiced[i].bass,at,Math.min(RH_BAR*.95,2.2),86,'bass',bus); if(mel!==null) tone(mel,at,RH_BAR*.95,96,'mellow',bus); }
+  for(let i=from;i<to;i++){ const at=t0+(i-from)*RH_BAR; playChord(voiced[i].upper,at,RH_BAR*.95,backSound(),bus,backVel(70)); tone(voiced[i].bass,at,Math.min(RH_BAR*.95,2.2),86,'bass',bus); if(mel!==null) tone(mel,at,RH_BAR*.95,96,'mellow',bus); }
   return t0+(to-from)*RH_BAR;
 }
 function rhStop(){ killBus(REHARM.bus); REHARM.bus=null; clearTimeout(REHARM.timer); }

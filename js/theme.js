@@ -104,10 +104,16 @@ function renderSettingsPane(){
       <div class="profinfo"><label class="fine" for="profName">Your name</label><input id="profName" maxlength="24" placeholder="Player" value="${name.replace(/"/g,'&quot;')}"><p class="rank">${rankLine()}</p></div></div>
     <h2>Look</h2><p>Pick a theme. It changes the whole app right away, and stays picked next time.</p>
     <div class="skingrid">${THEMES.map(t=>`<button class="skintile" data-pick="${t.id}" aria-pressed="${t.id===cur}">${themePreview(t)}<span class="skinname">${t.name}${t.tier==='deluxe'?'<span class="skintier">Deluxe</span>':''}</span><span class="skintag">${t.tag}</span></button>`).join('')}</div>
-    <div class="shaderow" ${cur==='classic'?'':'hidden'}><span class="fine">Classic</span><div class="seg" role="group">${[['auto','Auto'],['dark','Dark'],['light','Light']].map(([v,l])=>`<button data-shade="${v}" aria-pressed="${shade===v}">${l}</button>`).join('')}</div></div>`;
+    <div class="shaderow" ${cur==='classic'?'':'hidden'}><span class="fine">Classic</span><div class="seg" role="group">${[['auto','Auto'],['dark','Dark'],['light','Light']].map(([v,l])=>`<button data-shade="${v}" aria-pressed="${shade===v}">${l}</button>`).join('')}</div></div>
+    <h2>Sound</h2><p>Backing chords: the sound of the chords that play under you in Gig, Lines, Reharm and Transcribe.</p>
+    <div class="seg" role="group">${BACK_SOUNDS.map(([v,l,tip])=>`<button data-bsound="${v}" aria-pressed="${backSound()===v}" title="${tip}">${l}</button>`).join('')}</div>
+    <button class="ghost" id="bsHear">▶ Hear it</button>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+  P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
+  $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
+    [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
   // paint the scene previews one after another, so the page stays responsive
   (async()=>{ for(const cv of P.querySelectorAll('canvas[data-scene]')){ await new Promise(r=>requestAnimationFrame(r)); if(cv.isConnected) await paintScene(cv,cv.dataset.scene,true); } })();

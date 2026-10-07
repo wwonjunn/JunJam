@@ -47,6 +47,12 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && synth.
 /* ---------------- scheduled tones (used by Ears and "by ear" chords) ----------------
    Every question gets its own bus, so stopping a question fades everything it scheduled. */
 const TIMBRES=['epiano','mellow','pluck'];
+/* The backing-chord sound everywhere chords play under you (Gig, Lines, Reharm, Transcribe): Keys or Pad.
+   One setting, picked in Gig or in Profile & settings. Ears keeps its own sounds. */
+const BACK_SOUNDS=[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held']];
+const backSound=()=>{ const s=store.get('backSound',null)??(store.get('gig',{}).sound); return s==='mellow'?'mellow':'epiano'; };
+const setBackSound=s=>store.set('backSound',s==='mellow'?'mellow':'epiano');
+const backVel=v=>backSound()==='mellow'?Math.round(v*.82):v;   // the pad sits a little softer than the keys
 function newBus(){
   synth.init(); const c=synth.ctx; if(!c) return null;
   const g=c.createGain(); g.gain.value=1; g.connect(synth.master); return g;

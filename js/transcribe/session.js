@@ -624,7 +624,7 @@ function trChordPopup(e,c,onSave,onDel,title){
     <div class="tproots">${[...Array(12).keys()].map(pc=>`<button data-tpr="${pc}" aria-pressed="${pc===root}">${rootName(defaultRoot(pc,false))}</button>`).join('')}</div>
     <div class="tprow"><select id="tpQ" title="Chord type">${TR_QUALS.map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
     <button class="ghost ic" id="tpHear" title="Hear it">▶</button><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
-  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(spreadVoice(t.q,root,null,48,54,69),now()+.03,1.2,'mellow',bus,70); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
+  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(spreadVoice(t.q,root,null,48,54,69),now()+.03,1.2,backSound(),bus,backVel(70)); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
   const show=()=>{ pop.querySelector('#tpSym').textContent=symText(chordObj({root,qid})); pop.querySelectorAll('[data-tpr]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.tpr===root)); };
   pop.querySelectorAll('[data-tpr]').forEach(b=>b.onclick=()=>{ root=+b.dataset.tpr; show(); hear(); });
   pop.querySelector('#tpQ').onchange=ev=>{ qid=ev.target.value; show(); hear(); };
@@ -662,7 +662,7 @@ function trPlayScore(from){
       visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; tone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,'epiano',bus); });
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
-        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,'mellow',bus,42); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
+        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),bus,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
     const step=()=>{ if(!TR.playing) return; const el=now()-t0;
       TR.posB=Math.min(endB,real?mp.toBeat(sec0+Math.max(0,el)*sp):from+Math.max(0,el)*sp/spb); trHead(TR.posB);
       if(el<endT) TR.raf=requestAnimationFrame(step); else if(loop) trPlayScore(loop.a); else { trStopAll(); TR.posB=0; trHead(0); } };

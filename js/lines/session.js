@@ -182,7 +182,7 @@ function playLine(inst,lick,bus,t0,bpm){
   const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
   inst.chords.forEach(c=>{
     const at=T(c.at), d=c.beats*spb*.95;
-    playChord(compUnder(c,ceil),at,d,'mellow',bus,44);
+    playChord(compUnder(c,ceil),at,d,backSound(),bus,backVel(44));
     tone(40+mod12(c.root.pc-40),at,Math.min(d,2.2),70,'bass',bus);
   });
   let end=0;

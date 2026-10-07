@@ -1066,10 +1066,16 @@ function renderSettingsPane(){
       <div class="profinfo"><label class="fine" for="profName">Your name</label><input id="profName" maxlength="24" placeholder="Player" value="${name.replace(/"/g,'&quot;')}"><p class="rank">${rankLine()}</p></div></div>
     <h2>Look</h2><p>Pick a theme. It changes the whole app right away, and stays picked next time.</p>
     <div class="skingrid">${THEMES.map(t=>`<button class="skintile" data-pick="${t.id}" aria-pressed="${t.id===cur}">${themePreview(t)}<span class="skinname">${t.name}${t.tier==='deluxe'?'<span class="skintier">Deluxe</span>':''}</span><span class="skintag">${t.tag}</span></button>`).join('')}</div>
-    <div class="shaderow" ${cur==='classic'?'':'hidden'}><span class="fine">Classic</span><div class="seg" role="group">${[['auto','Auto'],['dark','Dark'],['light','Light']].map(([v,l])=>`<button data-shade="${v}" aria-pressed="${shade===v}">${l}</button>`).join('')}</div></div>`;
+    <div class="shaderow" ${cur==='classic'?'':'hidden'}><span class="fine">Classic</span><div class="seg" role="group">${[['auto','Auto'],['dark','Dark'],['light','Light']].map(([v,l])=>`<button data-shade="${v}" aria-pressed="${shade===v}">${l}</button>`).join('')}</div></div>
+    <h2>Sound</h2><p>Backing chords: the sound of the chords that play under you in Gig, Lines, Reharm and Transcribe.</p>
+    <div class="seg" role="group">${BACK_SOUNDS.map(([v,l,tip])=>`<button data-bsound="${v}" aria-pressed="${backSound()===v}" title="${tip}">${l}</button>`).join('')}</div>
+    <button class="ghost" id="bsHear">▶ Hear it</button>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+  P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
+  $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
+    [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
   // paint the scene previews one after another, so the page stays responsive
   (async()=>{ for(const cv of P.querySelectorAll('canvas[data-scene]')){ await new Promise(r=>requestAnimationFrame(r)); if(cv.isConnected) await paintScene(cv,cv.dataset.scene,true); } })();
@@ -1595,6 +1601,12 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && synth.
 /* ---------------- scheduled tones (used by Ears and "by ear" chords) ----------------
    Every question gets its own bus, so stopping a question fades everything it scheduled. */
 const TIMBRES=['epiano','mellow','pluck'];
+/* The backing-chord sound everywhere chords play under you (Gig, Lines, Reharm, Transcribe): Keys or Pad.
+   One setting, picked in Gig or in Profile & settings. Ears keeps its own sounds. */
+const BACK_SOUNDS=[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held']];
+const backSound=()=>{ const s=store.get('backSound',null)??(store.get('gig',{}).sound); return s==='mellow'?'mellow':'epiano'; };
+const setBackSound=s=>store.set('backSound',s==='mellow'?'mellow':'epiano');
+const backVel=v=>backSound()==='mellow'?Math.round(v*.82):v;   // the pad sits a little softer than the keys
 function newBus(){
   synth.init(); const c=synth.ctx; if(!c) return null;
   const g=c.createGain(); g.gain.value=1; g.connect(synth.master); return g;
@@ -3259,7 +3271,7 @@ function playLine(inst,lick,bus,t0,bpm){
   const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
   inst.chords.forEach(c=>{
     const at=T(c.at), d=c.beats*spb*.95;
-    playChord(compUnder(c,ceil),at,d,'mellow',bus,44);
+    playChord(compUnder(c,ceil),at,d,backSound(),bus,backVel(44));
     tone(40+mod12(c.root.pc-40),at,Math.min(d,2.2),70,'bass',bus);
   });
   let end=0;
@@ -3512,7 +3524,7 @@ function bindReharmPane(){
 function rhShow(){ synth.init(); hideOv(); document.body.classList.add('nohud'); document.body.classList.remove('menu'); $('reharmStage').hidden=false; }
 function rhPlay(voiced,from,to,t0,mel=null){ // play chords [from,to) of a voiced progression (plus a held melody note); returns the end time
   const bus=REHARM.bus||(REHARM.bus=newBus()); if(!bus) return t0;
-  for(let i=from;i<to;i++){ const at=t0+(i-from)*RH_BAR; playChord(voiced[i].upper,at,RH_BAR*.95,'epiano',bus,70); tone(voiced[i].bass,at,Math.min(RH_BAR*.95,2.2),86,'bass',bus); if(mel!==null) tone(mel,at,RH_BAR*.95,96,'mellow',bus); }
+  for(let i=from;i<to;i++){ const at=t0+(i-from)*RH_BAR; playChord(voiced[i].upper,at,RH_BAR*.95,backSound(),bus,backVel(70)); tone(voiced[i].bass,at,Math.min(RH_BAR*.95,2.2),86,'bass',bus); if(mel!==null) tone(mel,at,RH_BAR*.95,96,'mellow',bus); }
   return t0+(to-from)*RH_BAR;
 }
 function rhStop(){ killBus(REHARM.bus); REHARM.bus=null; clearTimeout(REHARM.timer); }
@@ -4801,7 +4813,7 @@ function trChordPopup(e,c,onSave,onDel,title){
     <div class="tproots">${[...Array(12).keys()].map(pc=>`<button data-tpr="${pc}" aria-pressed="${pc===root}">${rootName(defaultRoot(pc,false))}</button>`).join('')}</div>
     <div class="tprow"><select id="tpQ" title="Chord type">${TR_QUALS.map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
     <button class="ghost ic" id="tpHear" title="Hear it">▶</button><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
-  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(spreadVoice(t.q,root,null,48,54,69),now()+.03,1.2,'mellow',bus,70); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
+  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(spreadVoice(t.q,root,null,48,54,69),now()+.03,1.2,backSound(),bus,backVel(70)); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
   const show=()=>{ pop.querySelector('#tpSym').textContent=symText(chordObj({root,qid})); pop.querySelectorAll('[data-tpr]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.tpr===root)); };
   pop.querySelectorAll('[data-tpr]').forEach(b=>b.onclick=()=>{ root=+b.dataset.tpr; show(); hear(); });
   pop.querySelector('#tpQ').onchange=ev=>{ qid=ev.target.value; show(); hear(); };
@@ -4839,7 +4851,7 @@ function trPlayScore(from){
       visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; tone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,'epiano',bus); });
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
-        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,'mellow',bus,42); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
+        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),bus,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
     const step=()=>{ if(!TR.playing) return; const el=now()-t0;
       TR.posB=Math.min(endB,real?mp.toBeat(sec0+Math.max(0,el)*sp):from+Math.max(0,el)*sp/spb); trHead(TR.posB);
       if(el<endT) TR.raf=requestAnimationFrame(step); else if(loop) trPlayScore(loop.a); else { trStopAll(); TR.posB=0; trHead(0); } };
@@ -6838,7 +6850,7 @@ B♭7♯5 |`
 let GDATA=store.get('gig',{});
 GDATA.mine=GDATA.mine||[]; GDATA.fav=GDATA.fav||{}; GDATA.tr=GDATA.tr||{}; GDATA.tempo=GDATA.tempo||{};
 if(!GDATA.genre) GDATA.genre='all'; if(!GDATA.view) GDATA.view='chords'; if(!GDATA.size) GDATA.size=1; if(GDATA.tones==null) GDATA.tones=true; if(GDATA.click==null) GDATA.click=true;
-if(GDATA.pad==null) GDATA.pad=true; if(GDATA.bass==null) GDATA.bass=true; if(!['epiano','mellow'].includes(GDATA.sound)) GDATA.sound='epiano';
+if(GDATA.pad==null) GDATA.pad=true; if(GDATA.bass==null) GDATA.bass=true; 
 if(typeof GDATA.click!=='string') GDATA.click=GDATA.click===false?'off':'24';   // the click: off, on 2 and 4, or every beat
 const saveGig=()=>{ try{ localStorage.setItem('mtc:gig',JSON.stringify(GDATA)); return true; }catch(e){ return false; } };
 const GIG={active:false,view:'list',song:null,playing:false};
@@ -6997,7 +7009,7 @@ function gigShow(id){
       <button class="ghost tgl" id="gigTones" aria-pressed="${GDATA.tones}" title="Light up the current chord's notes on the keyboard">Chord tones</button>
       <span class="trgrp"><span class="fine">Backing</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}" title="Chords under you while it plays">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}" title="Bass notes while it plays">Bass</button></span>
       <span class="trgrp"><span class="fine">Click</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4'],['all','Every beat']],GDATA.click)}</span>
-      <span class="trgrp"><span class="fine">Sound</span>${gigSeg('gsound',[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held']],GDATA.sound)}</span></div>
+      <span class="trgrp"><span class="fine">Sound</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</span></div>
     <div class="gigform">Form: ${s.form.map((n,i)=>`<span class="gform" data-fi="${i}">${trEsc(n)}</span>`).join('')}</div>
     <div class="gigsheet" id="gigSheet" style="--gs:${GDATA.size}">${s.sections.map(sec=>`<div class="gsec"><div class="gsecname">${trEsc(sec.name)}${occ[sec.name]>1?` <span class="fine">×${occ[sec.name]}</span>`:''}${!occ[sec.name]?' <span class="fine">(not in the form)</span>':''}</div>
       <div class="gbars" style="--per:${s.beats===3?4:4}">${sec.bars.map((b,bi)=>`<div class="gbar" data-sec="${trEsc(sec.name)}" data-bi="${bi}">${b.rep?'<span class="grep">𝄎</span>':(bt=>b.chords.map((c,k)=>`<span class="gslot" style="flex:${bt[k]}">${gigChordHTML(c,s)}</span>`).join(''))(gigBeats(b,s.beats))}</div>`).join('')}</div></div>`).join('')}</div>
@@ -7012,7 +7024,7 @@ function gigShow(id){
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
   $('gigBody').querySelectorAll('[data-gclick]').forEach(b=>b.onclick=()=>{ GDATA.click=b.dataset.gclick; saveGig(); $('gigBody').querySelectorAll('[data-gclick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
   [['gigPad','pad'],['gigBass','bass']].forEach(([el,k])=>$(el).onclick=()=>{ GDATA[k]=!GDATA[k]; saveGig(); $(el).setAttribute('aria-pressed',GDATA[k]); if(GIG.playing) gigPlay(GIG.pos); });
-  $('gigBody').querySelectorAll('[data-gsound]').forEach(b=>b.onclick=()=>{ GDATA.sound=b.dataset.gsound; saveGig(); $('gigBody').querySelectorAll('[data-gsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
+  $('gigBody').querySelectorAll('[data-gsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.gsound); $('gigBody').querySelectorAll('[data-gsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
   $('gigBody').querySelectorAll('[data-gview]').forEach(b=>b.onclick=()=>{ GDATA.view=b.dataset.gview; saveGig(); re(); });
   $('gigBody').querySelectorAll('[data-gsize]').forEach(b=>b.onclick=()=>{ GDATA.size=+b.dataset.gsize; saveGig(); re(); });
   // a bar: start from its first time in the form
@@ -7036,7 +7048,7 @@ function gigPlay(from=0){
   gigStop(); const s=GIG.song, tl=GIG.tl; if(!s||!tl.length) return; synth.init();
   const bus=GIG.bus=newBus(); if(!bus) return; GIG.playing=true; $('gigPlay').textContent='❚❚';
   const spb=60/(GDATA.tempo[s.id]||s.tempo), sh=gigShift(s), total=tl.length;
-  let i=from%total, t=now()+.12, prev=null; const cue=[], snd=GDATA.sound, vel=snd==='mellow'?50:62;
+  let i=from%total, t=now()+.12, prev=null; const cue=[], snd=backSound(), vel=backVel(62);
   const sched=()=>{ if(!GIG.playing) return;
     while(t<now()+.25){ const bar=tl[i];
       bar.chords.forEach(ch=>{ const at=t+(ch.at-bar.beat)*spb, d=ch.dur*spb*.96; if(!ch.c) return;
