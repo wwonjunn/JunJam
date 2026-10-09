@@ -54,7 +54,7 @@
           <label><input type="checkbox" id="optWeird"> Unusual spellings, like B♯maj7 or F♭7</label>
           <label><input type="checkbox" id="optSound" checked> Built-in electric piano sound</label>
           <label><input type="checkbox" id="optMetro"> Hi-hat on beats 2 and 4</label>
-          <label><input type="checkbox" id="optSmart"> Smart mix: serve the chords and keys you are weakest at more often</label>
+          <label><input type="checkbox" id="optSmart"> Smart mix: chords you miss or play slowly come back a few chords later, spaced further out each time you get them (and due ones return on later days); shaky keys come up more</label>
         </div>
         <button class="go" id="startBtn">Start</button><button class="ghost" id="progBtn">Progress</button>
         <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
@@ -134,6 +134,7 @@
 <script src="js/audio.js"></script>
 <script src="js/views.js"></script>
 <script src="js/input.js"></script>
+<script src="js/srs.js"></script>
 <script src="js/hands.js"></script>
 <script src="js/ears/questions.js"></script>
 <script src="js/ears/levels.js"></script>

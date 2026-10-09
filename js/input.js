@@ -72,7 +72,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('startOv').hidden&&side!=='home'){ side='home'; LINES.rec=null; renderMenu(); $('startOv').scrollTop=0; return; } // a mode's menu: back to the home screen
   if(e.key==='Escape'){ if(G&&G.running) pause(); else if(G&&G.paused) resume(); return; }
   if(e.target && (e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') && (e.key==='Enter'||e.key===' ')) return;
-  if(e.key==='?'||e.key==='/'){ if(G&&G.running&&G.enemies.length){G.combo=0;G.hints++;updateHud();showHint(G.enemies[0].t);} e.preventDefault(); return;}
+  if(e.key==='?'||e.key==='/'){ if(G&&G.running&&G.enemies.length){G.combo=0;G.hints++;G.enemies[0].hinted=true;updateHud();showHint(G.enemies[0].t);} e.preventDefault(); return;}
   if(e.key==='Enter'||e.key===' '){submitDraft();e.preventDefault();return;}
   if(e.key==='Backspace'){draft.clear();paintKeys();return;}
   if(k==='z'){qOct=Math.max(36,qOct-12);paintQwerty();return;}

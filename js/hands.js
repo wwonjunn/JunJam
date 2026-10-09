@@ -74,21 +74,23 @@ function nextChords(){
     return progChords(p,key).map(c=>({...c,prog:label}));
   }
   const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
-  let q, pc, tries=0;
-  if(opts.smart){
-    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p) items.push({q:qq,pc:p,w:weightOf(qq.id,p)*kw[p]});});
+  let q, pc, tries=0, review=false;
+  const rk=srsPick(G.srs);   // a chord you're re-learning, if one is owed now
+  if(rk){ const [qid,p]=rk.split(':'); q=Q[qid]; pc=+p; review=true; }
+  else if(opts.smart){
+    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p&&!(G.srs&&G.srs.learn.has(statKey(qq.id,p)))) items.push({q:qq,pc:p,w:weightOf(qq.id,p)*kw[p]});});
     const pick=weightedPick(items); q=pick.q; pc=pick.pc;
   } else {
     do{ q=pool[Math.floor(Math.random()*pool.length)]; pc=Math.floor(Math.random()*12); tries++; }
     while(G.lastSym && tries<10 && G.lastSym===q.id+pc);
   }
-  G.lastSym=q.id+pc;
+  G.lastSym=q.id+pc; srsServed(G.srs,statKey(q.id,pc),review);
   let root=defaultRoot(pc,q.minor);
   if(opts.weird && Math.random()<0.4){const w=weirdRoot(pc); if(w) root=w;}
-  return [{root,q}];
+  return [{root,q,review}];
 }
 function withReq(c){
-  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null};
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:!!c.review};
   // fire chords: about one in three, never more than three plain chords in a row
   if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
   if(Math.random()<0.25){
@@ -133,7 +135,9 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:fireLevel(stageN),fireGap:0,fireCleared:0};
+     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[]};
+  // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
+  G.srs=opts.smart&&!isProgStage()?srsStart((stageN===7?QUALS:QUALS.filter(q=>q.stage===stageN)).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -153,7 +157,7 @@ function spawn(){
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
   el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
-    +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'');
+    +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'')+(t.review?'<span class="rv" title="Back for another go: you missed it or it was slow last time">↻</span>':'');
   if(t.fire) el.classList.add('fire');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
@@ -180,12 +184,12 @@ function tick(now){
     else { e.tf+=dt/fall; vis=start+(1-start)*Math.min(1,e.tf); }
     const py=STRIP+vis*(bottom-STRIP)-e.h*(1-vis)-e.h*vis;
     e.el.style.transform=`translate(${e.x}px,${py}px)`;
-    e.el.classList.toggle('target',i===0);
+    e.el.classList.toggle('target',i===0); if(i===0&&!e.targetAt) e.targetAt=performance.now();
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
-    const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
+    const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc'); srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),'fail');
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
@@ -232,6 +236,9 @@ function submit(notes){
   G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();
   const secs=(performance.now()-e.born)/1000;
   G.times.push(secs); G.slow.push({sym:symText(e.t),secs});
+  if(G.srs){ const s2=(performance.now()-(e.targetAt||e.born))/1000, clean=e.misses===0&&!e.hinted;
+    let g=srsGrade(s2,clean,srsTypical(G.cleanTimes)*(e.t.fire?1.5:1)); if(g==='slow'&&e.t.req==='byear') g='good';   // listening takes time
+    srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),g); if(clean) G.cleanTimes.push(s2); }
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
   if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
@@ -332,6 +339,10 @@ function gameOver(){ clearDraft();
   const trouble={}; Object.entries(G.escaped).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v*2); Object.entries(G.missed).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v);
   const top=Object.entries(trouble).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
   if(top.length) weak+=(weak?' ':'')+`Most missed: ${top.join(', ')}.`;
+  if(G.srs){ const nm=k=>{ const [qid,pc]=k.split(':'); return symText({root:defaultRoot(+pc,Q[qid].minor),q:Q[qid]}); };
+    const again=[...G.srs.learn.keys(),...G.srs.wait];
+    if(G.srs.graduated.length) weak+=(weak?' ':'')+`Got these down: ${G.srs.graduated.map(nm).join(', ')} (they come back in a day or so to check).`;
+    if(again.length) weak+=(weak?' ':'')+`Still learning: ${again.slice(0,6).map(nm).join(', ')}${again.length>6?'…':''}. They'll come back next run.`; }
   if(!G.practice&&G.fireCleared) weak+=(weak?' ':'')+`🔥 chords cleared: ${G.fireCleared}.`;
   if(!G.practice&&starsOf(stageN)<STAR_MAX) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;

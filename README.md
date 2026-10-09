@@ -7,6 +7,10 @@ A jazz piano trainer with two sides:
 - **Progressions**: 13 common J-pop, city pop and jazz progressions (Royal Road, Just the Two of Us,
   Canon, Komuro, passing diminished, minor iv, turnarounds, ii–V–I...) to play in every key in Hands,
   with J-pop style degrees (IVmaj7 V7 IIIm7 VIm7), and to name by ear in the Ears Progressions world.
+- **Spaced review in Chords** (part of Smart mix): a chord you miss, need the hint for, or play slowly for you comes
+  back a few chords later, never straight away, and each quick return spaces it further out until it graduates to
+  days (tomorrow, a few days, a week…). Gaps are jittered and capped (never two reviews in a row, at most two in six),
+  so it doesn't fall into a pattern. Review chords wear a small ↻.
 - **Gig**: lead sheets to play from (chord changes only), about 100 real songs: J-pop and city pop (IRIS OUT, Pretender,
   夜に駆ける, 紅蓮華, Plastic Love…), pop and rock (Paramore, Olivia Rodrigo, Billie Eilish, Coldplay, Stevie Wonder…),
   jazz standards, blues heads, Latin and bossa (Recorda Me, A Night in Tunisia, Jobim…), funk and soul. Jazz, Latin and
@@ -80,6 +84,7 @@ js/transcribe/session.js   Transcribe screens: import, what to see, region, help
 tools/transcriber/         the local helper: install.sh, requirements.txt, server.py
 js/gig/sheets.js      Gig: the built-in lead sheets (chord charts as text)
 js/gig/session.js     Gig: reading charts, the library, the sheet, playing the changes, adding your own
+js/srs.js             spaced review for Chords: per chord-and-key memory, in-run gaps and day-based reviews
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript

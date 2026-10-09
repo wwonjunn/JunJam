@@ -591,6 +591,8 @@ body.gigmode header .modetag{display:none}
 .gigtext{width:100%;min-height:340px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.5;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:10px;box-sizing:border-box;resize:vertical}
 .gighelp{margin:0 0 10px;padding-left:18px} .gighelp code{font-size:12px;background:color-mix(in srgb, var(--line-strong) 35%, transparent);border-radius:3px;padding:0 4px}
 @media (max-width:700px){ .gbars{grid-template-columns:repeat(2,1fr)} }
+
+.enemy .rv{position:absolute;top:-6px;right:-6px;font-family:var(--cond);font-weight:700;font-size:15px;line-height:1;color:var(--lane);background:var(--chord);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
 </style>
 <style>
 /* ==================================================================================================
@@ -1129,7 +1131,7 @@ applyTheme(themeGet('theme','classic'));
           <label><input type="checkbox" id="optWeird"> Unusual spellings, like B♯maj7 or F♭7</label>
           <label><input type="checkbox" id="optSound" checked> Built-in electric piano sound</label>
           <label><input type="checkbox" id="optMetro"> Hi-hat on beats 2 and 4</label>
-          <label><input type="checkbox" id="optSmart"> Smart mix: serve the chords and keys you are weakest at more often</label>
+          <label><input type="checkbox" id="optSmart"> Smart mix: chords you miss or play slowly come back a few chords later, spaced further out each time you get them (and due ones return on later days); shaky keys come up more</label>
         </div>
         <button class="go" id="startBtn">Start</button><button class="ghost" id="progBtn">Progress</button>
         <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
@@ -1889,7 +1891,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('startOv').hidden&&side!=='home'){ side='home'; LINES.rec=null; renderMenu(); $('startOv').scrollTop=0; return; } // a mode's menu: back to the home screen
   if(e.key==='Escape'){ if(G&&G.running) pause(); else if(G&&G.paused) resume(); return; }
   if(e.target && (e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') && (e.key==='Enter'||e.key===' ')) return;
-  if(e.key==='?'||e.key==='/'){ if(G&&G.running&&G.enemies.length){G.combo=0;G.hints++;updateHud();showHint(G.enemies[0].t);} e.preventDefault(); return;}
+  if(e.key==='?'||e.key==='/'){ if(G&&G.running&&G.enemies.length){G.combo=0;G.hints++;G.enemies[0].hinted=true;updateHud();showHint(G.enemies[0].t);} e.preventDefault(); return;}
   if(e.key==='Enter'||e.key===' '){submitDraft();e.preventDefault();return;}
   if(e.key==='Backspace'){draft.clear();paintKeys();return;}
   if(k==='z'){qOct=Math.max(36,qOct-12);paintQwerty();return;}
@@ -1897,6 +1899,72 @@ document.addEventListener('keydown',e=>{
   if(k in QWERTY && !e.repeat){toggleDraft(qOct+QWERTY[k]);}
 });
 
+</script>
+<script>
+/* ---------------- spaced review for Chords ----------------
+   Every chord in every key (E♭m11 is one item, Em11 another) has a memory. A chord you miss, play slowly or need the
+   hint for joins a small re-learning set and comes back after a few other chords, not straight away (your hand would
+   still be there). Each quick, first-try return pushes the next one further out (about 3 → 7 → 16 chords); a slip
+   pulls it back in. Gaps are jittered, two reviews never sit side by side, at most two of any six chords are
+   reviews, and a review that's only just due may wait a chord or two, so it never settles into a rhythm. When a chord's gap outgrows a run it graduates to days: tomorrow, then a
+   few days, then a week or more, and the ones that come due are mixed into your next runs on that stage.
+   "Slow" and "quick" are measured against your own typical time, not a fixed number. */
+let SRS=store.get('srs',{});
+const SRS_SET=5, SRS_GRAD=26, SRS_FIRST=3;
+const srsDay=()=>Math.floor(Date.now()/864e5);
+const srsItem=k=>SRS[k]||(SRS[k]={ease:2.3,days:0,due:0,reps:0,lapses:0});
+const srsJit=g=>Math.max(2,Math.round(g*(0.8+Math.random()*0.45)));
+// A run's review state: n counts the chords served so far, learn holds the re-learning set (key -> {due, gap})
+function srsStart(pool){
+  const S={n:0,reviews:0,lastReview:false,recent:[],hist:[],learn:new Map(),wait:[],graduated:[],keys:new Set(pool)};
+  // chords that came due since last time are seeded in, spread out, most overdue first
+  const due=[...S.keys].filter(k=>SRS[k]&&SRS[k].reps&&SRS[k].due<=srsDay()).sort((a,b)=>SRS[a].due-SRS[b].due);
+  due.slice(0,SRS_SET).forEach((k,i)=>S.learn.set(k,{due:2+i*3+Math.floor(Math.random()*2),gap:SRS_FIRST,from:'due'}));
+  S.wait=due.slice(SRS_SET);
+  return S;
+}
+// The next chord, if a review is owed: the most overdue one that isn't among the last two chords, never two reviews in a row
+function srsPick(S){
+  if(!S||S.lastReview||S.hist.filter(Boolean).length>=2) return null;   // never two in a row, at most two in six
+  const owed=[...S.learn.entries()].filter(([k,L])=>L.due<=S.n&&!S.recent.includes(k));
+  if(!owed.length) return null;
+  owed.sort((a,b)=>(a[1].due-b[1].due)||(Math.random()-.5));
+  const [k,L]=owed[0];
+  // the longer it's been waiting the likelier it comes now; a review just due often waits a chord or two, so nothing lands on a beat
+  if(Math.random()>Math.min(0.9,0.35+0.18*(S.n-L.due))) return null;
+  return k;
+}
+function srsServed(S,key,review){ if(!S) return; S.n++; S.lastReview=!!review; if(review) S.reviews++; S.recent=[key,...S.recent].slice(0,2); S.hist=[!!review,...S.hist].slice(0,6); }
+// Your typical time for a chord this run (the median of the clean ones), or a sensible start before there are enough
+function srsTypical(times){ const t=[...times].sort((a,b)=>a-b); return t.length>=4?t[t.length>>1]:4; }
+function srsGrade(secs,clean,typical){
+  if(!clean) return 'fail';
+  if(secs>Math.max(typical*1.6,typical+1.5)) return 'slow';
+  return secs<typical*0.8?'fast':'good';
+}
+/* One result. grade: fail (missed, escaped or hinted), slow, good, fast */
+function srsResult(S,key,grade){
+  if(!S||!S.keys.has(key)) return;
+  const it=srsItem(key), L=S.learn.get(key);
+  if(grade==='fail'||grade==='slow'){
+    if(grade==='fail'){ it.lapses++; it.ease=Math.max(1.4,it.ease-0.2); it.days=0; }
+    else it.ease=Math.max(1.4,it.ease-0.05);
+    it.due=srsDay();                                  // it comes due again for the next run too
+    const gap=L?(grade==='fail'?SRS_FIRST:Math.max(SRS_FIRST,Math.round(L.gap*0.7))):SRS_FIRST;
+    if(L||S.learn.size<SRS_SET) S.learn.set(key,{due:S.n+srsJit(gap),gap,from:L?L.from:'miss'});
+    else if(!S.wait.includes(key)) S.wait.push(key);
+  } else {
+    it.reps++;
+    if(grade==='fast') it.ease=Math.min(2.8,it.ease+0.05);
+    if(L){ const gap=Math.round(L.gap*it.ease*(grade==='fast'?1.3:1));
+      if(gap>=SRS_GRAD){ S.learn.delete(key); S.graduated.push(key); it.days=Math.max(1,it.days); it.due=srsDay()+it.days; srsAdmit(S); }
+      else S.learn.set(key,{...L,due:S.n+srsJit(gap),gap}); }
+    else if(it.due<=srsDay()){ it.days=it.days?Math.round(it.days*it.ease):1; it.due=srsDay()+it.days; }  // seen in passing, on time
+  }
+  store.set('srs',SRS);
+}
+// a chord waiting for a free place in the re-learning set takes it, a few chords out
+function srsAdmit(S){ while(S.wait.length&&S.learn.size<SRS_SET){ const k=S.wait.shift(); S.learn.set(k,{due:S.n+srsJit(3),gap:SRS_FIRST,from:'wait'}); } }
 </script>
 <script>
 /* ---------------- game ---------------- */
@@ -1975,21 +2043,23 @@ function nextChords(){
     return progChords(p,key).map(c=>({...c,prog:label}));
   }
   const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
-  let q, pc, tries=0;
-  if(opts.smart){
-    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p) items.push({q:qq,pc:p,w:weightOf(qq.id,p)*kw[p]});});
+  let q, pc, tries=0, review=false;
+  const rk=srsPick(G.srs);   // a chord you're re-learning, if one is owed now
+  if(rk){ const [qid,p]=rk.split(':'); q=Q[qid]; pc=+p; review=true; }
+  else if(opts.smart){
+    const items=[]; pool.forEach(qq=>{for(let p=0;p<12;p++) if(G.lastSym!==qq.id+p&&!(G.srs&&G.srs.learn.has(statKey(qq.id,p)))) items.push({q:qq,pc:p,w:weightOf(qq.id,p)*kw[p]});});
     const pick=weightedPick(items); q=pick.q; pc=pick.pc;
   } else {
     do{ q=pool[Math.floor(Math.random()*pool.length)]; pc=Math.floor(Math.random()*12); tries++; }
     while(G.lastSym && tries<10 && G.lastSym===q.id+pc);
   }
-  G.lastSym=q.id+pc;
+  G.lastSym=q.id+pc; srsServed(G.srs,statKey(q.id,pc),review);
   let root=defaultRoot(pc,q.minor);
   if(opts.weird && Math.random()<0.4){const w=weirdRoot(pc); if(w) root=w;}
-  return [{root,q}];
+  return [{root,q,review}];
 }
 function withReq(c){
-  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null};
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:!!c.review};
   // fire chords: about one in three, never more than three plain chords in a row
   if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
   if(Math.random()<0.25){
@@ -2034,7 +2104,9 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:fireLevel(stageN),fireGap:0,fireCleared:0};
+     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[]};
+  // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
+  G.srs=opts.smart&&!isProgStage()?srsStart((stageN===7?QUALS:QUALS.filter(q=>q.stage===stageN)).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -2054,7 +2126,7 @@ function spawn(){
   const el=document.createElement('div'); el.className='enemy';
   const req=t.req;
   el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
-    +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'');
+    +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'')+(t.review?'<span class="rv" title="Back for another go: you missed it or it was slow last time">↻</span>':'');
   if(t.fire) el.classList.add('fire');
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
@@ -2081,12 +2153,12 @@ function tick(now){
     else { e.tf+=dt/fall; vis=start+(1-start)*Math.min(1,e.tf); }
     const py=STRIP+vis*(bottom-STRIP)-e.h*(1-vis)-e.h*vis;
     e.el.style.transform=`translate(${e.x}px,${py}px)`;
-    e.el.classList.toggle('target',i===0);
+    e.el.classList.toggle('target',i===0); if(i===0&&!e.targetAt) e.targetAt=performance.now();
     e.el.classList.toggle('danger',!G.practice && e.tf>0.75);
   });
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
-    const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc');
+    const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc'); srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),'fail');
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
@@ -2133,6 +2205,9 @@ function submit(notes){
   G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();
   const secs=(performance.now()-e.born)/1000;
   G.times.push(secs); G.slow.push({sym:symText(e.t),secs});
+  if(G.srs){ const s2=(performance.now()-(e.targetAt||e.born))/1000, clean=e.misses===0&&!e.hinted;
+    let g=srsGrade(s2,clean,srsTypical(G.cleanTimes)*(e.t.fire?1.5:1)); if(g==='slow'&&e.t.req==='byear') g='good';   // listening takes time
+    srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),g); if(clean) G.cleanTimes.push(s2); }
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
   if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
@@ -2233,6 +2308,10 @@ function gameOver(){ clearDraft();
   const trouble={}; Object.entries(G.escaped).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v*2); Object.entries(G.missed).forEach(([k,v])=>trouble[k]=(trouble[k]||0)+v);
   const top=Object.entries(trouble).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
   if(top.length) weak+=(weak?' ':'')+`Most missed: ${top.join(', ')}.`;
+  if(G.srs){ const nm=k=>{ const [qid,pc]=k.split(':'); return symText({root:defaultRoot(+pc,Q[qid].minor),q:Q[qid]}); };
+    const again=[...G.srs.learn.keys(),...G.srs.wait];
+    if(G.srs.graduated.length) weak+=(weak?' ':'')+`Got these down: ${G.srs.graduated.map(nm).join(', ')} (they come back in a day or so to check).`;
+    if(again.length) weak+=(weak?' ':'')+`Still learning: ${again.slice(0,6).map(nm).join(', ')}${again.length>6?'…':''}. They'll come back next run.`; }
   if(!G.practice&&G.fireCleared) weak+=(weak?' ':'')+`🔥 chords cleared: ${G.fireCleared}.`;
   if(!G.practice&&starsOf(stageN)<STAR_MAX) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;
