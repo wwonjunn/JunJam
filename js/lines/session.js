@@ -3,14 +3,14 @@
 let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
 if(typeof LDATA.lh!=='boolean') LDATA.lh=true; // left hand: notes below middle C are your comping, not part of the lick
 const LH_SPLIT=60; // playback feel for every lick, the player's choice
-if(!['all','solo','orig','user','fav'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||''; LDATA.fav=LDATA.fav||{}; // fav: licks saved with ♥
+if(!['all','solo','runs','orig','user','fav'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||''; LDATA.fav=LDATA.fav||{}; // fav: licks saved with ♥
 const isFav=id=>!!LDATA.fav[id];
 function toggleFav(id){ if(LDATA.fav[id]) delete LDATA.fav[id]; else LDATA.fav[id]=1; saveLines(); }
 const saveLines=()=>store.set('lines',LDATA);
 const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
 applyRatings([...LICKS,...SOLO_LICKS],LDATA.user); // difficulty and tags from what the notes are, not just how many
-const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':'orig';
-const lickLabel=l=>l.user?(l.artist?`${l.artist} (yours)`:'Yours'):l.artist||'Original';
+const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':l.style==='Runs'?'runs':'orig';
+const lickLabel=l=>l.user?(l.artist?`${l.artist} (yours)`:'Yours'):l.artist||(l.style==='Runs'?'Scale run':'Original');
 const lickById=id=>allLicks().find(l=>l.id===id);
 const LINES={active:false,rec:null};
 const TRANSFER_KEYS=5;
@@ -25,7 +25,7 @@ function renderLinesPane(){
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
-    <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
+    <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
     <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
     <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span><span class="ltags">${(l.tags||[]).slice(0,3).map(t=>`<i>${t}</i>`).join('')}</span><span class="fav${isFav(l.id)?' on':''}${l.user?' withdel':''}" data-fav="${l.id}" title="${isFav(l.id)?'Remove from favourites':'Add to favourites'}">${isFav(l.id)?'♥':'♡'}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||`<p class="fine">${LDATA.from==='fav'?'No favourites yet. Tap the ♡ on any lick to save it here.':'Nothing here yet.'}</p>`}</div>
