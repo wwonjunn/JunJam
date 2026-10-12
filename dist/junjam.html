@@ -7125,7 +7125,7 @@ let GDATA=store.get('gig',{});
 GDATA.mine=GDATA.mine||[]; GDATA.fav=GDATA.fav||{}; GDATA.tr=GDATA.tr||{}; GDATA.tempo=GDATA.tempo||{};
 if(!GDATA.genre) GDATA.genre='all'; if(!GDATA.view) GDATA.view='chords'; if(!GDATA.size) GDATA.size=1; if(GDATA.tones==null) GDATA.tones=true; if(GDATA.click==null) GDATA.click=true;
 if(GDATA.pad==null) GDATA.pad=true; if(GDATA.bass==null) GDATA.bass=true; 
-if(!GDATA.drums) GDATA.drums='auto';   // a groove: auto (from the song's feel), one of DRUM_STYLES, or off
+if(!GDATA.drums||!GDATA.drumsV){ GDATA.drums='off'; GDATA.drumsV=1; }   // a groove: off (the default), auto (from the song's feel) or one of DRUM_STYLES
 if(typeof GDATA.click!=='string') GDATA.click=GDATA.click===false?'off':'24';   // the click: off, on 2 and 4, or every beat
 const saveGig=()=>{ try{ localStorage.setItem('mtc:gig',JSON.stringify(GDATA)); return true; }catch(e){ return false; } };
 const GIG={active:false,view:'list',song:null,playing:false};
