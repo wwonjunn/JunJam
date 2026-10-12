@@ -10,7 +10,7 @@ const saveLines=()=>store.set('lines',LDATA);
 const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
 applyRatings([...LICKS,...SOLO_LICKS],LDATA.user); // difficulty and tags from what the notes are, not just how many
 const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':'orig';
-const lickLabel=l=>l.user?'Yours':l.artist||'Original';
+const lickLabel=l=>l.user?(l.artist?`${l.artist} (yours)`:'Yours'):l.artist||'Original';
 const lickById=id=>allLicks().find(l=>l.id===id);
 const LINES={active:false,rec:null};
 const TRANSFER_KEYS=5;

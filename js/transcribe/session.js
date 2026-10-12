@@ -361,7 +361,7 @@ const TR_GUIDE=[
  ['save','Saving & export',`<ul><li><b>Save ▾ → In Jun Jam</b> (<kbd>${MODK}+S</kbd>) keeps it under <b>Your transcriptions</b> on the Transcribe page, with the recording, so it reopens ready to play, hear the recording and re-read, without importing the audio again. "Not saved" means you have changes.</li>
    <li><b>PDF</b>: the sheet music on white paper. In the print window, set Destination to <b>Save as PDF</b>.</li>
    <li><b>MusicXML</b> opens in MuseScore, Sibelius, Finale and Dorico (tuplets, ties and chord symbols included). <b>MIDI, on the beat</b> is the grid version; <b>MIDI, as played</b> keeps the real timing, for a DAW.</li>
-   <li><b>→ Lines</b>: select 3 to 16 notes and save them as a lick to practise in all keys.</li>
+   <li><b>→ Lines</b>: select 3 to 16 notes and save them as a lick to practise in all keys. Give the player's name and their licks group together under that name in Lines.</li>
    <li><b>← Settings</b> goes back to choose a different part of the recording or instrument (it asks first if you have unsaved changes).</li></ul>`],
  ['shortcuts','Shortcuts',`<table class="trkeytable"><tr><td><kbd>Space</kbd></td><td>play / pause</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>playhead a beat (<kbd>Shift</kbd>: a bar), or nudge selected notes</td></tr>
    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>selected notes a half step (<kbd>Shift</kbd>: an octave)</td></tr><tr><td><kbd>Delete</kbd></td><td>delete selected notes</td></tr>
@@ -764,9 +764,12 @@ function trToLick(){
   const chs=[c0,...s.chords.filter(c=>c.at>sel[0].gat+1e-6&&c.at<end-1e-6)], r0=chordObj(c0).root;
   const ch=chs.map((c,i)=>{ const r=chordObj(c).root, at=Math.max(start,i?c.at:start), next=i<chs.length-1?chs[i+1].at:Math.ceil(end);
     return [mod7(r.l-r0.l),mod12(c.root-c0.root),c.qid,Math.max(.5,next-at)]; });
+  // whose playing it is (optional): it shows on the lick and in Lines' player list, like the famous-solo licks
+  const who=prompt("Whose playing is this? (optional: the player's name, so you can find their licks together in Lines)",store.get('lickArtist',''));
+  if(who===null) return; const artist=who.trim(); store.set('lickArtist',artist);
   const lick=Lk('u'+Date.now(),`${s.title}, bar ${start/4+1|0}`,2,'Yours',ch,sel.map(n=>[n.midi-60-c0.root,n.gdur,n.gat-start]));
-  lick.user=true; lick.tip=`From your transcription of ${s.title}.`; applyRatings([],[lick]); LDATA.user.push(lick); saveLines();
-  trMsg(`Saved to Lines as "${lick.name}" (${lick.diff===1?'Easy':lick.diff===2?'Medium':'Hard'}). It's under Yours.`,'ok');
+  lick.user=true; if(artist) lick.artist=artist; lick.tip=`From your transcription of ${s.title}${artist?`, played by ${artist}`:''}.`; applyRatings([],[lick]); LDATA.user.push(lick); saveLines();
+  trMsg(`Saved to Lines as "${lick.name}" (${lick.diff===1?'Easy':lick.diff===2?'Medium':'Hard'}). It's under Yours${artist?`, and under ${artist} in the player list`:''}.`,'ok');
 }
 const mod7=x=>((x%7)+7)%7;
 function trToMenu(){ trStopAll(); TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
