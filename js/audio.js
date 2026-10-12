@@ -8,11 +8,14 @@ const synth={ctx:null,voices:new Map(),
     }
     if(this.ctx.state!=='running') this.ctx.resume().then(sndStatus,sndStatus);
     sndStatus();
+    if(typeof smpLoadAll==='function') smpLoadAll();   // downloaded instruments load from this Mac (no Wi-Fi needed)
   },
   on(m,v=90){
     if(!opts.sound) return;
     if(!this.ctx||this.ctx.state!=='running'){ sndStatus(); if(this.ctx) this.ctx.resume(); if(!this.ctx) return; }
     this.off(m,0.03);
+    const k=typeof keysSampled==='function'&&keysSampled();   // a real instrument, if one is downloaded and picked
+    if(k){ const sv=smpStart(k,m,v,this.ctx.currentTime); if(sv){ this.voices.set(m,{smp:sv}); return; } }
     const c=this.ctx,t=c.currentTime,f=440*Math.pow(2,(m-69)/12),vel=v/127;
     const car=c.createOscillator(), mod=c.createOscillator(), mg=c.createGain(), g=c.createGain();
     car.type='sine'; mod.type='sine'; car.frequency.value=f; mod.frequency.value=f;
@@ -27,6 +30,7 @@ const synth={ctx:null,voices:new Map(),
   off(m,rel=0.3){
     const vo=this.voices.get(m); if(!vo||!this.ctx) return;
     const t=this.ctx.currentTime;
+    if(vo.smp){ smpRelease(vo.smp,t,Math.max(rel,SMP_INFO[vo.smp.id].rel)); this.voices.delete(m); return; }
     try{vo.g.gain.cancelScheduledValues(t); vo.g.gain.setValueAtTime(Math.max(vo.g.gain.value,0.0001),t);
       vo.g.gain.exponentialRampToValueAtTime(0.0001,t+rel); vo.car.stop(t+rel+0.05); vo.mod.stop(t+rel+0.05);}catch(e){}
     this.voices.delete(m);
@@ -66,6 +70,7 @@ function killBus(bus){
 const now=()=>synth.ctx?synth.ctx.currentTime:0;
 function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   const c=synth.ctx; if(!c) return;
+  if(timbre==='epiano'&&typeof keysSampled==='function'){ const k=keysSampled(); if(k&&smpTone(k,m,when,dur,vel,bus)) return; }   // the real instrument when there is one
   const t=Math.max(when,c.currentTime), f=440*Math.pow(2,(m-69)/12), v=vel/127, out=bus||synth.master;
   const g=c.createGain(); g.connect(out);
   const end=t+dur+0.5, nodes=[];

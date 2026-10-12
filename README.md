@@ -7,6 +7,10 @@ A jazz piano trainer with two sides:
 - **Progressions**: 13 common J-pop, city pop and jazz progressions (Royal Road, Just the Two of Us,
   Canon, Komuro, passing diminished, minor iv, turnarounds, ii–V–I...) to play in every key in Hands,
   with J-pop style degrees (IVmaj7 V7 IIIm7 VIm7), and to name by ear in the Ears Progressions world.
+- **Real instrument sounds, optional**: Profile & settings → Sound. Download a Wurlitzer electric piano (0.9 MB) or a
+  Steinway grand (5.8 MB) once and your keys, the licks and the Keys backing play on it, offline from then on (kept in
+  the browser's database). The built-in synth always works and is the fallback. Wurlitzer EP200 samples by Greg
+  Sullivan (CC BY 3.0); Steinway grand samples released into the public domain by Akai; both via sfzinstruments.
 - **Spaced review in Chords** (part of Smart mix): a chord you miss, need the hint for, or play slowly for you comes
   back a few chords later, never straight away, and each quick return spaces it further out until it graduates to
   days (tomorrow, a few days, a week…). Gaps are jittered and capped (never two reviews in a row, at most two in six),
@@ -89,6 +93,7 @@ tools/transcriber/         the local helper: install.sh, requirements.txt, serve
 js/gig/sheets.js      Gig: the built-in lead sheets (chord charts as text)
 js/gig/session.js     Gig: reading charts, the library, the sheet, playing the changes, adding your own
 js/srs.js             spaced review for Chords: per chord-and-key memory, in-run gaps and day-based reviews
+js/sampled.js         real instruments (Wurlitzer, Steinway grand): one download, kept in the browser, offline after; the synth is the fallback
 js/drums.js           Gig's drum kit (all synthesized) and grooves, fills, hat rolls, the 808 sub bass
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file

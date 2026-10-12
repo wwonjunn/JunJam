@@ -584,3 +584,7 @@ body.gigmode header .modetag{display:none}
 
 .enemy .rv{position:absolute;top:-6px;right:-6px;font-family:var(--cond);font-weight:700;font-size:15px;line-height:1;color:var(--lane);background:var(--chord);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
 #gigDrums{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:4px 6px}
+
+.keyopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+.keyopt{text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.keyopt b{display:block;font-family:var(--cond);font-size:17px} .keyopt[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 14%, transparent)}

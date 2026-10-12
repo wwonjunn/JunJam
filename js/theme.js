@@ -107,16 +107,36 @@ function renderSettingsPane(){
     <div class="shaderow" ${cur==='classic'?'':'hidden'}><span class="fine">Classic</span><div class="seg" role="group">${[['auto','Auto'],['dark','Dark'],['light','Light']].map(([v,l])=>`<button data-shade="${v}" aria-pressed="${shade===v}">${l}</button>`).join('')}</div></div>
     <h2>Sound</h2><p>Backing chords: the sound of the chords that play under you in Gig, Lines, Reharm and Transcribe.</p>
     <div class="seg" role="group">${BACK_SOUNDS.map(([v,l,tip])=>`<button data-bsound="${v}" aria-pressed="${backSound()===v}" title="${tip}">${l}</button>`).join('')}</div>
-    <button class="ghost" id="bsHear">▶ Hear it</button>`;
+    <button class="ghost" id="bsHear">▶ Hear it</button>
+    <p style="margin-top:14px">Your keys: the sound of what you play, the licks, and the Keys backing. The real instruments download once (Wi-Fi this one time), then work offline. The built-in synth always works.</p>
+    <div id="keysSound"></div>
+    <p class="fine">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
+  renderKeysSound();
   $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
   // paint the scene previews one after another, so the page stays responsive
   (async()=>{ for(const cv of P.querySelectorAll('canvas[data-scene]')){ await new Promise(r=>requestAnimationFrame(r)); if(cv.isConnected) await paintScene(cv,cv.dataset.scene,true); } })();
+}
+// Your keys: synth, or a real instrument (download once, offline after)
+function renderKeysSound(msg){
+  const el=$('keysSound'); if(!el) return; const cur=keysSoundPick(), have=smpHave();
+  const opt=(id,name,sub)=>`<button class="keyopt" data-ks="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
+  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).map(([id,i])=>opt(id,i.name,have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
+    <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).length?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
+  el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks; synth.init();
+    if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); renderKeysSound(); $('ksHear').click(); return; }
+    if(!navigator.onLine) return renderKeysSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
+    b.disabled=true; const m=$('ksMsg');
+    try{ await smpDownload(id,(d,n)=>{ m.textContent=`Downloading ${SMP_INFO[id].name}… ${d} of ${n}`; }); store.set('keysSound',id); renderKeysSound(`${SMP_INFO[id].long} downloaded. It works offline from now on.`); $('ksHear').click(); }
+    catch(e){ renderKeysSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } });
+  $('ksHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.05;
+    [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.8,.75,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+2.5+i*.18,.3,80,'epiano',bus)); };
+  if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave())) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');
