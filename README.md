@@ -74,6 +74,7 @@ js/ears/levels.js     worlds and levels as data (edit here to add levels)
 js/ears/session.js    Ears game loop, stars, drill, Ears menu
 js/lines/licks.js     the lick library as data (edit here to add licks), with sources
 js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Database (ODbL)
+js/lines/players.js   licks transcribed from players' own videos (A.N.M-PIANO), credited, filed with the solo licks
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
