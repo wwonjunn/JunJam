@@ -16,7 +16,9 @@ A jazz piano trainer with two sides:
   jazz standards, blues heads, Latin and bossa (Recorda Me, A Night in Tunisia, Jobim…), funk and soul. Jazz, Latin and
   classic pop/soul come from iReal Pro's community charts; J-pop and recent pop from U-FRET and Ultimate Guitar charts
   (those mark no bar lines, so chord lengths there are approximate). Search, filter, 🎲 random, transpose, chord names
-  or Roman numerals, the current chord lit on the keyboard, a simple pad that plays the changes. Paste in any chart you
+  or Roman numerals, the current chord lit on the keyboard, a simple pad that plays the changes. Drums under it too: synthesized grooves for R&B / trap soul (808
+  kick, clap, hat rolls, an 808 sub bass), pop, rock, funk, swing, bossa, samba and ballads, picked from the song's
+  feel or chosen. Paste in any chart you
   find and it's kept under Yours. A band will play from the same charts later.
 - **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords say which chord tone your
   left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
@@ -87,6 +89,7 @@ tools/transcriber/         the local helper: install.sh, requirements.txt, serve
 js/gig/sheets.js      Gig: the built-in lead sheets (chord charts as text)
 js/gig/session.js     Gig: reading charts, the library, the sheet, playing the changes, adding your own
 js/srs.js             spaced review for Chords: per chord-and-key memory, in-run gaps and day-based reviews
+js/drums.js           Gig's drum kit (all synthesized) and grooves, fills, hat rolls, the 808 sub bass
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript

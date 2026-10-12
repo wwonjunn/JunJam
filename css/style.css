@@ -583,3 +583,4 @@ body.gigmode header .modetag{display:none}
 @media (max-width:700px){ .gbars{grid-template-columns:repeat(2,1fr)} }
 
 .enemy .rv{position:absolute;top:-6px;right:-6px;font-family:var(--cond);font-weight:700;font-size:15px;line-height:1;color:var(--lane);background:var(--chord);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+#gigDrums{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:4px 6px}
