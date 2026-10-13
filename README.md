@@ -11,6 +11,9 @@ A jazz piano trainer with two sides:
   Steinway grand (5.8 MB) once and your keys, the licks and the Keys backing play on it, offline from then on (kept in
   the browser's database). The built-in synth always works and is the fallback. Wurlitzer EP200 samples by Greg
   Sullivan (CC BY 3.0); Steinway grand samples released into the public domain by Akai; both via sfzinstruments.
+  Bass & drums too (1.3 MB, the same way): finger electric and upright bass (MusyngKite, CC BY-SA 3.0), a real TR-808
+  (Michael Fischer's free sample set; its long kick, pitched, is the 808 bass), a LinnDrum LM-2 (public domain) and an
+  acoustic kit (Sonic Pi, CC0). Gig picks the kit and bass from the groove; the synth covers them until downloaded.
 - **Spaced review in Chords** (part of Smart mix): a chord you miss, need the hint for, or play slowly for you comes
   back a few chords later, never straight away, and each quick return spaces it further out until it graduates to
   days (tomorrow, a few days, a week…). Gaps are jittered and capped (never two reviews in a row, at most two in six),

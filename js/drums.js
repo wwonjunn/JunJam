@@ -6,8 +6,13 @@
    of a section gets a fill, the first a crash, and timing and velocity are humanised a little. */
 let DRUM_NOISE=null;
 function drumNoise(c){ if(!DRUM_NOISE){ DRUM_NOISE=c.createBuffer(1,c.sampleRate*2,c.sampleRate); const d=DRUM_NOISE.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; } return DRUM_NOISE; }
+// Which real kit plays a voice in the current groove, when the real drums are downloaded
+let DRUM_CUR='pop';
+const DRUM_KIT={rnb:'k808',pop:'linn',funk:'linn',samba:'linn',rock:'acoustic',ballad:'acoustic',swing:'acoustic',bossa:'acoustic'};
+const DRUM_KIT_VOICE={swing:{ride:'linn'},bossa:{rim:'linn',shaker:'linn'},ballad:{rim:'linn'},rock:{hat:'linn'}};
 function drumHit(kind,t,vel=1,bus=null){
   const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const out=bus||synth.master;
+  if(typeof smpDrum==='function'){ const kit=(DRUM_KIT_VOICE[DRUM_CUR]||{})[kind]||DRUM_KIT[DRUM_CUR]; if(smpDrum(kit,kind,t,vel,bus)) return; }   // recorded drums when downloaded
   const env=(peak,att,dec,node)=>{ const g=c.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(peak*vel,t+att); g.gain.exponentialRampToValueAtTime(0.0001,t+att+dec); node.connect(g); g.connect(out); return g; };
   const noise=(dur,type,f,q=0.7)=>{ const s=c.createBufferSource(); s.buffer=drumNoise(c); const fl=c.createBiquadFilter(); fl.type=type; fl.frequency.value=f; fl.Q.value=q; s.connect(fl); s.start(t,Math.random()*1.5); s.stop(t+dur+0.05); return fl; };
   const osc=(type,f0,f1,dur)=>{ const o=c.createOscillator(); o.type=type; o.frequency.setValueAtTime(f0,t); if(f1) o.frequency.exponentialRampToValueAtTime(f1,t+dur); o.start(t); o.stop(t+Math.max(dur,0.05)+0.6); return o; };
@@ -31,7 +36,8 @@ function drumHit(kind,t,vel=1,bus=null){
 }
 // 808 sub bass: a sine with a short slide in and a touch of saturation so it carries on small speakers
 function sub808(m,t,dur,vel,bus,from){
-  const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const f=440*Math.pow(2,(m-69)/12);
+  const c=synth.ctx; if(!c) return;
+  if(typeof smp808==='function'&&smp808(m,t,dur,vel,bus)) return;   // the real 808, pitched, when downloaded t=Math.max(t,c.currentTime); const f=440*Math.pow(2,(m-69)/12);
   const o=c.createOscillator(), ws=c.createWaveShaper(), g=c.createGain(), k=new Float32Array(256); for(let i=0;i<256;i++){ const x=i/128-1; k[i]=Math.tanh(1.6*x); } ws.curve=k;
   o.type='sine'; o.frequency.setValueAtTime(from?440*Math.pow(2,(from-69)/12):f*1.06,t); o.frequency.exponentialRampToValueAtTime(f,t+(from?0.09:0.03));
   o.connect(ws); ws.connect(g); g.connect(bus||synth.master);
@@ -95,7 +101,7 @@ function drumStyleOf(f){
 }
 /* One bar. info: {bar (count from the start), first (first bar of a section), last (last bar of a section)} */
 function drumBar(id,t0,spb,beats,info,bus){
-  const S=DRUM_STYLES[id]; if(!S) return; const per=S.steps, step=spb/per, n=beats*per, r=Math.random;
+  const S=DRUM_STYLES[id]; if(!S) return; DRUM_CUR=id; const per=S.steps, step=spb/per, n=beats*per, r=Math.random;
   const hum=()=>(r()-0.5)*0.008, velOf=ch=>ch==='x'?1:ch==='o'?0.62:ch==='.'?0.28:0;
   const fillFrom=info.last&&S.fill&&r()<0.75?(beats-1)*per:n;   // the last beat of a section is a fill
   const roll=S.rolls&&fillFrom===n&&r()<S.rolls;                    // or, now and then, a hat roll on the last beat

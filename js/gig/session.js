@@ -165,6 +165,7 @@ function gigShow(id){
       <button class="ghost tgl" id="gigTones" aria-pressed="${GDATA.tones}" title="Light up the current chord's notes on the keyboard">Chord tones</button>
       <span class="trgrp"><span class="fine">Backing</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}" title="Chords under you while it plays">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}" title="Bass notes while it plays">Bass</button></span>
       <span class="trgrp"><span class="fine">Drums</span><select id="gigDrums" title="The groove under the chords">${[['auto',`Auto: ${DRUM_STYLES[drumStyleFor(s)].name}`],...Object.entries(DRUM_STYLES).map(([k,v])=>[k,v.name]),['off','Off']].map(([v,t])=>`<option value="${v}"${GDATA.drums===v?' selected':''}>${t}</option>`).join('')}</select></span>
+      ${typeof smpBandReady==='function'&&!SMP_BAND.every(id=>smpHave()[id])?'<button class="ghost trsm" id="gigBandGet" title="Recorded drums and bass instead of the synth: one download (1.3 MB), offline after">⬇ Real drums &amp; bass</button>':''}
       <span class="trgrp" id="gigClickGrp"${GDATA.drums!=='off'?' hidden':''}><span class="fine">Click</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4'],['all','Every beat']],GDATA.click)}</span>
       <span class="trgrp"><span class="fine">Sound</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</span></div>
     <div class="gigform">Form: ${s.form.map((n,i)=>`<span class="gform" data-fi="${i}">${trEsc(n)}</span>`).join('')}</div>
@@ -179,6 +180,9 @@ function gigShow(id){
   $('gigUp').onclick=()=>gigTranspose(1); $('gigDown').onclick=()=>gigTranspose(-1); if($('gigOrig')) $('gigOrig').onclick=()=>{ delete GDATA.tr[id]; saveGig(); re(); };
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
+  if($('gigBandGet')) $('gigBandGet').onclick=async()=>{ const b=$('gigBandGet'); synth.init(); if(!navigator.onLine) return trMsg('The download needs Wi-Fi once. The synth keeps playing until then.','no');
+    b.disabled=true; try{ await smpBandDownload((d,n)=>{ b.textContent=`Downloading ${d} of ${n}…`; }); if(GDATA.drums==='off'){ GDATA.drums='auto'; saveGig(); } trMsg('Real drums and bass downloaded. They work offline from now on.','ok'); gigShow(id); }
+    catch(e){ b.disabled=false; b.textContent='⬇ Real drums & bass'; trMsg("Couldn't finish the download. The synth keeps playing; try again when you're online.",'no'); } };
   $('gigDrums').onchange=e=>{ GDATA.drums=e.target.value; saveGig(); $('gigClickGrp').hidden=GDATA.drums!=='off'; if(GIG.playing) gigPlay(GIG.pos); };
   $('gigBody').querySelectorAll('[data-gclick]').forEach(b=>b.onclick=()=>{ GDATA.click=b.dataset.gclick; saveGig(); $('gigBody').querySelectorAll('[data-gclick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
   [['gigPad','pad'],['gigBass','bass']].forEach(([el,k])=>$(el).onclick=()=>{ GDATA[k]=!GDATA[k]; saveGig(); $(el).setAttribute('aria-pressed',GDATA[k]); if(GIG.playing) gigPlay(GIG.pos); });
@@ -206,13 +210,15 @@ function gigPlay(from=0){
   gigStop(); const s=GIG.song, tl=GIG.tl; if(!s||!tl.length) return; synth.init();
   const bus=GIG.bus=newBus(); if(!bus) return; GIG.playing=true; $('gigPlay').textContent='❚❚';
   const spb=60/(GDATA.tempo[s.id]||s.tempo), sh=gigShift(s), total=tl.length;
-  let i=from%total, t=now()+.12, prev=null, pbass=null; const sty=GDATA.drums==='off'?null:GDATA.drums==='auto'?drumStyleFor(s):GDATA.drums; const cue=[], snd=backSound(), vel=backVel(62);
+  let i=from%total, t=now()+.12, prev=null, pbass=null; const sty=GDATA.drums==='off'?null:GDATA.drums==='auto'?drumStyleFor(s):GDATA.drums;
+  const upright=['swing','bossa'].includes(sty||drumStyleFor(s))||/jazz|latin|blues/i.test(s.genre);   // jazz and Latin get the upright bass
+  const cue=[], snd=backSound(), vel=backVel(62);
   const sched=()=>{ if(!GIG.playing) return;
     while(t<now()+.25){ const bar=tl[i];
       bar.chords.forEach(ch=>{ const at=t+(ch.at-bar.beat)*spb, d=ch.dur*spb*.96; if(!ch.c) return;
         const r=mod12(ch.c.root.pc+sh), bpc=mod12((ch.c.bass||ch.c.root).pc+sh);
         if(GDATA.pad){ prev=spreadVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
-        if(GDATA.bass){ const bm=36+mod12(bpc-36); if(sty&&DRUM_STYLES[sty].bass808){ sub808(bm,at,Math.min(d,2.4),0.9,bus,pbass); pbass=bm; } else tone(bm,at,Math.min(d,2.2),84,'bass',bus); }
+        if(GDATA.bass){ const bm=36+mod12(bpc-36); if(sty&&DRUM_STYLES[sty].bass808){ sub808(bm,at,Math.min(d,2.4),0.9,bus,pbass); pbass=bm; } else tone(bm,at,Math.min(d,2.2),84,upright?'ubass':'bass',bus); }
         cue.push({at,bar:i,ch}); });
       if(sty) drumBar(sty,t,spb,s.beats,{bar:i,first:bar.bi===0,last:tl[(i+1)%total].bi===0},bus);
       else if(GDATA.click!=='off') for(let k=GDATA.click==='all'?0:1;k<s.beats;k+=GDATA.click==='all'?1:2) hat(t+k*spb);

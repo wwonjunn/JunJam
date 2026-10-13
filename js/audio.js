@@ -71,6 +71,7 @@ const now=()=>synth.ctx?synth.ctx.currentTime:0;
 function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   const c=synth.ctx; if(!c) return;
   if(timbre==='epiano'&&typeof keysSampled==='function'){ const k=keysSampled(); if(k&&smpTone(k,m,when,dur,vel,bus)) return; }   // the real instrument when there is one
+  if((timbre==='bass'||timbre==='ubass')&&typeof SMP!=='undefined'){ const id=timbre==='ubass'?'bassA':'bassE'; if(SMP.ready[id]&&smpTone(id,m,when,dur,vel,bus)) return; timbre='bass'; }   // real bass (upright for ubass) when downloaded
   const t=Math.max(when,c.currentTime), f=440*Math.pow(2,(m-69)/12), v=vel/127, out=bus||synth.master;
   const g=c.createGain(); g.connect(out);
   const end=t+dur+0.5, nodes=[];

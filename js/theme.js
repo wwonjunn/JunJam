@@ -110,12 +110,15 @@ function renderSettingsPane(){
     <button class="ghost" id="bsHear">▶ Hear it</button>
     <p style="margin-top:14px">Your keys: the sound of what you play, the licks, and the Keys backing. The real instruments download once (Wi-Fi this one time), then work offline. The built-in synth always works.</p>
     <div id="keysSound"></div>
-    <p class="fine">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>`;
+    <p class="fine">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>
+    <p style="margin-top:14px">Bass &amp; drums: what plays under you in Gig (and the bass in Lines, Reharm and Transcribe). Real recorded ones download once, then work offline; the synth covers them until then.</p>
+    <div id="bandSound"></div>
+    <p class="fine">Electric and upright bass: MusyngKite soundfont (CC BY-SA 3.0). Drums: Roland TR-808 samples by Michael Fischer, LinnDrum LM-2 (public domain), acoustic kit from Sonic Pi (CC0).</p>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
-  renderKeysSound();
+  renderKeysSound(); renderBandSound();
   $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
@@ -126,8 +129,8 @@ function renderSettingsPane(){
 function renderKeysSound(msg){
   const el=$('keysSound'); if(!el) return; const cur=keysSoundPick(), have=smpHave();
   const opt=(id,name,sub)=>`<button class="keyopt" data-ks="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
-  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).map(([id,i])=>opt(id,i.name,have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
-    <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).length?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
+  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([,i])=>i.keys).map(([id,i])=>opt(id,i.name,have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
+    <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).some(id=>SMP_INFO[id]&&SMP_INFO[id].keys)?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
   el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks; synth.init();
     if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); renderKeysSound(); $('ksHear').click(); return; }
     if(!navigator.onLine) return renderKeysSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
@@ -136,7 +139,20 @@ function renderKeysSound(msg){
     catch(e){ renderKeysSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } });
   $('ksHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.05;
     [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.8,.75,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+2.5+i*.18,.3,80,'epiano',bus)); };
-  if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave())) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
+  if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave()).filter(id=>SMP_INFO[id]&&SMP_INFO[id].keys)) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
+}
+// Bass & drums: the synth, or real recorded ones (one download, offline after)
+function renderBandSound(msg){
+  const el=$('bandSound'); if(!el) return; const have=SMP_BAND.every(id=>smpHave()[id]);
+  el.innerHTML=`<div class="erow">${have?'<span class="fine">Real bass &amp; drums downloaded · work offline</span>':'<button class="go" id="bandGet">⬇ Download real bass &amp; drums (1.3 MB)</button>'}
+    <button class="ghost" id="bandHear">▶ Hear them</button>${have?'<button class="ghost" id="bandForget">Remove</button>':''}<span class="fine" id="bandMsg">${msg||''}</span></div>`;
+  if($('bandGet')) $('bandGet').onclick=async()=>{ synth.init(); if(!navigator.onLine) return renderBandSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
+    $('bandGet').disabled=true; try{ await smpBandDownload((d,n)=>{ $('bandMsg').textContent=`Downloading… ${d} of ${n}`; }); if(GDATA.drums==='off'){ GDATA.drums='auto'; saveGig(); } renderBandSound('Downloaded. They work offline from now on, and Gig\'s drums are back on (Auto).'); $('bandHear').click(); }
+    catch(e){ renderBandSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } };
+  $('bandHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.08, spb=60/92;
+    ['rnb','pop'].forEach((st,k)=>{ const t0=t+k*8*spb; for(let b=0;b<2;b++) drumBar(st,t0+b*4*spb,spb,4,{bar:b,first:b===0,last:b===1},bus);
+      [[2,'min7'],[7,'dom7']].forEach(([r,q],i)=>{ const at=t0+i*4*spb; if(st==='rnb') sub808(36+r,at,4*spb,0.9,bus,null); else tone(36+r,at,3.6*spb,84,'bass',bus); }); }); };
+  if($('bandForget')) $('bandForget').onclick=async()=>{ if(!confirm('Remove the real bass and drums? The synth plays until you download them again.')) return; await smpBandForget(); renderBandSound('Removed. The synth is playing.'); };
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');
