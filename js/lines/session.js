@@ -202,16 +202,15 @@ function linesPlay(delay=.08){ if(!LINES.active) return 0; killBus(LINES.bus); L
 function linesNote(m){
   if(LINES.rec){ LINES.rec.notes.push({m,t:performance.now()}); const c=$('iCount'); if(c) c.textContent=`${LINES.rec.notes.length} notes`; return; }
   const L=LINES; if(!L.active||L.done) return;
-  if(LDATA.lh&&m<LH_SPLIT) return; // left-hand comping
-  const want=L.inst.notes[L.idx].midi;
-  const ok=L.idx===0?mod12(m-want)===0:m===want+L.offset;
+  const want=L.inst.notes[L.idx].midi, ok=mod12(m-want)===0;   // any octave, for every note: jump up or down mid-line if you like
+  if(!ok&&LDATA.lh&&m<LH_SPLIT) return;   // left-hand comping below middle C, unless it's the note the lick wants
+  if(!ok&&L.idx>0&&mod12(m-L.inst.notes[L.idx-1].midi)===0) return;   // the note you just played, again: a slip, not a wrong note
   if(ok){
-    if(L.idx===0) L.offset=m-want;
     L.idx++; kbMarks={}; kbMarks[m]='k-chord';
     if(L.idx===L.inst.notes.length) return linesRoundDone();
     $('lMsg').textContent=''; linesRender(); return;
   }
-  L.mistakes++; L.idx=0; L.offset=null;
+  L.mistakes++; L.idx=0;
   const name=plainSpell(m).name;
   $('lMsg').textContent=L.round===0?`${name} isn't it. Start again from ${L.inst.notes[0].name}.`:`${name} isn't it. From the top.`;
   $('lMsg').className='lmsg no'; linesRender(); kbMarks={}; kbMarks[m]='k-wrong'; paintKeys();

@@ -72,20 +72,32 @@ const LICKS=[
 ];
 // Place a lick on a reference pitch class: real notes, chords with start beats, and spellings
 function lickInstance(l,refPc){
-  const first=Q[l.ch?l.ch[0][2]:l.over], k=defaultRoot(refPc,!!(first&&first.minor));
-  // Spell chord roots by letter from the reference, but never with a double sharp or flat (E𝄫7 becomes D7)
-  const at=(s,i)=>{const lt=(k.l+s)%7;let a=mod12(refPc+i-LETTER_PC[lt]);if(a>6)a-=12;return Math.abs(a)>1?defaultRoot(mod12(refPc+i),false):mkRoot(lt,a);};
+  // a minor key only when the minor chord sits on the reference itself (a ii–V–I starts on a minor ii but is in major)
+  const first=Q[l.ch?l.ch[0][2]:l.over], minorKey=!!(first&&first.minor&&(!l.ch||l.ch[0][1]===0)), k=defaultRoot(refPc,minorKey);
+  // flat keys and sharp keys, by their signature (C major and A minor go either way: flats, as lead sheets mostly do)
+  const keySign=k.a<0||[5,10,3,8,1,6].includes(mod12(refPc+(minorKey?3:0)))?-1:k.a>0||[7,2,9,4,11].includes(mod12(refPc+(minorKey?3:0)))?1:-1;
+  // Spell chord roots by letter from the reference, but never with a double sharp or flat (E𝄫7 becomes D7),
+  // and never as E♯, B♯, F♭ or C♭ (they read as F, C, E and B)
+  const at=(s,i,qid)=>{const lt=(k.l+s)%7;let a=mod12(refPc+i-LETTER_PC[lt]);if(a>6)a-=12;
+    const odd=Math.abs(a)>1||(a===1&&(lt===2||lt===6))||(a===-1&&(lt===3||lt===0));
+    let r=odd?defaultRoot(mod12(refPc+i),false):mkRoot(lt,a);
+    // a black-key root is spelled the way its own chord reads with the fewest sharps or flats, as musicians write it:
+    // E♭maj7 not D♯maj7, B♭m7 not A♯m7, but C♯m7 and G♯m7; a tie (F♯/G♭) follows the key
+    if(r.a){ const q=Q[qid], sig=(lt,ac)=>Math.abs([0,2,4,-1,1,3,5][lt]+7*ac-(q&&q.minor?3:0));
+      const cands=spellingsFor(r.pc).filter(([lt2,ac])=>Math.abs(ac)===1&&!(ac===1&&(lt2===2||lt2===6))&&!(ac===-1&&(lt2===3||lt2===0)));
+      cands.sort((x,y)=>sig(...x)-sig(...y)||((y[1]===keySign)-(x[1]===keySign))); if(cands.length) r=mkRoot(cands[0][0],cands[0][1]); }
+    return r;};
   const times=lickTimes(l), total=Math.max(...times.map(x=>x.at+x.dur));
   let t=0;
-  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b])=>{ const beats=b||Math.max(2,Math.ceil(total)); const c={root:at(s,i),q:Q[qid],at:t,beats}; t+=beats; return c; });
+  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b])=>{ const beats=b||Math.max(2,Math.ceil(total)); const c={root:at(s,i,qid),q:Q[qid],at:t,beats}; t+=beats; return c; });
   const R=60+mod12(refPc), grid=gridTimes(times);
   const raw=l.notes.map(([s],i)=>({midi:R+s,...times[i],...grid[i]}));
   // Right-hand register: lowest note from middle C up when it fits, so the comp has room underneath
   const lo=Math.min(...raw.map(n=>n.midi)), hi=Math.max(...raw.map(n=>n.midi));
   let shift=12*Math.round((60-lo)/12); if(lo+shift<60) shift+=12;
   while(hi+shift>88&&lo+shift-12>=50) shift-=12;
-  // Blues and gospel write the blue notes as ♭3 and ♭5, not ♯9 and ♯11
-  const blue=l.style==='Blues'||l.style==='Gospel', qOf=c=>blue?{...c.q,lab:{...c.q.lab,3:'♭3',6:'♭5'}}:c.q;
+  // Blues, gospel, scale runs and pop styles write the blue notes as ♭3 and ♭5, not ♯9 and ♯11 (a C minor run over C7 says E♭)
+  const blue=['Blues','Gospel','Runs','Neo-soul','City pop & J-pop'].includes(l.style)||l.artist==='A.N.M-PIANO', qOf=c=>blue?{...c.q,lab:{...c.q.lab,3:'♭3',6:'♭5'}}:c.q;
   // Passing notes that would need a double sharp or flat get a plain spelling, flats in flat keys, sharps otherwise
   const plain=(m,sp)=>{ if(Math.abs(sp.a)<=1) return sp; const opts=spellingsFor(mod12(m)), pk=opts.find(([,a])=>a===0)||opts.find(([,a])=>k.a<0?a<0:a>0)||opts[0];
     const oct=Math.floor((m-pk[1])/12)-1; return {l:pk[0],a:pk[1],oct,di:oct*7+pk[0],name:LETTERS[pk[0]]+ACC[pk[1]]}; };
