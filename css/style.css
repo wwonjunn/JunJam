@@ -588,3 +588,28 @@ body.gigmode header .modetag{display:none}
 .keyopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
 .keyopt{text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:8px 10px;cursor:pointer;color:var(--ink)}
 .keyopt b{display:block;font-family:var(--cond);font-size:17px} .keyopt[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 14%, transparent)}
+
+/* Gig: two tidy rows (playing, then reading), the Mix menu, and the "Why it works" analysis */
+.gigbar.trtransport{display:block;padding:8px 10px}
+.gigrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gigrow+.gigrow{margin-top:8px;padding-top:8px;border-top:1px solid color-mix(in srgb, var(--line-strong) 50%, transparent)}
+.gigmix{min-width:290px;padding:10px}
+.gmrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:5px 2px} .gmrow>.fine{min-width:52px}
+.gmrow .ghost,.gmrow .seg{margin:0}
+.gan{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;font-family:var(--cond);font-size:12px;line-height:1.2}
+.gmv{font-style:normal;color:var(--muted);cursor:help}
+.grole{font-weight:700;padding:0 5px;border-radius:3px}
+.gpat{font-family:var(--cond);font-weight:700;font-size:12px;padding:1px 7px;border-radius:999px;cursor:help;white-space:nowrap}
+.gp-iivi{background:color-mix(in srgb, #1D9E75 22%, transparent);color:color-mix(in srgb, #1D9E75 75%, var(--ink))}
+.gp-iiv{background:color-mix(in srgb, #1D9E75 12%, transparent);color:color-mix(in srgb, #1D9E75 65%, var(--ink))}
+.gp-back{background:color-mix(in srgb, #D85A30 22%, transparent);color:color-mix(in srgb, #D85A30 75%, var(--ink))}
+.gp-tri{background:color-mix(in srgb, #7F77DD 24%, transparent);color:color-mix(in srgb, #7F77DD 75%, var(--ink))}
+.gp-sec{background:color-mix(in srgb, #BA7517 22%, transparent);color:color-mix(in srgb, #BA7517 75%, var(--ink))}
+.gp-pdim,.gp-miv{background:color-mix(in srgb, #D4537E 20%, transparent);color:color-mix(in srgb, #D4537E 75%, var(--ink))}
+.gialegend{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 2px}
+.gialegend .fine{flex-basis:100%;margin-top:2px}
+.gslot{flex-direction:column;align-items:center}
+.gigmix .gmrow button{display:inline-block;width:auto;text-align:center;padding:5px 12px;font-size:15px;border:1.5px solid var(--line-strong);border-radius:6px}
+.gigmix .gmrow .seg button{border:0;border-radius:0}
+.gigmix .gmrow button[aria-pressed="true"]{background:color-mix(in srgb, var(--brass) 22%, transparent);border-color:var(--brass)}
+.gigmix .gmrow .seg button[aria-pressed="true"]{background:var(--brass);color:var(--lane)}

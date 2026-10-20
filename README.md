@@ -11,14 +11,14 @@ A jazz piano trainer with two sides:
   Steinway grand (5.8 MB) once and your keys, the licks and the Keys backing play on it, offline from then on (kept in
   the browser's database). The built-in synth always works and is the fallback. Wurlitzer EP200 samples by Greg
   Sullivan (CC BY 3.0); Steinway grand samples released into the public domain by Akai; both via sfzinstruments.
-  Bass & drums too (1.3 MB, the same way): finger electric and upright bass (MusyngKite, CC BY-SA 3.0), a real TR-808
-  (Michael Fischer's free sample set; its long kick, pitched, is the 808 bass), a LinnDrum LM-2 (public domain) and an
-  acoustic kit (Sonic Pi, CC0). Gig picks the kit and bass from the groove; the synth covers them until downloaded.
+  Drums: one simple beat, a deep kick on 1 and a snare on 3 with a little reverb, plus a hi-hat on 2 and 4 for jazz;
+  the kit is built in (Sonic Pi samples, CC0) and you can load your own kick, snare and hi-hat. One deep, soft bass sound.
 - **Spaced review in Chords** (part of Smart mix): a chord you miss, need the hint for, or play slowly for you comes
   back a few chords later, never straight away, and each quick return spaces it further out until it graduates to
   days (tomorrow, a few days, a week…). Gaps are jittered and capped (never two reviews in a row, at most two in six),
   so it doesn't fall into a pattern. Review chords wear a small ↻.
-- **Gig**: lead sheets to play from (chord changes only), about 100 real songs: J-pop and city pop (IRIS OUT, Pretender,
+- **Gig**: lead sheets to play from, with "Why it works" marking every ii–V–I, backdoor, tritone sub, secondary dominant,
+  passing diminished and minor iv, and how far each chord's root moves (tap any tag to see why) (chord changes only), about 100 real songs: J-pop and city pop (IRIS OUT, Pretender,
   夜に駆ける, 紅蓮華, Plastic Love…), pop and rock (Paramore, Olivia Rodrigo, Billie Eilish, Coldplay, Stevie Wonder…),
   jazz standards, blues heads, Latin and bossa (Recorda Me, A Night in Tunisia, Jobim…), funk and soul. Jazz, Latin and
   classic pop/soul come from iReal Pro's community charts; J-pop and recent pop from U-FRET and Ultimate Guitar charts
@@ -97,7 +97,9 @@ js/gig/sheets.js      Gig: the built-in lead sheets (chord charts as text)
 js/gig/session.js     Gig: reading charts, the library, the sheet, playing the changes, adding your own
 js/srs.js             spaced review for Chords: per chord-and-key memory, in-run gaps and day-based reviews
 js/sampled.js         real instruments (Wurlitzer, Steinway grand): one download, kept in the browser, offline after; the synth is the fallback
-js/drums.js           Gig's drum kit (all synthesized) and grooves, fills, hat rolls, the 808 sub bass
+js/drumkit.js         the built-in drum kit: a kick, snare and hi-hat (Sonic Pi samples, CC0)
+js/drums.js           the one beat: kick on 1, snare on 3 with a little room, hi-hat on 2 and 4 if you want it
+js/gig/analysis.js    Gig's "Why it works": ii–V–I, backdoor, tritone subs, V of…, passing °, minor iv, root motion
 js/menu.js            home screen of mode cards, menus, progress map, boot
 tools/bundle.py       builds dist/junjam.html, a single self-contained file
 tools/launcher.applescript  source of Jun Jam.app; rebuild: osacompile -o "Jun Jam.app" tools/launcher.applescript

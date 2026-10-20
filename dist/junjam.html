@@ -598,6 +598,31 @@ body.gigmode header .modetag{display:none}
 .keyopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
 .keyopt{text-align:left;background:transparent;border:1.5px solid var(--line-strong);border-radius:6px;padding:8px 10px;cursor:pointer;color:var(--ink)}
 .keyopt b{display:block;font-family:var(--cond);font-size:17px} .keyopt[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 14%, transparent)}
+
+/* Gig: two tidy rows (playing, then reading), the Mix menu, and the "Why it works" analysis */
+.gigbar.trtransport{display:block;padding:8px 10px}
+.gigrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gigrow+.gigrow{margin-top:8px;padding-top:8px;border-top:1px solid color-mix(in srgb, var(--line-strong) 50%, transparent)}
+.gigmix{min-width:290px;padding:10px}
+.gmrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:5px 2px} .gmrow>.fine{min-width:52px}
+.gmrow .ghost,.gmrow .seg{margin:0}
+.gan{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;font-family:var(--cond);font-size:12px;line-height:1.2}
+.gmv{font-style:normal;color:var(--muted);cursor:help}
+.grole{font-weight:700;padding:0 5px;border-radius:3px}
+.gpat{font-family:var(--cond);font-weight:700;font-size:12px;padding:1px 7px;border-radius:999px;cursor:help;white-space:nowrap}
+.gp-iivi{background:color-mix(in srgb, #1D9E75 22%, transparent);color:color-mix(in srgb, #1D9E75 75%, var(--ink))}
+.gp-iiv{background:color-mix(in srgb, #1D9E75 12%, transparent);color:color-mix(in srgb, #1D9E75 65%, var(--ink))}
+.gp-back{background:color-mix(in srgb, #D85A30 22%, transparent);color:color-mix(in srgb, #D85A30 75%, var(--ink))}
+.gp-tri{background:color-mix(in srgb, #7F77DD 24%, transparent);color:color-mix(in srgb, #7F77DD 75%, var(--ink))}
+.gp-sec{background:color-mix(in srgb, #BA7517 22%, transparent);color:color-mix(in srgb, #BA7517 75%, var(--ink))}
+.gp-pdim,.gp-miv{background:color-mix(in srgb, #D4537E 20%, transparent);color:color-mix(in srgb, #D4537E 75%, var(--ink))}
+.gialegend{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 2px}
+.gialegend .fine{flex-basis:100%;margin-top:2px}
+.gslot{flex-direction:column;align-items:center}
+.gigmix .gmrow button{display:inline-block;width:auto;text-align:center;padding:5px 12px;font-size:15px;border:1.5px solid var(--line-strong);border-radius:6px}
+.gigmix .gmrow .seg button{border:0;border-radius:0}
+.gigmix .gmrow button[aria-pressed="true"]{background:color-mix(in srgb, var(--brass) 22%, transparent);border-color:var(--brass)}
+.gigmix .gmrow .seg button[aria-pressed="true"]{background:var(--brass);color:var(--lane)}
 </style>
 <style>
 /* ==================================================================================================
@@ -1080,14 +1105,14 @@ function renderSettingsPane(){
     <p style="margin-top:14px">Your keys: the sound of what you play, the licks, and the Keys backing. The real instruments download once (Wi-Fi this one time), then work offline. The built-in synth always works.</p>
     <div id="keysSound"></div>
     <p class="fine">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>
-    <p style="margin-top:14px">Bass &amp; drums: what plays under you in Gig (and the bass in Lines, Reharm and Transcribe). Real recorded ones download once, then work offline; the synth covers them until then.</p>
-    <div id="bandSound"></div>
-    <p class="fine">Electric and upright bass: MusyngKite soundfont (CC BY-SA 3.0). Drums: Roland TR-808 samples by Michael Fischer, LinnDrum LM-2 (public domain), acoustic kit from Sonic Pi (CC0).</p>`;
+    <p style="margin-top:14px">Drums: a deep kick on 1 and a snare on 3 with a little room, plus a hi-hat on 2 and 4 if you like. The sounds are built in and work offline. Want a particular kit? Load your own kick, snare and hi-hat samples (a free lofi kit, say) and Gig plays those instead.</p>
+    <div id="drumSound"></div>
+    <p class="fine">Built-in kit: Sonic Pi samples (freesound.org, CC0).</p>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
-  renderKeysSound(); renderBandSound();
+  renderKeysSound(); renderDrumSound();
   $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
@@ -1110,18 +1135,20 @@ function renderKeysSound(msg){
     [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.8,.75,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+2.5+i*.18,.3,80,'epiano',bus)); };
   if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave()).filter(id=>SMP_INFO[id]&&SMP_INFO[id].keys)) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
 }
-// Bass & drums: the synth, or real recorded ones (one download, offline after)
-function renderBandSound(msg){
-  const el=$('bandSound'); if(!el) return; const have=SMP_BAND.every(id=>smpHave()[id]);
-  el.innerHTML=`<div class="erow">${have?'<span class="fine">Real bass &amp; drums downloaded · work offline</span>':'<button class="go" id="bandGet">⬇ Download real bass &amp; drums (1.3 MB)</button>'}
-    <button class="ghost" id="bandHear">▶ Hear them</button>${have?'<button class="ghost" id="bandForget">Remove</button>':''}<span class="fine" id="bandMsg">${msg||''}</span></div>`;
-  if($('bandGet')) $('bandGet').onclick=async()=>{ synth.init(); if(!navigator.onLine) return renderBandSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
-    $('bandGet').disabled=true; try{ await smpBandDownload((d,n)=>{ $('bandMsg').textContent=`Downloading… ${d} of ${n}`; }); if(GDATA.drums==='off'){ GDATA.drums='auto'; saveGig(); } renderBandSound('Downloaded. They work offline from now on, and Gig\'s drums are back on (Auto).'); $('bandHear').click(); }
-    catch(e){ renderBandSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } };
-  $('bandHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.08, spb=60/92;
-    ['rnb','pop'].forEach((st,k)=>{ const t0=t+k*8*spb; for(let b=0;b<2;b++) drumBar(st,t0+b*4*spb,spb,4,{bar:b,first:b===0,last:b===1},bus);
-      [[2,'min7'],[7,'dom7']].forEach(([r,q],i)=>{ const at=t0+i*4*spb; if(st==='rnb') sub808(36+r,at,4*spb,0.9,bus,null); else tone(36+r,at,3.6*spb,84,'bass',bus); }); }); };
-  if($('bandForget')) $('bandForget').onclick=async()=>{ if(!confirm('Remove the real bass and drums? The synth plays until you download them again.')) return; await smpBandForget(); renderBandSound('Removed. The synth is playing.'); };
+// Drums: the built-in kit, or your own samples for any of the three sounds (kept in this browser, offline)
+async function renderDrumSound(msg){
+  const el=$('drumSound'); if(!el) return; const mine={}; for(const v of DRUM_VOICES) mine[v]=!!(await smpDB.get('custom/'+v));
+  const name={kick:'Kick',snare:'Snare',hat:'Hi-hat'};
+  el.innerHTML=`<div class="keyopts">${DRUM_VOICES.map(v=>`<div class="keyopt"><b>${name[v]}</b><span class="fine">${mine[v]?'Your sample':'Built in'}</span>
+      <div class="erow" style="margin-top:6px"><label class="ghost trsm" style="cursor:pointer">Load your own<input type="file" accept="audio/*" data-dload="${v}" hidden></label>${mine[v]?`<button class="ghost trsm" data-dclear="${v}">Use built-in</button>`:''}</div></div>`).join('')}</div>
+    <div class="erow" style="margin-top:6px"><button class="ghost" id="drumHear">▶ Hear the beat</button><span class="fine" id="drumMsg">${msg||''}</span></div>`;
+  el.querySelectorAll('[data-dload]').forEach(inp=>inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; synth.init(); const ab=await f.arrayBuffer();
+    try{ await synth.ctx.decodeAudioData(ab.slice(0)); }catch(e){ return renderDrumSound("Couldn't read that file. Try a WAV, MP3, AIFF or M4A."); }
+    await smpDB.put('custom/'+inp.dataset.dload,ab); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
+  el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
+  $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=newBus(); if(!bus) return; const spb=60/80, t=now()+.08;
+    for(let b=0;b<4;b++) beatBar(t+b*4*spb,spb,4,{bar:b},bus,{hat:b>=2});
+    [[2,'min7'],[7,'dom7']].forEach(([r,q],i)=>{ tone(36+r,t+i*8*spb,7.6*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+i*8*spb,7.6*spb,backSound(),bus,backVel(56)); }); };
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');
@@ -1606,6 +1633,7 @@ const synth={ctx:null,voices:new Map(),
     if(this.ctx.state!=='running') this.ctx.resume().then(sndStatus,sndStatus);
     sndStatus();
     if(typeof smpLoadAll==='function') smpLoadAll();   // downloaded instruments load from this Mac (no Wi-Fi needed)
+    if(typeof drumsInit==='function') drumsInit();   // the drum kit (built in, or yours)
   },
   on(m,v=90){
     if(!opts.sound) return;
@@ -1668,7 +1696,7 @@ const now=()=>synth.ctx?synth.ctx.currentTime:0;
 function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   const c=synth.ctx; if(!c) return;
   if(timbre==='epiano'&&typeof keysSampled==='function'){ const k=keysSampled(); if(k&&smpTone(k,m,when,dur,vel,bus)) return; }   // the real instrument when there is one
-  if((timbre==='bass'||timbre==='ubass')&&typeof SMP!=='undefined'){ const id=timbre==='ubass'?'bassA':'bassE'; if(SMP.ready[id]&&smpTone(id,m,when,dur,vel,bus)) return; timbre='bass'; }   // real bass (upright for ubass) when downloaded
+  if(timbre==='ubass') timbre='bass';   // one bass sound everywhere
   const t=Math.max(when,c.currentTime), f=440*Math.pow(2,(m-69)/12), v=vel/127, out=bus||synth.master;
   const g=c.createGain(); g.connect(out);
   const end=t+dur+0.5, nodes=[];
@@ -1681,14 +1709,14 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
     g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.04);
     g.gain.setValueAtTime(pk*0.8,t+dur); g.gain.exponentialRampToValueAtTime(0.0001,end);
     nodes.push(o1,o2);
-  } else if(timbre==='bass'){ // a clean electric-bass note: round sine body, a little triangle for definition, a soft pluck that settles
+  } else if(timbre==='bass'){ // the bass: deep and round, not aggressive. A sine with a touch of its octave for definition, a gentle start, a soft fade
     const o=c.createOscillator(), o2=c.createOscillator(), g2=c.createGain(), lp=c.createBiquadFilter();
-    o.type='sine'; o.frequency.value=f; o2.type='triangle'; o2.frequency.value=f; g2.gain.value=0.3;
-    lp.type='lowpass'; lp.Q.value=0.6; lp.frequency.setValueAtTime(Math.min(2000,f*12),t); lp.frequency.exponentialRampToValueAtTime(Math.max(220,f*3),t+0.3);
+    o.type='sine'; o.frequency.value=f; o2.type='sine'; o2.frequency.value=f*2; g2.gain.value=0.18;
+    lp.type='lowpass'; lp.Q.value=0.4; lp.frequency.value=Math.max(320,Math.min(900,f*5));
     o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g);
-    const pk=0.25+0.3*v, hold=Math.max(0.3,dur-0.06);
-    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.006); g.gain.exponentialRampToValueAtTime(pk*0.6,t+0.28);
-    g.gain.setValueAtTime(pk*0.6,t+hold); g.gain.exponentialRampToValueAtTime(0.0001,t+hold+0.12);
+    const pk=0.25+0.16*v, hold=Math.max(0.25,dur-0.05);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.014); g.gain.exponentialRampToValueAtTime(pk*0.78,t+0.35);
+    g.gain.setValueAtTime(pk*0.78,t+hold); g.gain.exponentialRampToValueAtTime(0.0001,t+hold+0.2);
     nodes.push(o,o2);
   } else if(timbre==='pluck'){
     const o=c.createOscillator(), lp=c.createBiquadFilter();
@@ -1738,25 +1766,14 @@ function playChord(notes,when,dur,timbre,bus,vel=80){ notes.forEach(m=>tone(m,wh
    cleared, everything plays on the synth as before.
    Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0, http://www.sullivang.net/). Steinway grand ("Splendid Grand
    Piano") samples released into the public domain by Akai. Both mapped by kinwie for sfzinstruments and hosted by
-   smpldsnds on GitHub Pages. Basses: MusyngKite soundfont (CC BY-SA 3.0), via Benjamin Gleitzman's midi-js-soundfonts.
-   Drums: Roland TR-808 samples by Michael Fischer (released free), LinnDrum LM-2 (public domain), and an acoustic kit
-   from Sonic Pi's samples (freesound.org, CC0). Regions: [low key, high key, key centre, tune (cents), volume (dB), file, low vel, high vel]. */
-const SMP_MAPS={"bassE":{"base":"https://gleitz.github.io/midi-js-soundfonts/MusyngKite/electric_bass_finger-mp3/","ext":"mp3","regions":[[28,28,28,0,0,"E1",1,127],[29,29,29,0,0,"F1",1,127],[30,30,30,0,0,"Gb1",1,127],[31,31,31,0,0,"G1",1,127],[32,32,32,0,0,"Ab1",1,127],[33,33,33,0,0,"A1",1,127],[34,34,34,0,0,"Bb1",1,127],[35,35,35,0,0,"B1",1,127],[36,36,36,0,0,"C2",1,127],[37,37,37,0,0,"Db2",1,127],[38,38,38,0,0,"D2",1,127],[39,39,39,0,0,"Eb2",1,127],[40,40,40,0,0,"E2",1,127],[41,41,41,0,0,"F2",1,127],[42,42,42,0,0,"Gb2",1,127],[43,43,43,0,0,"G2",1,127],[44,44,44,0,0,"Ab2",1,127],[45,45,45,0,0,"A2",1,127],[46,46,46,0,0,"Bb2",1,127],[47,47,47,0,0,"B2",1,127],[48,48,48,0,0,"C3",1,127],[49,49,49,0,0,"Db3",1,127],[50,50,50,0,0,"D3",1,127],[51,51,51,0,0,"Eb3",1,127],[52,52,52,0,0,"E3",1,127],[53,53,53,0,0,"F3",1,127],[54,54,54,0,0,"Gb3",1,127],[55,55,55,0,0,"G3",1,127]]},"bassA":{"base":"https://gleitz.github.io/midi-js-soundfonts/MusyngKite/acoustic_bass-mp3/","ext":"mp3","regions":[[28,28,28,0,0,"E1",1,127],[29,29,29,0,0,"F1",1,127],[30,30,30,0,0,"Gb1",1,127],[31,31,31,0,0,"G1",1,127],[32,32,32,0,0,"Ab1",1,127],[33,33,33,0,0,"A1",1,127],[34,34,34,0,0,"Bb1",1,127],[35,35,35,0,0,"B1",1,127],[36,36,36,0,0,"C2",1,127],[37,37,37,0,0,"Db2",1,127],[38,38,38,0,0,"D2",1,127],[39,39,39,0,0,"Eb2",1,127],[40,40,40,0,0,"E2",1,127],[41,41,41,0,0,"F2",1,127],[42,42,42,0,0,"Gb2",1,127],[43,43,43,0,0,"G2",1,127],[44,44,44,0,0,"Ab2",1,127],[45,45,45,0,0,"A2",1,127],[46,46,46,0,0,"Bb2",1,127],[47,47,47,0,0,"B2",1,127],[48,48,48,0,0,"C3",1,127],[49,49,49,0,0,"Db3",1,127],[50,50,50,0,0,"D3",1,127],[51,51,51,0,0,"Eb3",1,127],[52,52,52,0,0,"E3",1,127],[53,53,53,0,0,"F3",1,127],[54,54,54,0,0,"Gb3",1,127],[55,55,55,0,0,"G3",1,127]]},"wurli":{"base":"https://smpldsnds.github.io/sfzinstruments-greg-sullivan-e-pianos/wurlitzer-ep200/samples/","regions":[[33,35,33,-5,-3.2,"a1pp",1,37],[36,38,33,-5,-3.5,"a1pp",1,37],[39,47,44,-8,-4.2,"ab2pp",1,37],[48,53,51,-10,-4.7,"eb3pp",1,37],[54,59,56,-12,-5.5,"ab3pp",1,37],[60,62,61,-2,-5.2,"db4pp",1,37],[63,68,67,-2,-5.2,"g4pp",1,37],[69,74,73,-5,-5.4,"db5pp",1,37],[75,80,79,-8,-5.4,"g5mp",1,37],[81,89,85,6,-5.6,"db6mp",1,37],[90,96,92,2,-5.7,"ab6mp",1,37],[33,35,33,-5,-3.8,"a1mp",38,65],[36,41,40,-4,-4.2,"e2mp",38,65],[42,47,45,-2,-4.7,"a2mp",38,65],[48,53,51,-9,-5.1,"eb3mp",38,65],[54,59,56,-8,-5.3,"ab3mp",38,65],[60,62,61,4,-5.3,"db4mp",38,65],[63,68,66,7,-5.4,"gb4mp",38,65],[69,71,71,-5,-5.2,"b4mp",38,65],[72,74,73,3,-5.4,"db5mp",38,65],[75,80,79,-8,-5.4,"g5mp",38,65],[81,89,85,6,-5.6,"db6mp",38,65],[90,96,92,2,-5.7,"ab6mp",38,65],[33,35,33,-5,-4.7,"a1f",66,89],[36,38,36,-7,-5.0,"c2f",66,89],[39,44,41,-6,-4.7,"f2f",66,89],[45,50,47,-8,-5.0,"b2f",66,89],[51,53,52,-4,-4.7,"e3f",66,89],[54,59,56,-11,-4.8,"ab3f",66,89],[60,65,61,-2,-4.8,"db4f",66,89],[66,71,68,0,-5.0,"ab4f",66,89],[72,77,73,3,-6.0,"db5f",66,89],[78,80,79,-7,-5.9,"g5f",66,89],[81,89,85,0,-5.9,"db6f",66,89],[90,96,92,0,-5.9,"ab6f",66,89],[33,35,33,-5,-5.3,"a1ff",90,127],[36,38,36,-7,-5.3,"c2ff",90,127],[39,44,41,-6,-5.4,"f2ff",90,127],[45,50,47,-8,-5.4,"b2ff",90,127],[51,53,52,-2,-5.4,"e3ff",90,127],[54,59,56,-8,-5.4,"ab3ff",90,127],[60,62,61,2,-5.4,"db4ff",90,127],[63,65,64,-3,-5.4,"e4ff",90,127],[66,68,67,3,-5.4,"g4ff",90,127],[69,77,73,-1,-3.5,"db5ff",90,127],[78,80,79,-7,-4.9,"g5ff",90,127],[81,89,85,0,-5.5,"db6f",90,127],[90,96,92,0,-6.0,"ab6f",90,127]]},"grand":{"base":"https://smpldsnds.github.io/sfzinstruments-splendid-grand-piano/samples/","regions":[[21,24,23,0,0.0,"Mf B-1",1,127],[25,27,27,0,0.0,"Mf D#0",1,127],[28,30,29,0,0.0,"Mf F0",1,127],[31,32,31,0,0.0,"Mf G0",1,127],[33,34,33,0,0.0,"Mf A0",1,127],[35,35,35,0,0.0,"Mf B0",1,127],[36,37,37,0,0.0,"MF C#1",1,127],[38,39,38,0,0.0,"MF D1",1,127],[40,40,40,0,0.0,"MF E1",1,127],[41,41,41,0,0.0,"MF F1",1,127],[42,44,43,0,0.0,"MF G1",1,127],[45,46,45,0,0.0,"MF A1",1,127],[47,47,47,0,0.0,"MF B1",1,127],[48,49,48,0,0.0,"MF C2",1,127],[50,50,50,0,0.0,"MF D2",1,127],[51,52,52,0,0.0,"MF E2",1,127],[53,54,53,0,0.0,"MF F2",1,127],[55,55,55,0,0.0,"MF G2",1,127],[56,56,56,0,0.0,"MF G#2",1,127],[57,57,57,0,0.0,"MF A2",1,127],[58,58,58,0,0.0,"MF A#2",1,127],[59,59,59,0,0.0,"MF B2",1,127],[60,61,60,0,0.0,"MF C3",1,127],[62,63,62,0,0.0,"MF D3",1,127],[64,64,64,0,0.0,"MF E3",1,127],[65,66,65,0,0.0,"MF F3",1,127],[67,68,67,0,0.0,"MF G3",1,127],[69,69,69,0,0.0,"MF A3",1,127],[70,71,71,0,0.0,"MF B3",1,127],[72,73,72,0,0.0,"MF C4",1,127],[74,75,74,0,0.0,"Mf D4",1,127],[76,76,76,0,0.0,"Mf E4",1,127],[77,78,77,0,0.0,"Mf F4",1,127],[79,79,79,0,0.0,"Mf G4",1,127],[80,80,80,0,0.0,"Mf G#4",1,127],[81,81,81,0,0.0,"Mf A4",1,127],[82,82,82,0,0.0,"Mf A#4",1,127],[83,83,83,0,0.0,"Mf B4",1,127],[84,85,85,0,0.0,"Mf C#5",1,127],[86,86,86,0,0.0,"Mf D5",1,127],[87,87,87,0,0.0,"Mf D#5",1,127],[88,88,88,0,0.0,"Mf E5",1,127],[89,89,89,0,0.0,"Mf F5",1,127],[90,90,90,0,0.0,"Mf F#5",1,127],[91,91,91,0,0.0,"Mf G5",1,127],[92,92,92,0,0.0,"Mf G#5",1,127],[93,93,93,0,0.0,"Mf A5",1,127],[94,94,94,0,0.0,"Mf A#5",1,127],[95,95,95,0,0.0,"Mf B5",1,127],[96,96,96,0,0.0,"Mf C6",1,127],[97,97,97,0,0.0,"Mf C#6",1,127],[98,98,98,0,0.0,"Mf D6",1,127],[99,99,99,0,0.0,"Mf D#6",1,127],[100,100,100,0,0.0,"Mf E6",1,127],[101,101,101,0,0.0,"Mf F6",1,127],[102,102,102,0,0.0,"Mf F#6",1,127],[103,103,103,0,0.0,"Mf G6",1,127],[104,104,104,0,0.0,"Mf G#6",1,127],[105,105,105,0,0.0,"Mf A6",1,127],[106,106,106,0,0.0,"Mf A#6",1,127],[107,107,107,0,0.0,"Mf B6",1,127],[108,108,108,0,0.0,"Mf C7",1,127]]}};
-const SMP_INFO={wurli:{keys:1,name:'Electric piano',long:'Wurlitzer EP200 electric piano',size:'0.9 MB',rel:0.3,gain:1.5},grand:{keys:1,name:'Grand piano',long:'Steinway grand piano',size:'5.8 MB',rel:0.45,gain:2.4},
-  bassE:{name:'Electric bass',rel:0.08,gain:3.6},bassA:{name:'Upright bass',rel:0.1,gain:6.5}};   // gain: level-matched to the synth
+   smpldsnds on GitHub Pages. Regions: [low key, high key, key centre, tune (cents), volume (dB), file, low vel, high vel]. */
+const SMP_MAPS={"wurli":{"base":"https://smpldsnds.github.io/sfzinstruments-greg-sullivan-e-pianos/wurlitzer-ep200/samples/","regions":[[33,35,33,-5,-3.2,"a1pp",1,37],[36,38,33,-5,-3.5,"a1pp",1,37],[39,47,44,-8,-4.2,"ab2pp",1,37],[48,53,51,-10,-4.7,"eb3pp",1,37],[54,59,56,-12,-5.5,"ab3pp",1,37],[60,62,61,-2,-5.2,"db4pp",1,37],[63,68,67,-2,-5.2,"g4pp",1,37],[69,74,73,-5,-5.4,"db5pp",1,37],[75,80,79,-8,-5.4,"g5mp",1,37],[81,89,85,6,-5.6,"db6mp",1,37],[90,96,92,2,-5.7,"ab6mp",1,37],[33,35,33,-5,-3.8,"a1mp",38,65],[36,41,40,-4,-4.2,"e2mp",38,65],[42,47,45,-2,-4.7,"a2mp",38,65],[48,53,51,-9,-5.1,"eb3mp",38,65],[54,59,56,-8,-5.3,"ab3mp",38,65],[60,62,61,4,-5.3,"db4mp",38,65],[63,68,66,7,-5.4,"gb4mp",38,65],[69,71,71,-5,-5.2,"b4mp",38,65],[72,74,73,3,-5.4,"db5mp",38,65],[75,80,79,-8,-5.4,"g5mp",38,65],[81,89,85,6,-5.6,"db6mp",38,65],[90,96,92,2,-5.7,"ab6mp",38,65],[33,35,33,-5,-4.7,"a1f",66,89],[36,38,36,-7,-5.0,"c2f",66,89],[39,44,41,-6,-4.7,"f2f",66,89],[45,50,47,-8,-5.0,"b2f",66,89],[51,53,52,-4,-4.7,"e3f",66,89],[54,59,56,-11,-4.8,"ab3f",66,89],[60,65,61,-2,-4.8,"db4f",66,89],[66,71,68,0,-5.0,"ab4f",66,89],[72,77,73,3,-6.0,"db5f",66,89],[78,80,79,-7,-5.9,"g5f",66,89],[81,89,85,0,-5.9,"db6f",66,89],[90,96,92,0,-5.9,"ab6f",66,89],[33,35,33,-5,-5.3,"a1ff",90,127],[36,38,36,-7,-5.3,"c2ff",90,127],[39,44,41,-6,-5.4,"f2ff",90,127],[45,50,47,-8,-5.4,"b2ff",90,127],[51,53,52,-2,-5.4,"e3ff",90,127],[54,59,56,-8,-5.4,"ab3ff",90,127],[60,62,61,2,-5.4,"db4ff",90,127],[63,65,64,-3,-5.4,"e4ff",90,127],[66,68,67,3,-5.4,"g4ff",90,127],[69,77,73,-1,-3.5,"db5ff",90,127],[78,80,79,-7,-4.9,"g5ff",90,127],[81,89,85,0,-5.5,"db6f",90,127],[90,96,92,0,-6.0,"ab6f",90,127]]},"grand":{"base":"https://smpldsnds.github.io/sfzinstruments-splendid-grand-piano/samples/","regions":[[21,24,23,0,0.0,"Mf B-1",1,127],[25,27,27,0,0.0,"Mf D#0",1,127],[28,30,29,0,0.0,"Mf F0",1,127],[31,32,31,0,0.0,"Mf G0",1,127],[33,34,33,0,0.0,"Mf A0",1,127],[35,35,35,0,0.0,"Mf B0",1,127],[36,37,37,0,0.0,"MF C#1",1,127],[38,39,38,0,0.0,"MF D1",1,127],[40,40,40,0,0.0,"MF E1",1,127],[41,41,41,0,0.0,"MF F1",1,127],[42,44,43,0,0.0,"MF G1",1,127],[45,46,45,0,0.0,"MF A1",1,127],[47,47,47,0,0.0,"MF B1",1,127],[48,49,48,0,0.0,"MF C2",1,127],[50,50,50,0,0.0,"MF D2",1,127],[51,52,52,0,0.0,"MF E2",1,127],[53,54,53,0,0.0,"MF F2",1,127],[55,55,55,0,0.0,"MF G2",1,127],[56,56,56,0,0.0,"MF G#2",1,127],[57,57,57,0,0.0,"MF A2",1,127],[58,58,58,0,0.0,"MF A#2",1,127],[59,59,59,0,0.0,"MF B2",1,127],[60,61,60,0,0.0,"MF C3",1,127],[62,63,62,0,0.0,"MF D3",1,127],[64,64,64,0,0.0,"MF E3",1,127],[65,66,65,0,0.0,"MF F3",1,127],[67,68,67,0,0.0,"MF G3",1,127],[69,69,69,0,0.0,"MF A3",1,127],[70,71,71,0,0.0,"MF B3",1,127],[72,73,72,0,0.0,"MF C4",1,127],[74,75,74,0,0.0,"Mf D4",1,127],[76,76,76,0,0.0,"Mf E4",1,127],[77,78,77,0,0.0,"Mf F4",1,127],[79,79,79,0,0.0,"Mf G4",1,127],[80,80,80,0,0.0,"Mf G#4",1,127],[81,81,81,0,0.0,"Mf A4",1,127],[82,82,82,0,0.0,"Mf A#4",1,127],[83,83,83,0,0.0,"Mf B4",1,127],[84,85,85,0,0.0,"Mf C#5",1,127],[86,86,86,0,0.0,"Mf D5",1,127],[87,87,87,0,0.0,"Mf D#5",1,127],[88,88,88,0,0.0,"Mf E5",1,127],[89,89,89,0,0.0,"Mf F5",1,127],[90,90,90,0,0.0,"Mf F#5",1,127],[91,91,91,0,0.0,"Mf G5",1,127],[92,92,92,0,0.0,"Mf G#5",1,127],[93,93,93,0,0.0,"Mf A5",1,127],[94,94,94,0,0.0,"Mf A#5",1,127],[95,95,95,0,0.0,"Mf B5",1,127],[96,96,96,0,0.0,"Mf C6",1,127],[97,97,97,0,0.0,"Mf C#6",1,127],[98,98,98,0,0.0,"Mf D6",1,127],[99,99,99,0,0.0,"Mf D#6",1,127],[100,100,100,0,0.0,"Mf E6",1,127],[101,101,101,0,0.0,"Mf F6",1,127],[102,102,102,0,0.0,"Mf F#6",1,127],[103,103,103,0,0.0,"Mf G6",1,127],[104,104,104,0,0.0,"Mf G#6",1,127],[105,105,105,0,0.0,"Mf A6",1,127],[106,106,106,0,0.0,"Mf A#6",1,127],[107,107,107,0,0.0,"Mf B6",1,127],[108,108,108,0,0.0,"Mf C7",1,127]]}};
+const SMP_INFO={wurli:{keys:1,name:'Electric piano',long:'Wurlitzer EP200 electric piano',size:'0.9 MB',rel:0.3,gain:1.5},grand:{keys:1,name:'Grand piano',long:'Steinway grand piano',size:'5.8 MB',rel:0.45,gain:2.4}};   // gain: level-matched to the synth
 
-/* Drum kits: which file plays each of the drum voices drums.js uses */
-const SMP_KITS={
-  k808:{name:'TR-808',base:'https://smpldsnds.github.io/drum-machines/TR-808/',gain:0.95,files:{'808':'kick/bd5075',kick:'kick/bd2550',sub:'kick/bd2510',snare:'snare/sd5050',clap:'clap/cp',rim:'rimshot/rs',hat:'hihat-close/ch',ohat:'hihat-open/oh25',crash:'cymbal/cy5050',ride:'cymbal/cy2525',shaker:'maraca/ma',tomhi:'tom-hi/ht50',tomlo:'tom-low/lt50'}},
-  linn:{name:'LinnDrum',base:'https://smpldsnds.github.io/drum-machines/LM-2/',gain:1,files:{'808':'kick',kick:'kick',snare:'snare-m',clap:'clap',rim:'stick-m',hat:'hhclosed',ohat:'hhopen',ride:'ride',crash:'crash',shaker:'cabasa',tomhi:'tom-h',tomlo:'tom-l'}},
-  acoustic:{name:'Acoustic kit',base:'https://smpldsnds.github.io/sonic-pi-samples/samples/',gain:0.7,files:{'808':'drum_heavy_kick',kick:'drum_bass_hard',snare:'drum_snare_hard',clap:'drum_snare_hard',rim:'drum_snare_soft',hat:'drum_cymbal_closed',ohat:'drum_cymbal_open',ride:'drum_cymbal_soft',crash:'drum_splash_hard',shaker:'drum_cymbal_pedal',tomhi:'drum_tom_hi_hard',tomlo:'drum_tom_lo_hard'}},
-};
-const SMP_BAND=['bassE','bassA','k808','linn','acoustic'];   // "real bass & drums" is these, one download
-const smpBandReady=()=>SMP_BAND.every(id=>SMP.ready[id]);
 const SMP={buf:{},ready:{},loading:{},voices:new Map()};
 const SMP_FMT=(()=>{ try{ return new Audio().canPlayType('audio/ogg; codecs="opus"')?'ogg':'m4a'; }catch(e){ return 'm4a'; } })();
-const smpFiles=id=>SMP_KITS[id]?[...new Set(Object.values(SMP_KITS[id].files))]:[...new Set(SMP_MAPS[id].regions.map(r=>r[5]))];
-const smpBase=id=>(SMP_KITS[id]||SMP_MAPS[id]).base, smpExt=id=>(SMP_MAPS[id]&&SMP_MAPS[id].ext)||SMP_FMT;
+const smpFiles=id=>[...new Set(SMP_MAPS[id].regions.map(r=>r[5]))];
+const smpBase=id=>SMP_MAPS[id].base, smpExt=id=>(SMP_MAPS[id]&&SMP_MAPS[id].ext)||SMP_FMT;
 const smpHave=()=>store.get('sounds',{});
 // the sound your keys (and the Keys backing) use: 'synth', or a downloaded instrument once it's loaded
 const keysSoundPick=()=>store.get('keysSound','synth');
@@ -1788,10 +1805,8 @@ async function smpLoad(id){
     SMP.buf[id]=out; SMP.ready[id]=true; return true;
   }catch(e){ return false; } finally{ SMP.loading[id]=false; }
 }
-function smpLoadAll(){ Object.keys(smpHave()).forEach(id=>smpLoad(id)); }
+function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]).forEach(id=>smpLoad(id)); }
 async function smpForget(id){ for(const f of smpFiles(id)) await smpDB.del(id+'/'+f); const have=smpHave(); delete have[id]; store.set('sounds',have); delete SMP.buf[id]; SMP.ready[id]=false; if(keysSoundPick()===id) store.set('keysSound','synth'); }
-async function smpBandDownload(onProgress){ let n=0; const tot=SMP_BAND.reduce((a,id)=>a+smpFiles(id).length,0); for(const id of SMP_BAND){ const before=n; await smpDownload(id,d=>onProgress&&onProgress(before+d,tot)); n+=smpFiles(id).length; } return true; }
-async function smpBandForget(){ for(const id of SMP_BAND) await smpForget(id); }
 // One note from an instrument: the region for that key and velocity (or the nearest), pitched to the exact key
 function smpStart(id,m,vel,t,out){
   const c=synth.ctx, rs=SMP_MAPS[id].regions, v=Math.max(1,Math.min(127,Math.round(vel)));
@@ -1808,20 +1823,6 @@ function smpStart(id,m,vel,t,out){
 function smpRelease(v,t,rel){ if(!v) return; try{ v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(Math.max(v.g.gain.value,0.0001),t); v.g.gain.setTargetAtTime(0.0001,t,rel/3); v.src.stop(t+rel+0.1); }catch(e){} }
 // scheduled notes (licks, backing, questions): play for dur, then let go
 function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.currentTime), v=smpStart(id,m,vel,t,bus); if(v) smpRelease(v,t+dur,SMP_INFO[id].rel); return !!v; }
-// one drum hit from a kit (no pitch: drums are played as recorded). false if the kit or the file isn't loaded
-function smpDrum(kit,voice,t,vel,bus){
-  const K=SMP_KITS[kit], f=K&&K.files[voice], b=f&&SMP.ready[kit]&&SMP.buf[kit][f]; if(!b) return false;
-  const c=synth.ctx, src=c.createBufferSource(), g=c.createGain(); src.buffer=b; g.gain.value=0.55*K.gain*vel;
-  src.connect(g); g.connect(bus||synth.master); src.start(Math.max(t,c.currentTime)); return true;
-}
-// the 808 bass the way producers make it: the long 808 kick, pitched to the note
-function smp808(m,t,dur,vel,bus){
-  const b=SMP.ready.k808&&SMP.buf.k808[SMP_KITS.k808.files.sub]; if(!b) return false;
-  const c=synth.ctx, src=c.createBufferSource(), g=c.createGain(); t=Math.max(t,c.currentTime);
-  src.buffer=b; src.playbackRate.value=Math.pow(2,(m-12-31)/12);   // the 808 kick sits near G1; play it an octave under the bass note
-  g.gain.setValueAtTime(0.95*vel,t); g.gain.setValueAtTime(0.95*vel,t+Math.max(.1,dur-.08)); g.gain.exponentialRampToValueAtTime(0.0001,t+dur+0.05);
-  src.connect(g); g.connect(bus||synth.master); src.start(t); src.stop(t+dur+0.1); return true;
-}
 </script>
 <script>
 /* ---------------- keyboard view ---------------- */
@@ -2107,125 +2108,59 @@ function srsResult(S,key,grade){
 function srsAdmit(S){ while(S.wait.length&&S.learn.size<SRS_SET){ const k=S.wait.shift(); S.learn.set(k,{due:S.n+srsJit(3),gap:SRS_FIRST,from:'wait'}); } }
 </script>
 <script>
-/* ---------------- drums: a small synth kit and the grooves Gig plays ----------------
-   Every sound is made here (no samples): an 808-style kick with a pitch drop, a tighter acoustic-style kick, a snare
-   (noise + body), a clap (three quick bursts and a tail), rim, closed and open hats, a ride, a shaker, toms, a crash,
-   and an 808 sub bass that slides between notes for the R&B style.
-   Grooves are 16 steps a bar (12 for swing): x accent, o normal, . ghost, - rest. Each bar can vary, the last bar
-   of a section gets a fill, the first a crash, and timing and velocity are humanised a little. */
-let DRUM_NOISE=null;
-function drumNoise(c){ if(!DRUM_NOISE){ DRUM_NOISE=c.createBuffer(1,c.sampleRate*2,c.sampleRate); const d=DRUM_NOISE.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; } return DRUM_NOISE; }
-// Which real kit plays a voice in the current groove, when the real drums are downloaded
-let DRUM_CUR='pop';
-const DRUM_KIT={rnb:'k808',pop:'linn',funk:'linn',samba:'linn',rock:'acoustic',ballad:'acoustic',swing:'acoustic',bossa:'acoustic'};
-const DRUM_KIT_VOICE={swing:{ride:'linn'},bossa:{rim:'linn',shaker:'linn'},ballad:{rim:'linn'},rock:{hat:'linn'}};
-function drumHit(kind,t,vel=1,bus=null){
-  const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const out=bus||synth.master;
-  if(typeof smpDrum==='function'){ const kit=(DRUM_KIT_VOICE[DRUM_CUR]||{})[kind]||DRUM_KIT[DRUM_CUR]; if(smpDrum(kit,kind,t,vel,bus)) return; }   // recorded drums when downloaded
-  const env=(peak,att,dec,node)=>{ const g=c.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(peak*vel,t+att); g.gain.exponentialRampToValueAtTime(0.0001,t+att+dec); node.connect(g); g.connect(out); return g; };
-  const noise=(dur,type,f,q=0.7)=>{ const s=c.createBufferSource(); s.buffer=drumNoise(c); const fl=c.createBiquadFilter(); fl.type=type; fl.frequency.value=f; fl.Q.value=q; s.connect(fl); s.start(t,Math.random()*1.5); s.stop(t+dur+0.05); return fl; };
-  const osc=(type,f0,f1,dur)=>{ const o=c.createOscillator(); o.type=type; o.frequency.setValueAtTime(f0,t); if(f1) o.frequency.exponentialRampToValueAtTime(f1,t+dur); o.start(t); o.stop(t+Math.max(dur,0.05)+0.6); return o; };
-  switch(kind){
-    case '808': { const o=osc('sine',150,44,0.08), ws=c.createWaveShaper(), k=new Float32Array(256); for(let i=0;i<256;i++){ const x=i/128-1; k[i]=Math.tanh(2.2*x); } ws.curve=k;
-      o.connect(ws); env(0.95,0.002,0.62,ws); env(0.25,0.001,0.012,noise(0.02,'highpass',3000)); break; }   // body + a little click
-    case 'kick': { const o=osc('sine',120,48,0.06); env(0.9,0.002,0.26,o); env(0.2,0.001,0.01,noise(0.02,'highpass',2500)); break; }
-    case 'snare': env(0.5,0.001,0.17,noise(0.25,'bandpass',1900,0.6)); env(0.35,0.001,0.08,osc('triangle',200,170,0.08)); break;
-    case 'clap': { const f=noise(0.3,'bandpass',1250,1.1), g=c.createGain(); f.connect(g); g.connect(out);
-      [0,0.011,0.022].forEach(d=>{ g.gain.setValueAtTime(0.0001,t+d); g.gain.linearRampToValueAtTime(0.55*vel,t+d+0.001); g.gain.exponentialRampToValueAtTime(0.06*vel,t+d+0.009); });
-      g.gain.setValueAtTime(0.3*vel,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+0.2); break; }
-    case 'rim': env(0.35,0.001,0.03,noise(0.05,'bandpass',1700,3)); env(0.18,0.001,0.025,osc('square',1650,0,0.03)); break;
-    case 'hat': env(0.22,0.001,0.035,noise(0.06,'highpass',7800,0.9)); break;
-    case 'ohat': env(0.2,0.002,0.3,noise(0.4,'highpass',7200,0.9)); break;
-    case 'ride': env(0.12,0.002,0.55,noise(0.7,'highpass',5200,0.8)); { const a=osc('square',523,0,0.6), b=osc('square',784,0,0.6), hp=c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=3500; a.connect(hp); b.connect(hp); env(0.03,0.002,0.5,hp); } break;
-    case 'shaker': env(0.12,0.012,0.05,noise(0.1,'bandpass',6200,1.5)); break;
-    case 'tomhi': env(0.6,0.002,0.22,osc('sine',210,150,0.2)); break;
-    case 'tomlo': env(0.65,0.002,0.3,osc('sine',140,95,0.28)); break;
-    case 'crash': env(0.2,0.003,1.5,noise(1.7,'highpass',4200,0.7)); break;
-  }
+/* Jun Jam's drum kit, built in: a kick, a snare and a closed hi-hat, recorded samples from Sonic Pi's library
+   (originally from freesound.org, placed in the public domain, CC0). Stored here twice, as Ogg Opus and as AAC (browsers differ), so the
+   drums work offline with nothing to download. You can swap any of them for your own samples in Profile & settings → Sound. */
+const DRUM_KIT_DATA={"kick": {"ogg": "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", "m4a": "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"}, "snare": {"ogg": "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", "m4a": "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"}, "hat": {"ogg": "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", "m4a": "AAAAHGZ0eXBNNEEgAAACAE00QSBpc29taXNvMgAAAAhmcmVlAAAId21kYXTcAExhdmM2MC4zLjEwMAACVKtYUrAUDpKDoqFYdDYaLon/TfHfxlee9YrPvyqvPjjIb4ldTCGIpBoX5vEj8obozBn0y8OHwDOLfm9Z/jkb/0Plml8UfQ9ZtahXbwA/tfL32mkozVdhrE5DMdgZpDVxia5+0Xmt4SRtbSIFWDP0ClVCGnxWoyeLn/b/i+ABziDtmz2LC6F1zO6gZmMavnCU37Xw78JYbyxmOfScGpXU94SHmjcfzlMN+L7w8Egbemk95YzhvDnUmEWS7nGybKpsjLmzqqP0Gk4bonH49WirMGIOi4QxUdLqnG8gz4Dc+5c0u0sFXdvG4jSbW+K7JGNex3dH2PjeV27hKPlet9UweyZTt8m/YzDvz4e0Tqw8JjHuXwFKmti28WU9srkiqy3rVOPs/vb1U1r/5/vvWby2W1/v/SlZuXtd/9f7qMhnAVdpYGUM45r5DWYekaDCIqpifZBPjePYjtDT9K5jsDG74heJC1GZm5oC51w7SMmHiOP17QToiIjnqvR4kf6me7R/z8cV0LkOarvA1asgXRIvVvok9/0b6Hh31gY6O+Yy19p6e67VDEzV5g742pmOIjDh2RLsVUnrlpF4LLs6WdrEEPuiQXNQeMTNfAmQfd71wwBFKqEEo+OtXs7Fa3lXRm7WoikOOSXHHG55oiswTXN7HMwEghe6QpFSvmJVWPIUQELoqpSI4E10lxDFjHZYEUQgoCcBIPYoKPYKH0LB0rC0LF0r/tW638fF+nPxvHFc8/rv3kRZWRFUrWSrgfFaHbCJtzWH8r7dJfoPrbVSvNw9zcUOucltIo+UvCi8t9IcPzydS7lKs8X1cKuvOTwZ7wM/LUILQQKgOHLWoYOV4PB9bRWFtplrZhQIaYDt7NAQwpxuHETbg5Fd3YASCg2qhmhzMuF+NWkNWLV3C2KzJitKAWBoLANa8AEcNiSsVGMLQ0HSwHQ0HQ0XSP+3c1n63647I0zu+/MkQvdUFslFXYfw36FJFECzVVIgx11Tk9QvRnBfBS/fWfvQappTWLPzK6eeq79S6MZ9CIc03l1eUotBltKnH57rl8GIvydYYKp0hnw0perTyaMSl/lWZJkbnI1VxeOIzeowVaYJoNQQfWteqRtetgXbYX7GwuhZKoR0MHb3wsl0xPv9RkUMwq8lwRmvsOPWZ+UMYOfM2FbZIaHQLhU7SdDMJy3xKi82Vw3SpLVJFQ4KAw/AARI2LClVFoYDoYDo4FoYFoYJo3/xuX4+PrfNTXMvPb1nXO7iUx3F1UpB5yDfnnC8aYAem0T4/boUlgzj9bPkA0Z+Uop9SjOWaL8ejldubF6YsupnEKfPjCor7H3QildxBBcNTv0EoZ1dKcp3Ur1nBC+p6kVcvLEYYGZRmUyB0/wGZzrHKqjQPlDbLjPOv5O9OEeAiXi82VNJopJ3cXfFnIVOdbJWWO+mewjEbeoxwkxXxRmZZkGMYSBUtmbFMs4jvIQ0S6MRFxUaYIs48EcHknLCU5kkRKrxVPgBEDYoKX0MB0TE0MB0MBYmkf+K359e34nztrOu+s3LyqiF7qrVsmQvqsHyP0C8xBA3Q6L0JFlShuZ7dW5n+due0zovwEDWkYLsnsOnuj9GZp0zQMOqTNBvNXsqQdMYAXNS5NHWF1FIITm1YrXVRLB6/XXxUJhxs0TIShmc6VPJQt3PhaTzIEi1hd7u+qvy8hDE+mHUogCKIpwBPoWux9RynxFkSLlljGmeSaKuMCaGeMqktOsSnmPjCAwYWW6mMZ7bpGhzS1fMt8WiM+uWaYTbgAEYNiTJBhaGA6JhQHQwTRMHSv9c4qdXqb8OpnHZdVUIVu02qUVqaqDf9ikxYTrdNoUIujfWzYwW9vucD0bnvNyHHdYfTogSjptXdmGv10M+7BfOcDTjyyzOLNAVSQCADJD1AKOEZ4SEEdlpWZObyBa545KuLHk5SPyAHVAoW2KfWZKNAk7lbfA+JQoLa+yWI6ey0xzBPBNqZdY0cMVMwFHrkoor7jCEdK6LGQYYZaX/sU8AM6FCGWgE6O0sBfYrKQnjNwEONigpVhaFxaFhQHQsHRQLQsHSv9b5vft1rN23nt4u++ud9QvJuErm7GnVB2b3pYCZ13uTHOOOfClbNIBd6i1SzxI7zw/W926rvRov/y7z53cHenz1KaiCQ96KAM2E3gKTPUD1/t9DveXrLb/S8mOXnPTU4ULcGWWua9GBQmYiPAnNZh/mAEyhJovGE4x1Iwdl6QgC9j0Y2IaF/EguexsSfzTgsPvNJXMSdxMhFhZKKivKci0RfCa4zU0tu4CxNdZu4AESNigpWBaGAsLQwPQwLQsHQsHSvzma7++pzL7upVScTvUDyTxKpJCpfFQcizLPjR7+m+4AbTy/iEyfTghgjrvRfKWlc71ULkZh2O2G79F/1fpaIBRmh2kfX1hBgQDn0yRqKAqSSP+xCMOl0EVLazw6p+66Su0BrNCS5tGFR69w1CyKaJmiqCigi1wzQQkrMGZnOCuIdFZHbCCTinFLIE4yRQEuMAambAlld02dEuUYpz5V3QgCzBSUEtNmWEFvOuQ91nbVXX1o/E5LN32kPG3AXYBafgEANiwoxl6GA6Jl6V/blrOvxufMprzPF93VdQat63wopJm9SrG6uboRQ2qN0L1JL6Idck1Y0wHjQeKYxI70xg7iAMwMzIVeC4xIyAAsTg5hTR/H8iBsmFXXixYC8kP+PghucVl7Ze1GaRzR6ZnNALCQ0caZmYht/jtAjmJZiFiFkLu7b5ndxAgIWt8lTIQshp3duEgOJSMUgBTC+a7tkdkpxQQanGHA6Y/jUFYsDFgIMjmjiTgBsgU4obFhIyO9ch0+aZzQsJKZgrkZBYhZmZAPgAAAAyJtb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAzwABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACTXRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAEAAAAAAAAAzwAAAAAAAAAAAAAAAQEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAAM8AAAQAAAEAAAAAAcVtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAAKxEAAAnplXEAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAFNvdW5kSGFuZGxlcgAAAAFwbWluZgAAABBzbWhkAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAE0c3RibAAAAGpzdHNkAAAAAAAAAAEAAABabXA0YQAAAAAAAAABAAAAAAAAAAAAAQAQAAAAAKxEAAAAAAA2ZXNkcwAAAAADgICAJQABAASAgIAXQBUAAAAAASUjAAElIwWAgIAFEghW5QAGgICAAQIAAAAgc3R0cwAAAAAAAAACAAAACQAABAAAAAABAAADpgAAABxzdHNjAAAAAAAAAAEAAAABAAAACgAAAAEAAAA8c3RzegAAAAAAAAAAAAAACgAAASIAAAEAAAAApAAAANEAAADaAAAA0QAAAMMAAADDAAAA1QAAANIAAAAUc3RjbwAAAAAAAAABAAAALAAAABpzZ3BkAQAAAHJvbGwAAAACAAAAAf//AAAAHHNiZ3AAAAAAcm9sbAAAAAEAAAAKAAAAAQAAAGF1ZHRhAAAAWW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALGlsc3QAAAAkqXRvbwAAABxkYXRhAAAAAQAAAABMYXZmNjAuMy4xMDA="}};
+</script>
+<script>
+/* ---------------- drums: one kit, one simple beat ----------------
+   The kind of beat under lofi and slow gospel: a deep kick on 1, a snare on 3 with a little room around it,
+   and, if you want it, a hi-hat on 2 and 4 (the jazz player's click). Nothing busy, so the keys have the space.
+   The sounds are recorded samples built into the app (js/drumkit.js), or your own if you've loaded some
+   (Profile & settings → Sound). A synth kit stands in only if neither will decode. */
+const DRUM={buf:{},ready:false,verb:null,verbCtx:null};
+const DRUM_VOICES=['kick','snare','hat'];
+async function drumsInit(){
+  const c=synth.ctx; if(!c||DRUM.ready||DRUM.loading) return; DRUM.loading=true;
+  for(const v of DRUM_VOICES){
+    let ab=typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
+    const raw=b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
+    const tries=ab?[ab]:[raw(DRUM_KIT_DATA[v].ogg),raw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
+    DRUM.buf[v]=null; for(const x of tries){ try{ DRUM.buf[v]=await c.decodeAudioData(x.slice(0)); break; }catch(e){} } }
+  DRUM.ready=true; DRUM.loading=false;
 }
-// 808 sub bass: a sine with a short slide in and a touch of saturation so it carries on small speakers
-function sub808(m,t,dur,vel,bus,from){
-  const c=synth.ctx; if(!c) return;
-  if(typeof smp808==='function'&&smp808(m,t,dur,vel,bus)) return;   // the real 808, pitched, when downloaded t=Math.max(t,c.currentTime); const f=440*Math.pow(2,(m-69)/12);
-  const o=c.createOscillator(), ws=c.createWaveShaper(), g=c.createGain(), k=new Float32Array(256); for(let i=0;i<256;i++){ const x=i/128-1; k[i]=Math.tanh(1.6*x); } ws.curve=k;
-  o.type='sine'; o.frequency.setValueAtTime(from?440*Math.pow(2,(from-69)/12):f*1.06,t); o.frequency.exponentialRampToValueAtTime(f,t+(from?0.09:0.03));
-  o.connect(ws); ws.connect(g); g.connect(bus||synth.master);
-  const pk=0.5*vel, hold=Math.max(0.25,dur-0.08);
-  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.008); g.gain.exponentialRampToValueAtTime(pk*0.7,t+0.3); g.gain.setValueAtTime(pk*0.7,t+hold); g.gain.exponentialRampToValueAtTime(0.0001,t+hold+0.15);
-  o.start(t); o.stop(t+hold+0.2);
+function drumsReload(){ DRUM.ready=false; DRUM.buf={}; return drumsInit(); }   // after loading or clearing your own sounds
+// A small room for the snare: a short, dark, decaying burst of noise as the reverb's impulse
+function drumVerb(c){
+  if(DRUM.verb&&DRUM.verbCtx===c) return DRUM.verb;
+  const len=Math.floor(c.sampleRate*1.3), ir=c.createBuffer(2,len,c.sampleRate);
+  for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); let lp=0; for(let i=0;i<len;i++){ lp=lp*0.82+(Math.random()*2-1)*0.18; d[i]=lp*Math.pow(1-i/len,3.2); } }
+  const cv=c.createConvolver(); cv.buffer=ir; DRUM.verb=cv; DRUM.verbCtx=c; return cv;
 }
-/* The grooves. Each voice is one or more patterns (picked bar by bar); steps per beat: 4 (16ths) or 3 (swing triplets).
-   half: the backbeat on 3 (half-time, at slow R&B tempos). bass808: the bass plays the 808 sub. */
-const DRUM_STYLES={
-  rnb:{name:'R&B / trap soul',steps:4,bass808:true,v:{
-    '808':['x-----x---x-----','x-----x-x----x--','x--x------x--x--'],
-    clap:['--------x-------'],
-    hat:['xoxoxoxoxoxoxoxo','xoxoxoxoxoxoxoxo','xoxoxoxoxo-oxoxo'],
-    ohat:['-------------o--','----------------']},rolls:0.4,fill:'rnb'},
-  pop:{name:'Pop / J-pop',steps:4,v:{
-    kick:['x-------x-x-----','x-------x-------','x-----x-x-------'],
-    snare:['----x-------x---','----x-------x--.'],
-    hat:['x-o-x-o-x-o-x-o-']},fill:'snare'},
-  rock:{name:'Rock / anime',steps:4,v:{
-    kick:['x-----x-x-------','x-x---x-x---x---'],
-    snare:['----x-------x---'],
-    hat:['x-x-x-x-x-x-x-x-'],ohat:['--------------o-','----------------']},fill:'toms'},
-  funk:{name:'Funk',steps:4,v:{
-    kick:['x--x--x---x--x--','x--x---x--x-----'],
-    snare:['----x--.-.--x--.','----x-.--.-.x---'],
-    hat:['xoxoxoxoxoxoxoxo']},fill:'snare'},
-  swing:{name:'Swing',steps:3,v:{
-    ride:['x--x-xx--x-x','x--x-xx--xxx'],
-    hat:['---x-----x--'],
-    kick:['.--.--.--.--'],
-    snare:['------------','-------.----','----.-------']},fill:'swing'},
-  bossa:{name:'Bossa nova',steps:4,v:{
-    rim:['x--x--x---x--x--','x--x---x--x--x--'],
-    kick:['x--x----x--x----'],
-    shaker:['xooxooxoxooxooxo']},fill:null},
-  samba:{name:'Samba / Latin',steps:4,v:{
-    kick:['x--xx--xx--xx--x'],
-    rim:['x-x--x-x-x--x-x-'],
-    hat:['oxoxoxoxoxoxoxox']},fill:'snare'},
-  ballad:{name:'Ballad',steps:4,v:{
-    kick:['x-------x-------','x-------x-x-----'],
-    rim:['--------x-------'],
-    hat:['o-.-o-.-o-.-o-.-']},fill:null},
-};
-const DRUM_VOL={'808':0.9,kick:0.95,snare:0.75,clap:0.7,rim:0.6,hat:0.5,ohat:0.45,ride:0.6,shaker:0.5,tomhi:0.7,tomlo:0.75,crash:0.55};
-// Which groove suits a song, from its feel and genre
-function drumStyleFor(song){ return drumStyleOf((song.feel||'').toLowerCase())||drumStyleOf((song.genre||'').toLowerCase())||'pop'; }   // the feel decides; the genre if the feel says nothing
-function drumStyleOf(f){
-  if(!f) return null;
-  if(/even 8ths/.test(f)) return 'pop';
-  if(/swing|bebop|bop|waltz|modal|up tempo|jazz/.test(f)) return 'swing';
-  if(/bossa|bolero/.test(f)) return 'bossa';
-  if(/samba|latin|calypso|salsa|afro|cha/.test(f)) return 'samba';
-  if(/ballad|slow/.test(f)) return 'ballad';
-  if(/funk|disco|16th/.test(f)) return 'funk';
-  if(/r&b|rnb|soul|neo|trap|hip|smooth|groove/.test(f)) return 'rnb';
-  if(/rock|punk|fast|anthem|anime/.test(f)) return 'rock';
-  if(/pop|8ths/.test(f)) return 'pop';
-  return null;
+/* One hit. Samples get a gentle tone shaping (the kick a little rounder, the hat softer); the snare sends some to the room. */
+function drumHit(v,t,vel=1,bus=null){
+  const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const out=bus||synth.master, b=DRUM.buf[v];
+  const g=c.createGain(); g.gain.value=vel*({kick:1.0,snare:0.8,hat:0.85}[v]||1);   // level-matched against the keys
+  const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value={kick:1800,snare:7000,hat:9000}[v]; f.Q.value=0.5;
+  f.connect(g); g.connect(out);
+  if(v==='snare'){ const send=c.createGain(), verb=drumVerb(c); send.gain.value=0.32*vel; f.connect(send); send.connect(verb); verb.connect(out); }
+  if(b){ const s=c.createBufferSource(); s.buffer=b; s.connect(f); s.start(t); return; }
+  // the stand-in synth kit
+  const env=(node,peak,dec)=>{ const e=c.createGain(); e.gain.setValueAtTime(0.0001,t); e.gain.linearRampToValueAtTime(peak,t+0.003); e.gain.exponentialRampToValueAtTime(0.0001,t+dec); node.connect(e); e.connect(f); };
+  if(v==='kick'){ const o=c.createOscillator(); o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12); env(o,0.9,0.5); o.start(t); o.stop(t+0.6); }
+  else { const n=c.createBufferSource(), len=Math.floor(c.sampleRate*0.3), nb=c.createBuffer(1,len,c.sampleRate), d=nb.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; n.buffer=nb;
+    const hp=c.createBiquadFilter(); hp.type=v==='hat'?'highpass':'bandpass'; hp.frequency.value=v==='hat'?7500:1800; n.connect(hp); env(hp,v==='hat'?0.25:0.5,v==='hat'?0.04:0.18); n.start(t); n.stop(t+0.32); }
 }
-/* One bar. info: {bar (count from the start), first (first bar of a section), last (last bar of a section)} */
-function drumBar(id,t0,spb,beats,info,bus){
-  const S=DRUM_STYLES[id]; if(!S) return; DRUM_CUR=id; const per=S.steps, step=spb/per, n=beats*per, r=Math.random;
-  const hum=()=>(r()-0.5)*0.008, velOf=ch=>ch==='x'?1:ch==='o'?0.62:ch==='.'?0.28:0;
-  const fillFrom=info.last&&S.fill&&r()<0.75?(beats-1)*per:n;   // the last beat of a section is a fill
-  const roll=S.rolls&&fillFrom===n&&r()<S.rolls;                    // or, now and then, a hat roll on the last beat
-  Object.entries(S.v).forEach(([voice,pats])=>{ const p=pats[r()<0.6?0:Math.floor(r()*pats.length)];   // mostly the main pattern, sometimes a variation
-    for(let i=0;i<Math.min(n,fillFrom);i++){ const v=velOf(p[i%p.length]); if(!v) continue;
-      if(roll&&voice==='hat'&&i>=n-per) continue;
-      drumHit(voice,t0+i*step+hum(),v*DRUM_VOL[voice]*(0.9+r()*0.2),bus); } });
-  if(roll){ const k=r()<0.5?3:4, b=t0+(beats-1)*spb, sub=spb/(k*2);   // triplet or 32nd hats, getting louder
-    for(let j=0;j<k*2;j++) drumHit('hat',b+j*sub+hum(),DRUM_VOL.hat*(0.35+0.6*j/(k*2)),bus); }
-  if(fillFrom<n){ const b=t0+(beats-1)*spb;
-    if(S.fill==='toms'){ ['tomhi','tomhi','tomlo','tomlo'].forEach((v,j)=>drumHit(v,b+j*spb/4+hum(),DRUM_VOL[v],bus)); }
-    else if(S.fill==='rnb'){ for(let j=0;j<6;j++) drumHit('hat',b+j*spb/6,DRUM_VOL.hat*(0.4+j*0.1),bus); drumHit('808',b+spb/2,DRUM_VOL['808']*0.8,bus); }
-    else if(S.fill==='swing'){ [0,2].forEach(j=>drumHit('snare',b+j*spb/3+hum(),0.45,bus)); drumHit('kick',b+2*spb/3,0.5,bus); }
-    else for(let j=0;j<4;j++) drumHit('snare',b+j*spb/4+hum(),DRUM_VOL.snare*(0.55+j*0.15),bus); }
-  if(info.first&&info.bar>0&&id!=='bossa'&&id!=='ballad') drumHit('crash',t0+hum(),DRUM_VOL.crash,bus);
+/* One bar of the beat. hat: hi-hat on 2 and 4. A bar of 3 puts the snare on 3 too; longer bars repeat the idea.
+   Every other bar the kick adds a soft pickup before 3, and the snare sits a touch behind the beat: laid back, not stiff. */
+function beatBar(t0,spb,beats,info,bus,o={}){
+  const lazy=Math.min(0.025,spb*0.04);
+  for(let b0=0;b0<beats;b0+=4){ const at=x=>t0+(b0+x)*spb;
+    drumHit('kick',at(0),1,bus);
+    if(info.bar%2===1&&beats-b0>=3) drumHit('kick',at(1.5),0.55,bus);
+    if(beats-b0>=3) drumHit('snare',at(2)+lazy,1,bus);
+    if(o.hat) [1,3].forEach(x=>{ if(b0+x<beats) drumHit('hat',at(x),0.9,bus); }); }
 }
 </script>
 <script>
@@ -7281,8 +7216,9 @@ let GDATA=store.get('gig',{});
 GDATA.mine=GDATA.mine||[]; GDATA.fav=GDATA.fav||{}; GDATA.tr=GDATA.tr||{}; GDATA.tempo=GDATA.tempo||{};
 if(!GDATA.genre) GDATA.genre='all'; if(!GDATA.view) GDATA.view='chords'; if(!GDATA.size) GDATA.size=1; if(GDATA.tones==null) GDATA.tones=true; if(GDATA.click==null) GDATA.click=true;
 if(GDATA.pad==null) GDATA.pad=true; if(GDATA.bass==null) GDATA.bass=true; 
-if(!GDATA.drums||!GDATA.drumsV){ GDATA.drums='off'; GDATA.drumsV=1; }   // a groove: off (the default), auto (from the song's feel) or one of DRUM_STYLES
-if(typeof GDATA.click!=='string') GDATA.click=GDATA.click===false?'off':'24';   // the click: off, on 2 and 4, or every beat
+if((GDATA.drumsV||0)<2){ GDATA.drums='on'; GDATA.drumsV=2; }   // drums: 'on' (the one simple beat) or 'off'
+if(typeof GDATA.click!=='string'||GDATA.click==='all') GDATA.click=GDATA.click===false?'off':'24';   // hi-hat on 2 and 4: '24' or 'off'
+if(GDATA.an==null) GDATA.an=false;   // Why it works: the analysis under the chords
 const saveGig=()=>{ try{ localStorage.setItem('mtc:gig',JSON.stringify(GDATA)); return true; }catch(e){ return false; } };
 const GIG={active:false,view:'list',song:null,playing:false};
 const GIG_GENRES=[['all','All'],['J-pop','J-pop & city pop'],['Pop','Pop & rock'],['Jazz','Jazz standards'],['Latin','Latin & bossa'],['Blues','Blues'],['Funk','Funk & soul'],['mine','Yours'],['fav','♥ Favourites']];
@@ -7426,26 +7362,37 @@ function gigShow(id){
   Object.assign(GIG,{view:'sheet',song:s,lastId:id,tl:gigTimeline(s),pos:0}); GDATA.last=id; saveGig();
   const k=gigKeyNow(s), sh=gigShift(s), tempo=GDATA.tempo[id]||s.tempo;
   const occ={}; s.form.forEach(n=>occ[n]=(occ[n]||0)+1);
+  const an=GDATA.an?gigAnalyze(s):null;
   $('gigBody').innerHTML=`<div class="trtop"><button class="ghost" id="gigBack">← All charts</button><span class="etitle">${trEsc(s.title)}</span>
       <span class="gfav${GDATA.fav[id]?' on':''}" id="gigFav" title="Favourite">${GDATA.fav[id]?'♥':'♡'}</span><span class="trspace"></span>
       <button class="ghost" id="gigRand" title="Another random chart">🎲</button><button class="ghost" id="gigEditBtn">${s.mine?'Edit':'Edit a copy'}</button></div>
     <p class="gigsub">${trEsc(s.by)}${s.genre?` · ${trEsc(s.genre)}`:''}${s.feel?` · ${trEsc(s.feel)}`:''}${s.beats!==4?` · ${s.beats} beats a bar`:''}${s.tags?` · ${trEsc(s.tags)}`:''}${s.source?` · <span class="fine">Chords from a ${trEsc(s.source)}${/U-FRET|Ultimate/.test(s.source)?'; chord lengths approximate':''}</span>`:''}</p>
     ${s.check?'<p class="fine gigcheck">⚠ Written from memory: worth checking against a chart you trust. <b>Edit a copy</b> to fix anything.</p>':''}
     <div class="gigbar trtransport">
-      <button class="go trplay" id="gigPlay" title="Play the changes (Space)">▶</button><span class="trpos" id="gigPos">1</span>
-      <span class="trgrp"><span class="fine">Key</span><button class="ghost ic" id="gigDown" title="Down a half step (-)">−</button><b class="gigkey">${gigAccHTML(keyName(k.pc,k.minor))}</b><button class="ghost ic" id="gigUp" title="Up a half step (=)">+</button>${sh?'<button class="ghost trsm" id="gigOrig">Original key</button>':''}</span>
-      <span class="trgrp"><span class="fine">♩</span><button class="ghost ic" id="gigSlower">−</button><b id="gigTempo">${tempo}</b><button class="ghost ic" id="gigFaster">+</button></span>
-      <span class="trgrp">${gigSeg('gview',[['chords','Chords'],['numbers','Numbers','Roman numerals in this key, like the J-pop degrees in Chords'],['both','Both']],GDATA.view)}</span>
-      <span class="trgrp">${gigSeg('gsize',[[.85,'A'],[1,'A'],[1.25,'A']],GDATA.size)}</span>
-      <button class="ghost tgl" id="gigTones" aria-pressed="${GDATA.tones}" title="Light up the current chord's notes on the keyboard">Chord tones</button>
-      <span class="trgrp"><span class="fine">Backing</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}" title="Chords under you while it plays">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}" title="Bass notes while it plays">Bass</button></span>
-      <span class="trgrp"><span class="fine">Drums</span><select id="gigDrums" title="The groove under the chords">${[['auto',`Auto: ${DRUM_STYLES[drumStyleFor(s)].name}`],...Object.entries(DRUM_STYLES).map(([k,v])=>[k,v.name]),['off','Off']].map(([v,t])=>`<option value="${v}"${GDATA.drums===v?' selected':''}>${t}</option>`).join('')}</select></span>
-      ${typeof smpBandReady==='function'&&!SMP_BAND.every(id=>smpHave()[id])?'<button class="ghost trsm" id="gigBandGet" title="Recorded drums and bass instead of the synth: one download (1.3 MB), offline after">⬇ Real drums &amp; bass</button>':''}
-      <span class="trgrp" id="gigClickGrp"${GDATA.drums!=='off'?' hidden':''}><span class="fine">Click</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4'],['all','Every beat']],GDATA.click)}</span>
-      <span class="trgrp"><span class="fine">Sound</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</span></div>
+      <div class="gigrow">
+        <button class="go trplay" id="gigPlay" title="Play the changes (Space)">▶</button><span class="trpos" id="gigPos">1</span>
+        <span class="trgrp"><span class="fine">Key</span><button class="ghost ic" id="gigDown" title="Down a half step (-)">−</button><b class="gigkey">${gigAccHTML(keyName(k.pc,k.minor))}</b><button class="ghost ic" id="gigUp" title="Up a half step (=)">+</button>${sh?'<button class="ghost trsm" id="gigOrig" title="Back to the original key">↺</button>':''}</span>
+        <span class="trgrp"><span class="fine">♩</span><button class="ghost ic" id="gigSlower">−</button><b id="gigTempo">${tempo}</b><button class="ghost ic" id="gigFaster">+</button></span>
+        <span class="trspace"></span>
+        <div class="trmenu"><button class="ghost" id="gigMixBtn" aria-haspopup="true" title="What plays under you">Mix ▾</button>
+          <div class="trmenulist gigmix" id="gigMix" hidden>
+            <div class="gmrow"><span class="fine">Play</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}">Bass</button><button class="ghost tgl" id="gigDrumsT" aria-pressed="${GDATA.drums==='on'}" title="Kick on 1, snare on 3">Drums</button></div>
+            <div class="gmrow"><span class="fine">Hi-hat</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4, the jazz click']],GDATA.click)}</div>
+            <div class="gmrow"><span class="fine">Chords</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</div>
+            <p class="fine" style="margin:6px 2px 0">Your own drum sounds: Profile &amp; settings → Sound.</p></div></div>
+      </div>
+      <div class="gigrow">
+        ${gigSeg('gview',[['chords','Chords'],['numbers','Numbers','Roman numerals in this key, like the J-pop degrees in Chords'],['both','Both']],GDATA.view)}
+        <button class="ghost tgl" id="gigAn" aria-pressed="${GDATA.an}" title="Mark the moves that make it work: ii–V–I, backdoor, tritone subs, root motion">Why it works</button>
+        <button class="ghost tgl" id="gigTones" aria-pressed="${GDATA.tones}" title="Light up the current chord's notes on the keyboard">Chord tones</button>
+        <span class="trspace"></span>
+        ${gigSeg('gsize',[[.85,'A'],[1,'A'],[1.25,'A']],GDATA.size)}
+      </div>
+    </div>
+    ${GDATA.an?`<div class="gialegend">${Object.entries(GA_PAT).map(([k,p])=>`<span class="gpat gp-${k}" data-gpat="${k}">${p.name}</span>`).join('')}<span class="fine">Between chords: <i class="gmv" data-gmv="↑4th">↑4th</i> pull home · <i class="gmv" data-gmv="↑step">step</i> lift · <i class="gmv" data-gmv="3rd">3rd</i> colour · <i class="gmv" data-gmv="3rd!">3rd ✦</i> drama. Tap any of them to see why.</span></div>`:''}
     <div class="gigform">Form: ${s.form.map((n,i)=>`<span class="gform" data-fi="${i}">${trEsc(n)}</span>`).join('')}</div>
     <div class="gigsheet" id="gigSheet" style="--gs:${GDATA.size}">${s.sections.map(sec=>`<div class="gsec"><div class="gsecname">${trEsc(sec.name)}${occ[sec.name]>1?` <span class="fine">×${occ[sec.name]}</span>`:''}${!occ[sec.name]?' <span class="fine">(not in the form)</span>':''}</div>
-      <div class="gbars" style="--per:${s.beats===3?4:4}">${sec.bars.map((b,bi)=>`<div class="gbar" data-sec="${trEsc(sec.name)}" data-bi="${bi}">${b.rep?'<span class="grep">𝄎</span>':(bt=>b.chords.map((c,k)=>`<span class="gslot" style="flex:${bt[k]}">${gigChordHTML(c,s)}</span>`).join(''))(gigBeats(b,s.beats))}</div>`).join('')}</div></div>`).join('')}</div>
+      <div class="gbars" style="--per:${s.beats===3?4:4}">${sec.bars.map((b,bi)=>`<div class="gbar" data-sec="${trEsc(sec.name)}" data-bi="${bi}">${b.rep?'<span class="grep">𝄎</span>':(bt=>b.chords.map((c,k)=>`<span class="gslot" style="flex:${bt[k]}">${gigChordHTML(c,s)}${an?gigAnHTML(an[`${sec.name}|${bi}|${k}`]):''}</span>`).join(''))(gigBeats(b,s.beats))}</div>`).join('')}</div></div>`).join('')}</div>
     <p class="fine">Play along on your keyboard any time. <kbd>Space</kbd> plays the changes, <kbd>−</kbd> <kbd>=</kbd> change key, click a bar to start there. A full band to play with comes later; this is the chart it will read.</p>`;
   const re=()=>gigShow(id), setT=t=>{ GDATA.tempo[id]=Math.max(40,Math.min(300,t)); saveGig(); $('gigTempo').textContent=GDATA.tempo[id]; if(GIG.playing) gigPlay(GIG.pos); };
   $('gigBack').onclick=gigList; $('gigRand').onclick=()=>{ const l=gigAll().filter(gigMatches).filter(x=>x.id!==id); if(l.length) gigShow(l[Math.floor(Math.random()*l.length)].id); };
@@ -7455,10 +7402,11 @@ function gigShow(id){
   $('gigUp').onclick=()=>gigTranspose(1); $('gigDown').onclick=()=>gigTranspose(-1); if($('gigOrig')) $('gigOrig').onclick=()=>{ delete GDATA.tr[id]; saveGig(); re(); };
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
-  if($('gigBandGet')) $('gigBandGet').onclick=async()=>{ const b=$('gigBandGet'); synth.init(); if(!navigator.onLine) return trMsg('The download needs Wi-Fi once. The synth keeps playing until then.','no');
-    b.disabled=true; try{ await smpBandDownload((d,n)=>{ b.textContent=`Downloading ${d} of ${n}…`; }); if(GDATA.drums==='off'){ GDATA.drums='auto'; saveGig(); } trMsg('Real drums and bass downloaded. They work offline from now on.','ok'); gigShow(id); }
-    catch(e){ b.disabled=false; b.textContent='⬇ Real drums & bass'; trMsg("Couldn't finish the download. The synth keeps playing; try again when you're online.",'no'); } };
-  $('gigDrums').onchange=e=>{ GDATA.drums=e.target.value; saveGig(); $('gigClickGrp').hidden=GDATA.drums!=='off'; if(GIG.playing) gigPlay(GIG.pos); };
+  const mix=$('gigMix'); $('gigMixBtn').onclick=e=>{ mix.hidden=!mix.hidden; e.stopPropagation(); };
+  document.addEventListener('pointerdown',e=>{ if(mix&&!mix.hidden&&!e.target.closest('.trmenu')) mix.hidden=true; });
+  $('gigDrumsT').onclick=()=>{ GDATA.drums=GDATA.drums==='on'?'off':'on'; saveGig(); $('gigDrumsT').setAttribute('aria-pressed',GDATA.drums==='on'); if(GIG.playing) gigPlay(GIG.pos); };
+  $('gigAn').onclick=()=>{ GDATA.an=!GDATA.an; saveGig(); re(); };
+  $('gigBody').querySelectorAll('[data-gpat],[data-gmv]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const p=GA_PAT[x.dataset.gpat]; trMsg(p?`${p.name}: ${p.why}`:GA_MOVE_WHY[x.dataset.gmv]); });
   $('gigBody').querySelectorAll('[data-gclick]').forEach(b=>b.onclick=()=>{ GDATA.click=b.dataset.gclick; saveGig(); $('gigBody').querySelectorAll('[data-gclick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
   [['gigPad','pad'],['gigBass','bass']].forEach(([el,k])=>$(el).onclick=()=>{ GDATA[k]=!GDATA[k]; saveGig(); $(el).setAttribute('aria-pressed',GDATA[k]); if(GIG.playing) gigPlay(GIG.pos); });
   $('gigBody').querySelectorAll('[data-gsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.gsound); $('gigBody').querySelectorAll('[data-gsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
@@ -7485,18 +7433,17 @@ function gigPlay(from=0){
   gigStop(); const s=GIG.song, tl=GIG.tl; if(!s||!tl.length) return; synth.init();
   const bus=GIG.bus=newBus(); if(!bus) return; GIG.playing=true; $('gigPlay').textContent='❚❚';
   const spb=60/(GDATA.tempo[s.id]||s.tempo), sh=gigShift(s), total=tl.length;
-  let i=from%total, t=now()+.12, prev=null, pbass=null; const sty=GDATA.drums==='off'?null:GDATA.drums==='auto'?drumStyleFor(s):GDATA.drums;
-  const upright=['swing','bossa'].includes(sty||drumStyleFor(s))||/jazz|latin|blues/i.test(s.genre);   // jazz and Latin get the upright bass
+  let i=from%total, t=now()+.12, prev=null; const drums=GDATA.drums==='on', hats=GDATA.click==='24'; drumsInit();
   const cue=[], snd=backSound(), vel=backVel(62);
   const sched=()=>{ if(!GIG.playing) return;
     while(t<now()+.25){ const bar=tl[i];
       bar.chords.forEach(ch=>{ const at=t+(ch.at-bar.beat)*spb, d=ch.dur*spb*.96; if(!ch.c) return;
         const r=mod12(ch.c.root.pc+sh), bpc=mod12((ch.c.bass||ch.c.root).pc+sh);
         if(GDATA.pad){ prev=spreadVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
-        if(GDATA.bass){ const bm=36+mod12(bpc-36); if(sty&&DRUM_STYLES[sty].bass808){ sub808(bm,at,Math.min(d,2.4),0.9,bus,pbass); pbass=bm; } else tone(bm,at,Math.min(d,2.2),84,upright?'ubass':'bass',bus); }
+        if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.4),84,'bass',bus);
         cue.push({at,bar:i,ch}); });
-      if(sty) drumBar(sty,t,spb,s.beats,{bar:i,first:bar.bi===0,last:tl[(i+1)%total].bi===0},bus);
-      else if(GDATA.click!=='off') for(let k=GDATA.click==='all'?0:1;k<s.beats;k+=GDATA.click==='all'?1:2) hat(t+k*spb);
+      if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats});
+      else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,bus);
       t+=s.beats*spb; i=(i+1)%total; } };
   const draw=()=>{ if(!GIG.playing) return; while(cue.length&&cue[0].at<=now()+.02){ const c=cue.shift(); if(GIG.pos!==c.bar||GIG.markAt!==c.at){ GIG.pos=c.bar; GIG.markAt=c.at; gigMark(c.bar); gigLight(c.ch); } } GIG.raf=requestAnimationFrame(draw); };
   sched(); GIG.timer=setInterval(sched,40); GIG.raf=requestAnimationFrame(draw);
@@ -7554,6 +7501,61 @@ function gigKey(e){
   return true;
 }
 document.addEventListener('keyup',e=>{ if(!GIG.active||!GIG.qDown) return; const k=e.key.toLowerCase(), m=GIG.qDown[k]; if(m!=null){ delete GIG.qDown[k]; noteOff(m); } });
+</script>
+<script>
+/* Gig: "Why it works". Reads a chart's chord symbols and marks the moves that make it sound the way it does:
+   ii–V–I (the front door), the backdoor ii–V (iv → ♭VII7 → I), tritone subs, secondary dominants (V of something
+   other than home), passing diminished chords, the minor iv, and between every two chords how far the root moves
+   (a 4th up is the strongest pull home; a step lifts; a 3rd changes colour; an out-of-key 3rd is drama).
+   Rule-based and key-independent (intervals only), so it reads the same in any key you transpose to. */
+const GA_MIN=new Set(['min7','min9','min11','min6','hdim','min','mmaj7']);
+const GA_DOM=new Set(['dom7','dom9','dom13','d7b9','d7s9','alt','d7b13','d7s11','sus7']);
+const GA_PAT={
+  iivi:{name:'ii–V–I',why:'The front door home: a minor 7 up a 4th to a 7 chord, then up another 4th to home. The strongest pull there is: the 7 chord\'s 3rd rises a half step to the root, its 7th falls a half step to the 3rd.'},
+  iiv:{name:'ii–V',why:'The first two steps of the front door, without the home chord: it sets up a key and then goes somewhere else (common in standards and city pop).'},
+  back:{name:'Backdoor',why:'Home from the flat side: iv minor 7 up a 4th to ♭VII7, then a whole step up to I. Borrowed from the minor key, so it lands warm and wistful instead of bright: the ♭VII7\'s A♭ and F (in C) fall a half step onto G and E.'},
+  tri:{name:'Tritone sub',why:'A 7 chord a half step above where it\'s going: it has the same two tense notes as the normal V7 (a G7 in disguise), so it slides down a half step into the next chord.'},
+  sec:{name:'V of…',why:'A secondary dominant: a 7 chord that resolves up a 4th to a chord that isn\'t home, as if that chord were home for a moment. It borrows that chord\'s V7 to make arriving there stronger.'},
+  pdim:{name:'Passing °',why:'A diminished chord between two chords a whole step apart: its bass fills the gap a half step at a time, and every note of it leans into the next chord.'},
+  miv:{name:'Minor iv',why:'IV turning minor: the 6th of the key drops a half step (A to A♭ in C). The bittersweet J-pop and gospel move, borrowed from the minor key.'},
+};
+const GA_MOVE={5:'↑4th',7:'↓4th',1:'↑½',11:'↓½',2:'↑step',10:'↓step',3:'3rd',4:'3rd',8:'3rd',9:'3rd',6:'tritone'};
+const GA_MOVE_WHY={'↑4th':'Up a 4th (down a 5th): the strongest root move, it pulls toward home.','↓4th':'Down a 4th: the reverse, softer, like a plagal "amen".','↑½':'Up a half step: a lift.','↓½':'Down a half step: a slide (often a tritone sub).','↑step':'Up a step: momentum, building.','↓step':'Down a step: walking down.','3rd':'A 3rd: the two chords share notes, so it\'s a colour change more than a move.','3rd!':'An out-of-key 3rd (chromatic mediant): dramatic, cinematic.','tritone':'A tritone away: as far as roots can get, a jolt.'};
+/* Annotations for every chord in the chart: map "section|bar|chord" → {role, pat, first, move} */
+function gigAnalyze(song){
+  const out={}, key=song.key, isMaj=q=>!q.minor&&!GA_DOM.has(q.id);
+  const roman=pc=>GIG_NUM[mod12(pc-key.pc)];
+  song.sections.forEach(sec=>{
+    const seq=[]; let last=null;
+    sec.bars.forEach((b,bi)=>b.chords.forEach((c,ci)=>{ if(!c.c) return; const id=`${sec.name}|${bi}|${ci}`;
+      if(last&&last.c.root.pc===c.c.root.pc&&last.c.qid===c.c.qid) return;   // the same chord held over
+      seq.push(last={id,c:c.c,pc:c.c.root.pc,q:Q[c.c.qid]}); }));
+    seq.forEach((x,i)=>{ const a=out[x.id]||(out[x.id]={});
+      if(i){ const d=mod12(x.pc-seq[i-1].pc); let m=GA_MOVE[d]; if(m==='3rd'&&isMaj(x.q)&&isMaj(seq[i-1].q)&&[3,4,8,9].includes(d)) m='3rd!'; if(m) a.move=m; } });
+    const tag=(xs,pat,roles)=>{ if(xs.some(x=>out[x.id].pat)) return; xs.forEach((x,k)=>{ Object.assign(out[x.id],{pat,role:roles[k],first:k===0}); }); };
+    for(let i=0;i<seq.length;i++){
+      const a=seq[i], b=seq[i+1], c=seq[i+2], up=(x,y)=>y&&mod12(y.pc-x.pc);
+      if(b&&GA_MIN.has(a.q.id)&&GA_DOM.has(b.q.id)&&up(a,b)===5){
+        if(c&&up(b,c)===5) tag([a,b,c],'iivi',['ii','V','I']);
+        else if(c&&up(b,c)===2) tag([a,b,c],'back',['iv','♭VII7','I']);
+        else tag([a,b],'iiv',['ii','V']); }
+    }
+    for(let i=0;i<seq.length;i++){
+      const a=seq[i], b=seq[i+1], c=seq[i+2], up=(x,y)=>y&&mod12(y.pc-x.pc);
+      if(GA_DOM.has(a.q.id)&&b){
+        if(up(a,b)===11) tag([a,b],'tri',['subV','→']);
+        else if(up(a,b)===2&&isMaj(b.q)) tag([a,b],'back',['♭VII7','I']);
+        else if(up(a,b)===5&&mod12(b.pc-key.pc)!==0) tag([a,b],'sec',[`V/${roman(b.pc)}`,roman(b.pc)]); }
+      if(b&&c&&(b.q.id==='dim7'||b.q.id==='dim')&&up(a,b)===1&&up(b,c)===1) tag([a,b,c],'pdim',['','°','']);
+      if(b&&mod12(a.pc-key.pc)===5&&isMaj(a.q)&&b.pc===a.pc&&b.q.minor) tag([a,b],'miv',['IV','iv']);
+    }
+  });
+  return out;
+}
+function gigAnHTML(an){ if(!an) return '';
+  const p=an.pat?GA_PAT[an.pat]:null;
+  return `<span class="gan">${an.move?`<i class="gmv" data-gmv="${an.move}">${an.move==='3rd!'?'3rd ✦':an.move}</i>`:''}${p&&an.role?`<b class="grole gp-${an.pat}">${gigAccHTML(an.role)}</b>`:''}${p&&an.first?`<span class="gpat gp-${an.pat}" data-gpat="${an.pat}">${p.name}</span>`:''}</span>`;
+}
 </script>
 <script>
 /* ---------------- menu ---------------- */

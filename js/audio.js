@@ -9,6 +9,7 @@ const synth={ctx:null,voices:new Map(),
     if(this.ctx.state!=='running') this.ctx.resume().then(sndStatus,sndStatus);
     sndStatus();
     if(typeof smpLoadAll==='function') smpLoadAll();   // downloaded instruments load from this Mac (no Wi-Fi needed)
+    if(typeof drumsInit==='function') drumsInit();   // the drum kit (built in, or yours)
   },
   on(m,v=90){
     if(!opts.sound) return;
@@ -71,7 +72,7 @@ const now=()=>synth.ctx?synth.ctx.currentTime:0;
 function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   const c=synth.ctx; if(!c) return;
   if(timbre==='epiano'&&typeof keysSampled==='function'){ const k=keysSampled(); if(k&&smpTone(k,m,when,dur,vel,bus)) return; }   // the real instrument when there is one
-  if((timbre==='bass'||timbre==='ubass')&&typeof SMP!=='undefined'){ const id=timbre==='ubass'?'bassA':'bassE'; if(SMP.ready[id]&&smpTone(id,m,when,dur,vel,bus)) return; timbre='bass'; }   // real bass (upright for ubass) when downloaded
+  if(timbre==='ubass') timbre='bass';   // one bass sound everywhere
   const t=Math.max(when,c.currentTime), f=440*Math.pow(2,(m-69)/12), v=vel/127, out=bus||synth.master;
   const g=c.createGain(); g.connect(out);
   const end=t+dur+0.5, nodes=[];
@@ -84,14 +85,14 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
     g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.04);
     g.gain.setValueAtTime(pk*0.8,t+dur); g.gain.exponentialRampToValueAtTime(0.0001,end);
     nodes.push(o1,o2);
-  } else if(timbre==='bass'){ // a clean electric-bass note: round sine body, a little triangle for definition, a soft pluck that settles
+  } else if(timbre==='bass'){ // the bass: deep and round, not aggressive. A sine with a touch of its octave for definition, a gentle start, a soft fade
     const o=c.createOscillator(), o2=c.createOscillator(), g2=c.createGain(), lp=c.createBiquadFilter();
-    o.type='sine'; o.frequency.value=f; o2.type='triangle'; o2.frequency.value=f; g2.gain.value=0.3;
-    lp.type='lowpass'; lp.Q.value=0.6; lp.frequency.setValueAtTime(Math.min(2000,f*12),t); lp.frequency.exponentialRampToValueAtTime(Math.max(220,f*3),t+0.3);
+    o.type='sine'; o.frequency.value=f; o2.type='sine'; o2.frequency.value=f*2; g2.gain.value=0.18;
+    lp.type='lowpass'; lp.Q.value=0.4; lp.frequency.value=Math.max(320,Math.min(900,f*5));
     o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g);
-    const pk=0.25+0.3*v, hold=Math.max(0.3,dur-0.06);
-    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.006); g.gain.exponentialRampToValueAtTime(pk*0.6,t+0.28);
-    g.gain.setValueAtTime(pk*0.6,t+hold); g.gain.exponentialRampToValueAtTime(0.0001,t+hold+0.12);
+    const pk=0.25+0.16*v, hold=Math.max(0.25,dur-0.05);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.014); g.gain.exponentialRampToValueAtTime(pk*0.78,t+0.35);
+    g.gain.setValueAtTime(pk*0.78,t+hold); g.gain.exponentialRampToValueAtTime(0.0001,t+hold+0.2);
     nodes.push(o,o2);
   } else if(timbre==='pluck'){
     const o=c.createOscillator(), lp=c.createBiquadFilter();
