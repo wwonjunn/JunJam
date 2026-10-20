@@ -1,10 +1,10 @@
 /* ---------------- menu ---------------- */
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
-let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'settings'
+let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' | 'settings'
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; }},
   {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
-  {id:'groove',name:'Groove',blurb:'Comping in time: feel, pushes, kime, genre recipes',soon:true},
+  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VOICINGS.length*3} stars`},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
   {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
@@ -14,13 +14,14 @@ function renderHome(){
 }
 function renderMenu(){
   $('rankLine').textContent=rankLine();
-  ['home','hands','ears','lines','reharm','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  ['home','hands','ears','lines','reharm','voicings','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
   document.querySelector('.homehead').hidden=side==='settings';
   if(side==='home'){ renderHome(); renderProfileChip(); }
   if(side==='settings') renderSettingsPane();
   if(side==='ears') renderEarsPane();
   if(side==='lines') renderLinesPane();
   if(side==='reharm') renderReharmPane();
+  if(side==='voicings') renderVoicingsPane();
   document.body.classList.toggle('nohud',side!=='hands');
   const bests=store.get('best2',{});
   $('mPractice').setAttribute('aria-pressed',mode==='practice'); $('mGame').setAttribute('aria-pressed',mode==='game');
@@ -60,7 +61,7 @@ $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender();
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
-bindLinesPane(); bindReharmPane();
+bindLinesPane(); bindReharmPane(); bindVoicingsPane();
 $('trOpenBtn').onclick=trOpen;
 /* ---------- getting home: the logo, and the browser's Back button ----------
    Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
@@ -69,8 +70,8 @@ function goHome(){
   clearDraft();
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
-  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(GIG.active) gigClose();
-  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode'); ['earsStage','linesStage','reharmStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
+  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(VC.active){ vcStop(); VC.active=false; } if(GIG.active) gigClose();
+  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode','vcmode'); ['earsStage','linesStage','reharmStage','voiceStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
   side='home'; LINES.rec=null; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); $('startOv').scrollTop=0; return true;
 }
 document.addEventListener('click',()=>setTimeout(()=>{ if(!atHome()&&!(history.state&&history.state.away)) history.pushState({away:1},''); }),true);

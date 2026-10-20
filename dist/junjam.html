@@ -578,8 +578,8 @@ body.gigmode header .modetag{display:none}
 .gsec{margin-bottom:14px}
 .gsecname{display:inline-block;font-family:var(--cond);font-weight:700;font-size:15px;color:var(--lane);background:var(--brass);border-radius:4px;padding:1px 9px;margin-bottom:6px}
 .gsecname .fine{color:inherit;opacity:.8}
-.gbars{display:grid;grid-template-columns:repeat(4,1fr);border-left:2px solid var(--line-strong)}
-.gslot{display:flex;justify-content:center;min-width:0} .gbar{display:flex;align-items:baseline;justify-content:space-around;gap:6px;min-height:calc(58px * var(--gs));padding:8px 6px;border-right:2px solid var(--line-strong);border-bottom:1px solid color-mix(in srgb, var(--line-strong) 45%, transparent);cursor:pointer;flex-wrap:wrap}
+.gbars{display:grid;grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));border-left:2px solid var(--line-strong)}
+.gslot{display:flex;justify-content:center;min-width:0} .gbar{display:flex;align-items:baseline;justify-content:space-around;gap:6px;min-height:calc(58px * var(--gs));padding:8px 6px;border-right:2px solid var(--line-strong);border-bottom:1px solid color-mix(in srgb, var(--line-strong) 45%, transparent);cursor:pointer;flex-wrap:nowrap;min-width:0}
 .gbar:hover{background:color-mix(in srgb, var(--brass) 8%, transparent)}
 .gbar.on{background:color-mix(in srgb, var(--brass) 24%, transparent);box-shadow:inset 0 -3px 0 var(--brass)}
 .gch{display:inline-flex;flex-direction:column;align-items:flex-start;font-family:var(--hand);font-weight:700;color:var(--ink);line-height:1.05;white-space:nowrap}
@@ -590,7 +590,7 @@ body.gigmode header .modetag{display:none}
 .grep{font-family:'Noto Music','Bravura Text',serif;font-size:calc(30px * var(--gs));color:var(--muted)}
 .gigtext{width:100%;min-height:340px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.5;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:10px;box-sizing:border-box;resize:vertical}
 .gighelp{margin:0 0 10px;padding-left:18px} .gighelp code{font-size:12px;background:color-mix(in srgb, var(--line-strong) 35%, transparent);border-radius:3px;padding:0 4px}
-@media (max-width:700px){ .gbars{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:700px){ .gbars{grid-template-columns:repeat(min(2,var(--cols,4)),minmax(0,1fr))} }
 
 .enemy .rv{position:absolute;top:-6px;right:-6px;font-family:var(--cond);font-weight:700;font-size:15px;line-height:1;color:var(--lane);background:var(--chord);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
 #gigDrums{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:6px;padding:4px 6px}
@@ -623,6 +623,30 @@ body.gigmode header .modetag{display:none}
 .gigmix .gmrow .seg button{border:0;border-radius:0}
 .gigmix .gmrow button[aria-pressed="true"]{background:color-mix(in srgb, var(--brass) 22%, transparent);border-color:var(--brass)}
 .gigmix .gmrow .seg button[aria-pressed="true"]{background:var(--brass);color:var(--lane)}
+
+.gslot{overflow:hidden} .gch.gstack .gname{display:inline-flex;flex-direction:column;align-items:flex-start} .gch.gstack .gsl{display:block;line-height:1}
+.rchord.rtight{font-size:12px}
+/* Voicings */
+.vcbody{max-width:860px}
+.vctype{margin-top:14px} .vctype .sec{font-size:17px} .vctype .sec span{font-size:12px;color:var(--muted);font-weight:600;margin-left:6px}
+.vcrush{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;border:1.5px solid var(--brass);border-radius:6px;padding:10px 14px;margin:6px 0 12px}
+.vcrush>div:first-child{flex:1 1 300px} .vcrush b{font-family:var(--cond);font-size:20px;display:block} .vcrush span{font-size:14px}
+.vcrushgo{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .vcrushgo select{font:inherit;font-size:14px;padding:5px 6px;border:1.5px solid var(--line-strong);border-radius:4px;background:transparent;color:var(--ink);max-width:260px}
+.vcrushgo .go{margin:0}
+.vcfam{flex-wrap:wrap}
+.vcdia{display:block;width:100%;max-width:640px;height:auto;max-height:150px;margin:6px auto 10px}
+.vcdia .vw{fill:var(--white-key,#fff);stroke:var(--key-edge,#999);stroke-width:1} .vcdia .vb{fill:var(--black-key,#222);stroke:var(--key-edge,#999);stroke-width:1}
+.vcdia .lh{fill:var(--chord)} .vcdia .rh{fill:var(--brass)}
+.vcdia text{font-family:var(--cond);text-anchor:middle;pointer-events:none} .vcdia .voct{font-size:7px;fill:#56618a}
+.vcdia .vlab{font-size:9px;font-weight:700} .vcdia .vlab.lh{fill:var(--chord)} .vcdia .vlab.rh{fill:var(--brass)}
+.vchands{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0 0 12px;font-family:var(--cond);font-size:17px}
+.vchands b{font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin-right:6px} .vchands .lh b{color:var(--chord)} .vchands .rh b{color:var(--brass)}
+.vchands em{font-style:normal;font-size:11px;color:var(--muted);margin:0 6px 0 2px;vertical-align:.4em}
+.vcsib{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px} .vcsib .ghost{margin:0}
+.vcask{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;margin:4px 0 6px} .vcask b{font-family:var(--cond);font-size:44px;line-height:1.05}
+.vcask span{font-family:var(--cond);font-weight:600;font-size:24px} .vcask em{font-style:normal;font-size:13px;color:var(--muted);border:1px solid var(--line-strong);border-radius:3px;padding:0 6px}
+.vcbar i{transition:width .1s linear}
+.vctip{font-size:16px;line-height:1.45;max-width:70ch;margin:4px 0 8px}
 </style>
 <style>
 /* ==================================================================================================
@@ -1184,6 +1208,7 @@ applyTheme(themeGet('theme','classic'));
         <div id="earsPane" hidden></div>
         <div id="linesPane" hidden></div>
         <div id="reharmPane" hidden></div>
+        <div id="voicingsPane" hidden></div>
         <div id="handsPane" hidden>
         <button class="back" data-home>← All modes</button><h2>Chords</h2>
         <p>Chord symbols fall toward your keyboard. Play any correct voicing before one lands. Rootless, extended, open and smoothly voice-led chords score more.</p>
@@ -1221,6 +1246,7 @@ applyTheme(themeGet('theme','classic'));
     <div class="ears" id="gigStage" hidden><div id="gigBody" class="rhbody gigbody"></div></div>
     <div class="ears" id="transStage" hidden><div id="trBody" class="rhbody trbody"></div></div>
     <div class="ears" id="reharmStage" hidden><div id="rhBody" class="rhbody"></div></div>
+    <div class="ears" id="voiceStage" hidden><div id="vcBody" class="rhbody vcbody"></div></div>
     <div class="ears" id="earsStage" hidden>
       <div id="ePlay">
         <div class="etop"><span class="etitle" id="eTitle"></span><span id="eCount"></span><span class="lives" id="eLives"></span></div>
@@ -1973,6 +1999,7 @@ function noteOff(m){
   held.delete(m); synth.off(m);
   if(typeof TR!=='undefined'&&TR.active){ trMidi(m,0); return; }
   if(held.size===0 && !settleTimer) gesture=new Set();
+  if(held.size===0 && typeof VC!=='undefined') vcRelease();
   paintKeys();
 }
 function commitGesture(){
@@ -1991,7 +2018,7 @@ function toggleDraft(m){
 // keys you clicked but didn't play yet are let go when the question, round or game changes
 function clearDraft(){ if(draft.size){ draft.clear(); paintKeys(); } }
 function submitDraft(){ if(!draft.size) return; const n=[...draft]; draft.clear(); routeNotes(n); }
-function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else submit(n); }
+function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else if(VC.active) vcNotes(n); else submit(n); }
 
 async function initMIDI(){
   const el=$('midi');
@@ -2026,6 +2053,7 @@ document.addEventListener('keydown',e=>{
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
   if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
   if(typeof REHARM!=='undefined' && REHARM.active && rhKey(e)) return;
+  if(typeof VC!=='undefined' && VC.active && vcKey(e)) return;
   if((e.key==='r'||e.key==='R') && G && G.running && G.enemies.length && G.enemies[0].t.req==='byear'){ playByEar(G.enemies[0].t); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();
@@ -4038,6 +4066,403 @@ function rhKey(e){
 }
 </script>
 <script>
+/* Voicings: many ways to play one chord, with both hands, written out note for note in C (C4 = middle C).
+   Left hand | right hand. Every hand stays within a reach of 15 semitones (C up to the D♯ above the octave, big hands)
+   and most within a 10th's worth less than that; the two hands together often span two octaves or more, which is the point:
+   these fill the keyboard. Families: Pop & gospel, Shells, Rootless (Bill Evans A and B), Upper structures (a triad
+   on top of a shell), Quartal (stacked 4ths), Spreads & clusters, and Slash chords. */
+// Chord types beyond the ones Chords drills, so the library can name the big ones (same shape as QUALS entries)
+const VX=Object.fromEntries([
+  Qd('maj13','maj13',0,[0,4,7,11],[4,11,9],[2,6],{rootless:1,lab:{9:'13'}}),
+  Qd('min13','m13',0,[0,3,7,10],[3,10,9],[2,5],{rootless:1,minor:1,lab:{9:'13'}}),
+  Qd('sus9','9sus4',0,[0,5,7,10],[5,10,2],[9],{rootless:1,lab:{5:'4'}}),
+  Qd('sus13','13sus4',0,[0,5,7,10],[5,10,9],[2],{rootless:1,lab:{5:'4',9:'13'}}),
+  Qd('susb9','7sus4♭9',0,[0,5,7,10],[5,10,1],[8],{rootless:1,lab:{5:'4'}}),
+  Qd('d13b9','13♭9',0,[0,4,7,10],[4,10,9,1],[6],{rootless:1,lab:{9:'13'}}),
+  Qd('d13s11','13♯11',0,[0,4,7,10],[4,10,9,6],[2],{rootless:1,lab:{9:'13'}}),
+  Qd('d7s5','7♯5',0,[0,4,8,10],[4,8,10],[2,6],{rootless:1,lab:{8:'♯5'}}),
+  Qd('min69','m6/9',0,[0,3,7,9],[3,9,2],[5],{rootless:1,minor:1,lab:{9:'6'}}),
+].map(q=>[q.id,q]));
+const vqOf=id=>Q[id]||VX[id];
+const VFAM={pop:'Pop & gospel',shell:'Shells',rootless:'Rootless',us:'Upper structures',quartal:'Quartal',spread:'Spreads & clusters',slash:'Slash chords'};
+// Chord types in the order the library lists them
+const VTYPES=['maj','min','sus2','sus4','dim','aug','add9','madd9','maj7','six','six9','maj9','maj13','mj7s11','mj7s5',
+  'min7','min6','min69','min9','min11','min13','mmaj7','hdim','dim7',
+  'dom7','dom9','dom13','sus7','sus9','sus13','susb9','d7b9','d13b9','d7s9','alt','d7b13','d7s5','d7s11','d13s11',
+  'maj_3','maj_5','min_3','dom7_3','maj_2'];
+const vNote=s=>{ const m=s.match(/^([A-G])([b#]?)(-?\d)$/); return 12*(+m[3]+1)+LETTER_PC[LETTERS.indexOf(m[1])]+(m[2]==='#'?1:m[2]==='b'?-1:0); };
+const vSlug=s=>s.toLowerCase().replace(/[♭]/g,'b').replace(/[♯]/g,'s').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// V(chord type, family, name, 'left hand | right hand', difficulty 1-3, tip)
+const V=(qid,fam,name,notes,diff,tip)=>{ const [l,r]=notes.split('|').map(h=>h.trim().split(/\s+/).filter(Boolean).map(vNote));
+  return {id:qid+'_'+vSlug(name),qid,fam,name,lh:l,rh:r,diff,tip}; };
+const VOICINGS=[
+  // ---------- triads ----------
+  V('maj','pop','Octave and triad','C2 C3 | E4 G4 C5',1,'The pop ballad default: an octave in the left hand, a root-position triad in the right. Big, clean, nothing to clash.'),
+  V('maj','pop','Gospel stack','C2 G2 C3 | G3 C4 E4 G4',1,'Root, 5th and octave low, a second-inversion triad doubled on top: the full church sound. Lean on it at the end of a phrase.'),
+  V('maj','spread','Spread 10th','C3 G3 | E4 G4 C5',1,'Root and 5th in the left hand, the 3rd lifted a 10th above the root. Spreading the triad out like this is what makes it sound like a piano, not an organ.'),
+  V('min','pop','Octave and triad','C2 C3 | Eb4 G4 C5',1,'The minor version of the pop default: octave low, triad high.'),
+  V('min','spread','Fifths low, triad high','C2 G2 | G3 C4 Eb4',1,'An open 5th in the left hand, a second-inversion minor triad close above it. Dark and full without getting muddy.'),
+  V('sus2','spread','Stacked fifths','C3 G3 D4 | G4 C5 D5',2,'C G D in the left hand is three notes a 5th apart; the right doubles the top. No 3rd at all, so it floats: the modern worship and post-rock pad.'),
+  V('sus4','pop','Open sus4','C3 G3 | F4 G4 C5',1,'Root and 5th low, the 4th and 5th rubbing a step apart up top. Resolve the F down to E and you have the classic sus–major move.'),
+  V('dim','spread','Spread diminished','C3 Gb3 | C4 Eb4 Gb4',1,'Root and ♭5 in the left hand, the triad on top. Used as a passing chord, so keep it light.'),
+  V('aug','spread','Augmented spread','C3 G#3 | E4 G#4 C5',1,'Root and ♯5 low, the whole augmented triad above. Every note is a major 3rd apart, so it pulls in every direction at once.'),
+  // ---------- pop colours ----------
+  V('add9','pop','Mu chord','C3 | D4 E4 G4',1,'Steely Dan\'s favourite: the 9 squeezed right next to the 3rd in a close triad. That one-step rub is the whole sound.'),
+  V('add9','spread','Open add9','C3 G3 D4 | E4 G4',1,'1 5 9 stacked in the left hand (two 5ths), 3 and 5 on top. The J-pop ballad intro chord.'),
+  V('add9','pop','Gospel add9','C2 C3 | E4 G4 D5',2,'Octave bass, a triad with the 9 on the very top. The 9 as the top note sings over everything.'),
+  V('madd9','pop','Minor Mu','C3 | D4 Eb4 G4',1,'The 9 crushed against the ♭3: a half step of rub inside a minor triad. The sad anime ballad chord.'),
+  V('madd9','spread','Open minor add9','C3 G3 D4 | Eb4 G4',2,'Fifths in the left hand (1 5 9), the ♭3 and 5 above. Wide and wistful.'),
+  // ---------- major 7 family ----------
+  V('maj7','shell','Shell plus 3 and 5','C3 B3 | E4 G4',1,'The left hand plays the shell, root and 7th; the right fills in 3 and 5. The most useful two-hand layout there is: learn it on every chord.'),
+  V('maj7','pop','Em over C','C2 C3 | E4 G4 B4',1,'A major 7 is a minor triad a 3rd up over the root: Em over C. Pop players think of it this way, and it sounds soft and modern.'),
+  V('maj7','spread','Open 1–5, 7–3–5','C3 G3 | B3 E4 G4',2,'Root and 5th apart in the left hand, the 7th at the bottom of the right. The 7th next to the root\'s octave is where the colour lives.'),
+  V('six','pop','Pop 6','C3 G3 | A3 C4 E4',1,'Root and 5th low, the 6th at the bottom of the right hand. The 6 is the sweeter, older cousin of the major 7: the end of a swing tune.'),
+  V('six','spread','Sixth on top','C2 G2 | E4 G4 A4',2,'Fifths low, the 3rd, 5th and 6th close on top so the 6th sings. Big band ending.'),
+  V('six9','quartal','6/9 in fourths','C3 G3 | E4 A4 D5',2,'The right hand is all 4ths, starting on the 3rd (E A D). It\'s the major pentatonic as one chord: the McCoy Tyner and Herbie Hancock opener, and the city pop "sparkle".'),
+  V('six9','spread','6/9 in fifths','C2 G2 D3 | A3 E4',3,'Root, 5th and 9 stacked in 5ths in the left hand, 6 and 3 above. Fills the whole bottom of the keyboard without a single clash.'),
+  V('maj9','rootless','Rootless A','C3 | E4 G4 B4 D5',2,'Bill Evans\' A voicing: 3 5 7 9 in the right hand, the root alone below. With a bass player you drop the root and play only the right hand.'),
+  V('maj9','rootless','Rootless B','C3 | B3 D4 E4 G4',2,'Bill Evans\' B voicing: 7 9 3 5, the A voicing turned upside down. Use whichever of A and B is closer to the chord before.'),
+  V('maj9','spread','Neo-soul 1–5, 7–9–3','C3 G3 | B3 D4 E4',2,'Root and 5th open, then a tight cluster of 7, 9 and 3. The 9 sits a step from both neighbours: the soft rub of neo-soul and lofi.'),
+  V('maj9','spread','Wide major 9','C2 G2 D3 | E4 G4 B4 D5',3,'1 5 9 in the left hand, 3 5 7 9 in the right. Over two and a half octaves: the end-of-song chord that fills the room.'),
+  V('maj13','spread','Shell plus 3, 13, 9','C3 B3 | E4 A4 D5',2,'Shell in the left (1 and 7), then 3, 13 and 9 in the right, each a 4th apart. The lush jazz ballad major.'),
+  V('maj13','spread','Neo-soul major 13','C3 G3 B3 | D4 E4 A4',3,'1 5 7 low, then 9, 3 and 13. Every tension, nothing doubled.'),
+  V('mj7s11','us','D over Cmaj7 (Lydian)','C3 E3 B3 | D4 F#4 A4',2,'A D major triad on top of a C major 7 shell gives 9, ♯11 and 13: the Lydian sound of film scores and anime. The ♯11 is what makes it shimmer.'),
+  V('mj7s11','spread','Lydian 1–5, 7–3–♯11','C3 G3 | B3 E4 F#4',2,'The ♯11 a half step above the 3rd, on top. Brighter than bright.'),
+  V('mj7s5','us','E over C','C2 C3 | E4 G#4 B4',2,'An E major triad over a C bass. The ♯5 makes the major 7 restless, a chord that wants to move.'),
+  V('mj7s5','shell','Shell plus 3 and ♯5','C3 B3 | E4 G#4',1,'The plain shell with the 5th raised. Try it as the chord before a plain C major 7.'),
+  // ---------- minor family ----------
+  V('min7','shell','Shell plus ♭3 and 5','C3 Bb3 | Eb4 G4',1,'Root and ♭7 in the left, ♭3 and 5 in the right. The minor version of the most useful shape.'),
+  V('min7','pop','E♭ over C','C2 C3 | Eb4 G4 Bb4',1,'A minor 7 is a major triad a minor 3rd up over the root: E♭ over C. Easy to find, sounds smooth.'),
+  V('min7','spread','Open 1–5, ♭7–♭3–5','C3 G3 | Bb3 Eb4 G4',2,'Root and 5th open, the ♭7 at the bottom of the right hand.'),
+  V('min6','spread','Minor 6 spread','C3 G3 | A3 Eb4 G4',2,'The natural 6th next to the 5th, under the ♭3. The minor 6 is the Dorian chord: dark but with a light in it.'),
+  V('min69','spread','Bond minor 6/9','C3 G3 | A3 D4 Eb4',3,'6, 9 and ♭3 up top, the 9 and ♭3 a half step apart. Mysterious, spy-movie minor.'),
+  V('min9','rootless','Rootless A','C3 | Eb4 G4 Bb4 D5',2,'♭3 5 ♭7 9 in the right hand over the root. The minor 9 every ii–V starts with.'),
+  V('min9','rootless','Rootless B','C3 | Bb3 D4 Eb4 G4',2,'♭7 9 ♭3 5: the A voicing flipped. The 9 and ♭3 a half step apart in the middle give it that warm rub.'),
+  V('min9','pop','E♭maj7 over C','C2 C3 | Eb4 G4 Bb4 D5',2,'A minor 9 is a major 7 chord a minor 3rd up, over the root. Octave bass, E♭maj7 on top: the neo-soul minor.'),
+  V('min9','spread','Wide minor 9','C2 G2 Bb2 | Eb4 G4 Bb4 D5',3,'1 5 ♭7 in the left hand, ♭3 5 ♭7 9 in the right. Wide enough to fill the keyboard, still clear.'),
+  V('min11','spread','Kenny Barron','C3 G3 D4 | Eb4 Bb4 F5',3,'Kenny Barron\'s minor 11: the left hand stacks 1 5 9 in 5ths, the right stacks ♭3 ♭7 11 in 5ths. Two hands, all 5ths, over two octaves: the most beautiful minor chord in jazz.'),
+  V('min11','quartal','So What','C3 F3 Bb3 | Eb4 G4',2,'Bill Evans\' chord from Miles Davis\'s "So What": three 4ths stacked up from the root, then a major 3rd on top. Modal and open.'),
+  V('min11','spread','Neo-soul minor 11','C3 Bb3 | Eb4 F4 G4',2,'Shell low, then a cluster of ♭3, 11 and 5. The 11 squeezed in the middle is the lofi minor.'),
+  V('min13','spread','Dorian 13','C3 Bb3 | Eb4 A4 D5',3,'Shell low, then ♭3, 13 and 9 in 4ths. The natural 13 (A in C minor) makes it Dorian: the minor chord of fusion and city pop.'),
+  V('mmaj7','spread','James Bond chord','C3 G3 | B3 D4 Eb4 G4',2,'Minor triad with a major 7 and 9: the chord that ends the 007 theme. B and D and E♭ packed together, pure suspense.'),
+  V('mmaj7','shell','Shell plus ♭3 and 5','C3 B3 | Eb4 G4',1,'Root and major 7 low, ♭3 and 5 high. Hear the major 7 grind against the minor 3rd.'),
+  V('hdim','shell','Shell plus ♭7 and ♭3','C3 Gb3 | Bb3 Eb4',1,'Root and ♭5 in the left hand, ♭7 and ♭3 in the right. The ii of a minor ii–V.'),
+  V('hdim','rootless','Locrian ♮9','C3 | Eb4 Gb4 Bb4 D5',2,'♭3 ♭5 ♭7 and a natural 9 over the root. The natural 9 softens the half-diminished: the modern jazz sound.'),
+  V('hdim','pop','E♭m over C','C2 C3 | Eb4 Gb4 Bb4',1,'Half-diminished is a minor triad a minor 3rd up over the root: E♭m over C.'),
+  V('dim7','spread','Spread diminished 7','C3 Gb3 | A3 C4 Eb4',1,'Root and ♭5 in the left, the ♭♭7, root and ♭3 in the right. Every note a minor 3rd apart: it\'s the same four notes in four keys.'),
+  V('dim7','spread','Diminished with a 9','C3 Gb3 | A3 D4 Eb4',2,'Swap a chord tone for the note a whole step above (here a 9 under the ♭3): Barry Harris\' trick for diminished chords that sing.'),
+  // ---------- dominant family ----------
+  V('dom7','shell','Bud Powell shell','C3 E3 Bb3 | G4 C5',1,'1 3 ♭7 in the left hand (Bud Powell\'s shell), 5 and root on top. The 3 and ♭7 are the two notes that make it a dominant.'),
+  V('dom7','shell','Shell plus 3, 5, 1','C3 Bb3 | E4 G4 C5',1,'Root and ♭7 low, a C triad high. The blues and gospel 7.'),
+  V('dom7','spread','Open 1–5, ♭7–3','C3 G3 | Bb3 E4',1,'Four notes, wide: the tritone (B♭ up to E) sits in the middle of the right hand.'),
+  V('dom9','rootless','Rootless A','C3 | E4 G4 Bb4 D5',2,'3 5 ♭7 9 in the right hand. With a bass player, this is the whole dominant.'),
+  V('dom9','rootless','Rootless B','C3 | Bb3 D4 E4 G4',2,'♭7 9 3 5. The B voicing of the dominant: it follows a rootless A minor 9 a 4th below with almost no movement.'),
+  V('dom9','spread','Gospel 9','C3 Bb3 | E4 G4 D5',2,'Shell low, 3 and 5 and the 9 on top in the right. The 9 on top is the soulful part.'),
+  V('dom13','rootless','Rootless A13','C3 | Bb3 D4 E4 A4',2,'♭7 9 3 13: the A voicing of the 13. The 13 on top is the melody note of a thousand standards.'),
+  V('dom13','rootless','Rootless B13','C3 | E4 A4 Bb4 D5',2,'3 13 ♭7 9, with the 13 and ♭7 a half step apart. The rub is the jazz.'),
+  V('dom13','shell','Count Basie 13','C2 Bb2 | E3 A3 D4',2,'Shell in the left (1 ♭7), then 3, 13 and 9 in 4ths. The big band 13: punchy and complete.'),
+  V('dom13','shell','Red Garland 13','C3 Bb3 | E4 A4',1,'Just four notes: shell, then 3 and 13. Easy to grab and it already sounds like jazz.'),
+  V('sus7','shell','Shell sus','C3 Bb3 | F4 G4',1,'Root and ♭7 low, the 4th and 5th a step apart up top. No 3rd, so it hangs in the air.'),
+  V('sus9','us','B♭ over C (Herbie sus)','C3 | Bb3 D4 F4',1,'A B♭ triad over a C bass gives 9sus4. Herbie Hancock made it the sound of "Maiden Voyage"; it\'s also the J-pop IV-over-V.'),
+  V('sus9','spread','Gospel sus 1–5, ♭7–9–4','C3 G3 | Bb3 D4 F4',2,'Root and 5th open, then a B♭ triad. The gospel "IV over V" before the final chord.'),
+  V('sus13','us','B♭maj7 over C','C3 | Bb3 D4 F4 A4',2,'B♭maj7 over C: a 13sus4. Wide open, the fusion and neo-soul sus.'),
+  V('susb9','us','B♭m over C (Phrygian)','C3 | Bb3 Db4 F4',2,'A B♭ minor triad over C gives 7sus4♭9, the Phrygian chord: Spanish, dark, the sound of flamenco and of Chick Corea.'),
+  V('d7b9','us','D♭°7 over C','C3 | Db4 E4 G4 Bb4',2,'A 7♭9 is a diminished 7 a half step above the root, over the root. Find D♭°7 and put C under it.'),
+  V('d7b9','shell','Shell plus 3 and ♭9','C3 Bb3 | E4 Db5',2,'Root and ♭7 low, 3 and ♭9 up top. The ♭9 on top is the tense note that falls into the next chord\'s 5th.'),
+  V('d13b9','us','A over C7 (upper structure VI)','C3 E3 Bb3 | A4 Db5 E5',3,'An A major triad over the C7 shell gives 13, ♭9 and 3. The tight, dark-and-bright dominant of bebop ballads.'),
+  V('d13b9','rootless','Rootless 13♭9','C3 | E4 A4 Bb4 Db5',2,'3 13 ♭7 ♭9 over the root: the rootless B13 with the 9 lowered.'),
+  V('d7s9','spread','Hendrix chord','C3 | E4 Bb4 D#5',1,'Root, then 3, ♭7 and ♯9 on top. The ♯9 is the ♭3 on top of a major 3rd: blues in one chord ("Purple Haze").'),
+  V('d7s9','us','E♭ over C7 (upper structure ♭III)','C3 E3 Bb3 | Eb4 G4 Bb4',2,'An E♭ major triad over the C7 shell: ♯9, 5 and ♭7. Funk and gospel.'),
+  V('alt','us','A♭ over C7 (upper structure ♭VI)','C3 E3 Bb3 | Ab4 C5 Eb5',2,'An A♭ major triad over the C7 shell gives ♭13, root and ♯9: the altered dominant in one shape. The most used upper structure.'),
+  V('alt','us','G♭ over C7 (upper structure ♭V)','C3 E3 Bb3 | Gb4 Bb4 Db5',3,'A G♭ triad (the tritone sub) over the C7 shell: ♯11, ♭7, ♭9. Two dominants at once.'),
+  V('alt','rootless','Rootless alt','E3 Bb3 | Eb4 Ab4',2,'No root at all: the tritone (3 and ♭7) in the left hand, ♯9 and ♭13 in the right. With a bass player, this is the altered chord.'),
+  V('d7b13','rootless','Whole-tone 7♭13','C3 | Bb3 D4 E4 Ab4',2,'♭7 9 3 ♭13: all from one whole-tone scale. Dreamy, floating, the anime-score dominant.'),
+  V('d7s5','us','Augmented on the 3rd','C3 Bb3 | E4 G#4 C5',2,'Shell low, an E augmented triad (3 ♯5 1) high. The ♯5 rises into the next chord\'s 3rd.'),
+  V('d7s11','rootless','Lydian dominant','C3 | Bb3 E4 F#4 A4',2,'♭7 3 ♯11 13 over the root. The ♯11 a half step above the 3rd: the bright dominant of bossa and fusion.'),
+  V('d13s11','us','D over C7 (upper structure II)','C3 E3 Bb3 | D4 F#4 A4',2,'A D major triad on the C7 shell gives 9, ♯11 and 13. Every tension a dominant can have without altering it.'),
+  // ---------- slash chords: the bass note is the point ----------
+  V('maj_3','slash','Octave bass, triad up','E2 E3 | C4 E4 G4',1,'C over E: the 3rd in the bass, an octave in the left hand. The stepping-stone in a walking bass line (C, C/E, F).'),
+  V('maj_3','slash','6th in the left hand','E2 C3 | G3 C4 E4',2,'E up to C in the left hand (a minor 6th), the triad above. The classical way: smooth and full.'),
+  V('maj_5','slash','Fifth in the bass','G2 G3 | C4 E4 G4',1,'C over G: the 5th in the bass. A pedal point, often before the V or under a big ending.'),
+  V('min_3','slash','Octave bass, triad up','Eb2 Eb3 | C4 Eb4 G4',1,'Cm over E♭: the ♭3 in the bass. The minor line cliché moves through it.'),
+  V('dom7_3','slash','Passing 7 over the 3rd','E2 E3 | G3 Bb3 C4',1,'C7 over E: the 3rd in the bass leads up a half step into F. The gospel and J-pop passing chord.'),
+  V('maj_2','slash','IV over V','D2 D3 | C4 E4 G4',1,'C over D (a IV triad on the V bass, in G): the J-pop and gospel dominant. Softer than a D7, and it still pulls home.'),
+  V('maj_2','slash','IV over V, spread','D3 | E4 G4 C5',1,'D in the left hand alone, C triad high. Lighter, for ballads.'),
+];
+const VOICE=Object.fromEntries(VOICINGS.map(v=>[v.id,v]));
+// The voicing in a key: midi notes for both hands, the root and the chord
+function vcIn(v,pc){
+  const q=vqOf(v.qid); let sh=pc; const lo=Math.min(...v.lh,...v.rh);
+  if(pc>6&&lo+pc-12>=36) sh-=12;
+  const lh=v.lh.map(m=>m+sh), rh=v.rh.map(m=>m+sh), root=defaultRoot(pc,q.minor);
+  return {v,q,root,lh,rh,notes:[...lh,...rh].sort((a,b)=>a-b),pc};
+}
+const vcSym=t=>symText({root:t.root,q:t.q});
+const vcLab=(t,m)=>{ const iv=mod12(m-t.root.pc); return iv===0?'1':t.q.lab[iv]||BASE_LABEL[iv]; };
+const vcSpell=(t,m)=>spellNote(m,t.root,t.q);
+</script>
+<script>
+/* Voicings: learn a named voicing from its card, play it in C and then five more keys from memory (the same learn →
+   transfer pattern as Lines and Reharm), then Rush: a timed game that calls out a chord and a voicing name, and
+   often asks for the same chord two or three different ways in a row, so the shapes stick as different answers to
+   one question. Graded strictly: the exact notes, in the exact layout, in any octave (hands an octave further apart
+   or closer is fine). Two hands, so a MIDI keyboard. */
+let VCDATA=store.get('voicings',{stars:{},best:{},pool:'learned',fam:'all'});
+const saveVc=()=>store.set('voicings',VCDATA);
+const VC={active:false};
+const VC_KEYS=5, VC_LIVES=3;
+
+/* ---------------- menu pane ---------------- */
+const vcStarTotal=()=>VOICINGS.reduce((a,v)=>a+(VCDATA.stars[v.id]||0),0);
+const vcHands=v=>{ const t=vcIn(v,0), lab=ns=>ns.map(m=>gigAccHTML(vcLab(t,m))).join(' '); return `L ${lab(t.lh)} · R ${lab(t.rh)}`; };
+const VC_POOLS={learned:'Voicings you\'ve learned',starter:'Starter set (the easy ones)',all:'Everything'};
+function vcPool(){
+  const p=VCDATA.pool, learned=VOICINGS.filter(v=>VCDATA.stars[v.id]);
+  if(p==='all') return VOICINGS; if(p==='starter') return VOICINGS.filter(v=>v.diff===1);
+  if(VFAM[p]) return VOICINGS.filter(v=>v.fam===p);
+  return learned.length>=4?learned:VOICINGS.filter(v=>v.diff===1);
+}
+function renderVoicingsPane(){
+  const fam=VCDATA.fam||'all', learned=VOICINGS.filter(v=>VCDATA.stars[v.id]).length;
+  const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
+    const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
+    return `<div class="vctype"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
+      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; }).join('');
+  const best=VCDATA.best[VCDATA.pool];
+  $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
+    <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>
+    <div class="vcrush"><div><b>Rush</b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
+      <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n}${k==='learned'?`: ${learned}${learned<4?', so the starter set for now':''}`:''}</option>`).join('')}${Object.entries(VFAM).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n} only</option>`).join('')}</select>
+      <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
+    <div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,n])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${n}</button>`).join('')}</div>
+    ${list}
+    <p class="fine" style="margin-top:12px">● to ●●● is how hard the shape is. ★ learn it in C. ★★ four of the five new keys right first time without showing the shape. ★★★ all five. A MIDI keyboard is needed: these are two-hand chords.</p>`;
+}
+function bindVoicingsPane(){
+  $('voicingsPane').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.vc) vcOpen(b.dataset.vc);
+    else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; saveVc(); renderVoicingsPane(); }
+    else if(b.id==='vcRushBtn') vcRushStart(); };
+  $('voicingsPane').onchange=e=>{ if(e.target.id==='vcPool'){ VCDATA.pool=e.target.value; saveVc(); renderVoicingsPane(); } };
+}
+
+/* ---------------- drawing a voicing ---------------- */
+// A small keyboard from the C below the lowest note to the B above the highest, left hand and right hand in two colours,
+// each note labelled with its degree. show=false draws the empty keys (the shape hidden).
+function vcDiagram(t,show=true){
+  const lo=t.notes[0]-mod12(t.notes[0]), hi=t.notes[t.notes.length-1]+11-mod12(t.notes[t.notes.length-1]);
+  const W=15, H=64, BWd=9, BHt=40; let x=0, wh=[], bl=[];
+  for(let m=lo;m<=hi;m++){ if(!isBlack(m)){ wh.push({m,x}); x+=W; } else bl.push({m,x:x-BWd/2}); }
+  const hand=m=>!show?null:t.lh.includes(m)?'lh':t.rh.includes(m)?'rh':null;
+  let s=`<svg class="vcdia" viewBox="0 -28 ${x} ${H+30}" preserveAspectRatio="xMidYMid meet" aria-label="The voicing on a keyboard">`;
+  wh.forEach(k=>{ const h=hand(k.m); s+=`<rect class="vw${h?' '+h:''}" x="${k.x+.5}" y="0" width="${W-1}" height="${H}" rx="2"/>`; if(k.m%12===0) s+=`<text class="voct" x="${k.x+W/2}" y="${H-4}">C${k.m/12-1}</text>`; });
+  bl.forEach(k=>{ const h=hand(k.m); s+=`<rect class="vb${h?' '+h:''}" x="${k.x}" y="0" width="${BWd}" height="${BHt}" rx="1.5"/>`; });
+  let px=-99, up=false;   // labels of neighbouring keys take turns on two rows
+  if(show) t.notes.forEach(m=>{ const k=wh.find(w=>w.m===m)||bl.find(b=>b.m===m), cx=k.x+(isBlack(m)?BWd:W)/2;
+    up=cx-px<14?!up:false; px=cx; s+=`<text class="vlab ${hand(m)}" x="${cx}" y="${up?-15:-4}">${vcLab(t,m)}</text>`; });
+  return s+'</svg>';
+}
+const vcNames=(t,ns)=>ns.map(m=>vcSpell(t,m).name).join(' ');
+function vcStaff(t,roles){ $('staff').innerHTML=staffSVG(t.notes.map(m=>({...vcSpell(t,m),midi:m})),roles||t.notes.map(()=>'hint')); }
+function vcPlay(t,roll=false){ const b=VC.bus||(VC.bus=newBus()); if(!b) return; const at=now()+.05;
+  t.lh.forEach(m=>tone(m,at,2.2,80,'epiano',b)); t.rh.forEach(m=>tone(m,at+(roll?.18:0),2.2,78,'epiano',b)); }
+function vcStop(){ killBus(VC.bus); VC.bus=null; clearTimeout(VC.timer); clearInterval(VC.tick); }
+function vcShow(){ synth.init(); hideOv(); document.body.classList.add('nohud','vcmode'); document.body.classList.remove('menu'); $('voiceStage').hidden=false; }
+const vcSiblings=v=>VOICINGS.filter(x=>x.qid===v.qid&&x.id!==v.id);
+
+/* ---------------- grading ----------------
+   ok: the exact layout, in any octave; or each hand's shape exact with the hands an octave further apart or closer.
+   part: fewer notes than the voicing so far and none of them wrong (you're still putting your hands down). */
+function vcGrade(t,notes){
+  const P=[...new Set(notes)].sort((a,b)=>a-b), T=t.notes, pcs=new Set(T.map(mod12));
+  const wrong=P.filter(m=>!pcs.has(mod12(m))), shape=(a,b)=>a.length===b.length&&mod12(a[0])===mod12(b[0])&&a.every((m,i)=>m-a[0]===b[i]-b[0]);
+  if(shape(P,T)) return {ok:true,P};
+  const nl=t.lh.length;
+  if(P.length===T.length&&shape(P.slice(0,nl),t.lh)&&shape(P.slice(nl),t.rh)){ const gap=(P[nl]-P[nl-1])-(t.rh[0]-t.lh[nl-1]); if(Math.abs(gap)===12) return {ok:true,P,note:'Hands an octave '+(gap>0?'further apart':'closer')+' than written, which counts.'}; }
+  if(!wrong.length&&P.length<T.length) return {part:true,P};
+  const have=new Set(P.map(mod12)), missing=[...pcs].filter(pc=>!have.has(pc)).map(pc=>T.find(m=>mod12(m)===pc));
+  let why;
+  if(wrong.length) why=`${vcNames(t,wrong.map(m=>m))} ${wrong.length>1?'aren\'t':'isn\'t'} in this voicing.`;
+  else if(missing.length) why=`Missing the ${missing.map(m=>`${vcLab(t,m)} (${vcSpell(t,m).name})`).join(', ')}.`;
+  else if(mod12(P[0])!==mod12(T[0])) why=`Right notes; the lowest should be the ${vcLab(t,T[0])} (${vcSpell(t,T[0]).name}).`;
+  else if(P.length!==T.length) why=`Right notes, but it has ${T.length} notes: left hand ${t.lh.length}, right hand ${t.rh.length}.`;
+  else why=`Right notes, different layout. Left hand ${t.lh.map(m=>vcLab(t,m)).join(' ')}, right hand ${t.rh.map(m=>vcLab(t,m)).join(' ')}, from the bottom up.`;
+  return {ok:false,P,why,wrong};
+}
+function vcMark(t,res){ kbMarks={}; const pcs=new Set(t.notes.map(mod12)); res.P.forEach(m=>kbMarks[m]=pcs.has(mod12(m))?(res.ok?'k-chord':'k-tension'):'k-wrong'); paintKeys(); }
+function vcHintKeys(t){ kbMarks={}; t.notes.forEach(m=>kbMarks[m]='k-hint'); paintKeys(); }
+function vcRelease(){ if(VC.active) VC.tried=false; }   // all keys up: the next try is a new attempt
+
+/* ---------------- learn: the card ---------------- */
+function vcOpen(id){
+  vcStop(); const v=VOICE[id], t=vcIn(v,0);
+  Object.assign(VC,{active:true,mode:'card',v});
+  vcShow(); vcHintKeys(t); vcStaff(t);
+  const sib=vcSiblings(v);
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(v.name)}</span><span>${gigAccHTML(vcSym(t))} · ${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}</span></div>
+    <p class="vctip">${gigAccHTML(v.tip)}</p>
+    ${vcDiagram(t)}
+    <div class="vchands"><span class="lh"><b>Left hand</b> ${t.lh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span><span class="rh"><b>Right hand</b> ${t.rh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span></div>
+    ${sib.length?`<div class="sec">Other ways to play ${gigAccHTML(vcSym(t))}</div><div class="vcsib">${sib.map(x=>`<button class="ghost" data-vc="${x.id}">${gigAccHTML(x.name)}</button>`).join('')}</div>`:''}
+    <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcRoll">Hands one after the other</button><button class="go" id="vcGo">Play it: C, then 5 keys</button><button class="ghost" id="vcBack">Back</button></div>`;
+  $('vcHear').onclick=()=>vcPlay(t); $('vcRoll').onclick=()=>vcPlay(t,true); $('vcGo').onclick=()=>vcDrillStart(id); $('vcBack').onclick=vcToMenu;
+  $('vcBody').querySelectorAll('.vcsib [data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
+  $('verdict').className='verdict'; $('verdict').textContent=`${vcSym(t)}: ${v.name}`; $('chips').innerHTML=''; $('why').textContent='Play it on your keyboard when you\'re ready, or press Play it.'; $('tags').textContent='';
+}
+
+/* ---------------- drill: C with the shape shown, then five keys from memory ---------------- */
+function vcDrillStart(id){
+  vcStop(); const v=VOICE[id];
+  const keys=[0]; while(keys.length<1+VC_KEYS){ keys.push(weightedPick([...Array(12).keys()].filter(x=>!keys.includes(x)).map(pc=>({pc,w:keyWeight(pc,'hands')}))).pc); }
+  Object.assign(VC,{active:true,mode:'drill',v,keys,round:0,results:[],clean:0,xp:0});
+  vcShow(); vcRound();
+}
+function vcRound(){
+  vcStop(); clearDraft(); const R=VC;
+  Object.assign(R,{t:vcIn(R.v,R.keys[R.round]),mistakes:0,shown:R.round===0,done:false,tried:false});
+  vcRender(); if(R.shown){ vcHintKeys(R.t); vcStaff(R.t); } else { kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); }
+  $('verdict').className='verdict'; $('verdict').textContent=R.round===0?'Copy the shape.':`${vcSym(R.t)}, ${R.v.name}. From memory.`; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
+}
+function vcRender(){
+  const R=VC, t=R.t, learn=R.round===0;
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(R.v.name)}</span><span>${learn?'Learn it, in C':`New key ${R.round} of ${VC_KEYS}`}</span></div>
+    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(R.v.name)}</span></div>
+    ${vcDiagram(t,R.shown||R.done)}
+    <div class="lmsg" id="vcMsg"></div>
+    <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button>${!R.shown&&!R.done?'<button class="ghost" id="vcShowB">Show the shape (S)</button>':''}${R.done?'<button class="go" id="vcNext">Next (Enter)</button>':''}<button class="ghost" id="vcEnd">End</button></div>`;
+  $('vcHear').onclick=()=>vcPlay(t);
+  if($('vcShowB')) $('vcShowB').onclick=vcReveal;
+  if($('vcNext')) $('vcNext').onclick=vcNext;
+  $('vcEnd').onclick=()=>R.results.length?vcFinish(true):vcToMenu();
+}
+function vcReveal(){ const R=VC; if(R.mode==='drill'&&!R.shown&&!R.done){ R.shown=true; vcRender(); vcHintKeys(R.t); vcStaff(R.t); } }
+function vcNotes(notes){
+  const R=VC; if(!R.active) return;
+  if(R.mode==='rush') return vcRushNotes(notes);
+  if(R.mode!=='drill'||R.done){ showAnalysis(null,null,null,notes); return; }
+  const res=vcGrade(R.t,notes); vcMark(R.t,res);
+  if(res.ok){
+    const clean=R.mistakes===0&&(R.round===0||!R.shown);
+    R.done=true; R.results.push({key:R.keys[R.round],clean,mistakes:R.mistakes,shown:R.round>0&&R.shown});
+    if(R.round>0&&clean) R.clean++; R.xp+=10+(clean?10:0);
+    vcRender(); $('vcMsg').textContent=(clean?'Clean.':`Got it${R.mistakes?`, after ${R.mistakes} wrong tr${R.mistakes>1?'ies':'y'}`:''}.`)+(res.note?' '+res.note:''); $('vcMsg').className='lmsg ok';
+    vcStaff(R.t,R.t.notes.map(m=>{ const iv=mod12(m-R.t.root.pc); return iv===0?'root':R.t.q.ct.includes(iv)?'chord':'tension'; }));
+    $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.v.name}.`; $('why').textContent='';
+    R.timer=setTimeout(vcNext,1300); return;
+  }
+  if(res.part){ $('vcMsg').textContent='Keep going…'; $('vcMsg').className='lmsg'; return; }
+  if(!R.tried){ R.mistakes++; R.tried=true; }
+  $('vcMsg').textContent=res.why; $('vcMsg').className='lmsg no';
+  if(R.mistakes>=3&&!R.shown) $('why').textContent='Stuck? Press S to show the shape.';
+}
+function vcNext(){ const R=VC; if(!R.active||R.mode!=='drill'||!R.done) return; clearTimeout(R.timer); R.round++; if(R.round>VC_KEYS) return vcFinish(false); vcRound(); }
+function vcFinish(quit){ clearDraft();
+  const R=VC; vcStop();
+  const learned=R.results.length>0, finished=R.round>VC_KEYS, stars=!learned?0:finished&&R.clean===VC_KEYS?3:finished&&R.clean>=4?2:1;
+  const prev=VCDATA.stars[R.v.id]||0; if(stars>prev) VCDATA.stars[R.v.id]=stars;
+  addXP(R.xp); saveVc(); R.mode='results';
+  $('vcBody').innerHTML=`<h2>${quit?'Session ended':stars===3?'Every key clean':'Voicing done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
+    <ul class="lkeys">${R.results.map((r,i)=>`<li><b>${gigAccHTML(vcSym(vcIn(R.v,r.key)))}</b> ${i===0?'learned':r.clean?'clean':r.shown?'with the shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
+    <p>+${R.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five clean.'}`:''}</p>
+    <div class="erow"><button class="go" id="vcAgain">Again</button><button class="ghost" id="vcCard">Back to the card</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
+  $('vcAgain').onclick=()=>vcDrillStart(R.v.id); $('vcCard').onclick=()=>vcOpen(R.v.id); $('vcMenu').onclick=vcToMenu;
+}
+
+/* ---------------- Rush ----------------
+   Chains: one chord in one key, asked for in up to three different voicings in a row, then a new chord. The bar
+   gives a few seconds per note, shrinking as your streak grows. A wrong try costs time and your combo; running out of
+   time costs a life, shows the shape, and you play it before moving on. That voicing then comes back three to five
+   chords later in another key, and again if you miss it again. A voicing you haven't learned is shown the first time. */
+function vcRushStart(){
+  vcStop(); const pool=vcPool();
+  Object.assign(VC,{active:true,mode:'rush',pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
+  vcShow(); vcRushNext();
+}
+function vcRushChain(){
+  const R=VC, types=[...new Set(R.pool.map(v=>v.qid))].filter(q=>!R.recent.includes(q));
+  const qid=(types.length?types:[...new Set(R.pool.map(v=>v.qid))])[Math.floor(Math.random()*(types.length||1))]||R.pool[0].qid;
+  const ways=shuffled(R.pool.filter(v=>v.qid===qid)).slice(0,1+Math.floor(Math.random()*3)), pc=pickKeyPc();
+  R.recent=[qid,...R.recent].slice(0,3);
+  return ways.map((v,i)=>({v,pc,of:ways.length,i}));
+}
+function vcRushNext(){
+  const R=VC; vcStop(); clearDraft(); if(R.lives<=0) return vcRushOver();
+  const due=R.again.findIndex(a=>a.at<=R.n);
+  let item;
+  if(due>=0&&!R.chain.length){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
+  else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
+  const t=vcIn(item.v,item.pc), fresh=!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);
+  R.seen.add(item.v.id);
+  const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
+  Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
+  vcRushRender();
+  if(fresh){ vcHintKeys(t); vcStaff(t); } else { kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); }
+  $('verdict').className='verdict'; $('verdict').textContent=fresh?'New one: copy the shape.':''; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
+  let last=performance.now();
+  R.tick=setInterval(()=>{ const n=performance.now(); R.left-=(n-last)/1000; last=n; const bar=$('vcBar'); if(bar) bar.style.width=Math.max(0,100*R.left/R.secs)+'%';
+    if(R.left<=0) vcRushTimeout(); },80);
+}
+function vcRushRender(){
+  const R=VC, it=R.item, t=R.t;
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">Rush</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+    <div class="ebar vcbar"><i id="vcBar" style="width:${R.lost?0:Math.max(0,100*R.left/R.secs)}%"${R.lost?' class="boss"':''}></i></div>
+    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
+    ${vcDiagram(t,R.fresh||R.lost)}
+    <div class="lmsg" id="vcMsg">${R.lost?'Time. Play it to go on.':''}</div>
+    <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcEnd">End</button></div>`;
+  $('vcHear').onclick=()=>vcPlay(t); $('vcEnd').onclick=vcRushOver;
+}
+function vcRushTimeout(){
+  const R=VC; clearInterval(R.tick); if(R.lost) return;
+  R.lost=true; R.lives--; R.combo=0; R.missed[R.item.v.id]=(R.missed[R.item.v.id]||0)+1;
+  R.again.push({v:R.item.v,pc:R.item.pc,at:R.n+3+Math.floor(Math.random()*3)});
+  R.chain=R.chain.filter(x=>x.v.id!==R.item.v.id);
+  vcRushRender(); vcHintKeys(R.t); vcStaff(R.t); vcPlay(R.t);
+  $('verdict').className='verdict no'; $('verdict').textContent=R.lives?`${vcSym(R.t)}, ${R.item.v.name}: this one.`:'Out of lives. Play it once, then that\'s the run.';
+}
+function vcRushNotes(notes){
+  const R=VC; if(R.mode!=='rush'||!R.t) return;
+  const res=vcGrade(R.t,notes); vcMark(R.t,res);
+  if(res.ok){
+    clearInterval(R.tick);
+    if(R.lost){ $('vcMsg').textContent='That\'s it. It\'ll come back.'; $('vcMsg').className='lmsg ok'; R.timer=setTimeout(vcRushNext,900); return; }
+    const frac=Math.max(0,R.left/R.secs), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+150*frac)*mult*(R.item.v.diff>1?1+0.25*(R.item.v.diff-1):1));
+    R.score+=pts; R.combo++; R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
+    $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}`; $('vcMsg').className='lmsg ok';
+    $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.item.v.name}.`;
+    R.timer=setTimeout(vcRushNext,R.chain.length?380:650); return;
+  }
+  if(res.part) return;
+  if(!R.tried){ R.tried=true; R.wrong++; if(!R.lost){ R.combo=0; R.left-=1.5; } }
+  $('vcMsg').textContent=res.why; $('vcMsg').className='lmsg no';
+}
+function vcRushOver(){
+  const R=VC; vcStop(); clearDraft(); R.mode='results';
+  const key=VCDATA.pool, prev=VCDATA.best[key]||0, rec=R.score>prev; if(rec) VCDATA.best[key]=R.score;
+  addXP(R.xp+Math.round(R.score/100)); saveVc();
+  const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>VOICE[id]);
+  $('vcBody').innerHTML=`<h2>${rec&&R.score?'New best':'Rush over'}</h2><div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.cleared}</b>voicings</div><div><b>${prev?Math.max(prev,R.score).toLocaleString():'–'}</b>best</div></div>
+    ${weak.length?`<div class="sec">Worth another look</div><div class="vcsib">${weak.map(v=>`<button class="ghost" data-vc="${v.id}">${gigAccHTML(vcSym(vcIn(v,0)))}: ${gigAccHTML(v.name)}</button>`).join('')}</div>`:''}
+    <div class="erow"><button class="go" id="vcAgain">Again</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
+  $('vcBody').querySelectorAll('[data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
+  $('vcAgain').onclick=vcRushStart; $('vcMenu').onclick=vcToMenu;
+  $('verdict').className='verdict'; $('verdict').textContent=''; kbMarks={}; paintKeys();
+}
+
+function vcToMenu(){ clearDraft();
+  vcStop(); VC.active=false; $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
+  side='voicings'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
+}
+function vcKey(e){
+  const R=VC; if(!R.active) return false;
+  if(e.key==='Escape'){ R.mode==='rush'?vcRushOver():R.mode==='drill'&&R.results.length?vcFinish(true):vcToMenu(); return true; }
+  if(e.key==='r'||e.key==='R'){ if(R.mode==='card') vcPlay(vcIn(R.v,0)); else if(R.t) vcPlay(R.t); return true; }
+  if((e.key==='s'||e.key==='S')&&R.mode==='drill'){ vcReveal(); return true; }
+  if((e.key==='Enter'||e.key===' ')&&R.mode==='drill'&&R.done){ e.preventDefault(); vcNext(); return true; }
+  return false;
+}
+</script>
+<script>
 /* Transcribe: turn the helper's raw notes (seconds) into a score (beats, bars, chords). Pure, no DOM.
    Tested by tests/theory.test.js. The helper does the listening; this does the music. */
 
@@ -5015,7 +5440,10 @@ function trRollView(){
     for(let t=0;t<X.dur;t+=5) h+=`<text x="${t*X.k+3}" y="${RULER+WV-3}" class="rsec">${fmtT(t).slice(0,-2)}</text>`; }
   for(let b=0;b<s.bars;b++){ const solo=(s.soloBars||[]).includes(b), x0=bx(b*4), w=bx(b*4+4)-x0;
     h+=`<rect x="${x0}" y="${LY}" width="${w}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${x0+w-4}" y="${LY+16}" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
-  s.chords.forEach((c,i)=>{ h+=`<text x="${bx(c.at)+3}" y="${LY+17}" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
+  let laneEnd=[-1e9,-1e9];   // chord names too close together alternate between two lines instead of piling up
+  s.chords.forEach((c,i)=>{ const txt=symText(chordObj(c)), x=bx(c.at)+3, w=txt.length*8.2; let row=x>laneEnd[0]+2?0:x>laneEnd[1]+2?1:(laneEnd[0]<laneEnd[1]?0:1);
+    const tight=x<laneEnd[0]+2||x<laneEnd[1]+2; laneEnd[row]=x+(tight?w*0.8:w);
+    h+=`<text x="${x}" y="${row?LY+23:LY+(laneEnd[1]>x-200&&row===0&&tight?11:17)}" class="rchord${row||tight?' rtight':''}" data-chord="${i}">${txt}</text>`; });
   if(TR.loop&&TR.looping) h+=`<rect x="${bx(TR.loop.a)}" y="0" width="${bx(TR.loop.b)-bx(TR.loop.a)}" height="${RULER}" class="rloop"/>`;
   // where you set beat 1 by hand: a small flag (click it to take it away)
   (s.anchors||[]).forEach((a,i)=>{ const x=pl?a*X.k:trMaps().toBeat(a)*PXB;
@@ -7321,7 +7749,8 @@ function gigChordHTML(c,song){
   const sh=gigShift(song), k=gigKeyNow(song), fl=gigFlats(k), r=gigMove(c.c.root,sh,fl), b=c.c.bass&&gigMove(c.c.bass,sh,fl), v=GDATA.view;
   const name=`<span class="gr">${gigAccHTML(rootName(r))}</span><span class="gsuf">${gigAccHTML(c.c.suf)}</span>${b?`<span class="gsl">/${gigAccHTML(rootName(b))}</span>`:''}`;
   const num=GIG_NUM[mod12(r.pc-k.pc)]+c.c.suf+(b?'/'+GIG_NUM[mod12(b.pc-k.pc)]:'');
-  return v==='numbers'?`<span class="gch"><span class="gname">${gigAccHTML(num)}</span></span>`:`<span class="gch"><span class="gname">${name}</span>${v==='both'?`<span class="gnum">${gigAccHTML(num)}</span>`:''}</span>`;
+  const numH=gigAccHTML(GIG_NUM[mod12(r.pc-k.pc)]+c.c.suf)+(b?`<span class="gsl">/${gigAccHTML(GIG_NUM[mod12(b.pc-k.pc)])}</span>`:'');
+  return v==='numbers'?`<span class="gch"><span class="gname">${numH}</span></span>`:`<span class="gch"><span class="gname">${name}</span>${v==='both'?`<span class="gnum">${gigAccHTML(num)}</span>`:''}</span>`;
 }
 
 /* ---------------- screens ---------------- */
@@ -7415,8 +7844,20 @@ function gigShow(id){
   // a bar: start from its first time in the form
   $('gigSheet').onclick=e=>{ const b=e.target.closest('.gbar'); if(!b) return; const i=GIG.tl.findIndex(x=>x.sec===b.dataset.sec&&x.bi===+b.dataset.bi); if(i<0) return;
     GIG.pos=i; if(GIG.playing) gigPlay(i); else { gigMark(i); gigLight(GIG.tl[i].chords[0]); } };
-  gigMark(0); gigLight(GIG.tl[0]&&GIG.tl[0].chords[0]);
+  gigMark(0); gigLight(GIG.tl[0]&&GIG.tl[0].chords[0]); gigFit(); setTimeout(()=>{ if(GIG.view==='sheet') gigFit(); },60); if(document.fonts) document.fonts.ready.then(()=>{ if(GIG.view==='sheet') gigFit(); });
 }
+/* Crowded bars: every chord name shrinks to fit its share of the bar (down to about half size), and if it still
+   doesn't fit, its slash bass moves onto a second line. Runs after each render and when the window resizes. */
+function gigFit(){ document.querySelectorAll('#gigSheet .gbars').forEach(row=>{
+  const fitSlot=sl=>{ const ch=sl.querySelector('.gch'); if(!ch) return true;
+    ch.style.fontSize=''; ch.classList.remove('gstack'); const room=sl.clientWidth-2; if(ch.scrollWidth<=room) return true;
+    if(ch.querySelector('.gsl')){ ch.classList.add('gstack'); if(ch.scrollWidth<=room) return true; }
+    const base=parseFloat(getComputedStyle(ch).fontSize); let fs=Math.max(base*0.5,base*room/ch.scrollWidth); ch.style.fontSize=fs+'px';
+    for(let k=0;k<20&&ch.scrollWidth>room&&fs>base*0.5;k++){ fs=Math.max(base*0.5,fs*0.95); ch.style.fontSize=fs+'px'; }   // the suffix and slash scale a little differently: settle in small steps
+    return ch.scrollWidth<=room+1; };
+  // four bars to a row when they fit; a crowded section gets two (or one) so nothing has to shrink past half size
+  for(const cols of [4,2,1]){ row.style.setProperty('--cols',cols); if([...row.querySelectorAll('.gslot')].every(fitSlot)) break; } }); }
+addEventListener('resize',()=>{ clearTimeout(GIG.fitT); GIG.fitT=setTimeout(()=>{ if(GIG.active&&GIG.view==='sheet') gigFit(); },120); });
 function gigTranspose(d){ const s=GIG.song; if(!s) return; let v=(gigShift(s)+d)%12; if(v>6) v-=12; if(v<-5) v+=12; if(v) GDATA.tr[s.id]=v; else delete GDATA.tr[s.id]; saveGig(); const p=GIG.pos, was=GIG.playing; gigShow(s.id); GIG.pos=p; gigMark(p); if(was) gigPlay(p); }
 // highlight the bar at timeline index i (and its place in the form)
 function gigMark(i){ const t=GIG.tl&&GIG.tl[i]; document.querySelectorAll('.gbar.on,.gform.on').forEach(x=>x.classList.remove('on')); if(!t) return;
@@ -7560,11 +8001,11 @@ function gigAnHTML(an){ if(!an) return '';
 <script>
 /* ---------------- menu ---------------- */
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
-let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'settings'
+let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' | 'settings'
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; }},
   {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
-  {id:'groove',name:'Groove',blurb:'Comping in time: feel, pushes, kime, genre recipes',soon:true},
+  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VOICINGS.length*3} stars`},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
   {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
@@ -7574,13 +8015,14 @@ function renderHome(){
 }
 function renderMenu(){
   $('rankLine').textContent=rankLine();
-  ['home','hands','ears','lines','reharm','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  ['home','hands','ears','lines','reharm','voicings','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
   document.querySelector('.homehead').hidden=side==='settings';
   if(side==='home'){ renderHome(); renderProfileChip(); }
   if(side==='settings') renderSettingsPane();
   if(side==='ears') renderEarsPane();
   if(side==='lines') renderLinesPane();
   if(side==='reharm') renderReharmPane();
+  if(side==='voicings') renderVoicingsPane();
   document.body.classList.toggle('nohud',side!=='hands');
   const bests=store.get('best2',{});
   $('mPractice').setAttribute('aria-pressed',mode==='practice'); $('mGame').setAttribute('aria-pressed',mode==='game');
@@ -7620,7 +8062,7 @@ $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender();
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
-bindLinesPane(); bindReharmPane();
+bindLinesPane(); bindReharmPane(); bindVoicingsPane();
 $('trOpenBtn').onclick=trOpen;
 /* ---------- getting home: the logo, and the browser's Back button ----------
    Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
@@ -7629,8 +8071,8 @@ function goHome(){
   clearDraft();
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
-  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(GIG.active) gigClose();
-  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode'); ['earsStage','linesStage','reharmStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
+  if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(VC.active){ vcStop(); VC.active=false; } if(GIG.active) gigClose();
+  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode','vcmode'); ['earsStage','linesStage','reharmStage','voiceStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
   side='home'; LINES.rec=null; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); $('startOv').scrollTop=0; return true;
 }
 document.addEventListener('click',()=>setTimeout(()=>{ if(!atHome()&&!(history.state&&history.state.away)) history.pushState({away:1},''); }),true);

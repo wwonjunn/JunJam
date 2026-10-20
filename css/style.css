@@ -616,3 +616,24 @@ body.gigmode header .modetag{display:none}
 
 .gslot{overflow:hidden} .gch.gstack .gname{display:inline-flex;flex-direction:column;align-items:flex-start} .gch.gstack .gsl{display:block;line-height:1}
 .rchord.rtight{font-size:12px}
+/* Voicings */
+.vcbody{max-width:860px}
+.vctype{margin-top:14px} .vctype .sec{font-size:17px} .vctype .sec span{font-size:12px;color:var(--muted);font-weight:600;margin-left:6px}
+.vcrush{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;border:1.5px solid var(--brass);border-radius:6px;padding:10px 14px;margin:6px 0 12px}
+.vcrush>div:first-child{flex:1 1 300px} .vcrush b{font-family:var(--cond);font-size:20px;display:block} .vcrush span{font-size:14px}
+.vcrushgo{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .vcrushgo select{font:inherit;font-size:14px;padding:5px 6px;border:1.5px solid var(--line-strong);border-radius:4px;background:transparent;color:var(--ink);max-width:260px}
+.vcrushgo .go{margin:0}
+.vcfam{flex-wrap:wrap}
+.vcdia{display:block;width:100%;max-width:640px;height:auto;max-height:150px;margin:6px auto 10px}
+.vcdia .vw{fill:var(--white-key,#fff);stroke:var(--key-edge,#999);stroke-width:1} .vcdia .vb{fill:var(--black-key,#222);stroke:var(--key-edge,#999);stroke-width:1}
+.vcdia .lh{fill:var(--chord)} .vcdia .rh{fill:var(--brass)}
+.vcdia text{font-family:var(--cond);text-anchor:middle;pointer-events:none} .vcdia .voct{font-size:7px;fill:#56618a}
+.vcdia .vlab{font-size:9px;font-weight:700} .vcdia .vlab.lh{fill:var(--chord)} .vcdia .vlab.rh{fill:var(--brass)}
+.vchands{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0 0 12px;font-family:var(--cond);font-size:17px}
+.vchands b{font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin-right:6px} .vchands .lh b{color:var(--chord)} .vchands .rh b{color:var(--brass)}
+.vchands em{font-style:normal;font-size:11px;color:var(--muted);margin:0 6px 0 2px;vertical-align:.4em}
+.vcsib{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px} .vcsib .ghost{margin:0}
+.vcask{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;margin:4px 0 6px} .vcask b{font-family:var(--cond);font-size:44px;line-height:1.05}
+.vcask span{font-family:var(--cond);font-weight:600;font-size:24px} .vcask em{font-style:normal;font-size:13px;color:var(--muted);border:1px solid var(--line-strong);border-radius:3px;padding:0 6px}
+.vcbar i{transition:width .1s linear}
+.vctip{font-size:16px;line-height:1.45;max-width:70ch;margin:4px 0 8px}

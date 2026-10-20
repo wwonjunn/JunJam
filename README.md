@@ -36,6 +36,11 @@ A jazz piano trainer with two sides:
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
   backdoor, line clichés, pedal point, Coltrane changes, negative harmony, melody reharm...). Each has a card (what, why, where you hear it), before/after audio, a drill
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
+- **Voicings**: 86 named two-hand voicings over 44 chord types (Kenny Barron, So What, Bill Evans rootless A and B,
+  upper-structure triads, the Mu chord, the Hendrix and James Bond chords, Herbie sus, gospel stacks, neo-soul clusters,
+  slash chords...), each hand within about a 10th. Learn one from its card (a keyboard diagram labelled by degree, both
+  hands named), play it in C and then five keys from memory, then Rush: a timed game that often asks for one chord two or
+  three ways in a row; a miss shows the shape, you play it, and it comes back a few chords later. Graded on the exact layout, in any octave.
 - **Transcribe** (button on the home screen): drop in an mp3 (or record a browser tab), choose a solo transcription or a
   lead sheet, select the part, and get editable sheet music with chords. Rhythms are written down to 32nds, with triplets,
   quintuplets, sextuplets and septuplets. Edit in a piano roll, either on the beat or as played (every note where it
@@ -88,6 +93,8 @@ js/lines/runs.js      scale runs that sound like music: pentatonic threes and fo
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
+js/voicings/library.js  the voicing library (both hands, written in C) and the extra chord types it names
+js/voicings/session.js  Voicings cards, the six-key drill and Rush
 js/transcribe/analyze.js   helper notes (seconds) to a score: beats, top line, chords, key
 js/transcribe/export.js    spelling, MIDI and MusicXML export (one line, or a two-staff part with chords)
 js/transcribe/notation.js  sheet music for full parts: chords stacked, grand staff for piano
