@@ -111,7 +111,8 @@ function gigChordHTML(c,song){
   const sh=gigShift(song), k=gigKeyNow(song), fl=gigFlats(k), r=gigMove(c.c.root,sh,fl), b=c.c.bass&&gigMove(c.c.bass,sh,fl), v=GDATA.view;
   const name=`<span class="gr">${gigAccHTML(rootName(r))}</span><span class="gsuf">${gigAccHTML(c.c.suf)}</span>${b?`<span class="gsl">/${gigAccHTML(rootName(b))}</span>`:''}`;
   const num=GIG_NUM[mod12(r.pc-k.pc)]+c.c.suf+(b?'/'+GIG_NUM[mod12(b.pc-k.pc)]:'');
-  return v==='numbers'?`<span class="gch"><span class="gname">${gigAccHTML(num)}</span></span>`:`<span class="gch"><span class="gname">${name}</span>${v==='both'?`<span class="gnum">${gigAccHTML(num)}</span>`:''}</span>`;
+  const numH=gigAccHTML(GIG_NUM[mod12(r.pc-k.pc)]+c.c.suf)+(b?`<span class="gsl">/${gigAccHTML(GIG_NUM[mod12(b.pc-k.pc)])}</span>`:'');
+  return v==='numbers'?`<span class="gch"><span class="gname">${numH}</span></span>`:`<span class="gch"><span class="gname">${name}</span>${v==='both'?`<span class="gnum">${gigAccHTML(num)}</span>`:''}</span>`;
 }
 
 /* ---------------- screens ---------------- */
@@ -205,8 +206,20 @@ function gigShow(id){
   // a bar: start from its first time in the form
   $('gigSheet').onclick=e=>{ const b=e.target.closest('.gbar'); if(!b) return; const i=GIG.tl.findIndex(x=>x.sec===b.dataset.sec&&x.bi===+b.dataset.bi); if(i<0) return;
     GIG.pos=i; if(GIG.playing) gigPlay(i); else { gigMark(i); gigLight(GIG.tl[i].chords[0]); } };
-  gigMark(0); gigLight(GIG.tl[0]&&GIG.tl[0].chords[0]);
+  gigMark(0); gigLight(GIG.tl[0]&&GIG.tl[0].chords[0]); gigFit(); setTimeout(()=>{ if(GIG.view==='sheet') gigFit(); },60); if(document.fonts) document.fonts.ready.then(()=>{ if(GIG.view==='sheet') gigFit(); });
 }
+/* Crowded bars: every chord name shrinks to fit its share of the bar (down to about half size), and if it still
+   doesn't fit, its slash bass moves onto a second line. Runs after each render and when the window resizes. */
+function gigFit(){ document.querySelectorAll('#gigSheet .gbars').forEach(row=>{
+  const fitSlot=sl=>{ const ch=sl.querySelector('.gch'); if(!ch) return true;
+    ch.style.fontSize=''; ch.classList.remove('gstack'); const room=sl.clientWidth-2; if(ch.scrollWidth<=room) return true;
+    if(ch.querySelector('.gsl')){ ch.classList.add('gstack'); if(ch.scrollWidth<=room) return true; }
+    const base=parseFloat(getComputedStyle(ch).fontSize); let fs=Math.max(base*0.5,base*room/ch.scrollWidth); ch.style.fontSize=fs+'px';
+    for(let k=0;k<20&&ch.scrollWidth>room&&fs>base*0.5;k++){ fs=Math.max(base*0.5,fs*0.95); ch.style.fontSize=fs+'px'; }   // the suffix and slash scale a little differently: settle in small steps
+    return ch.scrollWidth<=room+1; };
+  // four bars to a row when they fit; a crowded section gets two (or one) so nothing has to shrink past half size
+  for(const cols of [4,2,1]){ row.style.setProperty('--cols',cols); if([...row.querySelectorAll('.gslot')].every(fitSlot)) break; } }); }
+addEventListener('resize',()=>{ clearTimeout(GIG.fitT); GIG.fitT=setTimeout(()=>{ if(GIG.active&&GIG.view==='sheet') gigFit(); },120); });
 function gigTranspose(d){ const s=GIG.song; if(!s) return; let v=(gigShift(s)+d)%12; if(v>6) v-=12; if(v<-5) v+=12; if(v) GDATA.tr[s.id]=v; else delete GDATA.tr[s.id]; saveGig(); const p=GIG.pos, was=GIG.playing; gigShow(s.id); GIG.pos=p; gigMark(p); if(was) gigPlay(p); }
 // highlight the bar at timeline index i (and its place in the form)
 function gigMark(i){ const t=GIG.tl&&GIG.tl[i]; document.querySelectorAll('.gbar.on,.gform.on').forEach(x=>x.classList.remove('on')); if(!t) return;

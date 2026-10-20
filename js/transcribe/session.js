@@ -464,7 +464,10 @@ function trRollView(){
     for(let t=0;t<X.dur;t+=5) h+=`<text x="${t*X.k+3}" y="${RULER+WV-3}" class="rsec">${fmtT(t).slice(0,-2)}</text>`; }
   for(let b=0;b<s.bars;b++){ const solo=(s.soloBars||[]).includes(b), x0=bx(b*4), w=bx(b*4+4)-x0;
     h+=`<rect x="${x0}" y="${LY}" width="${w}" height="${LANE}" class="rlane${solo?' solo':''}" data-bar="${b}"/>`+(s.mode==='lead'?`<text x="${x0+w-4}" y="${LY+16}" text-anchor="end" class="rsolo" data-solo="${b}">${solo?'solo ✓':'solo?'}</text>`:''); }
-  s.chords.forEach((c,i)=>{ h+=`<text x="${bx(c.at)+3}" y="${LY+17}" class="rchord" data-chord="${i}">${symText(chordObj(c))}</text>`; });
+  let laneEnd=[-1e9,-1e9];   // chord names too close together alternate between two lines instead of piling up
+  s.chords.forEach((c,i)=>{ const txt=symText(chordObj(c)), x=bx(c.at)+3, w=txt.length*8.2; let row=x>laneEnd[0]+2?0:x>laneEnd[1]+2?1:(laneEnd[0]<laneEnd[1]?0:1);
+    const tight=x<laneEnd[0]+2||x<laneEnd[1]+2; laneEnd[row]=x+(tight?w*0.8:w);
+    h+=`<text x="${x}" y="${row?LY+23:LY+(laneEnd[1]>x-200&&row===0&&tight?11:17)}" class="rchord${row||tight?' rtight':''}" data-chord="${i}">${txt}</text>`; });
   if(TR.loop&&TR.looping) h+=`<rect x="${bx(TR.loop.a)}" y="0" width="${bx(TR.loop.b)-bx(TR.loop.a)}" height="${RULER}" class="rloop"/>`;
   // where you set beat 1 by hand: a small flag (click it to take it away)
   (s.anchors||[]).forEach((a,i)=>{ const x=pl?a*X.k:trMaps().toBeat(a)*PXB;
