@@ -16,20 +16,24 @@ async function drumsInit(){
 }
 function drumsReload(){ DRUM.ready=false; DRUM.buf={}; return drumsInit(); }   // after loading or clearing your own sounds
 // A small room for the snare: a short, dark, decaying burst of noise as the reverb's impulse
-function drumVerb(c){
-  if(DRUM.verb&&DRUM.verbCtx===c) return DRUM.verb;
-  const len=Math.floor(c.sampleRate*1.3), ir=c.createBuffer(2,len,c.sampleRate);
-  for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); let lp=0; for(let i=0;i<len;i++){ lp=lp*0.82+(Math.random()*2-1)*0.18; d[i]=lp*Math.pow(1-i/len,3.2); } }
-  const cv=c.createConvolver(); cv.buffer=ir; DRUM.verb=cv; DRUM.verbCtx=c; return cv;
+// One reverb per bus, so stopping a backing stops its snare tails too (a shared one would leak into every bus it ever fed)
+const DRUM_VERBS=new WeakMap();
+function drumVerb(c,out){
+  if(!(DRUM.verb&&DRUM.verbCtx===c)){ const len=Math.floor(c.sampleRate*1.3), ir=c.createBuffer(2,len,c.sampleRate);
+    for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); let lp=0; for(let i=0;i<len;i++){ lp=lp*0.82+(Math.random()*2-1)*0.18; d[i]=lp*Math.pow(1-i/len,3.2); } }
+    DRUM.verb=ir; DRUM.verbCtx=c; }
+  let cv=DRUM_VERBS.get(out); if(!cv){ cv=c.createConvolver(); cv.buffer=DRUM.verb; cv.connect(out); DRUM_VERBS.set(out,cv); } return cv;
 }
+const DRUM_MAX={kick:1.2,snare:1.4,hat:0.5};   // seconds a hit may ring before it's faded out
 /* One hit. Samples get a gentle tone shaping (the kick a little rounder, the hat softer); the snare sends some to the room. */
 function drumHit(v,t,vel=1,bus=null){
   const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const out=bus||synth.master, b=DRUM.buf[v];
   const g=c.createGain(); g.gain.value=vel*({kick:1.0,snare:0.8,hat:0.85}[v]||1);   // level-matched against the keys
   const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value={kick:1800,snare:7000,hat:9000}[v]; f.Q.value=0.5;
   f.connect(g); g.connect(out);
-  if(v==='snare'){ const send=c.createGain(), verb=drumVerb(c); send.gain.value=0.32*vel; f.connect(send); send.connect(verb); verb.connect(out); }
-  if(b){ const s=c.createBufferSource(); s.buffer=b; s.connect(f); s.start(t); return; }
+  if(v==='snare'){ const send=c.createGain(), verb=drumVerb(c,out); send.gain.value=0.32*vel; f.connect(send); send.connect(verb); }
+  if(b){ const s=c.createBufferSource(), e=c.createGain(), mx=Math.min(b.duration,DRUM_MAX[v]); s.buffer=b; s.connect(e); e.connect(f);
+    e.gain.setValueAtTime(1,t); e.gain.setValueAtTime(1,t+mx*0.75); e.gain.linearRampToValueAtTime(0,t+mx); s.start(t); s.stop(t+mx+0.02); return; }
   // the stand-in synth kit
   const env=(node,peak,dec)=>{ const e=c.createGain(); e.gain.setValueAtTime(0.0001,t); e.gain.linearRampToValueAtTime(peak,t+0.003); e.gain.exponentialRampToValueAtTime(0.0001,t+dec); node.connect(e); e.connect(f); };
   if(v==='kick'){ const o=c.createOscillator(); o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12); env(o,0.9,0.5); o.start(t); o.stop(t+0.6); }

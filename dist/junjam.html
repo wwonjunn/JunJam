@@ -1137,7 +1137,7 @@ function renderSettingsPane(){
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
   renderKeysSound(); renderDrumSound();
-  $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
+  $('bsHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
   // paint the scene previews one after another, so the page stays responsive
@@ -1149,16 +1149,20 @@ function renderKeysSound(msg){
   const opt=(id,name,sub)=>`<button class="keyopt" data-ks="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
   el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([,i])=>i.keys).map(([id,i])=>opt(id,i.name,have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
     <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).some(id=>SMP_INFO[id]&&SMP_INFO[id].keys)?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
-  el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks; synth.init();
-    if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); renderKeysSound(); $('ksHear').click(); return; }
+  el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks, pick=renderKeysSound.pick=(renderKeysSound.pick||0)+1; synth.init(); killBus(PREVIEW);   // the newest click wins
+    if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); if(pick!==renderKeysSound.pick) return; renderKeysSound(); $('ksHear').click(); return; }
     if(!navigator.onLine) return renderKeysSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
     b.disabled=true; const m=$('ksMsg');
-    try{ await smpDownload(id,(d,n)=>{ m.textContent=`Downloading ${SMP_INFO[id].name}… ${d} of ${n}`; }); store.set('keysSound',id); renderKeysSound(`${SMP_INFO[id].long} downloaded. It works offline from now on.`); $('ksHear').click(); }
+    try{ await smpDownload(id,(d,n)=>{ m.textContent=`Downloading ${SMP_INFO[id].name}… ${d} of ${n}`; }); if(pick!==renderKeysSound.pick) return; store.set('keysSound',id); renderKeysSound(`${SMP_INFO[id].long} downloaded. It works offline from now on.`); $('ksHear').click(); }
     catch(e){ renderKeysSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } });
-  $('ksHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.05;
-    [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.8,.75,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+2.5+i*.18,.3,80,'epiano',bus)); };
+  $('ksHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; const t=now()+.05;
+    [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.6,.55,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+1.85+i*.15,i===4?.45:.15,80,'epiano',bus)); };
   if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave()).filter(id=>SMP_INFO[id]&&SMP_INFO[id].keys)) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
 }
+// The Hear buttons in Sound share one bus: pressing one stops whatever the last one was playing, and nothing runs past 3 seconds
+let PREVIEW=null;
+function previewBus(){ synth.init(); killBus(PREVIEW); clearTimeout(previewBus.t); const b=PREVIEW=newBus(); if(!b) return null;
+  previewBus.t=setTimeout(()=>{ if(PREVIEW===b){ killBus(b); PREVIEW=null; } },3000); return b; }
 // Drums: the built-in kit, or your own samples for any of the three sounds (kept in this browser, offline)
 async function renderDrumSound(msg){
   const el=$('drumSound'); if(!el) return; const mine={}; for(const v of DRUM_VOICES) mine[v]=!!(await smpDB.get('custom/'+v));
@@ -1170,9 +1174,9 @@ async function renderDrumSound(msg){
     try{ await synth.ctx.decodeAudioData(ab.slice(0)); }catch(e){ return renderDrumSound("Couldn't read that file. Try a WAV, MP3, AIFF or M4A."); }
     await smpDB.put('custom/'+inp.dataset.dload,ab); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
   el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
-  $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=newBus(); if(!bus) return; const spb=60/80, t=now()+.08;
-    for(let b=0;b<4;b++) beatBar(t+b*4*spb,spb,4,{bar:b},bus,{hat:b>=2});
-    [[2,'min7'],[7,'dom7']].forEach(([r,q],i)=>{ tone(36+r,t+i*8*spb,7.6*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+i*8*spb,7.6*spb,backSound(),bus,backVel(56)); }); };
+  $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=previewBus(); if(!bus) return; const spb=60/96, t=now()+.08;   // one bar with the hi-hat, then the downbeat
+    beatBar(t,spb,4,{bar:1},bus,{hat:true}); drumHit('kick',t+4*spb,1,bus);
+    [[2,'min7',0,4],[7,'dom7',4,.5]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb,backSound(),bus,backVel(56)); }); };
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');
@@ -1834,19 +1838,38 @@ async function smpLoad(id){
 function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]).forEach(id=>smpLoad(id)); }
 async function smpForget(id){ for(const f of smpFiles(id)) await smpDB.del(id+'/'+f); const have=smpHave(); delete have[id]; store.set('sounds',have); delete SMP.buf[id]; SMP.ready[id]=false; if(keysSoundPick()===id) store.set('keysSound','synth'); }
 // One note from an instrument: the region for that key and velocity (or the nearest), pitched to the exact key
-function smpStart(id,m,vel,t,out){
-  const c=synth.ctx, rs=SMP_MAPS[id].regions, v=Math.max(1,Math.min(127,Math.round(vel)));
-  const loaded=x=>SMP.buf[id]&&SMP.buf[id][x[5]];
+const smpRate=(r,m)=>Math.pow(2,(m-r[2]-r[3]/100)/12);
+const smpLen=(id,r,m)=>SMP.buf[id][r[5]].duration/smpRate(r,m);   // seconds this file lasts at this pitch
+/* The region for a key and velocity (or the nearest). Some of the Wurlitzer's files are trimmed far shorter than others
+   (one dynamic of a key lasting 4 s, the next 0.4 s), so if the matching one runs out in under 2 seconds and another
+   dynamic of the same key lasts longer, that one plays instead, at the volume you asked for. */
+function smpRegion(id,m,v){
+  const rs=SMP_MAPS[id].regions, loaded=x=>SMP.buf[id]&&SMP.buf[id][x[5]];
   let r=rs.find(x=>m>=x[0]&&m<=x[1]&&v>=x[6]&&v<=x[7]&&loaded(x));
   if(!r){ const ok=rs.filter(loaded), pool=ok.filter(x=>v>=x[6]&&v<=x[7]); if(!ok.length) return null; r=(pool.length?pool:ok).reduce((a,b)=>Math.abs(b[2]-m)<Math.abs(a[2]-m)?b:a); }
-  const b=loaded(r);
-  const src=c.createBufferSource(), g=c.createGain(); src.buffer=b; src.playbackRate.value=Math.pow(2,(m-r[2]-r[3]/100)/12);
-  const amp=0.9*SMP_INFO[id].gain*Math.pow(v/127,1.4)*Math.pow(10,r[4]/20);
-  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(amp,t+0.004);
-  src.connect(g); g.connect(out||synth.master); src.start(t); src.stop(t+b.duration/src.playbackRate.value+0.05);
-  return {src,g,id};
+  if(smpLen(id,r,m)<2){ const alt=rs.filter(x=>m>=x[0]&&m<=x[1]&&loaded(x)).reduce((a,b)=>smpLen(id,b,m)>smpLen(id,a,m)?b:a,r);
+    if(smpLen(id,alt,m)>smpLen(id,r,m)+0.4) r=alt; }
+  return r;
 }
-function smpRelease(v,t,rel){ if(!v) return; try{ v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(Math.max(v.g.gain.value,0.0001),t); v.g.gain.setTargetAtTime(0.0001,t,rel/3); v.src.stop(t+rel+0.1); }catch(e){} }
+function smpStart(id,m,vel,t,out){
+  const c=synth.ctx, v=Math.max(1,Math.min(127,Math.round(vel))), r=smpRegion(id,m,v); if(!r) return null;
+  const b=SMP.buf[id][r[5]];
+  const src=c.createBufferSource(), g=c.createGain(); src.buffer=b; src.playbackRate.value=smpRate(r,m);
+  const amp=0.9*SMP_INFO[id].gain*Math.pow(v/127,1.4)*Math.pow(10,r[4]/20);
+  // Some recordings are trimmed while still ringing (and a note pitched up plays its file faster, so it ends sooner):
+  // fade the last part out instead of letting it stop dead with a click
+  const end=t+b.duration/src.playbackRate.value, fs=Math.max(t+0.05,end-Math.min(0.35,(end-t)*0.3));
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(amp,t+0.004); g.gain.setValueAtTime(amp,fs); g.gain.linearRampToValueAtTime(0.0001,end);
+  src.connect(g); g.connect(out||synth.master); src.start(t); src.stop(end+0.02);
+  return {src,g,id,amp,t0:t,fs,end};
+}
+// The fade starts from the note's own level. (Reading gain.value here is wrong for a release scheduled ahead: it reads the
+// level now, before the note has even started, so the fade would jump to full volume first.) A release during the attack waits for it.
+// how long a note can last before its recording runs out, at this pitch
+function smpMaxDur(m,vel=80){ const k=keysSampled(); if(!k) return Infinity; const r=smpRegion(k,m,Math.round(vel)); return r?smpLen(k,r,m):Infinity; }
+function smpRelease(v,t,rel){ if(!v) return; try{ const c=synth.ctx, at=Math.max(t,v.t0+0.005); if(at>=v.end) return;   // already faded at the file's end
+  const lv=Math.max(0.0001,at<=v.fs?v.amp:v.amp*(1-(at-v.fs)/(v.end-v.fs)));
+  v.g.gain.cancelScheduledValues(at); v.g.gain.setValueAtTime(lv,at); v.g.gain.setTargetAtTime(0.0001,at,rel/3); v.src.stop(at+rel*2+0.1); }catch(e){} }
 // scheduled notes (licks, backing, questions): play for dur, then let go
 function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.currentTime), v=smpStart(id,m,vel,t,bus); if(v) smpRelease(v,t+dur,SMP_INFO[id].rel); return !!v; }
 </script>
@@ -2160,20 +2183,24 @@ async function drumsInit(){
 }
 function drumsReload(){ DRUM.ready=false; DRUM.buf={}; return drumsInit(); }   // after loading or clearing your own sounds
 // A small room for the snare: a short, dark, decaying burst of noise as the reverb's impulse
-function drumVerb(c){
-  if(DRUM.verb&&DRUM.verbCtx===c) return DRUM.verb;
-  const len=Math.floor(c.sampleRate*1.3), ir=c.createBuffer(2,len,c.sampleRate);
-  for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); let lp=0; for(let i=0;i<len;i++){ lp=lp*0.82+(Math.random()*2-1)*0.18; d[i]=lp*Math.pow(1-i/len,3.2); } }
-  const cv=c.createConvolver(); cv.buffer=ir; DRUM.verb=cv; DRUM.verbCtx=c; return cv;
+// One reverb per bus, so stopping a backing stops its snare tails too (a shared one would leak into every bus it ever fed)
+const DRUM_VERBS=new WeakMap();
+function drumVerb(c,out){
+  if(!(DRUM.verb&&DRUM.verbCtx===c)){ const len=Math.floor(c.sampleRate*1.3), ir=c.createBuffer(2,len,c.sampleRate);
+    for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); let lp=0; for(let i=0;i<len;i++){ lp=lp*0.82+(Math.random()*2-1)*0.18; d[i]=lp*Math.pow(1-i/len,3.2); } }
+    DRUM.verb=ir; DRUM.verbCtx=c; }
+  let cv=DRUM_VERBS.get(out); if(!cv){ cv=c.createConvolver(); cv.buffer=DRUM.verb; cv.connect(out); DRUM_VERBS.set(out,cv); } return cv;
 }
+const DRUM_MAX={kick:1.2,snare:1.4,hat:0.5};   // seconds a hit may ring before it's faded out
 /* One hit. Samples get a gentle tone shaping (the kick a little rounder, the hat softer); the snare sends some to the room. */
 function drumHit(v,t,vel=1,bus=null){
   const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const out=bus||synth.master, b=DRUM.buf[v];
   const g=c.createGain(); g.gain.value=vel*({kick:1.0,snare:0.8,hat:0.85}[v]||1);   // level-matched against the keys
   const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value={kick:1800,snare:7000,hat:9000}[v]; f.Q.value=0.5;
   f.connect(g); g.connect(out);
-  if(v==='snare'){ const send=c.createGain(), verb=drumVerb(c); send.gain.value=0.32*vel; f.connect(send); send.connect(verb); verb.connect(out); }
-  if(b){ const s=c.createBufferSource(); s.buffer=b; s.connect(f); s.start(t); return; }
+  if(v==='snare'){ const send=c.createGain(), verb=drumVerb(c,out); send.gain.value=0.32*vel; f.connect(send); send.connect(verb); }
+  if(b){ const s=c.createBufferSource(), e=c.createGain(), mx=Math.min(b.duration,DRUM_MAX[v]); s.buffer=b; s.connect(e); e.connect(f);
+    e.gain.setValueAtTime(1,t); e.gain.setValueAtTime(1,t+mx*0.75); e.gain.linearRampToValueAtTime(0,t+mx); s.start(t); s.stop(t+mx+0.02); return; }
   // the stand-in synth kit
   const env=(node,peak,dec)=>{ const e=c.createGain(); e.gain.setValueAtTime(0.0001,t); e.gain.linearRampToValueAtTime(peak,t+0.003); e.gain.exponentialRampToValueAtTime(0.0001,t+dec); node.connect(e); e.connect(f); };
   if(v==='kick'){ const o=c.createOscillator(); o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12); env(o,0.9,0.5); o.start(t); o.stop(t+0.6); }
@@ -4264,8 +4291,11 @@ function vcDiagram(t,show=true){
 }
 const vcNames=(t,ns)=>ns.map(m=>vcSpell(t,m).name).join(' ');
 function vcStaff(t,roles){ $('staff').innerHTML=staffSVG(t.notes.map(m=>({...vcSpell(t,m),midi:m})),roles||t.notes.map(()=>'hint')); }
-function vcPlay(t,roll=false){ const b=VC.bus||(VC.bus=newBus()); if(!b) return; const at=now()+.05;
-  t.lh.forEach(m=>tone(m,at,2.2,80,'epiano',b)); t.rh.forEach(m=>tone(m,at+(roll?.18:0),2.2,78,'epiano',b)); }
+function vcPlay(t,roll=false){ killBus(VC.bus); const b=VC.bus=newBus(); if(!b) return; const at=now()+.05, vel=Math.round(80*Math.min(1,Math.sqrt(4/t.notes.length)));   // replaces whatever was sounding
+  // every note lets go together, before the recordings run out, so none ends early or rings on. (The Wurlitzer's very top
+  // notes are all about a second long; those few fade out a little sooner, smoothly, rather than cutting the whole chord short.)
+  const d=Math.max(1.2,Math.min(2,...t.notes.map(m=>smpMaxDur(m,vel)).filter(x=>x>1.6).map(x=>x-0.5)));
+  t.lh.forEach(m=>tone(m,at,d,vel,'epiano',b)); t.rh.forEach(m=>tone(m,at+(roll?.18:0),d,vel-2,'epiano',b)); }
 function vcStop(){ killBus(VC.bus); VC.bus=null; clearTimeout(VC.timer); clearInterval(VC.tick); }
 function vcShow(){ synth.init(); hideOv(); document.body.classList.add('nohud','vcmode'); document.body.classList.remove('menu'); $('voiceStage').hidden=false; }
 const vcSiblings=v=>VOICINGS.filter(x=>x.qid===v.qid&&x.id!==v.id);

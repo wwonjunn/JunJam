@@ -60,8 +60,11 @@ function vcDiagram(t,show=true){
 }
 const vcNames=(t,ns)=>ns.map(m=>vcSpell(t,m).name).join(' ');
 function vcStaff(t,roles){ $('staff').innerHTML=staffSVG(t.notes.map(m=>({...vcSpell(t,m),midi:m})),roles||t.notes.map(()=>'hint')); }
-function vcPlay(t,roll=false){ const b=VC.bus||(VC.bus=newBus()); if(!b) return; const at=now()+.05;
-  t.lh.forEach(m=>tone(m,at,2.2,80,'epiano',b)); t.rh.forEach(m=>tone(m,at+(roll?.18:0),2.2,78,'epiano',b)); }
+function vcPlay(t,roll=false){ killBus(VC.bus); const b=VC.bus=newBus(); if(!b) return; const at=now()+.05, vel=Math.round(80*Math.min(1,Math.sqrt(4/t.notes.length)));   // replaces whatever was sounding
+  // every note lets go together, before the recordings run out, so none ends early or rings on. (The Wurlitzer's very top
+  // notes are all about a second long; those few fade out a little sooner, smoothly, rather than cutting the whole chord short.)
+  const d=Math.max(1.2,Math.min(2,...t.notes.map(m=>smpMaxDur(m,vel)).filter(x=>x>1.6).map(x=>x-0.5)));
+  t.lh.forEach(m=>tone(m,at,d,vel,'epiano',b)); t.rh.forEach(m=>tone(m,at+(roll?.18:0),d,vel-2,'epiano',b)); }
 function vcStop(){ killBus(VC.bus); VC.bus=null; clearTimeout(VC.timer); clearInterval(VC.tick); }
 function vcShow(){ synth.init(); hideOv(); document.body.classList.add('nohud','vcmode'); document.body.classList.remove('menu'); $('voiceStage').hidden=false; }
 const vcSiblings=v=>VOICINGS.filter(x=>x.qid===v.qid&&x.id!==v.id);

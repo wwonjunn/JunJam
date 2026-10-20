@@ -119,7 +119,7 @@ function renderSettingsPane(){
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
   renderKeysSound(); renderDrumSound();
-  $('bsHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; let pv=null, t=now()+.05;
+  $('bsHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
   // paint the scene previews one after another, so the page stays responsive
@@ -131,16 +131,20 @@ function renderKeysSound(msg){
   const opt=(id,name,sub)=>`<button class="keyopt" data-ks="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
   el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([,i])=>i.keys).map(([id,i])=>opt(id,i.name,have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
     <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).some(id=>SMP_INFO[id]&&SMP_INFO[id].keys)?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
-  el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks; synth.init();
-    if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); renderKeysSound(); $('ksHear').click(); return; }
+  el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks, pick=renderKeysSound.pick=(renderKeysSound.pick||0)+1; synth.init(); killBus(PREVIEW);   // the newest click wins
+    if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); if(pick!==renderKeysSound.pick) return; renderKeysSound(); $('ksHear').click(); return; }
     if(!navigator.onLine) return renderKeysSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
     b.disabled=true; const m=$('ksMsg');
-    try{ await smpDownload(id,(d,n)=>{ m.textContent=`Downloading ${SMP_INFO[id].name}… ${d} of ${n}`; }); store.set('keysSound',id); renderKeysSound(`${SMP_INFO[id].long} downloaded. It works offline from now on.`); $('ksHear').click(); }
+    try{ await smpDownload(id,(d,n)=>{ m.textContent=`Downloading ${SMP_INFO[id].name}… ${d} of ${n}`; }); if(pick!==renderKeysSound.pick) return; store.set('keysSound',id); renderKeysSound(`${SMP_INFO[id].long} downloaded. It works offline from now on.`); $('ksHear').click(); }
     catch(e){ renderKeysSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } });
-  $('ksHear').onclick=()=>{ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.05;
-    [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.8,.75,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+2.5+i*.18,.3,80,'epiano',bus)); };
+  $('ksHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; const t=now()+.05;
+    [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.6,.55,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+1.85+i*.15,i===4?.45:.15,80,'epiano',bus)); };
   if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave()).filter(id=>SMP_INFO[id]&&SMP_INFO[id].keys)) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
 }
+// The Hear buttons in Sound share one bus: pressing one stops whatever the last one was playing, and nothing runs past 3 seconds
+let PREVIEW=null;
+function previewBus(){ synth.init(); killBus(PREVIEW); clearTimeout(previewBus.t); const b=PREVIEW=newBus(); if(!b) return null;
+  previewBus.t=setTimeout(()=>{ if(PREVIEW===b){ killBus(b); PREVIEW=null; } },3000); return b; }
 // Drums: the built-in kit, or your own samples for any of the three sounds (kept in this browser, offline)
 async function renderDrumSound(msg){
   const el=$('drumSound'); if(!el) return; const mine={}; for(const v of DRUM_VOICES) mine[v]=!!(await smpDB.get('custom/'+v));
@@ -152,9 +156,9 @@ async function renderDrumSound(msg){
     try{ await synth.ctx.decodeAudioData(ab.slice(0)); }catch(e){ return renderDrumSound("Couldn't read that file. Try a WAV, MP3, AIFF or M4A."); }
     await smpDB.put('custom/'+inp.dataset.dload,ab); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
   el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
-  $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=newBus(); if(!bus) return; const spb=60/80, t=now()+.08;
-    for(let b=0;b<4;b++) beatBar(t+b*4*spb,spb,4,{bar:b},bus,{hat:b>=2});
-    [[2,'min7'],[7,'dom7']].forEach(([r,q],i)=>{ tone(36+r,t+i*8*spb,7.6*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+i*8*spb,7.6*spb,backSound(),bus,backVel(56)); }); };
+  $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=previewBus(); if(!bus) return; const spb=60/96, t=now()+.08;   // one bar with the hi-hat, then the downbeat
+    beatBar(t,spb,4,{bar:1},bus,{hat:true}); drumHit('kick',t+4*spb,1,bus);
+    [[2,'min7',0,4],[7,'dom7',4,.5]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb,backSound(),bus,backVel(56)); }); };
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');

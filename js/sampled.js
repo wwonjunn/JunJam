@@ -47,18 +47,37 @@ async function smpLoad(id){
 function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]).forEach(id=>smpLoad(id)); }
 async function smpForget(id){ for(const f of smpFiles(id)) await smpDB.del(id+'/'+f); const have=smpHave(); delete have[id]; store.set('sounds',have); delete SMP.buf[id]; SMP.ready[id]=false; if(keysSoundPick()===id) store.set('keysSound','synth'); }
 // One note from an instrument: the region for that key and velocity (or the nearest), pitched to the exact key
-function smpStart(id,m,vel,t,out){
-  const c=synth.ctx, rs=SMP_MAPS[id].regions, v=Math.max(1,Math.min(127,Math.round(vel)));
-  const loaded=x=>SMP.buf[id]&&SMP.buf[id][x[5]];
+const smpRate=(r,m)=>Math.pow(2,(m-r[2]-r[3]/100)/12);
+const smpLen=(id,r,m)=>SMP.buf[id][r[5]].duration/smpRate(r,m);   // seconds this file lasts at this pitch
+/* The region for a key and velocity (or the nearest). Some of the Wurlitzer's files are trimmed far shorter than others
+   (one dynamic of a key lasting 4 s, the next 0.4 s), so if the matching one runs out in under 2 seconds and another
+   dynamic of the same key lasts longer, that one plays instead, at the volume you asked for. */
+function smpRegion(id,m,v){
+  const rs=SMP_MAPS[id].regions, loaded=x=>SMP.buf[id]&&SMP.buf[id][x[5]];
   let r=rs.find(x=>m>=x[0]&&m<=x[1]&&v>=x[6]&&v<=x[7]&&loaded(x));
   if(!r){ const ok=rs.filter(loaded), pool=ok.filter(x=>v>=x[6]&&v<=x[7]); if(!ok.length) return null; r=(pool.length?pool:ok).reduce((a,b)=>Math.abs(b[2]-m)<Math.abs(a[2]-m)?b:a); }
-  const b=loaded(r);
-  const src=c.createBufferSource(), g=c.createGain(); src.buffer=b; src.playbackRate.value=Math.pow(2,(m-r[2]-r[3]/100)/12);
-  const amp=0.9*SMP_INFO[id].gain*Math.pow(v/127,1.4)*Math.pow(10,r[4]/20);
-  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(amp,t+0.004);
-  src.connect(g); g.connect(out||synth.master); src.start(t); src.stop(t+b.duration/src.playbackRate.value+0.05);
-  return {src,g,id};
+  if(smpLen(id,r,m)<2){ const alt=rs.filter(x=>m>=x[0]&&m<=x[1]&&loaded(x)).reduce((a,b)=>smpLen(id,b,m)>smpLen(id,a,m)?b:a,r);
+    if(smpLen(id,alt,m)>smpLen(id,r,m)+0.4) r=alt; }
+  return r;
 }
-function smpRelease(v,t,rel){ if(!v) return; try{ v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(Math.max(v.g.gain.value,0.0001),t); v.g.gain.setTargetAtTime(0.0001,t,rel/3); v.src.stop(t+rel+0.1); }catch(e){} }
+function smpStart(id,m,vel,t,out){
+  const c=synth.ctx, v=Math.max(1,Math.min(127,Math.round(vel))), r=smpRegion(id,m,v); if(!r) return null;
+  const b=SMP.buf[id][r[5]];
+  const src=c.createBufferSource(), g=c.createGain(); src.buffer=b; src.playbackRate.value=smpRate(r,m);
+  const amp=0.9*SMP_INFO[id].gain*Math.pow(v/127,1.4)*Math.pow(10,r[4]/20);
+  // Some recordings are trimmed while still ringing (and a note pitched up plays its file faster, so it ends sooner):
+  // fade the last part out instead of letting it stop dead with a click
+  const end=t+b.duration/src.playbackRate.value, fs=Math.max(t+0.05,end-Math.min(0.35,(end-t)*0.3));
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(amp,t+0.004); g.gain.setValueAtTime(amp,fs); g.gain.linearRampToValueAtTime(0.0001,end);
+  src.connect(g); g.connect(out||synth.master); src.start(t); src.stop(end+0.02);
+  return {src,g,id,amp,t0:t,fs,end};
+}
+// The fade starts from the note's own level. (Reading gain.value here is wrong for a release scheduled ahead: it reads the
+// level now, before the note has even started, so the fade would jump to full volume first.) A release during the attack waits for it.
+// how long a note can last before its recording runs out, at this pitch
+function smpMaxDur(m,vel=80){ const k=keysSampled(); if(!k) return Infinity; const r=smpRegion(k,m,Math.round(vel)); return r?smpLen(k,r,m):Infinity; }
+function smpRelease(v,t,rel){ if(!v) return; try{ const c=synth.ctx, at=Math.max(t,v.t0+0.005); if(at>=v.end) return;   // already faded at the file's end
+  const lv=Math.max(0.0001,at<=v.fs?v.amp:v.amp*(1-(at-v.fs)/(v.end-v.fs)));
+  v.g.gain.cancelScheduledValues(at); v.g.gain.setValueAtTime(lv,at); v.g.gain.setTargetAtTime(0.0001,at,rel/3); v.src.stop(at+rel*2+0.1); }catch(e){} }
 // scheduled notes (licks, backing, questions): play for dur, then let go
 function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.currentTime), v=smpStart(id,m,vel,t,bus); if(v) smpRelease(v,t+dur,SMP_INFO[id].rel); return !!v; }
