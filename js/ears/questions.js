@@ -155,7 +155,7 @@ const GEN={
     const ans=answerFrom(set,'prog:',force,ctx), P=PROG[ans], kpc=pickKeyPc();
     const chords=progChords(P,kpc), voiced=voiceProg(chords);
     const key=keyName(kpc,!!P.minor), last=chords[chords.length-1];
-    return {prompt:'Which progression?',sub:'Listen to the bass line and where the colours go.',
+    return {roots:chords.map(c=>mod12(c.root.pc+(c.q.bass??0))),prompt:'Which progression?',sub:'Listen to the bass line and where the colours go.',
       options:set.map(id=>({id,label:PROG[id].short})),answer:ans,item:`prog:${ans}`,keyPc:kpc,
       play:(bus,t)=>playProg(voiced,tb,bus,t),
       compare:(pk,bus,t)=>{ let e=t; if(pk!=null&&pk!=='timeout'&&PROG[pk]) e=playProg(voiceProg(progChords(PROG[pk],kpc)),tb,bus,t)+0.3; return playProg(voiced,tb,bus,e); },

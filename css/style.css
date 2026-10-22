@@ -637,3 +637,19 @@ body.gigmode header .modetag{display:none}
 .vcask span{font-family:var(--cond);font-weight:600;font-size:24px} .vcask em{font-style:normal;font-size:13px;color:var(--muted);border:1px solid var(--line-strong);border-radius:3px;padding:0 6px}
 .vcbar i{transition:width .1s linear}
 .vctip{font-size:16px;line-height:1.45;max-width:70ch;margin:4px 0 8px}
+/* Ears: Call & Response */
+.arcwrap{margin:4px 0 6px} .arcwrap .sec .fine,.ears .sec .fine{font-weight:400;margin-left:6px}
+.arcworlds{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:6px 0 8px}
+.arcw{text-align:left;background:transparent;border:1.5px solid var(--brass);border-radius:6px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.arcw:hover{background:color-mix(in srgb, var(--brass) 10%, transparent)}
+.arcw .lt{font-family:var(--cond);font-weight:700;font-size:20px} .arcw .lst{font-size:13px;color:var(--muted)} .arcw .lst b{color:var(--brass);font-weight:400;letter-spacing:1px;margin-right:5px}
+.arcbody{max-width:760px}
+.arcladder{display:flex;align-items:center;gap:4px;margin:10px 0 4px;font-family:var(--cond);font-weight:600;color:var(--muted)}
+.arcladder i{width:18px;height:6px;border-radius:3px;background:var(--line);display:block} .arcladder i.done{background:var(--chord)} .arcladder i.cur{background:var(--brass)}
+.arcladder span{margin-left:8px}
+.arcask{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:14px 0 4px}
+.arcask span{font-family:var(--cond);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--brass);width:100%}
+.arcask b{font-family:var(--cond);font-size:34px;line-height:1.1} .arcask em{font-style:normal;font-family:var(--cond);font-weight:600;font-size:20px;border:1.5px solid var(--line-strong);border-radius:4px;padding:0 8px}
+.arcbar{height:10px} .arcbar i{transition:width .06s linear}
+.arcprog{display:flex;gap:6px;min-height:14px;margin:-8px 0 10px} .arcprog i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong);display:block} .arcprog i.ok{background:var(--chord);box-shadow:none}
+.arcagain{font-family:var(--cond);font-size:22px;color:var(--brass)}

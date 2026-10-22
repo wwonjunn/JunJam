@@ -32,7 +32,7 @@ function toggleDraft(m){
 // keys you clicked but didn't play yet are let go when the question, round or game changes
 function clearDraft(){ if(draft.size){ draft.clear(); paintKeys(); } }
 function submitDraft(){ if(!draft.size) return; const n=[...draft]; draft.clear(); routeNotes(n); }
-function routeNotes(n){ if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else if(VC.active) vcNotes(n); else submit(n); }
+function routeNotes(n){ if(typeof ARC!=='undefined'&&ARC.active) arcNotes(n); else if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else if(VC.active) vcNotes(n); else submit(n); }
 
 async function initMIDI(){
   const el=$('midi');
@@ -64,6 +64,7 @@ document.addEventListener('keydown',e=>{
   if(typeof TR!=='undefined' && TR.active && trKey(e)) return;
   if(typeof GIG!=='undefined' && GIG.active && gigKey(e)) return;
   if(e.target&&(e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&!/checkbox|radio|range/.test(e.target.type)))) return; // typing in a field
+  if(typeof ARC!=='undefined' && ARC.active && arcKey(e)) return;
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
   if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
   if(typeof REHARM!=='undefined' && REHARM.active && rhKey(e)) return;
