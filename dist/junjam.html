@@ -3137,7 +3137,7 @@ const ARC_LIVES=3, ARC_STEP=6, ARC_SPELL=5, ARC_SLOW=1.25;   // the walk takes 2
 const ARC_DAILY=20, ARC_WEEKLY=12;
 const ARC_MONS=['👾','👻','🦇','🐍','🕷️'];
 const arcRungs=w=>WORLDS.find(x=>x.id===w).levels;
-// What you play to answer, per generator
+// What you play to answer, per generator (an interval's first note is named and lit, see arcRef)
 const ARC_ASK={degree:'Play the note you hear',interval:'Play the second note',chord:'Play the chord you hear, on this root',inversion:'Play the note in the bass',prog:'Play the bass line, one root at a time'};
 
 /* ---------------- days, weeks and a seeded shuffle, so a daily or weekly wave is the same wave every try ---------------- */
@@ -3191,6 +3191,13 @@ function arcStart(world){
   ARC.timer=setTimeout(arcCall,600);
 }
 function arcStop(){ killBus(ARC.bus); ARC.bus=null; clearTimeout(ARC.timer); clearInterval(ARC.tick); }
+// The note you measure from, so nothing needs perfect pitch: the key's home note, the chord's root, or an interval's first note
+function arcRef(q){
+  if(q.gen==='interval'){ const n=q.reveal.notes, first=q.prompt.includes('going down')?Math.max(...n):Math.min(...n);   // played together: the lower one
+    return {pc:mod12(first),label:`First note ${pcName(first,false)}`,midi:first}; }
+  if(q.gen==='chord'||q.gen==='inversion') return {pc:q.keyPc,label:`Root ${pcName(q.keyPc,false)}`};
+  return null;
+}
 const arcLevel=()=>ARC.kind==='world'?arcRungs(ARC.world)[ARC.rung]:ARC.q?ARC.q.lv:ARC.pool[0];
 // The next call: a missed one that's come due (in a new key), or a fresh one from the current rung or any below it
 function arcGen(){
@@ -3219,7 +3226,8 @@ function arcCall(){
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:brute?'👹':face,x:1}; }
   R.walk={x0:R.mon.x,t0:spawn,t1:R.close};   // it waits (out of sight, or where a brute stands) until then
   arcRender();
-  kbMarks={}; if(q.gen==='degree'){ for(const m in keyEls) if(mod12(+m-q.keyPc)===0) kbMarks[m]='k-root'; } paintKeys();   // the key's home notes, to find your way
+  kbMarks={}; const ref=arcRef(q), refPc=ref?ref.pc:q.keyPc;   // light the note you measure from, in every octave
+  if(refPc!=null) for(const m in keyEls) if(mod12(+m-refPc)===0) kbMarks[m]='k-root'; if(ref&&ref.midi) kbMarks[ref.midi]='k-chord'; paintKeys();
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
     if(t>=W.t0){ R.mon.x=Math.max(0,W.x0*(W.t1-t)/(W.t1-W.t0)); const el=$('arcMon'); if(el) el.classList.remove('wait'); } arcMonPos();
     const ph=$('arcPhase'); if(ph) ph.textContent=t<R.open?'Listen…':'Your turn';
@@ -3228,10 +3236,10 @@ function arcCall(){
 function arcRender(){
   const R=ARC, q=R.q, lv=q.lv, rungs=R.kind==='world'?arcRungs(R.world):[];
   const key=q.gen==='degree'?q.sub.match(/Key of ([^.]+)/)?.[1]:q.gen==='prog'?q.reveal.text.match(/ in ([A-G][♭♯]? (?:major|minor))/)?.[1]:null;
-  const root=q.gen==='chord'||q.gen==='inversion'?pcName(q.keyPc,false):null;
+  const ref=arcRef(q);
   $('arcBody').innerHTML=`<div class="etop"><span class="etitle">${R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
-    <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${root?`<em>Root ${gigAccHTML(root)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
+    <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${ref?`<em>${gigAccHTML(ref.label)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
     <div class="arclane"><span class="arcwall${R.lives<ARC_LIVES?' hurt':''}">🏰</span><span class="arcmon${R.mon.brute?' brute':''}${R.mon.x>=1?' wait':''}" id="arcMon"><b>${R.mon.face}</b>${R.mon.max>1?`<i>${'◆'.repeat(R.mon.hp)}${'◇'.repeat(R.mon.max-R.mon.hp)}</i>`:''}</span></div>
     <div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
     <div class="arcprog" id="arcProg">${q.gen==='prog'?q.roots.map(()=>'<i></i>').join(''):''}</div>
