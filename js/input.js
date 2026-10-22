@@ -26,6 +26,7 @@ function toggleDraft(m){
   synth.init();
   if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); linesNote(m); return; }
   if(typeof GIG!=='undefined'&&GIG.active){ synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500); return; }
+  if(typeof ARC!=='undefined'&&arcClick(m)) return;   // Ears game: a clicked key is a one-note answer
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
   kbMarks={}; paintKeys();
 }
