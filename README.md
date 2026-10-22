@@ -50,6 +50,11 @@ A jazz piano trainer with two sides:
   Each enemy says how many notes it takes and walks slower the more it needs: 👾 one note, 🐍 two, 🦎 three, 🐊 four,
   🐉 five, 🕷️ a chord, 🦖 a bass line; a serpent's segments get blasted off one note at a time.
   Play any chord to go again.
+- **Lines practice** (the Lines library and drill stay as Classic; rhythm is never graded, only the notes in order):
+  a line of the week, learned in its own key the first time and then played from memory in new keys spread over the
+  days left, reaching all 12 by Sunday (then it joins your vocabulary 🏅); and Today's practice, about five minutes in
+  one button: the weekly line's keys for today, up to three older lines due back (spaced review: 1, 2, 5, 11 days...; a
+  slip brings it back tomorrow), and one new line. A day streak with a 14-day calendar.
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
   learn in one key and then play in five more without looking. Import your own over MIDI.
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
@@ -112,6 +117,7 @@ js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Data
 js/lines/players.js   licks transcribed from players' own videos (A.N.M-PIANO), credited, filed with the solo licks
 js/lines/runs.js      scale runs that sound like music: pentatonic threes and fours, cascades, gospel and blues runs, the Magic Run…
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
+js/lines/practice.js  Lines practice: the line of the week, today's session, spaced review
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
 js/voicings/library.js  the voicing library (both hands, written in C) and the extra chord types it names

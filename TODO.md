@@ -52,9 +52,9 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 ## Lines (decided: no race, and no rhythm grading)
 The transcribed timing isn't reliable. What matters is the order of the notes, which notes over which chord, and the
 sound each one makes. Rhythm is never graded.
-- [ ] Line of the week: one line all week. Monday, learn it in its own key; each day after, play it from memory in more
+- [x] Line of the week: one line all week. Monday, learn it in its own key; each day after, play it from memory in more
       keys (2, 4, 6, then all 12 by Sunday). Finishing adds it to your vocabulary with a badge.
-- [ ] Daily practice (about 5 minutes, one button): today's keys of the weekly line, 3 older lines due for spaced
+- [x] Daily practice (about 5 minutes, one button): today's keys of the weekly line, 3 older lines due for spaced
       review, and one new line. A day streak and a calendar.
 - [ ] Maybe: "where lines go": the app plays a short progression, and you drop the line onto the chord it belongs to.
 - [ ] No octave-up twist.

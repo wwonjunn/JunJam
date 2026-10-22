@@ -24,6 +24,7 @@ function renderLinesPane(){
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
+    ${lpPaneHTML()}
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
@@ -49,6 +50,7 @@ function bindLinesPane(){
   const p=$('linesPane');
   p.onchange=e=>{ if(e.target.id==='lArtist'){ LDATA.artist=e.target.value; if(LDATA.artist&&LDATA.from!=='all'&&LDATA.from!=='solo'&&LDATA.from!=='orig') LDATA.from='all'; saveLines(); renderLinesPane(); } };
   p.onclick=e=>{
+    const lp=e.target.closest('[data-lp]'); if(lp){ if(lp.disabled) return; lp.dataset.lp==='swap'?lpSwap():lpStart(lp.dataset.lp); return; }   // practice: today's session, the weekly line's keys, or a different weekly line
     const f=e.target.closest('[data-fav]'); if(f){ e.stopPropagation(); toggleFav(f.dataset.fav); renderLinesPane(); return; }
     const b=e.target.closest('button,[data-del]'); if(!b) return;
     if(b.dataset.del){ e.stopPropagation(); if(confirm('Delete this lick?')){ LDATA.user=LDATA.user.filter(l=>l.id!==b.dataset.del); delete LDATA.stars[b.dataset.del]; saveLines(); renderLinesPane(); } return; }
@@ -81,24 +83,27 @@ function pickLineKeys(){
 }
 function linesStart(id){
   const lick=lickById(id); if(!lick) return;
-  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0});
+  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null});
   synth.init(); hideOv(); document.body.classList.add('nohud','linesmode'); document.body.classList.remove('menu');
   $('linesStage').hidden=false; $('lResults').hidden=true; $('lPlay').hidden=false;
   linesRound();
 }
 function linesRound(){
   clearTimeout(LINES.advance);
-  const ref=LINES.keys[LINES.round];
+  const step=LINES.plan?LINES.plan[LINES.round]:null; if(step) LINES.lick=lickById(step.id);   // a practice session: each step names its lick and key
+  const ref=step?step.key:LINES.keys[LINES.round];
   const inst=lickInstance(LINES.lick,ref);
   if(LDATA.lh&&Math.min(...inst.notes.map(n=>n.midi))<LH_SPLIT) inst.notes.forEach(n=>{ n.midi+=12; n.spell={...n.spell,midi:n.midi,oct:n.spell.oct+1,di:n.spell.di+7}; });
-  Object.assign(LINES,{inst,idx:0,offset:null,mistakes:0,revealed:LINES.round===0,done:false});
+  Object.assign(LINES,{inst,idx:0,offset:null,mistakes:0,revealed:linesLearnStep(),done:false});
   $('lMsg').textContent=''; $('lMsg').className='lmsg';
   kbMarks={}; linesRender(); setTimeout(linesPlay,250);
 }
+// the step where the notes are shown and you learn the lick: the first key of a drill, or a practice step marked learn
+const linesLearnStep=()=>LINES.plan?!!LINES.plan[LINES.round].learn:LINES.round===0;
 function linesRender(){
-  const L=LINES, inst=L.inst, learn=L.round===0;
+  const L=LINES, inst=L.inst, learn=linesLearnStep(), step=L.plan?L.plan[L.round]:null;
   $('lTitle').textContent=L.lick.name; $('lFav').textContent=isFav(L.lick.id)?'♥':'♡'; $('lFav').title=isFav(L.lick.id)?'Remove from favourites':'Add to favourites';
-  $('lCount').textContent=learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
+  $('lCount').textContent=step?`${step.label} · ${L.round+1} of ${L.plan.length}`:learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
   $('lChords').textContent=inst.chords.map(c=>symText(c)).join('  →  ');
   $('lSub').textContent=learn?(LDATA.lh?'Listen, then play it back with your right hand above middle C; hold the chord with your left if you like.':'Listen, then play it back on your keyboard. Any octave works.')+(L.lick.tip?' '+L.lick.tip:'')
     :'Same lick, new key. Play it without looking; press N if you need the notes.';
@@ -216,20 +221,21 @@ function linesNote(m){
   $('lMsg').className='lmsg no'; linesRender(); kbMarks={}; kbMarks[m]='k-wrong'; paintKeys();
 }
 function linesRoundDone(){
-  const L=LINES, clean=L.mistakes===0&&(L.round===0||!L.revealed);
-  L.done=true; L.results.push({ref:L.keys[L.round],clean,mistakes:L.mistakes,revealed:L.round>0&&L.revealed});
-  if(L.round>0&&clean) L.clean++;
+  const L=LINES, learn=linesLearnStep(), clean=L.mistakes===0&&(learn||!L.revealed);
+  L.done=true; L.results.push({ref:L.plan?L.plan[L.round].key:L.keys[L.round],clean,mistakes:L.mistakes,revealed:!learn&&L.revealed,step:L.plan?L.plan[L.round]:null});
+  if(!learn&&clean) L.clean++;
   L.xp+=10+(clean?10:0);
-  $('lMsg').textContent=clean?(L.round===0?'Got it. Now the real test: new keys.':'Clean.'):`Done${L.mistakes?`, after ${L.mistakes} restart${L.mistakes>1?'s':''}`:''}${L.round>0&&L.revealed?', with the notes showing':''}.`;
+  $('lMsg').textContent=clean?(learn?(L.plan?'Got it.':'Got it. Now the real test: new keys.'):'Clean.'):`Done${L.mistakes?`, after ${L.mistakes} restart${L.mistakes>1?'s':''}`:''}${!learn&&L.revealed?', with the notes showing':''}.`;
   $('lMsg').className='lmsg '+(clean?'ok':'');
   L.revealed=true; linesRender();
   // Replay the lick you just played, then go to the next key on its own (Enter skips the wait)
   const secs=linesPlay(.35)||1.2;
   L.advance=setTimeout(linesNext,secs*1000+500);
 }
-function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; clearTimeout(LINES.advance); LINES.round++; if(LINES.round>TRANSFER_KEYS) return linesFinish(false); linesRound(); }
+function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; clearTimeout(LINES.advance); LINES.round++; if(LINES.round>(LINES.plan?LINES.plan.length-1:TRANSFER_KEYS)) return linesFinish(false); linesRound(); }
 function linesFinish(quit){
   const L=LINES; clearTimeout(L.advance); killBus(L.bus); L.active=false;
+  if(L.plan) return lpFinish(quit);   // a practice session has its own summary
   const learned=L.results.length>0, finished=L.round>TRANSFER_KEYS;
   const stars=!learned?0:finished&&L.clean===TRANSFER_KEYS?3:finished&&L.clean>=4?2:1;
   const prev=LDATA.stars[L.lick.id]||0; if(stars>prev) LDATA.stars[L.lick.id]=stars;
