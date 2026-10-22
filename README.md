@@ -46,6 +46,9 @@ A jazz piano trainer with two sides:
   from the key you played, freeze-frame hits, sparks and score pops, a fireball arc, and on a miss a charge that cracks the castle.
   Daily wave: one fixed wave of 20 a day across every world at the levels you've reached plus one stretch level; your
   first try earns a medal and keeps a day streak (14-day calendar). Weekly boss: 12 armoured brutes, the same all week.
+  Melodies world: melodic dictation, the cadence then 2 to 5 notes you play back in order (any octave), first note given.
+  Each enemy says how many notes it takes and walks slower the more it needs: 👾 one note, 🐍 two, 🦎 three, 🐊 four,
+  🐉 five, 🕷️ a chord, 🦖 a bass line; a serpent's segments get blasted off one note at a time.
   Play any chord to go again.
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
   learn in one key and then play in five more without looking. Import your own over MIDI.

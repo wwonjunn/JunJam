@@ -5,7 +5,7 @@ Done so far: the monsters, the ladder inside a run, lives, the spell and firebal
 with medals and a streak, the weekly boss, a reference note for every call, and the canvas lane.
 
 **Content**
-- [ ] **Next:** the Melodies world, which is melodic dictation. The same key-setting cadence plays, then a melody of 2 or 3
+- [x] The Melodies world, which is melodic dictation. The same key-setting cadence plays, then a melody of 2 or 3
       notes, and you play all of them back in order. As a serpent with one segment per note: each right note blasts
       off a segment, a wrong note makes it lunge. Starts at 2 notes and grows to 3, 4, then 5 up the ladder. Use real
       melodic shapes (J-pop hooks, jazz enclosures, licks from Lines), and always name and light the first note.
@@ -26,7 +26,7 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 - [ ] Hit and miss sounds without a pitch (soft thumps), or the answer note itself as the bolt's sound. Nothing that
       clashes with the ear training.
 - [ ] Run medals: a flawless level, five fireballs, killing a brute without being hit.
-- [ ] A different monster set per scene (meadow, night, lava).
+- [x] One enemy per answer length: 👾 one note, 🐍 2, 🦎 3, 🐊 4, 🐉 5, 🕷️ chord, 🦖 bass line, bigger and slower as they grow.
 - [ ] The electric piano sound: the Wurlitzer recordings are trimmed unevenly; find a better sample set.
 
 **Rules to keep**
