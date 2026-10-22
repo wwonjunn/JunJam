@@ -23,6 +23,9 @@ addEventListener('resize',()=>{ if(arcFx.raf) arcFxSize(); });
 // lane geometry: the wall on the left, the portal on the right, the path along the bottom
 const arcGround=()=>arcFx.H-26, arcWallX=()=>62, arcPortalX=()=>arcFx.W-56;
 const arcMonX=x=>arcWallX()+46+x*(arcPortalX()-arcWallX()-46);
+const ARC_SEG=0.36;   // spacing of a serpent's body segments, in head sizes
+// where the head is drawn: a long enemy steps out far enough that its whole tail is in view
+const arcHeadX=(M,d)=>arcMonX(d)-((M&&M.left||1)-1)*(M&&M.size||40)*ARC_SEG*d;
 function arcFxTheme(i){ const F=arcFx; i=Math.max(0,Math.min(ARC_THEMES.length-1,i)); if(i!==F.theme){ F.theme=i; F.themeF=0; } }
 function arcFxBanner(text,col){ arcFx.banner={text,col:col||'#f5c542',t0:arcFx.t}; }
 const arcPop=(x,y,text,col,size=18)=>arcFx.parts.push({kind:'text',x,y,vx:0,vy:-38,life:1.1,max:1.1,text,col,size});
@@ -35,24 +38,28 @@ function arcKeyX(m){ const F=arcFx, el=keyEls[m]; if(!el||!F.cv) return F.W/2; c
 function arcFxHit(o){ // o: {notes, kill, fire, brute, pts, quick}
   const F=arcFx; if(!F.mon&&ARC.mon){ F.mon=ARC.mon; F.disp=ARC.mon.x; F.born=F.t; }   // answered before the frame caught up
   const M=F.mon; if(!M) return;
-  const tx=arcMonX(F.disp), ty=arcGround()-(M.brute?30:24), from=o.notes&&o.notes.length?o.notes:[60];
+  const tx=arcHeadX(M,F.disp), ty=arcGround()-(M.size||40)*0.6, from=o.notes&&o.notes.length?o.notes:[60];
   const land=()=>{ F.freeze=F.t+(o.kill?0.09:0.06); F.shake=Math.max(F.shake,o.fire?14:o.kill?6:4);
     const cols=o.fire?['#ff6b2b','#ffd23f','#ff3d00','#fff3b0']:['#ffffff','#f5c542','#7fd3ff','#b8f2e6'];
     arcBurst(tx,ty,o.fire?46:o.kill?26:14,cols,o.fire?320:240,o.fire?4.5:3);
     if(o.fire) F.parts.push({kind:'ring',x:tx,y:ty,life:0.5,max:0.5,col:'#ffb347'});
     arcPop(tx,ty-34,`+${o.pts}`,o.fire?'#ff7a2b':'#f5c542',o.fire?26:20);
     if(o.quick) arcPop(tx+30,ty-12,'Quick!','#7fd3ff',14);
-    if(o.kill){ F.dying.push({face:M.face,x:tx,y:ty,size:M.brute?52:40,t0:F.t,kind:'pop'}); F.mon=null;
+    if(o.kill){ F.dying.push({face:M.face,x:tx,y:ty,size:M.size||40,t0:F.t,kind:'pop'}); F.mon=null;
       for(let i=0;i<5;i++) F.parts.push({kind:'chunk',x:tx,y:ty,vx:(Math.random()-.5)*260,vy:-120-Math.random()*160,life:0.9,max:0.9,face:M.face,size:12+Math.random()*8,rot:Math.random()*6,vr:(Math.random()-.5)*14,grav:520}); }
     else { M.kb=F.t; for(let i=0;i<6;i++) F.parts.push({kind:'spark',x:tx,y:ty-14,vx:(Math.random()-.5)*200,vy:-80-Math.random()*120,life:0.7,max:0.7,col:'#c9d3e6',size:4,grav:500,sq:1}); }   // armour flies off
     F.flash=o.fire?0.35:0.12; F.flashCol=o.fire?'255,140,40':'255,255,255'; };
   if(o.fire){ F.shots.push({kind:'fire',x0:arcWallX()+10,y0:arcGround()-60,x1:tx,y1:ty,t0:F.t,dur:0.42,land}); return; }
   from.slice(0,4).forEach((m,i)=>F.shots.push({kind:'bolt',x0:arcKeyX(m),y0:F.H+4,x1:tx,y1:ty,t0:F.t+i*0.03,dur:0.17,land:i===0?land:null,combo:o.combo||0}));
 }
+// one note of a melody or a bass line, right: a small bolt pops the last segment off the tail
+function arcFxSeg(m){ const F=arcFx, M=F.mon||ARC.mon; if(!M) return; if(!F.mon){ F.mon=M; F.disp=M.x; F.born=F.t; }
+  const size=M.size||40, y=arcGround()-size*0.2-4; M.left++; const x=arcHeadX(M,F.disp)+(M.left-1)*size*ARC_SEG; M.left--;   // where that segment was
+  F.shots.push({kind:'bolt',x0:arcKeyX(m),y0:F.H+4,x1:x,y1:y,t0:F.t,dur:0.14,combo:ARC.combo,land:()=>{ arcBurst(x,y,12,['#bff0a0','#ffffff','#f5c542'],200,3); arcPop(x,y-20,'✓','#bff0a0',18); M.kb=F.t; }}); }
 function arcFxMiss(){
   const F=arcFx, M=F.mon; F.mon=null;
-  const x0=M?arcMonX(F.disp):arcPortalX();
-  F.dying.push({face:M?M.face:'👾',x:x0,y:arcGround()-(M&&M.brute?30:24),size:M&&M.brute?52:40,t0:F.t,kind:'charge',x0});
+  const x0=M?arcHeadX(M,F.disp):arcPortalX();
+  F.dying.push({face:M?M.face:'👾',x:x0,y:arcGround()-(M?M.size:40)*0.6,size:M?M.size:40,t0:F.t,kind:'charge',x0,segs:M?M.left:0});
 }
 function arcFxWallHit(){ const F=arcFx; F.wallHit=F.t; F.shake=arcReduce()?4:16; F.flash=0.3; F.flashCol='220,40,40';
   arcBurst(arcWallX()+18,arcGround()-30,22,['#8a7f6a','#b9ad94','#5e5546'],260,4,600); }
@@ -115,15 +122,19 @@ function arcFxPortal(c){
   c.restore();
 }
 function arcFxMonster(c,M){
-  const F=arcFx, x=arcMonX(F.disp), g=arcGround(), age=F.t-F.born, size=M.brute?52:40;
+  const F=arcFx, x=arcHeadX(M,F.disp), g=arcGround(), age=F.t-F.born, size=M.size||40;
   const pop=Math.min(1,age/0.28), ease=1-Math.pow(1-pop,3);   // steps out of the portal
   const walkT=F.t*(M.brute?7:10), bob=Math.abs(Math.sin(walkT))*(M.brute?3:5), lean=Math.sin(walkT)*0.08;
   const kb=M.kb&&F.t-M.kb<0.25?(1-(F.t-M.kb)/0.25):0;   // the stagger after a hit
   const near=1-F.disp, hurry=near>0.75?Math.sin(F.t*40)*1.5:0;   // close to the wall it jitters: hurry up
   c.save(); c.fillStyle='rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(x,g+3,size*0.38*ease,5*ease,0,0,7); c.fill(); c.restore();
+  for(let i=(M.left||1)-1;i>=1;i--){ const sx=x+i*size*ARC_SEG, sb=Math.abs(Math.sin(walkT-i*0.7))*3, r=size*0.2*ease;   // one body segment per note still to play
+    c.fillStyle='rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(sx,g+3,r,3,0,0,7); c.fill();
+    const grd=c.createRadialGradient(sx-r*0.3,g-r-sb-r*0.3,1,sx,g-r-sb,r); grd.addColorStop(0,'#bff0a0'); grd.addColorStop(1,'#4f9a3c');
+    c.fillStyle=grd; c.beginPath(); c.arc(sx,g-r-sb,r,0,7); c.fill(); c.strokeStyle='rgba(30,60,20,.6)'; c.lineWidth=1.5; c.stroke(); }
   c.save(); c.translate(x+hurry+kb*10,g-bob*ease); c.rotate(-lean-kb*0.35); c.scale(ease*(1+bob*0.012),ease*(1-bob*0.01));
   c.font=`${size}px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText(M.face,0,0);
-  if(kb>0){ c.globalCompositeOperation='source-atop'; c.fillStyle=`rgba(255,255,255,${kb*0.8})`; c.fillRect(-size,-size*1.2,size*2,size*1.3); }
+  if(kb>0&&'filter' in c){ c.filter=`brightness(${1+kb*2.2})`; c.globalAlpha=kb; c.fillText(M.face,0,0); c.filter='none'; c.globalAlpha=1; }
   c.restore();
   if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
     c.moveTo(px,py-6); c.lineTo(px+6,py); c.lineTo(px,py+6); c.lineTo(px-6,py); c.closePath(); c.fill(); c.stroke(); } }   // armour pips

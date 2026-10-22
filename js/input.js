@@ -5,6 +5,7 @@ function noteOn(m,v){
   if(typeof TR!=='undefined'&&TR.active){ synth.init(); held.add(m); synth.on(m,v); trMidi(m,v); return; } // transcribe: hear it, see it, record it
   if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.init(); held.add(m); synth.on(m,v); linesNote(m); return; } // lines take single notes, not chords
   if(typeof GIG!=='undefined'&&GIG.active){ synth.init(); held.add(m); synth.on(m,v); paintKeys(); return; } // gig: just play
+  if(typeof ARC!=='undefined'&&arcSeq()){ synth.init(); held.add(m); synth.on(m,v); arcSeqNote(m); return; } // Ears game: a melody or bass line, note by note
   synth.init(); held.add(m); gesture.add(m); synth.on(m,v);
   kbMarks={}; paintKeys();
   clearTimeout(settleTimer); settleTimer=setTimeout(commitGesture,SETTLE);
