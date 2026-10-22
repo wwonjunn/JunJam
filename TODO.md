@@ -5,9 +5,11 @@ Done so far: the monsters, the ladder inside a run, lives, the spell and firebal
 with medals and a streak, the weekly boss, a reference note for every call, and the canvas lane.
 
 **Content**
-- [ ] Melodies world: dictation from 1 note up to 5, as a serpent with one segment per note. Each right note
-      blasts off a segment; a wrong note makes it lunge forward. Use real melodic shapes (J-pop hooks, jazz
-      enclosures, licks from Lines), and always name and light the first note.
+- [ ] **Next:** the Melodies world, which is melodic dictation. The same key-setting cadence plays, then a melody of 2 or 3
+      notes, and you play all of them back in order. As a serpent with one segment per note: each right note blasts
+      off a segment, a wrong note makes it lunge. Starts at 2 notes and grows to 3, 4, then 5 up the ladder. Use real
+      melodic shapes (J-pop hooks, jazz enclosures, licks from Lines), and always name and light the first note.
+      (The progression world's "play the bass line" is a different skill, and it stays.)
 - [ ] Longer phrases in the other worlds: progressions of 2 to 5 chords (a caravan of wagons), and two chords in a row
       for Chord qualities.
 - [ ] Star twists, like Chords' 🔥:
@@ -47,8 +49,16 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 - [ ] A game (Loop Station: a loop that keeps playing, the slot glows, you play the move in the band, then a new key).
       Keep the current cards and drill as Classic.
 
-## Lines
-- [ ] A game (a race against your own ghost and bots), plus daily and weekly challenges. Keep the current drill as Classic.
+## Lines (decided: no race, and no rhythm grading)
+The transcribed timing isn't reliable. What matters is the order of the notes, which notes over which chord, and the
+sound each one makes. Rhythm is never graded.
+- [ ] Line of the week: one line all week. Monday, learn it in its own key; each day after, play it from memory in more
+      keys (2, 4, 6, then all 12 by Sunday). Finishing adds it to your vocabulary with a badge.
+- [ ] Daily practice (about 5 minutes, one button): today's keys of the weekly line, 3 older lines due for spaced
+      review, and one new line. A day streak and a calendar.
+- [ ] Maybe: "where lines go": the app plays a short progression, and you drop the line onto the chord it belongs to.
+- [ ] No octave-up twist.
+- Keep the current library and drill as Classic.
 
 ## Gig
 - [ ] Backing track quality (parked until the AI music tools are better).
