@@ -58,11 +58,11 @@ function arcCall(){
   R.open=end-0.15; R.close=end+beats*spb; R.beats=beats; R.spb=spb; R.callEnd=end;
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   if(!R.mon){ const brute=R.rung>=2&&Math.random()<0.25; R.mon={hp:brute?2:1,max:brute?2:1,brute,face:brute?'👹':ARC_MONS[Math.floor(Math.random()*ARC_MONS.length)],x:1}; }
-  R.walk={x0:R.mon.x,t0:now(),t1:R.close};
+  R.walk={x0:R.mon.x,t0:end,t1:R.close};   // it waits (out of sight, or where a brute stands) until the call has finished playing
   arcRender();
   kbMarks={}; if(q.gen==='degree'){ for(const m in keyEls) if(mod12(+m-q.keyPc)===0) kbMarks[m]='k-root'; } paintKeys();   // the key's home notes, to find your way
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
-    R.mon.x=Math.max(0,W.x0*(W.t1-t)/(W.t1-W.t0)); arcMonPos();
+    if(t>=W.t0){ R.mon.x=Math.max(0,W.x0*(W.t1-t)/(W.t1-W.t0)); const el=$('arcMon'); if(el) el.classList.remove('wait'); } arcMonPos();
     const ph=$('arcPhase'); if(ph) ph.textContent=t<R.open?'Listen…':'Your turn';
     if(t>R.close&&!R.done) arcMiss(null); },60);
 }
@@ -73,7 +73,7 @@ function arcRender(){
   $('arcBody').innerHTML=`<div class="etop"><span class="etitle">${WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="arcladder">${rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join('')}<span>${gigAccHTML(lv.name)}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${root?`<em>Root ${gigAccHTML(root)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
-    <div class="arclane"><span class="arcwall${R.lives<ARC_LIVES?' hurt':''}">🏰</span><span class="arcmon${R.mon.brute?' brute':''}" id="arcMon"><b>${R.mon.face}</b>${R.mon.max>1?`<i>${'◆'.repeat(R.mon.hp)}${'◇'.repeat(R.mon.max-R.mon.hp)}</i>`:''}</span></div>
+    <div class="arclane"><span class="arcwall${R.lives<ARC_LIVES?' hurt':''}">🏰</span><span class="arcmon${R.mon.brute?' brute':''}${R.mon.x>=1?' wait':''}" id="arcMon"><b>${R.mon.face}</b>${R.mon.max>1?`<i>${'◆'.repeat(R.mon.hp)}${'◇'.repeat(R.mon.max-R.mon.hp)}</i>`:''}</span></div>
     <div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
     <div class="arcprog" id="arcProg">${q.gen==='prog'?q.roots.map(()=>'<i></i>').join(''):''}</div>
     <div class="lmsg" id="arcMsg"></div>
@@ -132,7 +132,8 @@ function arcHit(){
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
   R.lives--; R.combo=0; R.spell=0; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
-  if(R.mon){ R.mon.x=0; arcMonPos(); } R.mon=null; const wall=document.querySelector('.arcwall'); if(wall) wall.classList.add('hit');   // it reaches the wall
+  const me=$('arcMon'); if(R.mon&&me){ me.classList.remove('wait'); me.classList.add('charge'); R.mon.x=0; arcMonPos(); }   // it charges the wall
+  R.mon=null; setTimeout(()=>{ const wall=document.querySelector('.arcwall'); if(wall) wall.classList.add('hit'); if(me) me.classList.add('splat'); },320);
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
   R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(Math.random()*3)});
   killBus(R.bus); const bus=R.bus=newBus();

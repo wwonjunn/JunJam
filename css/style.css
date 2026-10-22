@@ -666,3 +666,5 @@ body.gigmode header .modetag{display:none}
 .arcspell{display:flex;align-items:center;gap:4px;margin:0 0 8px;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted)}
 .arcspell span{margin-right:6px} .arcspell i{width:16px;height:8px;border-radius:4px;background:var(--line);display:block} .arcspell i.on{background:var(--brass)}
 .arcspell.ready{color:var(--wrong)} .arcspell.ready i{background:var(--wrong)}
+.arcmon.wait{opacity:0;transform:scale(.4)} .arcmon{transition:left .07s linear,opacity .25s,transform .25s}
+.arcmon.charge{transition:left .32s cubic-bezier(.5,0,1,.6)} .arcmon.splat b{animation:arcboom .4s forwards}
