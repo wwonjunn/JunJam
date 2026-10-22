@@ -70,7 +70,7 @@ function goHome(){
   clearDraft();
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
-  if(ARC.active){ arcStop(); ARC.active=false; } if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(VC.active){ vcStop(); VC.active=false; } if(GIG.active) gigClose();
+  if(ARC.active){ arcStop(); arcFxStop(); ARC.active=false; } if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(VC.active){ vcStop(); VC.active=false; } if(GIG.active) gigClose();
   hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode','vcmode'); ['earsStage','arcStage','linesStage','reharmStage','voiceStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
   side='home'; LINES.rec=null; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); $('startOv').scrollTop=0; return true;
 }

@@ -36,7 +36,9 @@ A jazz piano trainer with two sides:
   root shown, the bass note, or a progression's bass line). No buttons. Right answers speed the tempo up and every six bring
   in the next level of the world's ladder; a wrong or late one plays what it was and costs one of three lives, and it comes
   back a few calls later. Right answers charge a spell (a fireball: triple points, a life back); from the third level,
-  armoured brutes need two answers in a row. Keys count from the moment the question sounds (no feeling around for it).
+  armoured brutes need two answers in a row. The monster steps out of a portal the moment the call's last sound starts,
+  and that's when your keys start to count. Drawn on a canvas (js/ears/arcfx.js): scenery that changes as you climb, a bolt
+  from the key you played, freeze-frame hits, sparks and score pops, a fireball arc, and on a miss a charge that cracks the castle.
   Daily wave: one fixed wave of 20 a day across every world at the levels you've reached plus one stretch level; your
   first try earns a medal and keeps a day streak (14-day calendar). Weekly boss: 12 armoured brutes, the same all week.
   Play any chord to go again.
@@ -96,6 +98,7 @@ js/ears/questions.js  ear-training question generators
 js/ears/levels.js     worlds and levels as data (edit here to add levels)
 js/ears/session.js    Ears game loop, stars, drill, Ears menu
 js/ears/arcade.js     Call & Response, the Ears game (Classic levels live in session.js)
+js/ears/arcfx.js      the Ears game's lane: scenery, monsters, bolts, particles (drawing only)
 js/lines/licks.js     the lick library as data (edit here to add licks), with sources
 js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Database (ODbL)
 js/lines/players.js   licks transcribed from players' own videos (A.N.M-PIANO), credited, filed with the solo licks

@@ -68,10 +68,14 @@ function arcStart(world){
     ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
   $('modetag').textContent=kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
+  $('arcBody').innerHTML='<div id="arcHead"></div><canvas class="arccv" id="arcCv"></canvas><div id="arcInfo"></div>';
+  arcFxStart($('arcCv')); arcFxTheme(0);
   $('staff').innerHTML=staffSVG([],[]); $('verdict').className='verdict'; $('verdict').textContent='Listen, then play it back.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
   ARC.timer=setTimeout(arcCall,600);
 }
 function arcStop(){ killBus(ARC.bus); ARC.bus=null; clearTimeout(ARC.timer); clearInterval(ARC.tick); }
+// The moment the last sound of each call starts (seconds before the call's end): the note, the second note, the chord, the last chord
+const arcTail=q=>q.gen==='degree'?1.1:q.gen==='interval'?(q.prompt.includes('together')?1.4:1.0):q.gen==='chord'?1.8:q.gen==='inversion'?1.6:1.35;
 // The note you measure from, so nothing needs perfect pitch: the key's home note, the chord's root, or an interval's first note
 function arcRef(q){
   if(q.gen==='interval'){ const n=q.reveal.notes, first=q.prompt.includes('going down')?Math.max(...n):Math.min(...n);   // played together: the lower one
@@ -97,20 +101,19 @@ function arcCall(){
   const bus=R.bus=newBus(); if(!bus) return;
   const t0=now()+0.1, end=arcSeeded(()=>q.play(bus,t0)), spb=60/R.bpm;
   const beats=q.gen==='prog'?Math.max(6,(q.roots||[]).length+3):q.gen==='chord'?6:4;
-  // The monster steps out as the last sound starts to fade (not once it's silent), and walks a fifth slower than the old bar.
-  // Your answer counts from the moment the question sounds: wrong keys while listening are wrong answers, so you can't
-  // feel around for it. Only the key-setting cadence before a scale degree is safe to play over (the note hasn't come yet).
-  const spawn=Math.max(t0+0.3,end-0.8);
-  R.open=q.gen==='degree'?end-1.1:t0; R.callEnd=spawn; R.close=spawn+beats*spb*ARC_SLOW; R.beats=beats; R.spb=spb;
+  // The monster steps out the moment the call's last sound starts (the note, the second note, the chord, the last chord
+  // of a progression), and that's when your answer starts to count: nothing before it, and no gap after it.
+  const spawn=Math.max(t0,end-arcTail(q));
+  R.open=spawn; R.callEnd=spawn; R.close=spawn+beats*spb*ARC_SLOW; R.beats=beats; R.spb=spb;
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   if(!R.mon){ const brute=arcSeeded(()=>R.kind==='weekly'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25), face=arcSeeded(()=>ARC_MONS[Math.floor(Math.random()*ARC_MONS.length)]);
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:brute?'👹':face,x:1}; }
   R.walk={x0:R.mon.x,t0:spawn,t1:R.close};   // it waits (out of sight, or where a brute stands) until then
-  arcRender();
+  arcRender(); if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
   kbMarks={}; const ref=arcRef(q), refPc=ref?ref.pc:q.keyPc;   // light the note you measure from, in every octave
   if(refPc!=null) for(const m in keyEls) if(mod12(+m-refPc)===0) kbMarks[m]='k-root'; if(ref&&ref.midi) kbMarks[ref.midi]='k-chord'; paintKeys();
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
-    if(t>=W.t0){ R.mon.x=Math.max(0,W.x0*(W.t1-t)/(W.t1-W.t0)); const el=$('arcMon'); if(el) el.classList.remove('wait'); } arcMonPos();
+    if(t>=W.t0) R.mon.x=Math.max(0,W.x0*(W.t1-t)/(W.t1-W.t0));
     const ph=$('arcPhase'); if(ph) ph.textContent=t<R.open?'Listen…':'Your turn';
     if(t>R.close&&!R.done) arcMiss(null); },60);
 }
@@ -118,17 +121,16 @@ function arcRender(){
   const R=ARC, q=R.q, lv=q.lv, rungs=R.kind==='world'?arcRungs(R.world):[];
   const key=q.gen==='degree'?q.sub.match(/Key of ([^.]+)/)?.[1]:q.gen==='prog'?q.reveal.text.match(/ in ([A-G][♭♯]? (?:major|minor))/)?.[1]:null;
   const ref=arcRef(q);
-  $('arcBody').innerHTML=`<div class="etop"><span class="etitle">${R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+  const head=$('arcHead'), info=$('arcInfo'); if(!head) return;
+  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${ref?`<em>${gigAccHTML(ref.label)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
-    <div class="arclane"><span class="arcwall${R.lives<ARC_LIVES?' hurt':''}">🏰</span><span class="arcmon${R.mon.brute?' brute':''}${R.mon.x>=1?' wait':''}" id="arcMon"><b>${R.mon.face}</b>${R.mon.max>1?`<i>${'◆'.repeat(R.mon.hp)}${'◇'.repeat(R.mon.max-R.mon.hp)}</i>`:''}</span></div>
-    <div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
+`;
+  info.innerHTML=`<div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
     <div class="arcprog" id="arcProg">${q.gen==='prog'?q.roots.map(()=>'<i></i>').join(''):''}</div>
     <div class="lmsg" id="arcMsg"></div>
     <p class="fine">Esc ends the run.</p>`;
 }
-function arcMonPos(){ const el=$('arcMon'); if(el&&ARC.mon) el.style.left=`calc(${(8+ARC.mon.x*84).toFixed(2)}% - 20px)`; }
-function arcBoom(face){ const el=$('arcMon'); if(el){ el.classList.remove('wait'); el.classList.add('boom'); el.querySelector('b').textContent=face; } }
 // Read your answer for this call. Returns the option id you played, or null while a bass line is still coming in.
 function arcRead(q,notes){
   const lo=Math.min(...notes);
@@ -154,12 +156,12 @@ function arcNotes(notes){
     const i=R.got.length, want=q.roots[i];
     if(mod12(Math.min(...notes))!==want) return arcMiss('x');
     R.got.push(want); const dots=$('arcProg'); if(dots) dots.children[i].className='ok';
-    if(R.got.length===q.roots.length) arcHit(); return;
+    if(R.got.length===q.roots.length) arcHit(notes); return;
   }
   const pick=arcRead(q,notes); if(pick===undefined) return;
-  if(pick===q.answer) arcHit(); else arcMiss(pick);
+  if(pick===q.answer) arcHit(notes); else arcMiss(pick);
 }
-function arcHit(){
+function arcHit(notes){
   const R=ARC; R.done=true; clearInterval(R.tick);
   const left=Math.min(1,Math.max(0,(R.close-now())/(R.close-R.callEnd))), mult=1+Math.min(2,R.combo*0.1), fire=R.spell>=ARC_SPELL;
   const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1));
@@ -167,12 +169,13 @@ function arcHit(){
   let kill;
   if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC_LIVES,R.lives+1); kill='🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
-  if(kill){ arcBoom(kill); R.mon=null; R.kills++; } else { R.mon.x=Math.min(1,R.mon.x+0.3); arcMonPos(); }   // a brute only staggers back
+  arcFxHit({notes,kill:!!kill,fire,brute:R.mon.brute,pts,quick:left>0.6,combo:R.combo});
+  if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+0.3);   // a brute only staggers back
   R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
   earRecord(R.q.item,true,null); if(R.q.keyPc!=null) keyRecord(R.q.keyPc,true,null);
   let up='';
   if(R.kind==='world'&&R.rungOk>=ARC_STEP){ R.rungOk=0;
-    if(R.rung<arcRungs(R.world).length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; R.bpm=Math.max(72,R.bpm-8); }   // a breath when new answers join
+    if(R.rung<arcRungs(R.world).length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; setTimeout(()=>arcFxBanner(`Level up: ${arcLevel().name}`),350); R.bpm=Math.max(72,R.bpm-8); }   // a breath when new answers join
     else R.top++; }
   $('arcMsg').textContent=`${fire?'Fireball! ':!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${up}`; $('arcMsg').className='lmsg ok';
   $('verdict').className='verdict ok'; $('verdict').textContent=R.q.reveal.text;
@@ -181,21 +184,20 @@ function arcHit(){
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
   R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1; if(R.mon) R.kills++;   // it got through: one fewer in the wave
-  const me=$('arcMon'); if(R.mon&&me){ me.classList.remove('wait'); me.classList.add('charge'); R.mon.x=0; arcMonPos(); }   // it charges the wall
-  R.mon=null; setTimeout(()=>{ const wall=document.querySelector('.arcwall'); if(wall) wall.classList.add('hit'); if(me) me.classList.add('splat'); },320);
+  arcFxMiss(); R.mon=null;   // it winds up and charges the wall
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
   R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(arcSeeded(Math.random)*3)});
   killBus(R.bus); const bus=R.bus=newBus();
   const known=pick!=null&&pick!=='x'&&q.options.some(o=>o.id===pick);
   const end=bus?q.compare(known?pick:null,bus,now()+0.15):now()+1.5;
   const lab=id=>(q.options.find(o=>o.id===id)||{}).label;
-  $('arcMsg').textContent=pick!=null&&now()<R.callEnd?`Wrong note: keys count from the moment the question sounds. It was ${lab(q.answer)}.`:pick==null?`Too late. It was ${lab(q.answer)}.`:known?`You played ${lab(pick)}; it was ${lab(q.answer)}. Hear both.`:`It was ${lab(q.answer)}.`; $('arcMsg').className='lmsg no';
+  $('arcMsg').textContent=pick==null?`Too late. It was ${lab(q.answer)}.`:known?`You played ${lab(pick)}; it was ${lab(q.answer)}. Hear both.`:`It was ${lab(q.answer)}.`; $('arcMsg').className='lmsg no';
   $('verdict').className='verdict no'; $('verdict').textContent=q.reveal.text;
   if(q.reveal.notes){ kbMarks={}; q.reveal.notes.forEach(m=>kbMarks[m]='k-hint'); paintKeys(); }
   R.timer=setTimeout(arcCall,Math.max(1200,(end-now())*1000+500));
 }
 function arcOver(quit){
-  const R=ARC; arcStop(); clearDraft(); R.mode='over';
+  const R=ARC; arcStop(); arcFxStop(); clearDraft(); R.mode='over';
   if(R.kind!=='world') return arcWaveOver(quit);
   const w=R.world, reach=R.rung+1+(R.top>0?1:0), prevBest=ARCDATA.best[w]||0;
   if(R.score>prevBest) ARCDATA.best[w]=R.score; if(reach>(ARCDATA.reach[w]||0)) ARCDATA.reach[w]=Math.min(reach,arcRungs(w).length+1);
@@ -229,7 +231,7 @@ function arcWaveOver(quit){
   $('arcAgain').onclick=()=>arcStart(R.kind); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
 }
-function arcToMenu(){ arcStop(); ARC.active=false; clearDraft(); $('arcStage').hidden=true; document.body.classList.remove('earsmode');
+function arcToMenu(){ arcStop(); arcFxStop(); ARC.active=false; clearDraft(); $('arcStage').hidden=true; document.body.classList.remove('earsmode');
   side='ears'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu(); }
 function arcKey(e){
   if(!ARC.active) return false;
