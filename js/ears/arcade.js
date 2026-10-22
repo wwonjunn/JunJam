@@ -1,16 +1,19 @@
 /* Ears: Call & Response. The game version of Ears; the level-by-level quiz is still there as Classic.
-   The app plays a call (a note against its key, an interval, a chord, a progression), then a bar of hi-hat counts you
-   in, and you answer on the keyboard inside that bar: play the scale degree, the second note, the chord itself on
+   Rune Defender: every call is a monster walking at your wall. The app plays the call (a note against its key, an
+   interval, a chord, a progression) and you answer on the keyboard before the monster arrives: play the scale degree, the second note, the chord itself on
    the root shown, the note in the bass, or the progression's bass line. No buttons: a right answer rolls straight
    into the next call, a wrong or late one plays you what it was and costs one of three lives, and the run goes on.
    Every right answer nudges the tempo up (less time to answer); every six, the next level of that world's ladder
    joins in (Add 2, Add 4…), so one run climbs the whole world. Missed answers come back a few calls later.
+   Right answers charge a spell; once it's full, the next right answer is a fireball: triple points and a life back.
+   From the third level on, armoured brutes turn up that take two answers in a row, and each hit only knocks them back.
    After a run, play any chord to go again. */
 let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}});
 const saveArc=()=>store.set('earsArcade',ARCDATA);
 const ARC={active:false};
 const ARC_WORLDS=['degrees','intervals','chords','progs'];   // the worlds you answer by playing (Pitch is Classic only)
-const ARC_LIVES=3, ARC_STEP=6;
+const ARC_LIVES=3, ARC_STEP=6, ARC_SPELL=5;
+const ARC_MONS=['👾','👻','🦇','🐍','🕷️'];
 const arcRungs=w=>WORLDS.find(x=>x.id===w).levels;
 // What you play to answer, per generator
 const ARC_ASK={degree:'Play the note you hear',interval:'Play the second note',chord:'Play the chord you hear, on this root',inversion:'Play the note in the bass',prog:'Play the bass line, one root at a time'};
@@ -18,7 +21,7 @@ const ARC_ASK={degree:'Play the note you hear',interval:'Play the second note',c
 /* ---------------- menu: one card per world, above the Classic levels ---------------- */
 function arcStars(w){ const n=arcRungs(w).length, r=ARCDATA.reach[w]||0; return r>n?3:r>=n?2:r>=2?1:0; }   // reach: ladder levels reached, one more once the last is cleared
 function arcPaneHTML(){
-  return `<div class="arcwrap"><div class="sec">Call &amp; Response <span class="fine">the game: hear it, play it back before the bar ends, three lives</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
+  return `<div class="arcwrap"><div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
     const w=WORLDS.find(x=>x.id===id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
     return `<button class="arcw" data-arc="${id}"><span class="lt">${w.name}</span><span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
@@ -27,8 +30,8 @@ function arcPaneHTML(){
 
 /* ---------------- the run ---------------- */
 function arcStart(world){
-  arcStop(); synth.init(); drumsInit();
-  Object.assign(ARC,{active:true,mode:'run',world,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,bpm:72,ctx:{},again:[],missed:{},xp:0,top:0});
+  arcStop(); synth.init();
+  Object.assign(ARC,{active:true,mode:'run',world,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,bpm:72,ctx:{},again:[],missed:{},xp:0,top:0});
   $('modetag').textContent='Ears: Call & Response';
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('staff').innerHTML=staffSVG([],[]); $('verdict').className='verdict'; $('verdict').textContent='Listen, then play it back.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
@@ -53,11 +56,13 @@ function arcCall(){
   const t0=now()+0.1, end=q.play(bus,t0), spb=60/R.bpm;
   const beats=q.gen==='prog'?Math.max(6,(q.roots||[]).length+3):q.gen==='chord'?6:4;
   R.open=end-0.15; R.close=end+beats*spb; R.beats=beats; R.spb=spb; R.callEnd=end;
-  for(let k=0;k<beats;k++) drumHit('hat',end+k*spb,k===0?1:0.7,bus);   // the count-in you answer over
+  // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
+  if(!R.mon){ const brute=R.rung>=2&&Math.random()<0.25; R.mon={hp:brute?2:1,max:brute?2:1,brute,face:brute?'👹':ARC_MONS[Math.floor(Math.random()*ARC_MONS.length)],x:1}; }
+  R.walk={x0:R.mon.x,t0:now(),t1:R.close};
   arcRender();
   kbMarks={}; if(q.gen==='degree'){ for(const m in keyEls) if(mod12(+m-q.keyPc)===0) kbMarks[m]='k-root'; } paintKeys();   // the key's home notes, to find your way
-  R.tick=setInterval(()=>{ const t=now(), bar=$('arcBar');
-    if(bar) bar.style.width=t<R.callEnd?'100%':Math.max(0,100*(R.close-t)/(R.close-R.callEnd))+'%';
+  R.tick=setInterval(()=>{ const t=now(), W=R.walk;
+    R.mon.x=Math.max(0,W.x0*(W.t1-t)/(W.t1-W.t0)); arcMonPos();
     const ph=$('arcPhase'); if(ph) ph.textContent=t<R.open?'Listen…':'Your turn';
     if(t>R.close&&!R.done) arcMiss(null); },60);
 }
@@ -68,11 +73,14 @@ function arcRender(){
   $('arcBody').innerHTML=`<div class="etop"><span class="etitle">${WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="arcladder">${rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join('')}<span>${gigAccHTML(lv.name)}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${root?`<em>Root ${gigAccHTML(root)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:''}</div>
-    <div class="ebar arcbar"><i id="arcBar" style="width:100%"></i></div>
+    <div class="arclane"><span class="arcwall${R.lives<ARC_LIVES?' hurt':''}">🏰</span><span class="arcmon${R.mon.brute?' brute':''}" id="arcMon"><b>${R.mon.face}</b>${R.mon.max>1?`<i>${'◆'.repeat(R.mon.hp)}${'◇'.repeat(R.mon.max-R.mon.hp)}</i>`:''}</span></div>
+    <div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
     <div class="arcprog" id="arcProg">${q.gen==='prog'?q.roots.map(()=>'<i></i>').join(''):''}</div>
     <div class="lmsg" id="arcMsg"></div>
     <p class="fine">Esc ends the run.</p>`;
 }
+function arcMonPos(){ const el=$('arcMon'); if(el&&ARC.mon) el.style.left=`calc(${(8+ARC.mon.x*84).toFixed(2)}% - 20px)`; }
+function arcBoom(face){ const el=$('arcMon'); if(el){ el.classList.add('boom'); el.querySelector('b').textContent=face; } }
 // Read your answer for this call. Returns the option id you played, or null while a bass line is still coming in.
 function arcRead(q,notes){
   const lo=Math.min(...notes);
@@ -99,20 +107,26 @@ function arcNotes(notes){
 }
 function arcHit(){
   const R=ARC; R.done=true; clearInterval(R.tick);
-  const left=Math.max(0,(R.close-now())/(R.close-R.callEnd)), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+100*left)*mult);
-  R.score+=pts; R.combo++; R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
+  const left=Math.max(0,(R.close-now())/(R.close-R.callEnd)), mult=1+Math.min(2,R.combo*0.1), fire=R.spell>=ARC_SPELL;
+  const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1));
+  R.score+=pts; R.combo++;
+  let kill;
+  if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC_LIVES,R.lives+1); kill='🔥'; }
+  else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
+  if(kill){ arcBoom(kill); R.mon=null; } else { R.mon.x=Math.min(1,R.mon.x+0.3); arcMonPos(); }   // a brute only staggers back R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
   earRecord(R.q.item,true,null); if(R.q.keyPc!=null) keyRecord(R.q.keyPc,true,null);
   let up='';
   if(R.rungOk>=ARC_STEP){ R.rungOk=0;
     if(R.rung<arcRungs(R.world).length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; R.bpm=Math.max(72,R.bpm-8); }   // a breath when new answers join
     else R.top++; }
-  $('arcMsg').textContent=`+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${up}`; $('arcMsg').className='lmsg ok';
+  $('arcMsg').textContent=`${fire?'Fireball! ':!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${up}`; $('arcMsg').className='lmsg ok';
   $('verdict').className='verdict ok'; $('verdict').textContent=R.q.reveal.text;
-  R.timer=setTimeout(arcCall,up?1300:500);
+  R.timer=setTimeout(arcCall,up?1300:kill?550:250);
 }
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
-  R.lives--; R.combo=0; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  R.lives--; R.combo=0; R.spell=0; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  if(R.mon){ R.mon.x=0; arcMonPos(); } R.mon=null; const wall=document.querySelector('.arcwall'); if(wall) wall.classList.add('hit');   // it reaches the wall
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
   R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(Math.random()*3)});
   killBus(R.bus); const bus=R.bus=newBus();

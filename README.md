@@ -31,11 +31,12 @@ A jazz piano trainer with two sides:
   left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
-- **Ears: Call & Response** (the game; the level-by-level quiz is still there as Classic): the app plays a call and a bar of
-  hi-hat counts you in, and you answer on the keyboard inside that bar (the scale degree, the second note, the chord on the
+- **Ears: Call & Response** (the game; the level-by-level quiz is still there as Classic): the app plays a call while a
+  monster walks at your wall, and you answer on the keyboard before it gets there (the scale degree, the second note, the chord on the
   root shown, the bass note, or a progression's bass line). No buttons. Right answers speed the tempo up and every six bring
   in the next level of the world's ladder; a wrong or late one plays what it was and costs one of three lives, and it comes
-  back a few calls later. Play any chord to go again.
+  back a few calls later. Right answers charge a spell (a fireball: triple points, a life back); from the third level,
+  armoured brutes need two answers in a row. Play any chord to go again.
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
   learn in one key and then play in five more without looking. Import your own over MIDI.
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,

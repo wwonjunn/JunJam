@@ -653,3 +653,16 @@ body.gigmode header .modetag{display:none}
 .arcbar{height:10px} .arcbar i{transition:width .06s linear}
 .arcprog{display:flex;gap:6px;min-height:14px;margin:-8px 0 10px} .arcprog i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong);display:block} .arcprog i.ok{background:var(--chord);box-shadow:none}
 .arcagain{font-family:var(--cond);font-size:22px;color:var(--brass)}
+.arclane{position:relative;height:84px;margin:10px 0 6px;border-radius:8px;background:linear-gradient(180deg,transparent 62%,color-mix(in srgb, var(--chord) 14%, transparent) 62%);border-bottom:2px solid var(--line-strong);overflow:hidden}
+.arcwall{position:absolute;left:4px;bottom:2px;font-size:44px;line-height:1;transition:transform .15s}
+.arcwall.hurt{filter:saturate(.6)} .arcwall.hit{animation:arcshake .45s}
+@keyframes arcshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px) rotate(-4deg)}50%{transform:translateX(5px) rotate(3deg)}80%{transform:translateX(-3px)}}
+.arcmon{position:absolute;bottom:4px;width:40px;text-align:center;transition:left .07s linear}
+.arcmon b{display:block;font-size:36px;line-height:1;animation:arcbob .5s ease-in-out infinite alternate} .arcmon.brute b{font-size:46px}
+.arcmon i{display:block;font-style:normal;font-size:11px;color:var(--wrong);letter-spacing:1px}
+@keyframes arcbob{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+.arcmon.boom b{animation:arcboom .5s forwards}
+@keyframes arcboom{0%{transform:scale(1)}40%{transform:scale(1.8)}100%{transform:scale(2.2);opacity:0}}
+.arcspell{display:flex;align-items:center;gap:4px;margin:0 0 8px;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted)}
+.arcspell span{margin-right:6px} .arcspell i{width:16px;height:8px;border-radius:4px;background:var(--line);display:block} .arcspell i.on{background:var(--brass)}
+.arcspell.ready{color:var(--wrong)} .arcspell.ready i{background:var(--wrong)}
