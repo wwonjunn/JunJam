@@ -23,7 +23,7 @@ function renderVoicingsPane(){
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
     return `<div class="vctype"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
-      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; }).join('');
+      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; }).join('');
   const best=VCDATA.best[VCDATA.pool];
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>

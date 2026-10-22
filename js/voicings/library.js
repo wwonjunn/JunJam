@@ -129,6 +129,7 @@ function vcIn(v,pc){
   const lh=v.lh.map(m=>m+sh), rh=v.rh.map(m=>m+sh), root=defaultRoot(pc,q.minor);
   return {v,q,root,lh,rh,notes:[...lh,...rh].sort((a,b)=>a-b),pc};
 }
+const vcWide=v=>Math.max(...v.lh,...v.rh)-Math.min(...v.lh,...v.rh)>=24;   // fills the keyboard: two octaves or more, low to high
 const vcSym=t=>symText({root:t.root,q:t.q});
 const vcLab=(t,m)=>{ const iv=mod12(m-t.root.pc); return iv===0?'1':t.q.lab[iv]||BASE_LABEL[iv]; };
 const vcSpell=(t,m)=>spellNote(m,t.root,t.q);

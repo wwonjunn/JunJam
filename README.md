@@ -33,7 +33,7 @@ A jazz piano trainer with two sides:
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Voicings: Comp Hero** (the game; the cards, drill and Rush stay as Classic): you're the keys player. A real chart from
   Gig plays with bass and drums, and its chords scroll toward a hit line as cards; land a two-hand voicing on each as it
-  arrives. Cards ask for a kind of voicing (rootless, a 9/11/13, 5+ notes, spread wide, not your last shape, a named one),
+  arrives. Cards ask for a kind of voicing (rootless, a 9/11/13, 5+ notes, over two octaves (cards marked 2 oct+), not your last shape, a named one),
   and when you play one from the library it names it. Perfect, good or late; smooth voice leading scores a bonus; misses
   drain the band meter and at zero the band walks off. Easy, Normal and Hard (tempo and the asks). Play any chord to go again.
 - **Ears: Call & Response** (the game; the level-by-level quiz is still there as Classic): the app plays a call while a

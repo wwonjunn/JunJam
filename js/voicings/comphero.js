@@ -1,6 +1,6 @@
 /* Voicings: Comp Hero. You're the keys player in the band. A real chart from Gig plays (bass and drums), its chords
    scroll toward the hit line as cards, and you land a two-hand voicing on each one as it arrives. Each card asks for a
-   kind of voicing (rootless, five notes, spread wide, a different one from your last, one of the named ones),
+   kind of voicing (rootless, five notes, over two octaves, a different one from your last, one of the named ones),
    never a name you have to remember; when what you play is in the library the game tells you its name, so the names
    come to you. Timing: perfect, good or late; miss the chord altogether and the band loses heart. Smooth voice
    leading (moving your hands as little as possible) scores a bonus. The band meter empties on misses: at zero the
@@ -10,7 +10,7 @@ const saveCh=()=>store.set('comphero',CHDATA);
 const CH={active:false};
 const CH_DIFF={easy:{name:'Easy',tempo:0.6,max:96,tags:{any:7,wide:3}},normal:{name:'Normal',tempo:0.8,max:132,tags:{any:3,tension:2,rootless:2,five:2,wide:2}},
   hard:{name:'Hard',tempo:1,max:200,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}}};
-const CH_TAG={any:'any voicing',tension:'with a 9, 11 or 13',rootless:'rootless',five:'5 notes or more',wide:'spread wide',diff:'not your last shape',named:'a named one'};
+const CH_TAG={any:'any voicing',tension:'with a 9, 11 or 13',rootless:'rootless',five:'5 notes or more',wide:'over two octaves',diff:'not your last shape',named:'a named one'};
 const CH_SETTLE=SETTLE/1000;   // a chord is read once your hands settle; its time is when they landed
 const chSongs=()=>GIG_BUILTIN.filter(s=>gigTimeline(s).some(b=>b.chords.some(c=>c.c)));
 
@@ -87,7 +87,7 @@ function chTagMet(tag,k,notes,named){
   if(tag==='any') return true;
   if(tag==='rootless') return !ivs.includes(0);
   if(tag==='five') return s.length>=5;
-  if(tag==='wide') return s[s.length-1]-s[0]>=19;
+  if(tag==='wide') return s[s.length-1]-s[0]>=24;   // lowest to highest note, two octaves or more (the cards marked 2 oct+)
   if(tag==='tension') return ivs.some(iv=>!k.q.ct.includes(iv)&&iv!==0);
   if(tag==='diff') return chShape(s)!==CH.prevShape;
   if(tag==='named') return !!named;
