@@ -4983,8 +4983,9 @@ const chSongs=()=>GIG_BUILTIN.filter(s=>gigTimeline(s).some(b=>b.chords.some(c=>
 function chPaneHTML(){
   const songs=chSongs(), cur=CHDATA.song, b=CHDATA.best[cur+':'+CHDATA.diff];
   const groups=GIG_GENRES.filter(g=>g[0]!=='all').map(([g,n])=>{ const ss=songs.filter(s=>s.genre===g); return ss.length?`<optgroup label="${n}">${ss.map(s=>`<option value="${s.id}"${s.id===cur?' selected':''}>${trEsc(s.title)}${CHDATA.stars[s.id]?' '+'★'.repeat(CHDATA.stars[s.id]):''}</option>`).join('')}</optgroup>`:''; }).join('');
+  const rnd=`<option value="random"${cur==='random'?' selected':''}>🎲 Random chart</option>`;
   return `<div class="vcrush chcard"><div><b>Comp Hero</b><span>You're the keys player. A real chart plays with bass and drums; land a two-hand voicing on every chord as it reaches the line. Each card asks for a kind of voicing, and when you play a named one, it tells you which. Miss chords and the band walks off.</span></div>
-    <div class="vcrushgo"><select id="chSong">${groups}</select><div class="seg" role="group">${Object.entries(CH_DIFF).map(([k,d])=>`<button data-chd="${k}" aria-pressed="${CHDATA.diff===k}">${d.name}</button>`).join('')}</div>
+    <div class="vcrushgo"><select id="chSong">${rnd}${groups}</select><div class="seg" role="group">${Object.entries(CH_DIFF).map(([k,d])=>`<button data-chd="${k}" aria-pressed="${CHDATA.diff===k}">${d.name}</button>`).join('')}</div>
     <button class="go" id="chGo">Play</button>${b?`<span class="fine">Best ${b.toLocaleString()}</span>`:''}</div></div>`;
 }
 function chBindPane(P){
@@ -4996,6 +4997,7 @@ function chBindPane(P){
 /* ---------------- the run ---------------- */
 function chStart(id){
   chStop(); synth.init(); drumsInit();
+  if(id==='random'){ const all=chSongs().filter(s=>!CH.song||s.id!==CH.song.id); id=all[Math.floor(Math.random()*all.length)].id; CH.random=true; } else CH.random=false;
   const song=gigById(id)||chSongs()[0], D=CH_DIFF[CHDATA.diff], bpm=Math.round(Math.min(D.max,song.tempo*D.tempo)), spb=60/bpm;
   const cards=[]; gigTimeline(song).forEach((bar,bi)=>bar.chords.forEach(ch=>{ if(!ch.c) return; const q=Q[ch.c.qid]; if(!q) return;
     cards.push({bi,beat:ch.at,dur:ch.dur,c:ch.c,q,sym:rootName(ch.c.root)+ch.c.suf+(ch.c.bass?'/'+rootName(ch.c.bass):''),state:'up'}); }));
@@ -5060,7 +5062,7 @@ function chTagMet(tag,k,notes,named){
 function chMove(prev,notes){ if(!prev) return null; return notes.reduce((a,m)=>a+Math.min(...prev.map(p=>Math.abs(p-m))),0)/notes.length; }
 function chNotes(notes){
   const R=CH; if(!R.active) return;
-  if(R.mode==='over'){ if(notes.length>=3) chStart(R.song.id); return; }   // any chord: play it again
+  if(R.mode==='over'){ if(notes.length>=3) chStart(R.random?'random':R.song.id); return; }   // any chord: play it again (a new random chart, if it was random)
   if(R.mode!=='run') return;
   const at=now()-CH_SETTLE, beat=R.spb;
   // the card you're aiming at: the first one not yet played whose window (half a beat early to its end) holds this moment
@@ -5138,9 +5140,9 @@ function chOver(finished,quit){
     ${finished?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,CHDATA.stars[R.song.id]||0))}</span></div>`:''}
     ${names.length?`<p>Named voicings you played: ${names.join(', ')}.</p>`:'<p>None of your voicings were ones from the library this time. Open a card in Voicings to pick up a named one.</p>'}
     <p class="fine">★ finish the song. ★★ land 85% of the chords. ★★★ 95%, and meet the ask on most of them. Best on ${CH_DIFF[CHDATA.diff].name}: ${Math.max(prev,R.score).toLocaleString()}.</p>
-    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <p class="arcagain"><b>Play any chord to go again${R.random?' (another random chart)':''}.</b></p>
     <div class="erow"><button class="go" id="chAgain">Again</button><button class="ghost" id="chMenu">Back to Voicings</button></div>`;
-  $('chAgain').onclick=()=>chStart(R.song.id); $('chMenu').onclick=chToMenu;
+  $('chAgain').onclick=()=>chStart(R.random?'random':R.song.id); $('chMenu').onclick=chToMenu;
   kbMarks={}; paintKeys();
 }
 function chToMenu(){ chStop(); CH.active=false; clearDraft(); $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
