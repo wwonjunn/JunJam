@@ -31,6 +31,11 @@ A jazz piano trainer with two sides:
   left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
+- **Voicings: Comp Hero** (the game; the cards, drill and Rush stay as Classic): you're the keys player. A real chart from
+  Gig plays with bass and drums, and its chords scroll toward a hit line as cards; land a two-hand voicing on each as it
+  arrives. Cards ask for a kind of voicing (rootless, a 9/11/13, 5+ notes, spread wide, not your last shape, a named one),
+  and when you play one from the library it names it. Perfect, good or late; smooth voice leading scores a bonus; misses
+  drain the band meter and at zero the band walks off. Easy, Normal and Hard (tempo and the asks). Play any chord to go again.
 - **Ears: Call & Response** (the game; the level-by-level quiz is still there as Classic): the app plays a call while a
   monster walks at your wall, and you answer on the keyboard before it gets there (the scale degree, the second note, the chord on the
   root shown, the bass note, or a progression's bass line). No buttons. Right answers speed the tempo up and every six bring
@@ -108,6 +113,7 @@ js/reharm/moves.js    reharm moves as data (edit here to add moves), with source
 js/reharm/session.js  Reharm cards, drill and ear quiz
 js/voicings/library.js  the voicing library (both hands, written in C) and the extra chord types it names
 js/voicings/session.js  Voicings cards, the six-key drill and Rush
+js/voicings/comphero.js Comp Hero, the Voicings game: a Gig chart, scrolling chord cards, a band meter
 js/transcribe/analyze.js   helper notes (seconds) to a score: beats, top line, chords, key
 js/transcribe/export.js    spelling, MIDI and MusicXML export (one line, or a two-staff part with chords)
 js/transcribe/notation.js  sheet music for full parts: chords stacked, grand staff for piano

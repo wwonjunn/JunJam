@@ -675,3 +675,8 @@ body.gigmode header .modetag{display:none}
 .arccount{font-family:var(--cond);font-size:15px;color:var(--ink)}
 .arcclassic{margin-top:22px;padding-top:14px;border-top:1.5px solid var(--line-strong)} .arcweek:hover,.arcday:hover{background:color-mix(in srgb, var(--brass) 8%, transparent)}
 .arccv{display:block;width:100%;height:170px;border-radius:10px;margin:10px 0 8px;box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+/* Voicings: Comp Hero */
+.chcard{border-color:var(--chord)} .chcard .seg{margin:0}
+.chcv{display:block;width:100%;height:190px;border-radius:10px;margin:8px 0}
+.chmeter{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted)}
+.chmeter i{display:block;height:8px;border-radius:4px;background:var(--chord);flex:0 0 auto;max-width:60%;min-width:2px;transition:width .3s} .chmeter i.low{background:var(--wrong)} .chmeter i.high{background:var(--brass)}

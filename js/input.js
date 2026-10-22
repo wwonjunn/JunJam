@@ -33,7 +33,7 @@ function toggleDraft(m){
 // keys you clicked but didn't play yet are let go when the question, round or game changes
 function clearDraft(){ if(draft.size){ draft.clear(); paintKeys(); } }
 function submitDraft(){ if(!draft.size) return; const n=[...draft]; draft.clear(); routeNotes(n); }
-function routeNotes(n){ if(typeof ARC!=='undefined'&&ARC.active) arcNotes(n); else if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else if(VC.active) vcNotes(n); else submit(n); }
+function routeNotes(n){ if(typeof ARC!=='undefined'&&ARC.active) arcNotes(n); else if(EARS.active) earsNotes(n); else if(REHARM.active) rhNotes(n); else if(typeof CH!=='undefined'&&CH.active) chNotes(n); else if(VC.active) vcNotes(n); else submit(n); }
 
 async function initMIDI(){
   const el=$('midi');
@@ -69,6 +69,7 @@ document.addEventListener('keydown',e=>{
   if(typeof EARS!=='undefined' && EARS.active && earsKey(e)) return;
   if(typeof LINES!=='undefined' && LINES.active && linesKey(e)) return;
   if(typeof REHARM!=='undefined' && REHARM.active && rhKey(e)) return;
+  if(typeof CH!=='undefined' && CH.active && chKey(e)) return;
   if(typeof VC!=='undefined' && VC.active && vcKey(e)) return;
   if((e.key==='r'||e.key==='R') && G && G.running && G.enemies.length && G.enemies[0].t.req==='byear'){ playByEar(G.enemies[0].t); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
