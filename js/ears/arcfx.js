@@ -11,15 +11,14 @@ const ARC_THEMES=[
   {sky:['#141a44','#3a3f80'],far:'#2c3570',near:'#222a5a',ground:'#1b2149',path:'#454b80',deco:'star'},
   {sky:['#2a0808','#86290f'],far:'#4a160e',near:'#35100a',ground:'#220a07',path:'#8e3a17',deco:'ember'},
 ];
-const arcReduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ARC_RM=matchMedia('(prefers-reduced-motion: reduce)'), arcReduce=()=>ARC_RM.matches;   // read once, checked every frame
 function arcFxStart(cv){
   arcFxStop(); const F=arcFx; F.cv=cv; F.ctx=cv.getContext('2d'); F.parts=[]; F.shots=[]; F.dying=[]; F.mon=null; F.banner=null; F.shake=0; F.flash=0; F.wallHit=0;
   arcFxSize(); F.last=performance.now(); const loop=ts=>{ F.raf=requestAnimationFrame(loop); arcFxFrame(ts); }; F.raf=requestAnimationFrame(loop);
 }
 function arcFxStop(){ cancelAnimationFrame(arcFx.raf); arcFx.raf=0; }
 function arcFxSize(){ const F=arcFx; if(!F.cv) return; const r=F.cv.getBoundingClientRect(); F.dpr=Math.min(2,devicePixelRatio||1);
-  F.W=Math.max(200,r.width); F.H=Math.max(120,r.height); F.cv.width=Math.round(F.W*F.dpr); F.cv.height=Math.round(F.H*F.dpr); }
-addEventListener('resize',()=>{ if(arcFx.raf) arcFxSize(); });
+  F.cw=r.width; F.W=Math.max(200,r.width); F.H=Math.max(120,r.height); F.cv.width=Math.round(F.W*F.dpr); F.cv.height=Math.round(F.H*F.dpr); }
 // lane geometry: the wall on the left, the portal on the right, the path along the bottom
 const arcGround=()=>arcFx.H-26, arcWallX=()=>62, arcPortalX=()=>arcFx.W-56;
 const arcMonX=x=>arcWallX()+46+x*(arcPortalX()-arcWallX()-46);
@@ -66,7 +65,8 @@ function arcFxWallHit(){ const F=arcFx; F.wallHit=F.t; F.shake=arcReduce()?4:16;
 
 /* ---------------- drawing ---------------- */
 function arcFxFrame(ts){
-  const F=arcFx, c=F.ctx; if(!c) return; const dt=Math.min(0.05,(ts-F.last)/1000)*(F.slow||1); F.last=ts; F.t+=dt;   // F.slow: slow motion, for checking the animation
+  const F=arcFx, c=F.ctx; if(!c) return; if(Math.abs(F.cv.clientWidth-F.cw)>1) arcFxSize();   // the window changed size (a resize event isn't always sent)
+  const dt=Math.min(0.05,(ts-F.last)/1000)*(F.slow||1); F.last=ts; F.t+=dt;   // F.slow: slow motion, for checking the animation
   const frozen=F.t<F.freeze, step=frozen?0:dt;
   const R=ARC, th=ARC_THEMES[F.theme]; F.themeF=Math.min(1,F.themeF+dt*1.5);
   // the monster the game has right now: a new one steps out of the portal

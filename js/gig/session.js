@@ -148,6 +148,8 @@ function gigList(){
     if(s) gigShow(s.dataset.song); };
 }
 const gigSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,tip])=>`<button data-${attr}="${v}" aria-pressed="${String(cur)===String(v)}"${tip?` title="${tip}"`:''}>${t}</button>`).join('')}</div>`;
+// a click anywhere outside the Mix menu closes it (one listener for the page; the menu is redrawn with the chart)
+document.addEventListener('pointerdown',e=>{ const m=$('gigMix'); if(m&&!m.hidden&&!e.target.closest('.trmenu')) m.hidden=true; });
 function gigShow(id){
   gigStop(); const s=gigById(id); if(!s) return gigList();
   Object.assign(GIG,{view:'sheet',song:s,lastId:id,tl:gigTimeline(s),pos:0}); GDATA.last=id; saveGig();
@@ -194,7 +196,6 @@ function gigShow(id){
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
   const mix=$('gigMix'); $('gigMixBtn').onclick=e=>{ mix.hidden=!mix.hidden; e.stopPropagation(); };
-  document.addEventListener('pointerdown',e=>{ if(mix&&!mix.hidden&&!e.target.closest('.trmenu')) mix.hidden=true; });
   $('gigDrumsT').onclick=()=>{ GDATA.drums=GDATA.drums==='on'?'off':'on'; saveGig(); $('gigDrumsT').setAttribute('aria-pressed',GDATA.drums==='on'); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigAn').onclick=()=>{ GDATA.an=!GDATA.an; saveGig(); re(); };
   $('gigBody').querySelectorAll('[data-gpat],[data-gmv]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const p=GA_PAT[x.dataset.gpat]; trMsg(p?`${p.name}: ${p.why}`:GA_MOVE_WHY[x.dataset.gmv]); });
@@ -247,7 +248,8 @@ function gigPlay(from=0){
         cue.push({at,bar:i,ch}); });
       if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats});
       else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,bus);
-      t+=s.beats*spb; i=(i+1)%total; } };
+      t+=s.beats*spb; i=(i+1)%total; }
+    if(cue.length>256) cue.splice(0,cue.length-256); };   // in a background tab nothing draws, so don't let the queue grow
   const draw=()=>{ if(!GIG.playing) return; while(cue.length&&cue[0].at<=now()+.02){ const c=cue.shift(); if(GIG.pos!==c.bar||GIG.markAt!==c.at){ GIG.pos=c.bar; GIG.markAt=c.at; gigMark(c.bar); gigLight(c.ch); } } GIG.raf=requestAnimationFrame(draw); };
   sched(); GIG.timer=setInterval(sched,40); GIG.raf=requestAnimationFrame(draw);
 }

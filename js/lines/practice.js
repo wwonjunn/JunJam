@@ -16,14 +16,14 @@ function lpWeeklyPool(){ const all=allLicks().filter(l=>l.notes.length>=5&&l.not
   const lvl=Math.min(3,1+Math.floor(Object.keys(LDATA.vocab).length/4)); return all.filter(l=>l.diff<=lvl).length?all.filter(l=>l.diff<=lvl):all; }
 function lpWeek(){
   const id=arcWeek(); let w=LDATA.week[id];
-  if(!w||!lickById(w.id)){ const pool=lpWeeklyPool(), rng=arcRng(arcSeed('line'+id)); w=LDATA.week[id]={id:pool[Math.floor(rng()*pool.length)].id,done:[],learned:false,days:{}}; saveLines(); }
+  if(!w||!lickById(w.id)){ const pool=lpWeeklyPool().length?lpWeeklyPool():allLicks(), rng=arcRng(arcSeed('line'+id)); w=LDATA.week[id]={id:pool[Math.floor(rng()*pool.length)].id,done:[],learned:false,days:{}}; saveLines(); }
   return w;
 }
 // days left in this week, today included (the week ends on Sunday)
 const lpDaysLeft=()=>{ const d=new Date().getDay(); return d===0?1:8-d; };
 function lpTodayKeys(w){ const order=lpKeyOrder(arcWeek()), left=order.filter(k=>!w.done.includes(k)); if(!left.length) return [];
   if(!w.learned) return [order[0]];
-  const n=Math.max(1,Math.ceil(left.length/lpDaysLeft())); return left.slice(0,n); }
+  const n=Math.min(6,Math.max(1,Math.ceil(left.length/lpDaysLeft()))); return left.slice(0,n); }   // never more than 6 keys in one day
 // lines due back today, most overdue first
 function lpDue(){ const t=lpDayN(); return Object.entries(LDATA.srs).filter(([id,s])=>lickById(id)&&s.due<=t).sort((a,b)=>a[1].due-b[1].due).map(([id])=>id); }
 function lpNewLine(exclude){ const seen=new Set([...Object.keys(LDATA.srs),...Object.keys(LDATA.stars)]);

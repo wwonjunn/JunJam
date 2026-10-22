@@ -122,13 +122,15 @@ async function trTabRecord(){
   const t0=performance.now(), MAX=6*60*1000;
   rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const finish=()=>{ if(rec.state!=='inactive') rec.stop(); };
-  rec.onstop=async()=>{ clearInterval(tick); stream.getTracks().forEach(t=>t.stop());
+  rec.onstop=async()=>{ clearInterval(tick); stream.getTracks().forEach(t=>t.stop()); src.disconnect(); TR.recCancel=null;
+    if(!TR.active) return;   // left Transcribe while recording: nothing to load
     const blob=new Blob(chunks,{type:rec.mimeType}); if(blob.size<2000){ trOpen(); return; }
     const when=new Date(), file=new File([blob],`Tab recording ${when.getHours()}.${String(when.getMinutes()).padStart(2,'0')}.webm`,{type:rec.mimeType});
     await trLoad(file); TR.sel=[0,TR.buf.duration]; trDrawWave(); };
   audio[0].onended=finish; // the person pressed Chrome's own Stop sharing
   // a level meter, so it's obvious the sound is coming through
-  const ac=synth.ctx, an=ac.createAnalyser(); an.fftSize=512; ac.createMediaStreamSource(new MediaStream(audio)).connect(an); const buf=new Uint8Array(an.fftSize);
+  const ac=synth.ctx, an=ac.createAnalyser(); an.fftSize=512; const src=ac.createMediaStreamSource(new MediaStream(audio)); src.connect(an); const buf=new Uint8Array(an.fftSize);
+  TR.recCancel=()=>{ chunks.length=0; finish(); };   // leaving Transcribe stops the tab capture
   $('trBody').innerHTML=`<div class="etop"><span class="etitle">Recording the tab</span><span class="trno">● REC <span id="trRecT">0:00</span></span></div>
     <p class="rhwhat">Play the part you want in the other tab. A few seconds before and after is fine; you'll trim it next.</p>
     <div class="trmeter"><i id="trLvl"></i></div>
@@ -232,11 +234,11 @@ async function trRun(){
     <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">${vote?`Taking the drums out, then three models listen and vote on every note. Usually about ${Math.max(10,Math.round((T.sel[1]-T.sel[0])*1.3))} s for this part; the first time also loads the models.`:'Taking the drums out and finding the notes and the beat. Usually a few seconds; longer the very first time.'}</p>
     <div class="erow"><button class="ghost" id="trCancel">Cancel</button></div>`;
   const tick=setInterval(()=>{ if($('trEl')) $('trEl').textContent=Math.round((performance.now()-t0)/1000); },500);
-  const ctl=new AbortController(); $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };
+  const ctl=new AbortController(); TR.abort=ctl; $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };
   try{
     const wav=await trWav(T.buf,T.sel[0],T.sel[1]);
     const r=await fetch(`${TR_URL}/transcribe`,{method:'POST',body:wav,signal:ctl.signal}), res=await r.json();
-    clearInterval(tick);
+    clearInterval(tick); TR.abort=null; if(!TR.active) return;   // left while it was listening
     if(!res.ok) throw new Error(res.error||'The helper could not transcribe this.');
     T.raw=res; T.res=prepRes(res);
     // every part starts on Medium sensitivity
@@ -250,6 +252,8 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
 /* The editor. Top: what it is, and Save (in Jun Jam, PDF, MusicXML, MIDI) / Lines / Close. Under it a transport bar that stays in view
    (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
    sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
+// a click anywhere outside the Save menu closes it (one listener for the page)
+document.addEventListener('pointerdown',e=>{ const l=$('trExportList'); if(l&&!l.hidden&&!e.target.closest('.trmenu')) l.hidden=true; });
 function trEdit(score,res,savedIndex){
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
@@ -307,7 +311,6 @@ function trEdit(score,res,savedIndex){
   $('trLick').onclick=trToLick; $('trClose').onclick=()=>trLeave(trOpen,'Close this transcription?');
   $('trTitle').onclick=()=>{ const t=prompt('Name',TR.score.title); if(t&&t.trim()){ TR.score.title=t.trim(); trSetDirty(); trInfo(); } };
   const list=$('trExportList'); $('trExportBtn').onclick=e=>{ list.hidden=!list.hidden; e.stopPropagation(); };
-  document.addEventListener('pointerdown',e=>{ if(list&&!list.hidden&&!e.target.closest('.trmenu')) list.hidden=true; });
   list.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>{ list.hidden=true; const k=b.dataset.exp;
     if(k==='app') trSave(); else if(k==='pdf') trPDF();
     else if(k==='xml') trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
@@ -775,7 +778,7 @@ function trToLick(){
   trMsg(`Saved to Lines as "${lick.name}" (${lick.diff===1?'Easy':lick.diff===2?'Medium':'Hard'}). It's under Yours${artist?`, and under ${artist} in the player list`:''}.`,'ok');
 }
 const mod7=x=>((x%7)+7)%7;
-function trToMenu(){ trStopAll(); TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
+function trToMenu(){ trStopAll(); if(TR.recCancel) TR.recCancel(); if(TR.abort){ TR.abort.abort(); TR.abort=null; } TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
 function trKey(e){
   if(!TR.active) return false;
   if(e.target&&['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return true;

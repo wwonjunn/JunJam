@@ -30,7 +30,6 @@ const ARC_MEL={id:'melody',name:'Melodies',blurb:'Hear a short melody, play it b
 ARC_MEL.levels.forEach((l,i)=>Object.assign(l,{world:ARC_MEL,index:i}));
 const arcWorld=id=>id==='melody'?ARC_MEL:WORLDS.find(w=>w.id===id);
 const arcLv=id=>LEVELS[id]||ARC_MEL.levels.find(l=>l.id===id);
-const arcWorldOf=lv=>lv.world||arcWorld(ARC_WORLDS.find(w=>arcWorld(w).levels.some(l=>l.id===lv.id)));
 GEN.melody=function(p,ctx,force){
   { let pc,n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20); ctx.key=55+mod12(pc-55); }
   const T=ctx.key, sc=MAJOR, cad=pickCadence(false,ctx), at=i=>T+sc[((i%7)+7)%7]+12*Math.floor(i/7);
@@ -102,7 +101,7 @@ function arcPaneHTML(){
 function arcStart(world){
   arcStop(); synth.init();
   const kind=world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
-  Object.assign(ARC,{active:true,mode:'run',kind,world,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
+  Object.assign(ARC,{active:true,mode:'run',kind,world,q:null,done:true,open:Infinity,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
   if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
     ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
   $('modetag').textContent=kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
@@ -192,7 +191,7 @@ function arcClick(m){
 // A melody or a bass line is read note by note as you play (not as chords), any octave, each one against the next in line
 const arcSeq=()=>ARC.active&&ARC.mode==='run'&&ARC.q&&(ARC.q.gen==='melody'||ARC.q.gen==='prog');
 function arcSeqNote(m){
-  const R=ARC, q=R.q; if(R.done||now()<R.open) return;
+  const R=ARC, q=R.q; if(R.done||!q||!R.mon||now()<R.open) return;
   const i=R.got.length, want=q.gen==='prog'?q.roots[i]:mod12(q.mel[i]);
   if(mod12(m)!==want) return arcMiss('x');
   R.got.push(m); const dots=$('arcProg'); if(dots&&dots.children[i]) dots.children[i].className='ok';
@@ -202,7 +201,7 @@ function arcSeqNote(m){
 function arcNotes(notes){
   const R=ARC; if(!R.active) return;
   if(R.mode==='over'){ if(notes.length>=3) arcStart(R.kind==='world'?R.world:R.kind); return; }   // any chord: go again
-  if(R.mode!=='run'||R.done||now()<R.open) return;
+  if(R.mode!=='run'||R.done||!R.q||!R.mon||now()<R.open) return;
   const q=R.q;
   if(arcSeq()){ notes.forEach(arcSeqNote); return; }   // (from Enter after clicking; MIDI notes come in one by one)
   const pick=arcRead(q,notes); if(pick===undefined) return;

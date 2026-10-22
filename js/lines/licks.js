@@ -24,7 +24,6 @@ const LSRC={
 };
 const VtoI=(v,i,vb=4,ib=2)=>[[0,0,v,vb],[3,5,i,ib]];           // reference = the V chord's root
 const IIVI=[[1,2,'min7',2],[4,7,'dom7',2],[0,0,'maj7',4]];       // reference = the key
-const LSTYLES=['Jazz','Bebop','Coltrane','Blues','Gospel','Neo-soul','Modern jazz','Fusion','City pop & J-pop'];
 const LDIFF=['','Easy','Medium','Hard'];
 function Lk(id,name,diff,style,over,notes,o={}){ return {id,name,diff,style,over:typeof over==='string'?over:null,ch:Array.isArray(over)?over:null,notes,swing:!!o.swing,src:o.src||null,artist:o.artist||null,tip:o.tip||''}; }
 const LICKS=[

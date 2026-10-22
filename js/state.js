@@ -31,7 +31,6 @@ function recordStat(t,kind,secs,firstTry){
   store.set('stats',STATS);
 }
 function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; }
-let lastTarget=null;
 
 /* ---------------- key profile (shared by Hands and Ears) ----------------
    How shaky each of the 12 keys is, 0 solid to 1 shaky. Hands: fluency of every chord played in that key.

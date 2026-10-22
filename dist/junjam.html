@@ -376,7 +376,6 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trpick b{display:block;font-family:var(--display);font-size:22px} .trpick span{font-size:13px;color:var(--muted)}
 .trpick[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 12%, transparent)}
 .trwave{width:100%;height:110px;display:block;border:1px solid var(--line-strong);border-radius:6px;cursor:crosshair;margin:4px 0 8px;background:var(--panel)}
-.trtools{align-items:center;margin-bottom:8px}
 .trscore{max-height:46vh;overflow-y:auto;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;margin-bottom:10px}
 .trline{position:relative} .trline svg{max-width:100%;height:auto;display:block}
 .trbar{position:absolute;left:4px;top:0;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted)}
@@ -447,15 +446,14 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmenulist button:hover{background:color-mix(in srgb, var(--brass) 18%, transparent)}
 .trmenulist .fine{display:block;font-weight:400}
 .trmenulist hr{border:0;border-top:1px solid var(--line-strong);margin:4px 6px}
-.trlib .lst b{color:var(--brass);font-weight:600;letter-spacing:0}
 .trlibbar{display:flex;align-items:center;gap:8px;margin-bottom:6px} .trlibbar .sec{margin:0}
+#trLib .lick .lt{padding-right:40px}
 .trfolder{border-radius:8px;margin-bottom:6px;transition:background .12s} .trfolder.over{background:color-mix(in srgb, var(--brass) 14%, transparent);outline:2px dashed var(--brass)}
 #trLib.dragging .trtoplevel{min-height:44px;outline:1.5px dashed var(--line-strong);border-radius:8px}
 .trfhead{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1.5px solid var(--line-strong);border-radius:6px;cursor:pointer;user-select:none;margin-bottom:6px}
 .trfhead:hover{border-color:var(--brass)} .trfhead b{font-family:var(--cond);font-size:17px} .trcaret{width:12px;color:var(--muted)}
 .trsm{margin:0;padding:3px 10px;font-size:14px} .trloose{margin:8px 0 4px} .trfolder>.licks{padding-left:16px} .trfempty{margin:0 0 8px 22px}
 .lick .more{position:absolute;right:24px;top:2px;font-size:17px;color:var(--muted);padding:0 4px;line-height:1.2} .lick .more:hover{color:var(--ink)}
-.trlib .lick .lt,#trLib .lick .lt{padding-right:40px}
 .trscore .csym[data-c]{cursor:pointer} .trscore .csym[data-c]:hover{fill:var(--brass)} .trscore{user-select:none}
 .trchordpop{display:block;width:330px} .tptitle{display:flex;align-items:baseline;gap:10px;margin-bottom:8px} .tptitle b{font-family:var(--hand);font-size:24px}
 .tproots{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px}
@@ -466,8 +464,6 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trtoast.show{opacity:1;transform:translate(-50%,0)} .trtoast.no{background:var(--wrong);color:#fff} .trtoast.ok{background:var(--brass);color:var(--lane)}
 .trscore{cursor:pointer}
 .trshead{position:absolute;top:0;bottom:0;width:2px;background:var(--wrong);opacity:.8;display:none;pointer-events:none}
-.trpop.trhelp{display:block;padding:12px 14px} .trhelp{max-width:420px;font-size:14px;line-height:1.45}
-.trhelp ul{margin:4px 0 10px;padding-left:18px}
 kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:3px;padding:0 4px}
 @media (max-width:700px){ .trform{grid-template-columns:1fr} .trform>label{padding-top:0} }
 .ghost.trrec[aria-pressed="true"]{border-color:var(--wrong);color:var(--wrong);background:color-mix(in srgb, var(--wrong) 14%, transparent)}
@@ -660,24 +656,11 @@ body.gigmode header .modetag{display:none}
 .arcask{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:14px 0 4px}
 .arcask span{font-family:var(--cond);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--brass);width:100%}
 .arcask b{font-family:var(--cond);font-size:34px;line-height:1.1} .arcask em{font-style:normal;font-family:var(--cond);font-weight:600;font-size:20px;border:1.5px solid var(--line-strong);border-radius:4px;padding:0 8px}
-.arcbar{height:10px} .arcbar i{transition:width .06s linear}
 .arcprog{display:flex;gap:6px;min-height:14px;margin:-8px 0 10px} .arcprog i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong);display:block} .arcprog i.ok{background:var(--chord);box-shadow:none}
 .arcagain{font-family:var(--cond);font-size:22px;color:var(--brass)}
-.arclane{position:relative;height:84px;margin:10px 0 6px;border-radius:8px;background:linear-gradient(180deg,transparent 62%,color-mix(in srgb, var(--chord) 14%, transparent) 62%);border-bottom:2px solid var(--line-strong);overflow:hidden}
-.arcwall{position:absolute;left:4px;bottom:2px;font-size:44px;line-height:1;transition:transform .15s}
-.arcwall.hurt{filter:saturate(.6)} .arcwall.hit{animation:arcshake .45s}
-@keyframes arcshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px) rotate(-4deg)}50%{transform:translateX(5px) rotate(3deg)}80%{transform:translateX(-3px)}}
-.arcmon{position:absolute;bottom:4px;width:40px;text-align:center;transition:left .07s linear}
-.arcmon b{display:block;font-size:36px;line-height:1;animation:arcbob .5s ease-in-out infinite alternate} .arcmon.brute b{font-size:46px}
-.arcmon i{display:block;font-style:normal;font-size:11px;color:var(--wrong);letter-spacing:1px}
-@keyframes arcbob{from{transform:translateY(0)}to{transform:translateY(-5px)}}
-.arcmon.boom b{animation:arcboom .5s forwards}
-@keyframes arcboom{0%{transform:scale(1)}40%{transform:scale(1.8)}100%{transform:scale(2.2);opacity:0}}
 .arcspell{display:flex;align-items:center;gap:4px;margin:0 0 8px;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted)}
 .arcspell span{margin-right:6px} .arcspell i{width:16px;height:8px;border-radius:4px;background:var(--line);display:block} .arcspell i.on{background:var(--brass)}
 .arcspell.ready{color:var(--wrong)} .arcspell.ready i{background:var(--wrong)}
-.arcmon.wait{opacity:0;transform:scale(.4)} .arcmon{transition:left .07s linear,opacity .25s,transform .25s}
-.arcmon.charge{transition:left .32s cubic-bezier(.5,0,1,.6)} .arcmon.splat b{animation:arcboom .4s forwards}
 .arctoday{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin:6px 0 14px}
 .arcday{border-color:var(--wrong)} .arcday .fine{color:var(--wrong);font-weight:600} .arcweek{border-color:var(--tension)}
 .arccal{display:flex;gap:3px;margin-top:4px} .arccal i{width:18px;height:18px;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--line-strong);font-style:normal;font-size:11px;line-height:18px;text-align:center;display:block}
@@ -1660,7 +1643,6 @@ function recordStat(t,kind,secs,firstTry){
   store.set('stats',STATS);
 }
 function weightedPick(items){ const tot=items.reduce((a,x)=>a+x.w,0); let r=Math.random()*tot; for(const x of items){ r-=x.w; if(r<=0) return x; } return items[items.length-1]; }
-let lastTarget=null;
 
 /* ---------------- key profile (shared by Hands and Ears) ----------------
    How shaky each of the 12 keys is, 0 solid to 1 shaky. Hands: fluency of every chord played in that key.
@@ -3162,7 +3144,6 @@ const ARC_MEL={id:'melody',name:'Melodies',blurb:'Hear a short melody, play it b
 ARC_MEL.levels.forEach((l,i)=>Object.assign(l,{world:ARC_MEL,index:i}));
 const arcWorld=id=>id==='melody'?ARC_MEL:WORLDS.find(w=>w.id===id);
 const arcLv=id=>LEVELS[id]||ARC_MEL.levels.find(l=>l.id===id);
-const arcWorldOf=lv=>lv.world||arcWorld(ARC_WORLDS.find(w=>arcWorld(w).levels.some(l=>l.id===lv.id)));
 GEN.melody=function(p,ctx,force){
   { let pc,n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20); ctx.key=55+mod12(pc-55); }
   const T=ctx.key, sc=MAJOR, cad=pickCadence(false,ctx), at=i=>T+sc[((i%7)+7)%7]+12*Math.floor(i/7);
@@ -3234,7 +3215,7 @@ function arcPaneHTML(){
 function arcStart(world){
   arcStop(); synth.init();
   const kind=world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
-  Object.assign(ARC,{active:true,mode:'run',kind,world,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
+  Object.assign(ARC,{active:true,mode:'run',kind,world,q:null,done:true,open:Infinity,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
   if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
     ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
   $('modetag').textContent=kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
@@ -3324,7 +3305,7 @@ function arcClick(m){
 // A melody or a bass line is read note by note as you play (not as chords), any octave, each one against the next in line
 const arcSeq=()=>ARC.active&&ARC.mode==='run'&&ARC.q&&(ARC.q.gen==='melody'||ARC.q.gen==='prog');
 function arcSeqNote(m){
-  const R=ARC, q=R.q; if(R.done||now()<R.open) return;
+  const R=ARC, q=R.q; if(R.done||!q||!R.mon||now()<R.open) return;
   const i=R.got.length, want=q.gen==='prog'?q.roots[i]:mod12(q.mel[i]);
   if(mod12(m)!==want) return arcMiss('x');
   R.got.push(m); const dots=$('arcProg'); if(dots&&dots.children[i]) dots.children[i].className='ok';
@@ -3334,7 +3315,7 @@ function arcSeqNote(m){
 function arcNotes(notes){
   const R=ARC; if(!R.active) return;
   if(R.mode==='over'){ if(notes.length>=3) arcStart(R.kind==='world'?R.world:R.kind); return; }   // any chord: go again
-  if(R.mode!=='run'||R.done||now()<R.open) return;
+  if(R.mode!=='run'||R.done||!R.q||!R.mon||now()<R.open) return;
   const q=R.q;
   if(arcSeq()){ notes.forEach(arcSeqNote); return; }   // (from Enter after clicking; MIDI notes come in one by one)
   const pick=arcRead(q,notes); if(pick===undefined) return;
@@ -3432,15 +3413,14 @@ const ARC_THEMES=[
   {sky:['#141a44','#3a3f80'],far:'#2c3570',near:'#222a5a',ground:'#1b2149',path:'#454b80',deco:'star'},
   {sky:['#2a0808','#86290f'],far:'#4a160e',near:'#35100a',ground:'#220a07',path:'#8e3a17',deco:'ember'},
 ];
-const arcReduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ARC_RM=matchMedia('(prefers-reduced-motion: reduce)'), arcReduce=()=>ARC_RM.matches;   // read once, checked every frame
 function arcFxStart(cv){
   arcFxStop(); const F=arcFx; F.cv=cv; F.ctx=cv.getContext('2d'); F.parts=[]; F.shots=[]; F.dying=[]; F.mon=null; F.banner=null; F.shake=0; F.flash=0; F.wallHit=0;
   arcFxSize(); F.last=performance.now(); const loop=ts=>{ F.raf=requestAnimationFrame(loop); arcFxFrame(ts); }; F.raf=requestAnimationFrame(loop);
 }
 function arcFxStop(){ cancelAnimationFrame(arcFx.raf); arcFx.raf=0; }
 function arcFxSize(){ const F=arcFx; if(!F.cv) return; const r=F.cv.getBoundingClientRect(); F.dpr=Math.min(2,devicePixelRatio||1);
-  F.W=Math.max(200,r.width); F.H=Math.max(120,r.height); F.cv.width=Math.round(F.W*F.dpr); F.cv.height=Math.round(F.H*F.dpr); }
-addEventListener('resize',()=>{ if(arcFx.raf) arcFxSize(); });
+  F.cw=r.width; F.W=Math.max(200,r.width); F.H=Math.max(120,r.height); F.cv.width=Math.round(F.W*F.dpr); F.cv.height=Math.round(F.H*F.dpr); }
 // lane geometry: the wall on the left, the portal on the right, the path along the bottom
 const arcGround=()=>arcFx.H-26, arcWallX=()=>62, arcPortalX=()=>arcFx.W-56;
 const arcMonX=x=>arcWallX()+46+x*(arcPortalX()-arcWallX()-46);
@@ -3487,7 +3467,8 @@ function arcFxWallHit(){ const F=arcFx; F.wallHit=F.t; F.shake=arcReduce()?4:16;
 
 /* ---------------- drawing ---------------- */
 function arcFxFrame(ts){
-  const F=arcFx, c=F.ctx; if(!c) return; const dt=Math.min(0.05,(ts-F.last)/1000)*(F.slow||1); F.last=ts; F.t+=dt;   // F.slow: slow motion, for checking the animation
+  const F=arcFx, c=F.ctx; if(!c) return; if(Math.abs(F.cv.clientWidth-F.cw)>1) arcFxSize();   // the window changed size (a resize event isn't always sent)
+  const dt=Math.min(0.05,(ts-F.last)/1000)*(F.slow||1); F.last=ts; F.t+=dt;   // F.slow: slow motion, for checking the animation
   const frozen=F.t<F.freeze, step=frozen?0:dt;
   const R=ARC, th=ARC_THEMES[F.theme]; F.themeF=Math.min(1,F.themeF+dt*1.5);
   // the monster the game has right now: a new one steps out of the portal
@@ -3633,7 +3614,6 @@ const LSRC={
 };
 const VtoI=(v,i,vb=4,ib=2)=>[[0,0,v,vb],[3,5,i,ib]];           // reference = the V chord's root
 const IIVI=[[1,2,'min7',2],[4,7,'dom7',2],[0,0,'maj7',4]];       // reference = the key
-const LSTYLES=['Jazz','Bebop','Coltrane','Blues','Gospel','Neo-soul','Modern jazz','Fusion','City pop & J-pop'];
 const LDIFF=['','Easy','Medium','Hard'];
 function Lk(id,name,diff,style,over,notes,o={}){ return {id,name,diff,style,over:typeof over==='string'?over:null,ch:Array.isArray(over)?over:null,notes,swing:!!o.swing,src:o.src||null,artist:o.artist||null,tip:o.tip||''}; }
 const LICKS=[
@@ -4320,14 +4300,14 @@ function lpWeeklyPool(){ const all=allLicks().filter(l=>l.notes.length>=5&&l.not
   const lvl=Math.min(3,1+Math.floor(Object.keys(LDATA.vocab).length/4)); return all.filter(l=>l.diff<=lvl).length?all.filter(l=>l.diff<=lvl):all; }
 function lpWeek(){
   const id=arcWeek(); let w=LDATA.week[id];
-  if(!w||!lickById(w.id)){ const pool=lpWeeklyPool(), rng=arcRng(arcSeed('line'+id)); w=LDATA.week[id]={id:pool[Math.floor(rng()*pool.length)].id,done:[],learned:false,days:{}}; saveLines(); }
+  if(!w||!lickById(w.id)){ const pool=lpWeeklyPool().length?lpWeeklyPool():allLicks(), rng=arcRng(arcSeed('line'+id)); w=LDATA.week[id]={id:pool[Math.floor(rng()*pool.length)].id,done:[],learned:false,days:{}}; saveLines(); }
   return w;
 }
 // days left in this week, today included (the week ends on Sunday)
 const lpDaysLeft=()=>{ const d=new Date().getDay(); return d===0?1:8-d; };
 function lpTodayKeys(w){ const order=lpKeyOrder(arcWeek()), left=order.filter(k=>!w.done.includes(k)); if(!left.length) return [];
   if(!w.learned) return [order[0]];
-  const n=Math.max(1,Math.ceil(left.length/lpDaysLeft())); return left.slice(0,n); }
+  const n=Math.min(6,Math.max(1,Math.ceil(left.length/lpDaysLeft()))); return left.slice(0,n); }   // never more than 6 keys in one day
 // lines due back today, most overdue first
 function lpDue(){ const t=lpDayN(); return Object.entries(LDATA.srs).filter(([id,s])=>lickById(id)&&s.due<=t).sort((a,b)=>a[1].due-b[1].due).map(([id])=>id); }
 function lpNewLine(exclude){ const seen=new Set([...Object.keys(LDATA.srs),...Object.keys(LDATA.stars)]);
@@ -5137,10 +5117,11 @@ let CHDATA=store.get('comphero',{best:{},stars:{},song:'b:autumn-leaves',diff:'n
 const saveCh=()=>store.set('comphero',CHDATA);
 const CH={active:false};
 const CH_DIFF={easy:{name:'Easy',tempo:0.6,max:96,tags:{any:7,wide:3}},normal:{name:'Normal',tempo:0.8,max:132,tags:{any:3,tension:2,rootless:2,five:2,wide:2}},
-  hard:{name:'Hard',tempo:1,max:200,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}}};
+  hard:{name:'Hard',tempo:1,max:168,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}}};
 const CH_TAG={any:'any voicing',tension:'with a 9, 11 or 13',rootless:'rootless',five:'5 notes or more',wide:'over two octaves',diff:'not your last shape',named:'a named one'};
 const CH_SETTLE=SETTLE/1000;   // a chord is read once your hands settle; its time is when they landed
-const chSongs=()=>GIG_BUILTIN.filter(s=>gigTimeline(s).some(b=>b.chords.some(c=>c.c)));
+let CH_SONGS=null;   // the built-in charts never change, so this is worked out once
+const chSongs=()=>CH_SONGS||(CH_SONGS=GIG_BUILTIN.filter(s=>gigTimeline(s).some(b=>b.chords.some(c=>c.c))));
 
 /* ---------------- menu card (Voicings pane) ---------------- */
 function chPaneHTML(){
@@ -5194,8 +5175,7 @@ function chBand(){
       bar++; } };
   sched(); R.bandT=setInterval(sched,50);
 }
-function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
-addEventListener('resize',()=>{ if(CH.active) chSize(); });
+function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.cw=r.width; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
 function chHead(){ const R=CH, h=$('chHead'); if(!h) return; const n=R.cards.length, done=R.cards.filter(c=>c.state!=='up'&&c.state!=='on').length;
   h.innerHTML=`<div class="etop"><span class="etitle">${trEsc(R.song.title)}</span><span>${R.D.name} · ♩ = ${R.bpm}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>${done} of ${n}</span></div>
     <div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`; }
@@ -5259,7 +5239,8 @@ function chBurst(k){ const R=CH, x=R.hitX||110, y=R.H*0.5, cols=k.grade==='perfe
   for(let i=0;i<(k.grade==='perfect'?28:16);i++){ const a=Math.random()*7, s=80+Math.random()*220; R.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0.6,max:0.6,col:cols[i%cols.length]}); }
   if(k.named) R.pops=[{text:k.named.name+'!',x:x+20,y:y-46,t0:now(),col:'#ffd23f'}]; }   // one name at a time
 function chDraw(){
-  const R=CH, c=R.ctx; if(!c) return; const t=now(), W=R.W, H=R.H, hx=R.hitX=Math.max(90,W*0.18), dt=1/60;
+  const R=CH, c=R.ctx; if(!c) return; if(Math.abs(R.cv.clientWidth-R.cw)>1) chSize();   // the window changed size
+  const t=now(), W=R.W, H=R.H, hx=R.hitX=Math.max(90,W*0.18), dt=1/60;
   c.setTransform(R.dpr,0,0,R.dpr,0,0); c.save(); if(R.shake>0.3){ c.translate((Math.random()-.5)*R.shake,0); R.shake*=0.88; }
   const bg=c.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141a36'); bg.addColorStop(1,'#232c5c'); c.fillStyle=bg; c.fillRect(0,0,W,H);
   // beat lines scroll with the music
@@ -5948,13 +5929,15 @@ async function trTabRecord(){
   const t0=performance.now(), MAX=6*60*1000;
   rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const finish=()=>{ if(rec.state!=='inactive') rec.stop(); };
-  rec.onstop=async()=>{ clearInterval(tick); stream.getTracks().forEach(t=>t.stop());
+  rec.onstop=async()=>{ clearInterval(tick); stream.getTracks().forEach(t=>t.stop()); src.disconnect(); TR.recCancel=null;
+    if(!TR.active) return;   // left Transcribe while recording: nothing to load
     const blob=new Blob(chunks,{type:rec.mimeType}); if(blob.size<2000){ trOpen(); return; }
     const when=new Date(), file=new File([blob],`Tab recording ${when.getHours()}.${String(when.getMinutes()).padStart(2,'0')}.webm`,{type:rec.mimeType});
     await trLoad(file); TR.sel=[0,TR.buf.duration]; trDrawWave(); };
   audio[0].onended=finish; // the person pressed Chrome's own Stop sharing
   // a level meter, so it's obvious the sound is coming through
-  const ac=synth.ctx, an=ac.createAnalyser(); an.fftSize=512; ac.createMediaStreamSource(new MediaStream(audio)).connect(an); const buf=new Uint8Array(an.fftSize);
+  const ac=synth.ctx, an=ac.createAnalyser(); an.fftSize=512; const src=ac.createMediaStreamSource(new MediaStream(audio)); src.connect(an); const buf=new Uint8Array(an.fftSize);
+  TR.recCancel=()=>{ chunks.length=0; finish(); };   // leaving Transcribe stops the tab capture
   $('trBody').innerHTML=`<div class="etop"><span class="etitle">Recording the tab</span><span class="trno">● REC <span id="trRecT">0:00</span></span></div>
     <p class="rhwhat">Play the part you want in the other tab. A few seconds before and after is fine; you'll trim it next.</p>
     <div class="trmeter"><i id="trLvl"></i></div>
@@ -6058,11 +6041,11 @@ async function trRun(){
     <p class="rhwhat">Listening… <span id="trEl">0</span> s</p><p class="fine">${vote?`Taking the drums out, then three models listen and vote on every note. Usually about ${Math.max(10,Math.round((T.sel[1]-T.sel[0])*1.3))} s for this part; the first time also loads the models.`:'Taking the drums out and finding the notes and the beat. Usually a few seconds; longer the very first time.'}</p>
     <div class="erow"><button class="ghost" id="trCancel">Cancel</button></div>`;
   const tick=setInterval(()=>{ if($('trEl')) $('trEl').textContent=Math.round((performance.now()-t0)/1000); },500);
-  const ctl=new AbortController(); $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };
+  const ctl=new AbortController(); TR.abort=ctl; $('trCancel').onclick=()=>{ ctl.abort(); clearInterval(tick); trSetupRender(); };
   try{
     const wav=await trWav(T.buf,T.sel[0],T.sel[1]);
     const r=await fetch(`${TR_URL}/transcribe`,{method:'POST',body:wav,signal:ctl.signal}), res=await r.json();
-    clearInterval(tick);
+    clearInterval(tick); TR.abort=null; if(!TR.active) return;   // left while it was listening
     if(!res.ok) throw new Error(res.error||'The helper could not transcribe this.');
     T.raw=res; T.res=prepRes(res);
     // every part starts on Medium sensitivity
@@ -6076,6 +6059,8 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
 /* The editor. Top: what it is, and Save (in Jun Jam, PDF, MusicXML, MIDI) / Lines / Close. Under it a transport bar that stays in view
    (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
    sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
+// a click anywhere outside the Save menu closes it (one listener for the page)
+document.addEventListener('pointerdown',e=>{ const l=$('trExportList'); if(l&&!l.hidden&&!e.target.closest('.trmenu')) l.hidden=true; });
 function trEdit(score,res,savedIndex){
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
@@ -6133,7 +6118,6 @@ function trEdit(score,res,savedIndex){
   $('trLick').onclick=trToLick; $('trClose').onclick=()=>trLeave(trOpen,'Close this transcription?');
   $('trTitle').onclick=()=>{ const t=prompt('Name',TR.score.title); if(t&&t.trim()){ TR.score.title=t.trim(); trSetDirty(); trInfo(); } };
   const list=$('trExportList'); $('trExportBtn').onclick=e=>{ list.hidden=!list.hidden; e.stopPropagation(); };
-  document.addEventListener('pointerdown',e=>{ if(list&&!list.hidden&&!e.target.closest('.trmenu')) list.hidden=true; });
   list.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>{ list.hidden=true; const k=b.dataset.exp;
     if(k==='app') trSave(); else if(k==='pdf') trPDF();
     else if(k==='xml') trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
@@ -6601,7 +6585,7 @@ function trToLick(){
   trMsg(`Saved to Lines as "${lick.name}" (${lick.diff===1?'Easy':lick.diff===2?'Medium':'Hard'}). It's under Yours${artist?`, and under ${artist} in the player list`:''}.`,'ok');
 }
 const mod7=x=>((x%7)+7)%7;
-function trToMenu(){ trStopAll(); TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
+function trToMenu(){ trStopAll(); if(TR.recCancel) TR.recCancel(); if(TR.abort){ TR.abort.abort(); TR.abort=null; } TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
 function trKey(e){
   if(!TR.active) return false;
   if(e.target&&['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return true;
@@ -8636,6 +8620,8 @@ function gigList(){
     if(s) gigShow(s.dataset.song); };
 }
 const gigSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,tip])=>`<button data-${attr}="${v}" aria-pressed="${String(cur)===String(v)}"${tip?` title="${tip}"`:''}>${t}</button>`).join('')}</div>`;
+// a click anywhere outside the Mix menu closes it (one listener for the page; the menu is redrawn with the chart)
+document.addEventListener('pointerdown',e=>{ const m=$('gigMix'); if(m&&!m.hidden&&!e.target.closest('.trmenu')) m.hidden=true; });
 function gigShow(id){
   gigStop(); const s=gigById(id); if(!s) return gigList();
   Object.assign(GIG,{view:'sheet',song:s,lastId:id,tl:gigTimeline(s),pos:0}); GDATA.last=id; saveGig();
@@ -8682,7 +8668,6 @@ function gigShow(id){
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
   const mix=$('gigMix'); $('gigMixBtn').onclick=e=>{ mix.hidden=!mix.hidden; e.stopPropagation(); };
-  document.addEventListener('pointerdown',e=>{ if(mix&&!mix.hidden&&!e.target.closest('.trmenu')) mix.hidden=true; });
   $('gigDrumsT').onclick=()=>{ GDATA.drums=GDATA.drums==='on'?'off':'on'; saveGig(); $('gigDrumsT').setAttribute('aria-pressed',GDATA.drums==='on'); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigAn').onclick=()=>{ GDATA.an=!GDATA.an; saveGig(); re(); };
   $('gigBody').querySelectorAll('[data-gpat],[data-gmv]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const p=GA_PAT[x.dataset.gpat]; trMsg(p?`${p.name}: ${p.why}`:GA_MOVE_WHY[x.dataset.gmv]); });
@@ -8735,7 +8720,8 @@ function gigPlay(from=0){
         cue.push({at,bar:i,ch}); });
       if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats});
       else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,bus);
-      t+=s.beats*spb; i=(i+1)%total; } };
+      t+=s.beats*spb; i=(i+1)%total; }
+    if(cue.length>256) cue.splice(0,cue.length-256); };   // in a background tab nothing draws, so don't let the queue grow
   const draw=()=>{ if(!GIG.playing) return; while(cue.length&&cue[0].at<=now()+.02){ const c=cue.shift(); if(GIG.pos!==c.bar||GIG.markAt!==c.at){ GIG.pos=c.bar; GIG.markAt=c.at; gigMark(c.bar); gigLight(c.ch); } } GIG.raf=requestAnimationFrame(draw); };
   sched(); GIG.timer=setInterval(sched,40); GIG.raf=requestAnimationFrame(draw);
 }

@@ -366,7 +366,6 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trpick b{display:block;font-family:var(--display);font-size:22px} .trpick span{font-size:13px;color:var(--muted)}
 .trpick[aria-pressed="true"]{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 12%, transparent)}
 .trwave{width:100%;height:110px;display:block;border:1px solid var(--line-strong);border-radius:6px;cursor:crosshair;margin:4px 0 8px;background:var(--panel)}
-.trtools{align-items:center;margin-bottom:8px}
 .trscore{max-height:46vh;overflow-y:auto;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;margin-bottom:10px}
 .trline{position:relative} .trline svg{max-width:100%;height:auto;display:block}
 .trbar{position:absolute;left:4px;top:0;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted)}
@@ -437,15 +436,14 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmenulist button:hover{background:color-mix(in srgb, var(--brass) 18%, transparent)}
 .trmenulist .fine{display:block;font-weight:400}
 .trmenulist hr{border:0;border-top:1px solid var(--line-strong);margin:4px 6px}
-.trlib .lst b{color:var(--brass);font-weight:600;letter-spacing:0}
 .trlibbar{display:flex;align-items:center;gap:8px;margin-bottom:6px} .trlibbar .sec{margin:0}
+#trLib .lick .lt{padding-right:40px}
 .trfolder{border-radius:8px;margin-bottom:6px;transition:background .12s} .trfolder.over{background:color-mix(in srgb, var(--brass) 14%, transparent);outline:2px dashed var(--brass)}
 #trLib.dragging .trtoplevel{min-height:44px;outline:1.5px dashed var(--line-strong);border-radius:8px}
 .trfhead{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1.5px solid var(--line-strong);border-radius:6px;cursor:pointer;user-select:none;margin-bottom:6px}
 .trfhead:hover{border-color:var(--brass)} .trfhead b{font-family:var(--cond);font-size:17px} .trcaret{width:12px;color:var(--muted)}
 .trsm{margin:0;padding:3px 10px;font-size:14px} .trloose{margin:8px 0 4px} .trfolder>.licks{padding-left:16px} .trfempty{margin:0 0 8px 22px}
 .lick .more{position:absolute;right:24px;top:2px;font-size:17px;color:var(--muted);padding:0 4px;line-height:1.2} .lick .more:hover{color:var(--ink)}
-.trlib .lick .lt,#trLib .lick .lt{padding-right:40px}
 .trscore .csym[data-c]{cursor:pointer} .trscore .csym[data-c]:hover{fill:var(--brass)} .trscore{user-select:none}
 .trchordpop{display:block;width:330px} .tptitle{display:flex;align-items:baseline;gap:10px;margin-bottom:8px} .tptitle b{font-family:var(--hand);font-size:24px}
 .tproots{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px}
@@ -456,8 +454,6 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trtoast.show{opacity:1;transform:translate(-50%,0)} .trtoast.no{background:var(--wrong);color:#fff} .trtoast.ok{background:var(--brass);color:var(--lane)}
 .trscore{cursor:pointer}
 .trshead{position:absolute;top:0;bottom:0;width:2px;background:var(--wrong);opacity:.8;display:none;pointer-events:none}
-.trpop.trhelp{display:block;padding:12px 14px} .trhelp{max-width:420px;font-size:14px;line-height:1.45}
-.trhelp ul{margin:4px 0 10px;padding-left:18px}
 kbd{font-family:var(--cond);font-weight:700;font-size:12px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:3px;padding:0 4px}
 @media (max-width:700px){ .trform{grid-template-columns:1fr} .trform>label{padding-top:0} }
 .ghost.trrec[aria-pressed="true"]{border-color:var(--wrong);color:var(--wrong);background:color-mix(in srgb, var(--wrong) 14%, transparent)}
@@ -650,24 +646,11 @@ body.gigmode header .modetag{display:none}
 .arcask{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:14px 0 4px}
 .arcask span{font-family:var(--cond);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--brass);width:100%}
 .arcask b{font-family:var(--cond);font-size:34px;line-height:1.1} .arcask em{font-style:normal;font-family:var(--cond);font-weight:600;font-size:20px;border:1.5px solid var(--line-strong);border-radius:4px;padding:0 8px}
-.arcbar{height:10px} .arcbar i{transition:width .06s linear}
 .arcprog{display:flex;gap:6px;min-height:14px;margin:-8px 0 10px} .arcprog i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong);display:block} .arcprog i.ok{background:var(--chord);box-shadow:none}
 .arcagain{font-family:var(--cond);font-size:22px;color:var(--brass)}
-.arclane{position:relative;height:84px;margin:10px 0 6px;border-radius:8px;background:linear-gradient(180deg,transparent 62%,color-mix(in srgb, var(--chord) 14%, transparent) 62%);border-bottom:2px solid var(--line-strong);overflow:hidden}
-.arcwall{position:absolute;left:4px;bottom:2px;font-size:44px;line-height:1;transition:transform .15s}
-.arcwall.hurt{filter:saturate(.6)} .arcwall.hit{animation:arcshake .45s}
-@keyframes arcshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px) rotate(-4deg)}50%{transform:translateX(5px) rotate(3deg)}80%{transform:translateX(-3px)}}
-.arcmon{position:absolute;bottom:4px;width:40px;text-align:center;transition:left .07s linear}
-.arcmon b{display:block;font-size:36px;line-height:1;animation:arcbob .5s ease-in-out infinite alternate} .arcmon.brute b{font-size:46px}
-.arcmon i{display:block;font-style:normal;font-size:11px;color:var(--wrong);letter-spacing:1px}
-@keyframes arcbob{from{transform:translateY(0)}to{transform:translateY(-5px)}}
-.arcmon.boom b{animation:arcboom .5s forwards}
-@keyframes arcboom{0%{transform:scale(1)}40%{transform:scale(1.8)}100%{transform:scale(2.2);opacity:0}}
 .arcspell{display:flex;align-items:center;gap:4px;margin:0 0 8px;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted)}
 .arcspell span{margin-right:6px} .arcspell i{width:16px;height:8px;border-radius:4px;background:var(--line);display:block} .arcspell i.on{background:var(--brass)}
 .arcspell.ready{color:var(--wrong)} .arcspell.ready i{background:var(--wrong)}
-.arcmon.wait{opacity:0;transform:scale(.4)} .arcmon{transition:left .07s linear,opacity .25s,transform .25s}
-.arcmon.charge{transition:left .32s cubic-bezier(.5,0,1,.6)} .arcmon.splat b{animation:arcboom .4s forwards}
 .arctoday{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin:6px 0 14px}
 .arcday{border-color:var(--wrong)} .arcday .fine{color:var(--wrong);font-weight:600} .arcweek{border-color:var(--tension)}
 .arccal{display:flex;gap:3px;margin-top:4px} .arccal i{width:18px;height:18px;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--line-strong);font-style:normal;font-size:11px;line-height:18px;text-align:center;display:block}

@@ -9,10 +9,11 @@ let CHDATA=store.get('comphero',{best:{},stars:{},song:'b:autumn-leaves',diff:'n
 const saveCh=()=>store.set('comphero',CHDATA);
 const CH={active:false};
 const CH_DIFF={easy:{name:'Easy',tempo:0.6,max:96,tags:{any:7,wide:3}},normal:{name:'Normal',tempo:0.8,max:132,tags:{any:3,tension:2,rootless:2,five:2,wide:2}},
-  hard:{name:'Hard',tempo:1,max:200,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}}};
+  hard:{name:'Hard',tempo:1,max:168,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}}};
 const CH_TAG={any:'any voicing',tension:'with a 9, 11 or 13',rootless:'rootless',five:'5 notes or more',wide:'over two octaves',diff:'not your last shape',named:'a named one'};
 const CH_SETTLE=SETTLE/1000;   // a chord is read once your hands settle; its time is when they landed
-const chSongs=()=>GIG_BUILTIN.filter(s=>gigTimeline(s).some(b=>b.chords.some(c=>c.c)));
+let CH_SONGS=null;   // the built-in charts never change, so this is worked out once
+const chSongs=()=>CH_SONGS||(CH_SONGS=GIG_BUILTIN.filter(s=>gigTimeline(s).some(b=>b.chords.some(c=>c.c))));
 
 /* ---------------- menu card (Voicings pane) ---------------- */
 function chPaneHTML(){
@@ -66,8 +67,7 @@ function chBand(){
       bar++; } };
   sched(); R.bandT=setInterval(sched,50);
 }
-function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
-addEventListener('resize',()=>{ if(CH.active) chSize(); });
+function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.cw=r.width; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
 function chHead(){ const R=CH, h=$('chHead'); if(!h) return; const n=R.cards.length, done=R.cards.filter(c=>c.state!=='up'&&c.state!=='on').length;
   h.innerHTML=`<div class="etop"><span class="etitle">${trEsc(R.song.title)}</span><span>${R.D.name} · ♩ = ${R.bpm}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>${done} of ${n}</span></div>
     <div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`; }
@@ -131,7 +131,8 @@ function chBurst(k){ const R=CH, x=R.hitX||110, y=R.H*0.5, cols=k.grade==='perfe
   for(let i=0;i<(k.grade==='perfect'?28:16);i++){ const a=Math.random()*7, s=80+Math.random()*220; R.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0.6,max:0.6,col:cols[i%cols.length]}); }
   if(k.named) R.pops=[{text:k.named.name+'!',x:x+20,y:y-46,t0:now(),col:'#ffd23f'}]; }   // one name at a time
 function chDraw(){
-  const R=CH, c=R.ctx; if(!c) return; const t=now(), W=R.W, H=R.H, hx=R.hitX=Math.max(90,W*0.18), dt=1/60;
+  const R=CH, c=R.ctx; if(!c) return; if(Math.abs(R.cv.clientWidth-R.cw)>1) chSize();   // the window changed size
+  const t=now(), W=R.W, H=R.H, hx=R.hitX=Math.max(90,W*0.18), dt=1/60;
   c.setTransform(R.dpr,0,0,R.dpr,0,0); c.save(); if(R.shake>0.3){ c.translate((Math.random()-.5)*R.shake,0); R.shake*=0.88; }
   const bg=c.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141a36'); bg.addColorStop(1,'#232c5c'); c.fillStyle=bg; c.fillRect(0,0,W,H);
   // beat lines scroll with the music
