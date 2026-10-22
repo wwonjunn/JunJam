@@ -7,58 +7,98 @@
    joins in (Add 2, Add 4…), so one run climbs the whole world. Missed answers come back a few calls later.
    Right answers charge a spell; once it's full, the next right answer is a fireball: triple points and a life back.
    From the third level on, armoured brutes turn up that take two answers in a row, and each hit only knocks them back.
-   After a run, play any chord to go again. */
-let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}});
+   Daily wave: one fixed wave of 20 a day from every world, at the levels you've reached plus one above (today's
+   stretch); your first try that day earns a medal and keeps your streak. Weekly boss: 12 armoured brutes, the same all
+   week, your best try counts. After a run, play any chord to go again. */
+let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=ARCDATA.daily||{}; ARCDATA.weekly=ARCDATA.weekly||{};
 const saveArc=()=>store.set('earsArcade',ARCDATA);
 const ARC={active:false};
 const ARC_WORLDS=['degrees','intervals','chords','progs'];   // the worlds you answer by playing (Pitch is Classic only)
-const ARC_LIVES=3, ARC_STEP=6, ARC_SPELL=5;
+const ARC_LIVES=3, ARC_STEP=6, ARC_SPELL=5, ARC_SLOW=1.25;   // the walk takes 25% longer than the answer bar it replaced (a fifth slower)
+const ARC_DAILY=20, ARC_WEEKLY=12;
 const ARC_MONS=['👾','👻','🦇','🐍','🕷️'];
 const arcRungs=w=>WORLDS.find(x=>x.id===w).levels;
 // What you play to answer, per generator
 const ARC_ASK={degree:'Play the note you hear',interval:'Play the second note',chord:'Play the chord you hear, on this root',inversion:'Play the note in the bass',prog:'Play the bass line, one root at a time'};
 
+/* ---------------- days, weeks and a seeded shuffle, so a daily or weekly wave is the same wave every try ---------------- */
+const arcDay=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function arcWeek(d=new Date()){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())), day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day);
+  const y=t.getUTCFullYear(), w=Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7); return `${y}-W${String(w).padStart(2,'0')}`; }
+const arcSeed=str=>{ let h=2166136261; for(const ch of str){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; };
+const arcRng=seed=>()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+// run f with Math.random swapped for the wave's own sequence (the question generators all draw from Math.random)
+function arcSeeded(f){ if(!ARC.rng) return f(); const real=Math.random; Math.random=ARC.rng; try{ return f(); } finally{ Math.random=real; } }
+// days in a row with the daily played, ending today (or yesterday, if today's isn't done yet)
+function arcStreak(){ let n=0; const d=new Date(); if(!ARCDATA.daily[arcDay(d)]) d.setDate(d.getDate()-1);
+  while(ARCDATA.daily[arcDay(d)]){ n++; d.setDate(d.getDate()-1); } return n; }
+const ARC_MEDAL={gold:'🥇',silver:'🥈',bronze:'🥉',tried:'·'};
+// The levels a daily or weekly wave draws from: what you've reached in each world, plus one level above it (the stretch)
+function arcWavePool(kind,rng){
+  const pool=[], stretch=[];
+  ARC_WORLDS.forEach(w=>{ const rs=arcRungs(w).filter(l=>!l.boss), r=Math.min(ARCDATA.reach[w]||0,rs.length);
+    const have=kind==='weekly'?rs.slice(Math.max(0,r-2),Math.max(1,r)):rs.slice(0,Math.max(1,r)); pool.push(...have);
+    if(rs[r]) stretch.push(rs[r]); });
+  const pick=kind==='weekly'?stretch:stretch.length?[stretch[Math.floor(rng()*stretch.length)]]:[];
+  return {pool,stretch:pick};
+}
+
 /* ---------------- menu: one card per world, above the Classic levels ---------------- */
 function arcStars(w){ const n=arcRungs(w).length, r=ARCDATA.reach[w]||0; return r>n?3:r>=n?2:r>=2?1:0; }   // reach: ladder levels reached, one more once the last is cleared
 function arcPaneHTML(){
-  return `<div class="arcwrap"><div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
+  const today=ARCDATA.daily[arcDay()], wk=ARCDATA.weekly[arcWeek()], streak=arcStreak();
+  const cal=[...Array(14)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-13+i); const r=ARCDATA.daily[arcDay(d)];
+    return `<i class="${r?'on':''}${i===13?' today':''}" title="${arcDay(d)}${r?`: ${r.score.toLocaleString()}`:''}">${r?ARC_MEDAL[r.medal]:''}</i>`; }).join('');
+  const todayRow=`<div class="arctoday">
+    <button class="arcw arcday" data-arcd="daily"><span class="lt">Daily wave ${today?ARC_MEDAL[today.medal]:''}</span><span class="lst">${today?`Done today: ${today.score.toLocaleString()}. Play again for practice.`:`${ARC_DAILY} monsters from every world, plus today's stretch level. Your first try counts.`}</span><span class="fine">${streak?`🔥 ${streak}-day streak`:'Start a streak'}</span><span class="arccal">${cal}</span></button>
+    <button class="arcw arcweek" data-arcd="weekly"><span class="lt">Weekly boss ${wk&&wk.beaten?'🏆':'👹'}</span><span class="lst">${wk?`${wk.beaten?'Beaten':'Best'}: ${wk.best.toLocaleString()} (${wk.kills} of ${ARC_WEEKLY})`:`${ARC_WEEKLY} armoured brutes, faster, from your top levels and one above each. Same wave all week.`}</span><span class="fine">Resets Monday</span></button></div>`;
+  return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
     const w=WORLDS.find(x=>x.id===id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
     return `<button class="arcw" data-arc="${id}"><span class="lt">${w.name}</span><span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
-    <div class="sec" style="margin-top:18px">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
+    <div class="sec arcclassic">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
 }
 
 /* ---------------- the run ---------------- */
 function arcStart(world){
   arcStop(); synth.init();
-  Object.assign(ARC,{active:true,mode:'run',world,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,bpm:72,ctx:{},again:[],missed:{},xp:0,top:0});
-  $('modetag').textContent='Ears: Call & Response';
+  const kind=world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
+  Object.assign(ARC,{active:true,mode:'run',kind,world,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
+  if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
+    ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
+  $('modetag').textContent=kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('staff').innerHTML=staffSVG([],[]); $('verdict').className='verdict'; $('verdict').textContent='Listen, then play it back.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
   ARC.timer=setTimeout(arcCall,600);
 }
 function arcStop(){ killBus(ARC.bus); ARC.bus=null; clearTimeout(ARC.timer); clearInterval(ARC.tick); }
-const arcLevel=()=>arcRungs(ARC.world)[ARC.rung];
+const arcLevel=()=>ARC.kind==='world'?arcRungs(ARC.world)[ARC.rung]:ARC.q?ARC.q.lv:ARC.pool[0];
 // The next call: a missed one that's come due (in a new key), or a fresh one from the current rung or any below it
 function arcGen(){
   const R=ARC, due=R.again.findIndex(a=>a.at<=R.n);
-  let lv=arcLevel(), force;
+  let lv=R.kind==='world'?arcRungs(R.world)[R.rung]:null, force;
   if(due>=0){ const a=R.again.splice(due,1)[0]; lv=LEVELS[a.lv]; force={answer:a.answer}; }
+  else if(R.kind!=='world'){ const s=R.stretch.length&&Math.random()<(R.kind==='weekly'?0.35:0.2); lv=s?R.stretch[Math.floor(Math.random()*R.stretch.length)]:R.pool[Math.floor(Math.random()*R.pool.length)]; lv=LEVELS[lv.id]; }
   else if(R.rung&&Math.random()<0.3) lv=arcRungs(R.world)[Math.floor(Math.random()*R.rung)];   // older levels keep coming back
   const c=R.ctx[lv.id]||(R.ctx[lv.id]={}), q=GEN[lv.gen](lv.p,c,force);
-  q.lv=lv; q.gen=lv.gen; q.review=!!force; return q;
+  q.lv=lv; q.gen=lv.gen; q.review=!!force; q.stretch=R.kind!=='world'&&R.stretch.some(x=>x.id===lv.id); return q;
 }
 function arcCall(){
   const R=ARC; if(!R.active||R.mode!=='run') return; arcStop(); clearDraft();
-  if(R.lives<=0) return arcOver();
-  const q=R.q=arcGen(); R.n++; R.got=[]; R.done=false; R.tried=false;
+  if(R.lives<=0||R.kind!=='world'&&R.kills>=R.target&&!R.mon) return arcOver();
+  const q=R.q=arcSeeded(arcGen); R.n++; R.got=[]; R.done=false; R.tried=false;
   const bus=R.bus=newBus(); if(!bus) return;
-  const t0=now()+0.1, end=q.play(bus,t0), spb=60/R.bpm;
+  const t0=now()+0.1, end=arcSeeded(()=>q.play(bus,t0)), spb=60/R.bpm;
   const beats=q.gen==='prog'?Math.max(6,(q.roots||[]).length+3):q.gen==='chord'?6:4;
-  R.open=end-0.15; R.close=end+beats*spb; R.beats=beats; R.spb=spb; R.callEnd=end;
+  // The monster steps out as the last sound starts to fade (not once it's silent), and walks a fifth slower than the old bar.
+  // Your answer counts from the moment the question sounds: wrong keys while listening are wrong answers, so you can't
+  // feel around for it. Only the key-setting cadence before a scale degree is safe to play over (the note hasn't come yet).
+  const spawn=Math.max(t0+0.3,end-0.8);
+  R.open=q.gen==='degree'?end-1.1:t0; R.callEnd=spawn; R.close=spawn+beats*spb*ARC_SLOW; R.beats=beats; R.spb=spb;
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
-  if(!R.mon){ const brute=R.rung>=2&&Math.random()<0.25; R.mon={hp:brute?2:1,max:brute?2:1,brute,face:brute?'👹':ARC_MONS[Math.floor(Math.random()*ARC_MONS.length)],x:1}; }
-  R.walk={x0:R.mon.x,t0:end,t1:R.close};   // it waits (out of sight, or where a brute stands) until the call has finished playing
+  if(!R.mon){ const brute=arcSeeded(()=>R.kind==='weekly'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25), face=arcSeeded(()=>ARC_MONS[Math.floor(Math.random()*ARC_MONS.length)]);
+    R.mon={hp:brute?2:1,max:brute?2:1,brute,face:brute?'👹':face,x:1}; }
+  R.walk={x0:R.mon.x,t0:spawn,t1:R.close};   // it waits (out of sight, or where a brute stands) until then
   arcRender();
   kbMarks={}; if(q.gen==='degree'){ for(const m in keyEls) if(mod12(+m-q.keyPc)===0) kbMarks[m]='k-root'; } paintKeys();   // the key's home notes, to find your way
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
@@ -67,11 +107,11 @@ function arcCall(){
     if(t>R.close&&!R.done) arcMiss(null); },60);
 }
 function arcRender(){
-  const R=ARC, q=R.q, lv=q.lv, rungs=arcRungs(R.world);
+  const R=ARC, q=R.q, lv=q.lv, rungs=R.kind==='world'?arcRungs(R.world):[];
   const key=q.gen==='degree'?q.sub.match(/Key of ([^.]+)/)?.[1]:q.gen==='prog'?q.reveal.text.match(/ in ([A-G][♭♯]? (?:major|minor))/)?.[1]:null;
   const root=q.gen==='chord'||q.gen==='inversion'?pcName(q.keyPc,false):null;
-  $('arcBody').innerHTML=`<div class="etop"><span class="etitle">${WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
-    <div class="arcladder">${rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join('')}<span>${gigAccHTML(lv.name)}${q.review?' · back again':''}</span></div>
+  $('arcBody').innerHTML=`<div class="etop"><span class="etitle">${R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':WORLDS.find(w=>w.id===R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${root?`<em>Root ${gigAccHTML(root)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
     <div class="arclane"><span class="arcwall${R.lives<ARC_LIVES?' hurt':''}">🏰</span><span class="arcmon${R.mon.brute?' brute':''}${R.mon.x>=1?' wait':''}" id="arcMon"><b>${R.mon.face}</b>${R.mon.max>1?`<i>${'◆'.repeat(R.mon.hp)}${'◇'.repeat(R.mon.max-R.mon.hp)}</i>`:''}</span></div>
     <div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
@@ -80,7 +120,7 @@ function arcRender(){
     <p class="fine">Esc ends the run.</p>`;
 }
 function arcMonPos(){ const el=$('arcMon'); if(el&&ARC.mon) el.style.left=`calc(${(8+ARC.mon.x*84).toFixed(2)}% - 20px)`; }
-function arcBoom(face){ const el=$('arcMon'); if(el){ el.classList.add('boom'); el.querySelector('b').textContent=face; } }
+function arcBoom(face){ const el=$('arcMon'); if(el){ el.classList.remove('wait'); el.classList.add('boom'); el.querySelector('b').textContent=face; } }
 // Read your answer for this call. Returns the option id you played, or null while a bass line is still coming in.
 function arcRead(q,notes){
   const lo=Math.min(...notes);
@@ -99,7 +139,7 @@ function arcClick(m){
 }
 function arcNotes(notes){
   const R=ARC; if(!R.active) return;
-  if(R.mode==='over'){ if(notes.length>=3) arcStart(R.world); return; }   // any chord: go again
+  if(R.mode==='over'){ if(notes.length>=3) arcStart(R.kind==='world'?R.world:R.kind); return; }   // any chord: go again
   if(R.mode!=='run'||R.done||now()<R.open) return;
   const q=R.q;
   if(q.gen==='prog'){ // one root at a time; each must be the next chord's bass note
@@ -113,16 +153,17 @@ function arcNotes(notes){
 }
 function arcHit(){
   const R=ARC; R.done=true; clearInterval(R.tick);
-  const left=Math.max(0,(R.close-now())/(R.close-R.callEnd)), mult=1+Math.min(2,R.combo*0.1), fire=R.spell>=ARC_SPELL;
+  const left=Math.min(1,Math.max(0,(R.close-now())/(R.close-R.callEnd))), mult=1+Math.min(2,R.combo*0.1), fire=R.spell>=ARC_SPELL;
   const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1));
   R.score+=pts; R.combo++;
   let kill;
   if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC_LIVES,R.lives+1); kill='🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
-  if(kill){ arcBoom(kill); R.mon=null; } else { R.mon.x=Math.min(1,R.mon.x+0.3); arcMonPos(); }   // a brute only staggers back R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
+  if(kill){ arcBoom(kill); R.mon=null; R.kills++; } else { R.mon.x=Math.min(1,R.mon.x+0.3); arcMonPos(); }   // a brute only staggers back
+  R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
   earRecord(R.q.item,true,null); if(R.q.keyPc!=null) keyRecord(R.q.keyPc,true,null);
   let up='';
-  if(R.rungOk>=ARC_STEP){ R.rungOk=0;
+  if(R.kind==='world'&&R.rungOk>=ARC_STEP){ R.rungOk=0;
     if(R.rung<arcRungs(R.world).length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; R.bpm=Math.max(72,R.bpm-8); }   // a breath when new answers join
     else R.top++; }
   $('arcMsg').textContent=`${fire?'Fireball! ':!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${up}`; $('arcMsg').className='lmsg ok';
@@ -131,22 +172,23 @@ function arcHit(){
 }
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
-  R.lives--; R.combo=0; R.spell=0; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1; if(R.mon) R.kills++;   // it got through: one fewer in the wave
   const me=$('arcMon'); if(R.mon&&me){ me.classList.remove('wait'); me.classList.add('charge'); R.mon.x=0; arcMonPos(); }   // it charges the wall
   R.mon=null; setTimeout(()=>{ const wall=document.querySelector('.arcwall'); if(wall) wall.classList.add('hit'); if(me) me.classList.add('splat'); },320);
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
-  R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(Math.random()*3)});
+  R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(arcSeeded(Math.random)*3)});
   killBus(R.bus); const bus=R.bus=newBus();
   const known=pick!=null&&pick!=='x'&&q.options.some(o=>o.id===pick);
   const end=bus?q.compare(known?pick:null,bus,now()+0.15):now()+1.5;
   const lab=id=>(q.options.find(o=>o.id===id)||{}).label;
-  $('arcMsg').textContent=pick==null?`Too late. It was ${lab(q.answer)}.`:known?`You played ${lab(pick)}; it was ${lab(q.answer)}. Hear both.`:`It was ${lab(q.answer)}.`; $('arcMsg').className='lmsg no';
+  $('arcMsg').textContent=pick!=null&&now()<R.callEnd?`Wrong note: keys count from the moment the question sounds. It was ${lab(q.answer)}.`:pick==null?`Too late. It was ${lab(q.answer)}.`:known?`You played ${lab(pick)}; it was ${lab(q.answer)}. Hear both.`:`It was ${lab(q.answer)}.`; $('arcMsg').className='lmsg no';
   $('verdict').className='verdict no'; $('verdict').textContent=q.reveal.text;
   if(q.reveal.notes){ kbMarks={}; q.reveal.notes.forEach(m=>kbMarks[m]='k-hint'); paintKeys(); }
   R.timer=setTimeout(arcCall,Math.max(1200,(end-now())*1000+500));
 }
 function arcOver(quit){
   const R=ARC; arcStop(); clearDraft(); R.mode='over';
+  if(R.kind!=='world') return arcWaveOver(quit);
   const w=R.world, reach=R.rung+1+(R.top>0?1:0), prevBest=ARCDATA.best[w]||0;
   if(R.score>prevBest) ARCDATA.best[w]=R.score; if(reach>(ARCDATA.reach[w]||0)) ARCDATA.reach[w]=Math.min(reach,arcRungs(w).length+1);
   addXP(R.xp+Math.round(R.score/100)); saveArc(); saveEars();
@@ -158,6 +200,25 @@ function arcOver(quit){
     <p class="arcagain"><b>Play any chord to go again.</b></p>
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
+  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+}
+function arcWaveOver(quit){
+  const R=ARC, done=R.kills>=R.target&&R.lives>0, daily=R.kind==='daily';
+  const medal=!done?'tried':R.misses===0?'gold':R.misses<=2?'silver':'bronze';
+  let line='';
+  if(daily){ if(!R.practice&&(R.n>1||!quit)){ ARCDATA.daily[R.waveId]={score:R.score,medal,misses:R.misses,kills:R.kills}; line=`${ARC_MEDAL[medal]!=='·'?ARC_MEDAL[medal]+' ':''}Today's counted. 🔥 ${arcStreak()}-day streak. A new wave tomorrow.`; }
+    else line='Practice: your first try today is the one that counts.'; }
+  else { const w=ARCDATA.weekly[R.waveId]||{best:0,kills:0,beaten:false};
+    if(R.score>w.best) w.best=R.score; w.kills=Math.max(w.kills,Math.min(R.kills,R.target)); if(done) w.beaten=true; ARCDATA.weekly[R.waveId]=w;
+    line=done?'🏆 Boss beaten this week.':`${Math.min(R.kills,R.target)} of ${R.target} down. Same wave all week: try again any time.`; }
+  addXP(R.xp+Math.round(R.score/100)+(done?(daily?40:120):0)); saveArc(); saveEars();
+  const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id])=>LEVELS[id].name);
+  $('arcBody').innerHTML=`<h2>${done?(daily?'Wave cleared':'Boss beaten'):quit?'Run ended':'The wall fell'}</h2>
+    <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${Math.min(R.kills,R.target)} of ${R.target}</b>monsters</div><div><b>${R.misses}</b>misses</div>${daily?`<div><b>${ARC_MEDAL[medal]==='·'?'–':ARC_MEDAL[medal]}</b>medal</div>`:''}</div>
+    <p>${line}</p>${weak.length?`<p>Most misses: ${weak.map(gigAccHTML).join(', ')}.</p>`:''}
+    <p class="arcagain"><b>Play any chord to go again${daily?' (practice)':''}.</b></p>
+    <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
+  $('arcAgain').onclick=()=>arcStart(R.kind); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
 }
 function arcToMenu(){ arcStop(); ARC.active=false; clearDraft(); $('arcStage').hidden=true; document.body.classList.remove('earsmode');

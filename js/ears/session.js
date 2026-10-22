@@ -198,11 +198,10 @@ function earsMenuNote(t){ const el=$('earsNote'); if(el){ el.textContent=t; } }
 
 function renderEarsPane(){
   const conf=topConfusions(3);
-  let h=`<button class="back" data-home>← All modes</button><h2>Ears</h2><p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
+  let h=`<button class="back" data-home>← All modes</button><h2>Ears</h2>${arcPaneHTML()}<p>Short listening levels. Pass a level with 90% to open the next one. Each world ends with a boss: 15 questions, 3 lives, a timer and no replays.</p>
     <div class="drill"><button class="ghost" id="drillBtn" style="margin-left:0">Weakness drill</button><span id="earsNote">${conf.length?`Your biggest mix-ups: ${conf.map(confLabel).join(', ')}.`:'The drill builds itself from your mix-ups once you have some.'}</span></div>`;
   const pushed=pushedKeys();
   if(pushed) h+=`<p class="fine" style="margin:-6px 0 14px">Scale degrees and chords lean on your shakiest keys, from Hands and Ears together. Right now: ${pushed}.</p>`;
-  h+=arcPaneHTML();
   WORLDS.forEach(w=>{
     const got=w.levels.reduce((a,l)=>a+(EARDATA.stars[l.id]||0),0);
     h+=`<div class="world"><div class="wh"><span class="wn">${w.name}</span><span class="wb">${w.blurb}</span><span class="ws">${got} of ${w.levels.length*3} stars</span></div><div class="lvls">`;
@@ -218,6 +217,7 @@ function renderEarsPane(){
   $('drillBtn').onclick=()=>earsStart('drill');
   $('earsPane').querySelectorAll('.lvl').forEach(b=>b.onclick=()=>earsStart(b.dataset.lv));
   $('earsPane').querySelectorAll('[data-arc]').forEach(b=>b.onclick=()=>arcStart(b.dataset.arc));
+  $('earsPane').querySelectorAll('[data-arcd]').forEach(b=>b.onclick=()=>arcStart(b.dataset.arcd));
 }
 
 function earsKey(e){

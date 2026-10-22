@@ -668,3 +668,9 @@ body.gigmode header .modetag{display:none}
 .arcspell.ready{color:var(--wrong)} .arcspell.ready i{background:var(--wrong)}
 .arcmon.wait{opacity:0;transform:scale(.4)} .arcmon{transition:left .07s linear,opacity .25s,transform .25s}
 .arcmon.charge{transition:left .32s cubic-bezier(.5,0,1,.6)} .arcmon.splat b{animation:arcboom .4s forwards}
+.arctoday{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin:6px 0 14px}
+.arcday{border-color:var(--wrong)} .arcday .fine{color:var(--wrong);font-weight:600} .arcweek{border-color:var(--tension)}
+.arccal{display:flex;gap:3px;margin-top:4px} .arccal i{width:18px;height:18px;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--line-strong);font-style:normal;font-size:11px;line-height:18px;text-align:center;display:block}
+.arccal i.on{background:color-mix(in srgb, var(--brass) 18%, transparent);box-shadow:none} .arccal i.today{box-shadow:inset 0 0 0 1.5px var(--wrong)}
+.arccount{font-family:var(--cond);font-size:15px;color:var(--ink)}
+.arcclassic{margin-top:22px;padding-top:14px;border-top:1.5px solid var(--line-strong)} .arcweek:hover,.arcday:hover{background:color-mix(in srgb, var(--brass) 8%, transparent)}

@@ -3,7 +3,7 @@
 let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' | 'settings'
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; }},
-  {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars`; }},
+  {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); const st=arcStreak(); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars${st?` · 🔥 ${st}-day streak`:ARCDATA.daily[arcDay()]?'':' · daily wave ready'}`; }},
   {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VOICINGS.length*3} stars`},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},

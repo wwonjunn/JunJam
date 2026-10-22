@@ -36,7 +36,10 @@ A jazz piano trainer with two sides:
   root shown, the bass note, or a progression's bass line). No buttons. Right answers speed the tempo up and every six bring
   in the next level of the world's ladder; a wrong or late one plays what it was and costs one of three lives, and it comes
   back a few calls later. Right answers charge a spell (a fireball: triple points, a life back); from the third level,
-  armoured brutes need two answers in a row. Play any chord to go again.
+  armoured brutes need two answers in a row. Keys count from the moment the question sounds (no feeling around for it).
+  Daily wave: one fixed wave of 20 a day across every world at the levels you've reached plus one stretch level; your
+  first try earns a medal and keeps a day streak (14-day calendar). Weekly boss: 12 armoured brutes, the same all week.
+  Play any chord to go again.
 - **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
   learn in one key and then play in five more without looking. Import your own over MIDI.
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
