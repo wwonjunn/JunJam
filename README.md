@@ -29,6 +29,13 @@ A jazz piano trainer with two sides:
   find and it's kept under Yours. A band will play from the same charts later.
 - **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords say which chord tone your
   left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
+- **😈 Devil modes** (the post-game, with their own 💀 ranks; normal stars are untouched):
+  - Chords, per stage at ★★★★★: 260 bpm, one life, every chord on fire (3rd, 5th or 7th in the bass), odd spellings,
+    no hints. 💀 16 chords, 💀💀 32, 💀💀💀 48.
+  - Ears game, per world at ★★★: every level mixed, one life, enemies 35% faster, every one-note enemy armoured, and the
+    key held for 6 calls with the cadence only when it changes. Endless: 💀 10 down, 💀💀 20, 💀💀💀 30; double points.
+  - Comp Hero, once any song has ★★★: the chart's tempo up to 190, a hard ask on every card, and strikes (a missed
+    chord or a missed ask): three and the band walks off. 💀 finish, 💀💀 one strike at most, 💀💀💀 none.
 - **Weak keys**: Hands and Ears share one profile of how shaky each of the 12 keys is, and both lean
   on your shaky keys within every round (Hands with Smart mix on; Ears scale degrees and chords always).
 - **Voicings: Comp Hero** (the game; the cards, drill and Rush stay as Classic): you're the keys player. A real chart from

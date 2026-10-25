@@ -29,12 +29,13 @@ function renderMenu(){
   $('tiers').innerHTML=TIERS.map(t=>{
     const open=tierUnlocked(t);
     const bestAny=Math.max(0,...Object.entries(bests).filter(([k])=>k.startsWith(t.id+':')).map(([,v])=>v));
-    const sub=open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
+    const sub=t.devil?(open?`Every chord 🔥 (any chord tone in the bass), odd spellings, no hints, 1 life, ×${t.mult} points`:`Earn ★★★★★ on this ${isProgStage()?'progression':'stage'} to unlock`)
+      :open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
   const nx=nextUp(), total=STAR_IDS().reduce((a,id)=>a+starsOf(id),0);
   $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*STAR_MAX} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try. From then on 🔥 chords say which chord tone your left hand has to put at the bottom (you work out the note): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ any of them (7th too) at Cherokee tempo without losing a life. Everything stays open either way.`;
-  const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
+  const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
     return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;

@@ -187,6 +187,7 @@ const TIERS=[
   {id:'atrain',  name:'Take the A Train',bpm:160,step:6, cap:2,lives:3,mult:1.5},
   {id:'cherokee',name:'Cherokee',        bpm:240,step:8, cap:3,lives:3,mult:2},
   {id:'donna',   name:'Donna Lee',       bpm:290,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
+  {id:'devil',   name:'😈 Devil',        bpm:260,step:10,cap:3,lives:1,mult:4,devil:true},   // unlocks per stage at ★★★★★ (hands.js)
 ];
 /* Progressions as data: the common moves of J-pop, city pop and jazz, playable in any key.
    Each chord: [letter steps above the key, semitones above the key, quality id or list of variants, degree, bass degree for slash chords],

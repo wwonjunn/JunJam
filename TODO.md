@@ -1,5 +1,9 @@
 # Jun Jam to-do
 
+## Devil modes
+- [x] Chords (per stage), Ears (per world) and Comp Hero (per song), each with 💀 ranks.
+- [ ] Play-test how brutal they are; maybe a Devil leaderboard of your own bests.
+
 ## Ears (Call & Response, the game)
 Done so far: the monsters, the ladder inside a run, lives, the spell and fireball, armoured brutes, the daily wave
 with medals and a streak, the weekly boss, a reference note for every call, and the canvas lane.

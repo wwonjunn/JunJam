@@ -104,8 +104,8 @@ function arcFxCastle(c){
   const F=arcFx, x=arcWallX(), g=arcGround(), lives=ARC.lives, hit=F.t-F.wallHit<0.4?Math.sin((F.t-F.wallHit)*60)*(1-(F.t-F.wallHit)/0.4)*4:0;
   c.save(); c.translate(x+hit,g+4); c.font=`58px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText('🏰',0,0);
   c.strokeStyle='rgba(30,20,10,.75)'; c.lineWidth=2;   // cracks for each life lost
-  if(lives<ARC_LIVES){ c.beginPath(); c.moveTo(-12,-40); c.lineTo(-6,-30); c.lineTo(-10,-22); c.lineTo(-3,-14); c.stroke(); }
-  if(lives<ARC_LIVES-1){ c.beginPath(); c.moveTo(14,-46); c.lineTo(8,-36); c.lineTo(13,-27); c.lineTo(6,-18); c.lineTo(9,-8); c.stroke(); }
+  if(lives<ARC.maxLives){ c.beginPath(); c.moveTo(-12,-40); c.lineTo(-6,-30); c.lineTo(-10,-22); c.lineTo(-3,-14); c.stroke(); }
+  if(lives<ARC.maxLives-1){ c.beginPath(); c.moveTo(14,-46); c.lineTo(8,-36); c.lineTo(13,-27); c.lineTo(6,-18); c.lineTo(9,-8); c.stroke(); }
   c.restore();
   if(lives<=1&&Math.random()<0.25) arcFx.parts.push({kind:'smoke',x:x+(Math.random()-.5)*20,y:g-52,vx:(Math.random()-.5)*8,vy:-22,life:1.6,max:1.6,size:6});
   if(ARC.spell>=ARC_SPELL){ c.save(); c.globalAlpha=0.5+0.3*Math.sin(F.t*8); c.fillStyle='#ff7a2b'; c.beginPath(); c.arc(x+10,g-62,6+2*Math.sin(F.t*10),0,7); c.fill(); c.restore(); }   // the fireball, ready on the tower

@@ -7,6 +7,7 @@ let mode=store.get('mode','game'), tierId=store.get('tier','autumn');
 const tierOf=id=>TIERS.find(t=>t.id===id)||TIERS[1];
 const bestKey=(tid,st)=>`${tid}:${st}`;
 function tierUnlocked(t){
+  if(t.devil) return starsOf(stageN)>=STAR_MAX;   // Devil: earned stage by stage
   if(!t.unlock) return true;
   const bests=store.get('best2',{});
   return Object.entries(bests).some(([k,v])=>k.startsWith(t.unlock.tier+':')&&v>=t.unlock.score);
@@ -37,6 +38,10 @@ function fireFor(t,lvl){
   const k=kinds[Math.floor(Math.random()*kinds.length)], name=spellNote(60+mod12(t.root.pc+iv[k]),t.root,q).name;
   return {k,iv:iv[k],name};
 }
+/* Devil (the post-game, per stage, once it has ★★★★★): 260 bpm, one life, every chord on fire with any chord tone in
+   the bass (3rd, 5th or 7th), odd spellings (B♯maj7, F♭7), and no hints. Its own ranks: 💀 16 chords, 💀💀 32, 💀💀💀 48. */
+const devilOf=id=>HSTARS['d:'+id]||0;
+const DEVIL_RUN=[16,32,48];
 const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),'p:mix'];
 function runStars(){
   if(G.practice||G.kills<STAR_RUN) return 0;
@@ -47,13 +52,14 @@ function runStars(){
   return G.tier.bpm>=240&&G.escapes===0?5:4;
 }
 function checkStars(){
+  if(G.devil){ const id='d:'+stageN, n=DEVIL_RUN.filter(k=>G.kills>=k).length; if(n>(HSTARS[id]||0)){ HSTARS[id]=n; store.set('hstars',HSTARS); starToast(n,true); } return; }
   const n=runStars(), id=String(stageN);
   if(n>starsOf(id)){ HSTARS[id]=n; store.set('hstars',HSTARS); starToast(n); }
 }
-function starToast(n){
+function starToast(n,devil){
   const el=document.createElement('div'); el.className='pop startoast';
   el.style.left='50%'; el.style.top=(STRIP+30)+'px';
-  el.innerHTML=`<b>${starStr(n,STAR_MAX)}</b><span>New star on this ${isProgStage()?'progression':'stage'}</span>`;
+  el.innerHTML=devil?`<b>${'💀'.repeat(n)}</b><span>Devil rank on this ${isProgStage()?'progression':'stage'}</span>`:`<b>${starStr(n,STAR_MAX)}</b><span>New star on this ${isProgStage()?'progression':'stage'}</span>`;
   $('lane').appendChild(el); setTimeout(()=>el.remove(),2300);
 }
 // "Next up" on the menu: the first thing in a J-pop band keys order that still has stars to earn
@@ -86,13 +92,13 @@ function nextChords(){
   }
   G.lastSym=q.id+pc; srsServed(G.srs,statKey(q.id,pc),review);
   let root=defaultRoot(pc,q.minor);
-  if(opts.weird && Math.random()<0.4){const w=weirdRoot(pc); if(w) root=w;}
+  if((opts.weird||G.devil) && Math.random()<0.4){const w=weirdRoot(pc); if(w) root=w;}   // Devil spells them oddly too
   return [{root,q,review}];
 }
 function withReq(c){
   const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:!!c.review};
-  // fire chords: about one in three, never more than three plain chords in a row
-  if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
+  // fire chords: about one in three, never more than three plain chords in a row (in Devil, every one)
+  if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.devil||G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
   if(Math.random()<0.25){
     const list=requestsFor(t,{rootless:opts.rootless,sequence:isProgStage()});
     if(G.practice||G.tier.bpm<=120) list.push('byear','byear');
@@ -135,7 +141,7 @@ function newGame(){
   G={running:false,paused:false,practice,tier,bpm:tier.bpm,cap:practice?1:tier.cap,
      score:0,combo:0,maxCombo:0,wave:1,kills:0,lives:practice?Infinity:tier.lives,enemies:[],queue:[],
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
-     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[]};
+     lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:tier.devil&&!practice?3:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[],devil:!!tier.devil&&!practice};
   // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
   G.srs=opts.smart&&!isProgStage()?srsStart((stageN===7?QUALS:QUALS.filter(q=>q.stage===stageN)).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());

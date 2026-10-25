@@ -87,10 +87,13 @@ const GEN={
       answer:key,item:null,play:run,compare:run,reveal:{notes,text:`The shape was ${key}.`}};
   },
   degree(p,ctx,force){
-    { // a new key every question (never the one you just had), so each note is heard against its own key
+    // a new key every question (never the one you just had), so each note is heard against its own key;
+    // p.hold (the Ears game's Devil mode) keeps one key for that many questions instead
+    if(!(p.hold&&ctx.key!=null&&(ctx.held=(ctx.held||0)+1)%p.hold)){
       let pc, n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20);
       ctx.key=55+mod12(pc-55);
     }
+    const kid=ctx.key+(p.minor?'m':''), cadNow=!p.hold||ctx.cadKey!==kid; ctx.cadKey=kid;   // major to minor on the same note is a key change too   // with p.hold, the cadence only when the key changes
     const T=ctx.key, minor=!!p.minor, set=force&&force.options?force.options:p.set, tb=timbreFor(p), cad=pickCadence(minor,ctx);
     const ans=+answerFrom(set,`deg${minor?'m':''}:`,force,ctx);
     const m=pickOne([T+ans-12,T+ans,T+ans+12].filter(x=>x>=50&&x<=79));
@@ -98,7 +101,7 @@ const GEN={
     const scale=minor?MINOR:MAJOR;
     return {prompt:'Which scale degree?',sub:`Key of ${key}. Play it on your keyboard or pick below.`,
       options:[...set].sort((a,b)=>a-b).map(s=>({id:String(s),label:DEG_LABEL[s]})),answer:String(ans),item:`deg${minor?'m':''}:${ans}`,keyPc:mod12(T),
-      play:(bus,t)=>{const e=cadence(bus,t,T,minor,tb,cad); tone(m,e,1.1,96,tb,bus); return e+1.1;},
+      play:(bus,t)=>{const e=cadNow?cadence(bus,t,T,minor,tb,cad):t; tone(m,e,1.1,96,tb,bus); return e+1.1;},
       compare:(pk,bus,t)=>{ if(pk!=null&&pk!=='timeout') tone(base+(+pk),t,0.8,90,tb,bus); tone(m,t+1.0,0.9,96,tb,bus); return t+2; },
       resolve:(bus,t)=>{
         const path=[ans];

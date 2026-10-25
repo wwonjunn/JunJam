@@ -10,7 +10,11 @@
    Daily wave: one fixed wave of 20 a day from every world, at the levels you've reached plus one above (today's
    stretch); your first try that day earns a medal and keeps your streak. Weekly boss: 12 armoured brutes, the same all
    week, your best try counts. After a run, play any chord to go again. */
-let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=ARCDATA.daily||{}; ARCDATA.weekly=ARCDATA.weekly||{};
+let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=ARCDATA.daily||{}; ARCDATA.weekly=ARCDATA.weekly||{}; ARCDATA.devil=ARCDATA.devil||{};
+/* Devil (per world, once it has ★★★): every level of the world mixed, one life, enemies 35% faster, every one-note
+   enemy armoured, and the key-setting cadence only when the key changes (every 6 calls), so you hold the key in your
+   head. Endless: ranks at 10, 20 and 30 kills (💀 💀💀 💀💀💀), double points. */
+const ARC_DEVIL=[10,20,30];
 const saveArc=()=>store.set('earsArcade',ARCDATA);
 const ARC={active:false};
 const ARC_WORLDS=['degrees','melody','intervals','chords','progs'];   // the worlds you answer by playing (Pitch is Classic only)
@@ -31,7 +35,9 @@ ARC_MEL.levels.forEach((l,i)=>Object.assign(l,{world:ARC_MEL,index:i}));
 const arcWorld=id=>id==='melody'?ARC_MEL:WORLDS.find(w=>w.id===id);
 const arcLv=id=>LEVELS[id]||ARC_MEL.levels.find(l=>l.id===id);
 GEN.melody=function(p,ctx,force){
-  { let pc,n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20); ctx.key=55+mod12(pc-55); }
+  // a new key each time; Devil (p.hold) keeps one key for that many calls, with the cadence only when it changes
+  if(!(p.hold&&ctx.key!=null&&(ctx.held=(ctx.held||0)+1)%p.hold)){ let pc,n=0; do{ pc=pickKeyPc(); n++; } while(ctx.key&&pc===mod12(ctx.key)&&n<20); ctx.key=55+mod12(pc-55); }
+  const cadNow=!p.hold||ctx.cadKey!==ctx.key; ctx.cadKey=ctx.key;
   const T=ctx.key, sc=MAJOR, cad=pickCadence(false,ctx), at=i=>T+sc[((i%7)+7)%7]+12*Math.floor(i/7);
   let mel;
   if(force&&force.answer){ const [t0,ns]=force.answer.split(':'); mel=ns.split(',').map(n=>+n-(+t0)+T); }   // a missed melody, back again in the new key
@@ -44,7 +50,7 @@ GEN.melody=function(p,ctx,force){
   const ans=`${T}:${mel.join(',')}`, key=pcName(T,false)+' major', names=mel.map(m=>pcName(m,false)).join(' '), degs=mel.map(m=>DEG_LABEL[mod12(m-T)]).join(' ');
   const run=(bus,t,gap=0.45)=>{ mel.forEach((m,i)=>tone(m,t+i*gap,gap*0.93,96,'epiano',bus)); return t+(mel.length-1)*gap+0.6; };
   return {prompt:'Play the melody back',sub:`Key of ${key}.`,options:[{id:ans,label:names}],answer:ans,item:`mel:${p.len}`,keyPc:mod12(T),mel,
-    play:(bus,t)=>run(bus,cadence(bus,t,T,false,'epiano',cad)),compare:(pk,bus,t)=>run(bus,t,0.55),
+    play:(bus,t)=>run(bus,cadNow?cadence(bus,t,T,false,'epiano',cad):t),compare:(pk,bus,t)=>run(bus,t,0.55),
     reveal:{notes:mel,text:`${names}: ${degs} in ${key}.`}};
 };
 // The enemy says how many notes it takes. One note: the little one. Then one kind per length, each a bit bigger and
@@ -93,18 +99,27 @@ function arcPaneHTML(){
   return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
     const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
     return `<button class="arcw" data-arc="${id}"><span class="lt">${w.name}</span><span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
+    ${arcDevilHTML()}
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
     <div class="sec arcclassic">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
+}
+
+function arcDevilHTML(){
+  const open=ARC_WORLDS.filter(w=>arcStars(w)>=3);
+  if(!open.length) return '<p class="fine arcdevilhint">😈 Earn ★★★ on a world to unlock its Devil mode.</p>';
+  return `<div class="arcworlds">${open.map(w=>{ const d=ARCDATA.devil[w]; return `<button class="arcw arcdevil" data-arc="devil:${w}"><span class="lt">😈 ${arcWorld(w).name}</span><span class="lst">${d&&d.rank?'💀'.repeat(d.rank):'No rank yet'}${d&&d.best?` · best ${d.best.toLocaleString()}`:''}</span><span class="fine">One life, faster, armoured, the key held in your head</span></button>`; }).join('')}</div>`;
 }
 
 /* ---------------- the run ---------------- */
 function arcStart(world){
   arcStop(); synth.init();
-  const kind=world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
-  Object.assign(ARC,{active:true,mode:'run',kind,world,q:null,done:true,open:Infinity,mon:null,spell:0,rung:0,rungOk:0,lives:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
-  if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
+  let devil=false; if(world.startsWith('devil:')){ devil=true; world=world.slice(6); }
+  const kind=devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
+  Object.assign(ARC,{active:true,mode:'run',kind,world,maxLives:devil?1:ARC_LIVES,q:null,done:true,open:Infinity,mon:null,spell:0,rung:0,rungOk:0,lives:devil?1:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
+  if(devil){ ARC.pool=arcRungs(world).filter(l=>!l.boss); ARC.stretch=[]; ARC.target=Infinity; }
+  else if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
     ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
-  $('modetag').textContent=kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
+  $('modetag').textContent=devil?'Ears: 😈 Devil':kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('arcBody').innerHTML='<div id="arcHead"></div><canvas class="arccv" id="arcCv"></canvas><div id="arcInfo"></div>';
   arcFxStart($('arcCv')); arcFxTheme(0);
@@ -130,7 +145,8 @@ function arcGen(){
   if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
   else if(R.kind!=='world'){ const s=R.stretch.length&&Math.random()<(R.kind==='weekly'?0.35:0.2); lv=s?R.stretch[Math.floor(Math.random()*R.stretch.length)]:R.pool[Math.floor(Math.random()*R.pool.length)]; lv=arcLv(lv.id); }
   else if(R.rung&&Math.random()<0.3) lv=arcRungs(R.world)[Math.floor(Math.random()*R.rung)];   // older levels keep coming back
-  const c=R.ctx[lv.id]||(R.ctx[lv.id]={}), q=GEN[lv.gen](lv.p,c,force);
+  // each level keeps its own key and decks, except in Devil, where every level shares the one held key
+  const c=R.kind==='devil'?(R.ctx.shared||(R.ctx.shared={})):R.ctx[lv.id]||(R.ctx[lv.id]={}), q=GEN[lv.gen](R.kind==='devil'?{...lv.p,hold:6}:lv.p,c,force);
   q.lv=lv; q.gen=lv.gen; q.review=!!force; q.stretch=R.kind!=='world'&&R.stretch.some(x=>x.id===lv.id); return q;
 }
 function arcCall(){
@@ -139,18 +155,18 @@ function arcCall(){
   const q=R.q=arcSeeded(arcGen); R.n++; R.got=[]; R.done=false; R.tried=false;
   const bus=R.bus=newBus(); if(!bus) return;
   const t0=now()+0.1, end=arcSeeded(()=>q.play(bus,t0)), spb=60/R.bpm;
-  const sp=ARC_SPECIES[arcKind(q)], beats=q.gen==='prog'?6+1.3*q.roots.length:sp.beats;   // bigger enemies walk slower
+  const sp=ARC_SPECIES[arcKind(q)], beats=(q.gen==='prog'?6+1.3*q.roots.length:sp.beats)*(R.kind==='devil'?0.65:1);   // bigger enemies walk slower
   // The monster steps out the moment the call's last sound starts (the note, the second note, the chord, the last chord
   // of a progression), and that's when your answer starts to count: nothing before it, and no gap after it.
   const spawn=Math.max(t0,end-arcTail(q));
   R.open=spawn; R.callEnd=spawn; R.close=spawn+beats*spb*ARC_SLOW; R.beats=beats; R.spb=spb;
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   // (only one-answer enemies come armoured; a melody or a bass line is long enough already)
-  if(!R.mon){ const need=arcNeed(q), brute=need===1&&arcSeeded(()=>R.kind==='weekly'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25);
+  if(!R.mon){ const need=arcNeed(q), brute=need===1&&arcSeeded(()=>R.kind==='weekly'||R.kind==='devil'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25);
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
   R.walk={x0:R.mon.x,t0:spawn,t1:R.close};   // it waits (out of sight, or where a brute stands) until then
-  arcRender(); if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
+  arcRender(); if(R.kind==='devil') arcFxTheme(3); else if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
   kbMarks={}; const ref=arcRef(q), refPc=ref?ref.pc:q.keyPc;   // light the note you measure from, in every octave
   if(refPc!=null) for(const m in keyEls) if(mod12(+m-refPc)===0) kbMarks[m]='k-root'; if(ref&&ref.midi) kbMarks[ref.midi]='k-chord'; paintKeys();
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
@@ -163,8 +179,8 @@ function arcRender(){
   const key=q.gen==='degree'?q.sub.match(/Key of ([^.]+)/)?.[1]:q.gen==='prog'?q.reveal.text.match(/ in ([A-G][♭♯]? (?:major|minor))/)?.[1]:null;
   const ref=arcRef(q);
   const head=$('arcHead'), info=$('arcInfo'); if(!head) return;
-  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':arcWorld(R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
-    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
+  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='devil'?`😈 Devil: ${arcWorld(R.world).name}`:R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':arcWorld(R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC.maxLives)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):(R.kind==='devil'?`<b class="arccount">${R.kills} down · ${'💀'.repeat(ARC_DEVIL.filter(k=>R.kills>=k).length)||'next 💀 at 10'}</b>`:`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`)}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${ref?`<em>${gigAccHTML(ref.label)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:q.gen==='melody'?`<em>${q.mel.length} notes</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
 `;
   info.innerHTML=`<div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
@@ -200,7 +216,7 @@ function arcSeqNote(m){
 }
 function arcNotes(notes){
   const R=ARC; if(!R.active) return;
-  if(R.mode==='over'){ if(notes.length>=3) arcStart(R.kind==='world'?R.world:R.kind); return; }   // any chord: go again
+  if(R.mode==='over'){ if(notes.length>=3) arcStart(arcAgainId()); return; }   // any chord: go again
   if(R.mode!=='run'||R.done||!R.q||!R.mon||now()<R.open) return;
   const q=R.q;
   if(arcSeq()){ notes.forEach(arcSeqNote); return; }   // (from Enter after clicking; MIDI notes come in one by one)
@@ -210,10 +226,10 @@ function arcNotes(notes){
 function arcHit(notes){
   const R=ARC; R.done=true; clearInterval(R.tick);
   const left=Math.min(1,Math.max(0,(R.close-now())/(R.close-R.callEnd))), mult=1+Math.min(2,R.combo*0.1), fire=R.spell>=ARC_SPELL;
-  const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1)*(1+0.35*(arcNeed(R.q)-1)));
+  const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1)*(1+0.35*(arcNeed(R.q)-1))*(R.kind==='devil'?2:1));
   R.score+=pts; R.combo++;
   let kill;
-  if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC_LIVES,R.lives+1); kill='🔥'; }
+  if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill='🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
   arcFxHit({notes,kill:!!kill,fire,brute:R.mon.brute,pts,quick:left>0.6,combo:R.combo});
   if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+0.3);   // a brute only staggers back
@@ -244,6 +260,7 @@ function arcMiss(pick){
 }
 function arcOver(quit){
   const R=ARC; arcStop(); arcFxStop(); clearDraft(); R.mode='over';
+  if(R.kind==='devil') return arcDevilOver(quit);
   if(R.kind!=='world') return arcWaveOver(quit);
   const w=R.world, reach=R.rung+1+(R.top>0?1:0), prevBest=ARCDATA.best[w]||0;
   if(R.score>prevBest) ARCDATA.best[w]=R.score; if(reach>(ARCDATA.reach[w]||0)) ARCDATA.reach[w]=Math.min(reach,arcRungs(w).length+1);
@@ -256,6 +273,19 @@ function arcOver(quit){
     <p class="arcagain"><b>Play any chord to go again.</b></p>
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
+  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+}
+const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
+function arcDevilOver(quit){
+  const R=ARC, w=R.world, rank=ARC_DEVIL.filter(k=>R.kills>=k).length, prev=ARCDATA.devil[w]||{rank:0,best:0};
+  const rec=R.score>prev.best; ARCDATA.devil[w]={rank:Math.max(rank,prev.rank),best:Math.max(R.score,prev.best)};
+  addXP(R.xp*2+Math.round(R.score/80)); saveArc(); saveEars();
+  $('arcBody').innerHTML=`<h2>${rank?'💀'.repeat(rank)+' ':''}${quit?'Run ended':'The devil wins'}</h2>
+    <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.kills}</b>down</div><div><b>${Math.max(R.score,prev.best).toLocaleString()}</b>best${rec&&R.score?' (new)':''}</div></div>
+    <p>${rank<3?`Next rank at ${ARC_DEVIL[rank]} in one run.`:'Every Devil rank on this world.'}</p>
+    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
+  $('arcAgain').onclick=()=>arcStart(arcAgainId()); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
 }
 function arcWaveOver(quit){

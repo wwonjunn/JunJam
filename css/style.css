@@ -669,3 +669,6 @@ body.gigmode header .modetag{display:none}
 .lpkeys{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px} .lpkeys i{font-style:normal;font-family:var(--cond);font-weight:700;font-size:11px;min-width:22px;height:20px;line-height:20px;text-align:center;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--line-strong);color:var(--muted)}
 .lpkeys i.on{background:var(--chord);color:#fff;box-shadow:none} .lpkeys i.next{box-shadow:inset 0 0 0 2px var(--brass);color:var(--brass)}
 .vcask em.vcf{font-family:var(--cond);font-weight:700;font-size:17px;color:var(--chord);border-color:var(--chord)}
+.stage[data-tier="devil"]{border-color:#b3261e} .stage[data-tier="devil"] .t{color:#b3261e} .st .devil{letter-spacing:0;font-size:12px}
+.arcdevil{border-color:#b3261e;background:color-mix(in srgb, #b3261e 6%, transparent)} .arcdevil .lt{color:#b3261e} .arcdevilhint{margin:2px 0 8px}
+.chstrikes{font-family:var(--cond);font-size:16px;letter-spacing:3px;color:#b3261e} .chcard .seg button[data-chd="devil"]{color:#b3261e} .chcard .seg button[data-chd="devil"][aria-pressed="true"]{background:#b3261e;color:#fff}

@@ -5,11 +5,16 @@
    come to you. Timing: perfect, good or late; miss the chord altogether and the band loses heart. Smooth voice
    leading (moving your hands as little as possible) scores a bonus. The band meter empties on misses: at zero the
    band walks off. Finish the song to clear it. The Rush and the voicing cards stay as they were (Classic). */
-let CHDATA=store.get('comphero',{best:{},stars:{},song:'b:autumn-leaves',diff:'normal'});
+let CHDATA=store.get('comphero',{best:{},stars:{},song:'b:autumn-leaves',diff:'normal'}); CHDATA.devil=CHDATA.devil||{};
 const saveCh=()=>store.set('comphero',CHDATA);
 const CH={active:false};
 const CH_DIFF={easy:{name:'Easy',tempo:0.6,max:96,tags:{any:7,wide:3}},normal:{name:'Normal',tempo:0.8,max:132,tags:{any:3,tension:2,rootless:2,five:2,wide:2}},
-  hard:{name:'Hard',tempo:1,max:168,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}}};
+  hard:{name:'Hard',tempo:1,max:168,tags:{tension:2,rootless:2,five:2,wide:1,diff:2,named:2}},
+  // Devil (once any song has ★★★): the chart's own tempo up to 190, a hard ask on every card, and strikes instead of the
+  // band meter: a missed chord or a missed ask is a strike, three and the band walks off. Ranks per song: 💀 finish,
+  // 💀💀 one strike at most, 💀💀💀 none.
+  devil:{name:'😈 Devil',tempo:1,max:190,devil:true,tags:{tension:2,rootless:2,five:2,wide:2,diff:3,named:2}}};
+const chDevilOpen=()=>Object.values(CHDATA.stars).some(n=>n>=3);
 const CH_TAG={any:'any voicing',tension:'with a 9, 11 or 13',rootless:'rootless',five:'5 notes or more',wide:'over two octaves',diff:'not your last shape',named:'a named one'};
 const CH_SETTLE=SETTLE/1000;   // a chord is read once your hands settle; its time is when they landed
 let CH_SONGS=null;   // the built-in charts never change, so this is worked out once
@@ -18,10 +23,10 @@ const chSongs=()=>CH_SONGS||(CH_SONGS=GIG_BUILTIN.filter(s=>gigTimeline(s).some(
 /* ---------------- menu card (Voicings pane) ---------------- */
 function chPaneHTML(){
   const songs=chSongs(), cur=CHDATA.song, b=CHDATA.best[cur+':'+CHDATA.diff];
-  const groups=GIG_GENRES.filter(g=>g[0]!=='all').map(([g,n])=>{ const ss=songs.filter(s=>s.genre===g); return ss.length?`<optgroup label="${n}">${ss.map(s=>`<option value="${s.id}"${s.id===cur?' selected':''}>${trEsc(s.title)}${CHDATA.stars[s.id]?' '+'★'.repeat(CHDATA.stars[s.id]):''}</option>`).join('')}</optgroup>`:''; }).join('');
+  const groups=GIG_GENRES.filter(g=>g[0]!=='all').map(([g,n])=>{ const ss=songs.filter(s=>s.genre===g); return ss.length?`<optgroup label="${n}">${ss.map(s=>`<option value="${s.id}"${s.id===cur?' selected':''}>${trEsc(s.title)}${CHDATA.stars[s.id]?' '+'★'.repeat(CHDATA.stars[s.id]):''}${CHDATA.devil[s.id]?' '+'💀'.repeat(CHDATA.devil[s.id]):''}</option>`).join('')}</optgroup>`:''; }).join('');
   const rnd=`<option value="random"${cur==='random'?' selected':''}>🎲 Random chart</option>`;
   return `<div class="vcrush chcard"><div><b>Comp Hero</b><span>You're the keys player. A real chart plays with bass and drums; land a two-hand voicing on every chord as it reaches the line. Each card asks for a kind of voicing, and when you play a named one, it tells you which. Miss chords and the band walks off.</span></div>
-    <div class="vcrushgo"><select id="chSong">${rnd}${groups}</select><div class="seg" role="group">${Object.entries(CH_DIFF).map(([k,d])=>`<button data-chd="${k}" aria-pressed="${CHDATA.diff===k}">${d.name}</button>`).join('')}</div>
+    <div class="vcrushgo"><select id="chSong">${rnd}${groups}</select><div class="seg" role="group">${Object.entries(CH_DIFF).map(([k,d])=>`<button data-chd="${k}" aria-pressed="${CHDATA.diff===k}"${d.devil&&!chDevilOpen()?' disabled title="Earn ★★★ on any song to unlock"':''}>${d.name}</button>`).join('')}</div>
     <button class="go" id="chGo">Play</button>${b?`<span class="fine">Best ${b.toLocaleString()}</span>`:''}</div></div>`;
 }
 function chBindPane(P){
@@ -33,13 +38,14 @@ function chBindPane(P){
 /* ---------------- the run ---------------- */
 function chStart(id){
   chStop(); synth.init(); drumsInit();
+  if(CH_DIFF[CHDATA.diff].devil&&!chDevilOpen()) CHDATA.diff='hard';
   if(id==='random'){ const all=chSongs().filter(s=>!CH.song||s.id!==CH.song.id); id=all[Math.floor(Math.random()*all.length)].id; CH.random=true; } else CH.random=false;
   const song=gigById(id)||chSongs()[0], D=CH_DIFF[CHDATA.diff], bpm=Math.round(Math.min(D.max,song.tempo*D.tempo)), spb=60/bpm;
   const cards=[]; gigTimeline(song).forEach((bar,bi)=>bar.chords.forEach(ch=>{ if(!ch.c) return; const q=Q[ch.c.qid]; if(!q) return;
     cards.push({bi,beat:ch.at,dur:ch.dur,c:ch.c,q,sym:rootName(ch.c.root)+ch.c.suf+(ch.c.bass?'/'+rootName(ch.c.bass):''),state:'up'}); }));
   const t0=now()+2*song.beats*spb+0.3;   // two bars of count-in
   cards.forEach((k,i)=>{ k.t=t0+k.beat*spb; k.end=k.t+k.dur*spb; k.tag=chPickTag(k,D,i); });
-  Object.assign(CH,{active:true,mode:'run',song,D,bpm,spb,t0,cards,cur:0,meter:0.6,score:0,combo:0,best:0,hits:{perfect:0,good:0,late:0,miss:0},tagsMet:0,named:{},prev:null,prevShape:null,parts:[],pops:[],shake:0});
+  Object.assign(CH,{active:true,mode:'run',song,D,bpm,spb,t0,cards,cur:0,meter:0.6,strikes:0,score:0,combo:0,best:0,hits:{perfect:0,good:0,late:0,miss:0},tagsMet:0,named:{},prev:null,prevShape:null,parts:[],pops:[],shake:0});
   CH.tEnd=cards.length?cards[cards.length-1].end:t0;
   hideOv(); document.body.classList.add('nohud','vcmode'); document.body.classList.remove('menu'); $('voiceStage').hidden=false; $('modetag').textContent='Voicings: Comp Hero';
   $('vcBody').innerHTML=`<div id="chHead"></div><canvas class="chcv" id="chCv"></canvas><div class="lmsg" id="chMsg"></div><p class="fine">Esc ends the song. Play a little early: a chord counts from when your hands land.</p>`;
@@ -70,7 +76,8 @@ function chBand(){
 function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.cw=r.width; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
 function chHead(){ const R=CH, h=$('chHead'); if(!h) return; const n=R.cards.length, done=R.cards.filter(c=>c.state!=='up'&&c.state!=='on').length;
   h.innerHTML=`<div class="etop"><span class="etitle">${trEsc(R.song.title)}</span><span>${R.D.name} · ♩ = ${R.bpm}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>${done} of ${n}</span></div>
-    <div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`; }
+    ${R.D.devil?`<div class="chmeter"><span>Strikes</span><b class="chstrikes">${'✖'.repeat(R.strikes)}${'○'.repeat(3-R.strikes)}</b></div>`:`<div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`}`; }
+function chStrike(){ const R=CH; R.strikes++; R.shake=10; chHead(); if(R.strikes>=3) chOver(false); }
 
 /* ---------------- reading what you play ---------------- */
 const chShape=ns=>{ const s=[...new Set(ns)].sort((a,b)=>a-b); return s.map(m=>m-s[0]).join(','); };
@@ -112,6 +119,7 @@ function chNotes(notes){
   R.score+=pts; R.meter=Math.min(1,R.meter+({perfect:0.06,good:0.045,late:0.02}[grade])*(met?1:0.5));
   Object.assign(k,{state:'hit',grade,met,named,pts,hitAt:now()}); R.prev=[...new Set(notes)]; R.prevShape=chShape(notes);
   chBurst(k); chHead();
+  if(R.D.devil&&!met) chStrike();   // in Devil the ask isn't optional
   const bits=[{perfect:'Perfect',good:'Good',late:'Late'}[grade],named?named.name:null,k.tag!=='any'?(met?`✓ ${CH_TAG[k.tag]}`:`✗ not ${CH_TAG[k.tag]}`):null,smooth?'smooth':null].filter(Boolean);
   chFlash(`${k.sym}: ${bits.join(' · ')}  +${pts}`,met?'ok':'');
   kbMarks={}; R.prev.forEach(m=>kbMarks[m]=met?'k-chord':'k-tension'); paintKeys();
@@ -120,7 +128,7 @@ function chLogic(){
   const R=CH; if(!R.active||R.mode!=='run') return; const t=now();
   R.cards.forEach(c=>{ if(c.state==='up'&&t>=c.t) c.state='on';
     if((c.state==='up'||c.state==='on')&&t>=c.end){ c.state='miss'; c.missAt=t; R.combo=0; R.hits.miss++; R.meter-=0.14; R.shake=8; chHead(); chFlash(`Missed ${c.sym}`,'no');
-      if(R.meter<=0){ R.meter=0; chOver(false); } } });
+      if(R.D.devil) chStrike(); else if(R.meter<=0){ R.meter=0; chOver(false); } } });
   if(R.mode==='run'&&t>R.tEnd+0.6) chOver(true);
 }
 function chFlash(text,cls){ const m=$('chMsg'); if(m){ m.textContent=text; m.className='lmsg'+(cls?' '+cls:''); } }
@@ -168,12 +176,15 @@ function chOver(finished,quit){
   const played=R.hits.perfect+R.hits.good+R.hits.late, reached=played+R.hits.miss, acc=reached?played/reached:0,   // of the chords that came by
      key=R.song.id+':'+CHDATA.diff, prev=CHDATA.best[key]||0;
   const stars=!finished?0:acc>=0.95&&R.tagsMet>=played*0.8?3:acc>=0.85?2:1;
-  if(R.score>prev) CHDATA.best[key]=R.score; if(stars>(CHDATA.stars[R.song.id]||0)) CHDATA.stars[R.song.id]=stars;
+  if(R.score>prev) CHDATA.best[key]=R.score;
+  const skulls=R.D.devil&&finished?(R.strikes===0?3:R.strikes<=1?2:1):0;
+  if(R.D.devil){ if(skulls>(CHDATA.devil[R.song.id]||0)) CHDATA.devil[R.song.id]=skulls; }
+  else if(stars>(CHDATA.stars[R.song.id]||0)) CHDATA.stars[R.song.id]=stars;
   addXP(Math.round(R.score/80)+(finished?50:0)); saveCh();
   const names=Object.entries(R.named).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id,k])=>`${gigAccHTML(VOICE[id].name)}${k>1?` ×${k}`:''}`);
-  $('vcBody').innerHTML=`<h2>${finished?(stars===3?'Standing ovation':'Song done'):quit?'Song stopped':'The band walked off'}</h2>
+  $('vcBody').innerHTML=`<h2>${finished?(R.D.devil?(skulls===3?'Flawless. The devil bows':'Survived the devil'):stars===3?'Standing ovation':'Song done'):quit?'Song stopped':'The band walked off'}</h2>
     <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${played} of ${reached}</b>chords landed</div><div><b>${R.hits.perfect}</b>perfect</div><div><b>${R.best}</b>best combo</div><div><b>${R.tagsMet}</b>asks met</div></div>
-    ${finished?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,CHDATA.stars[R.song.id]||0))}</span></div>`:''}
+    ${R.D.devil?`<div class="stars eresults" style="margin:0"><span class="stars">${'💀'.repeat(Math.max(skulls,CHDATA.devil[R.song.id]||0))||'–'}</span></div><p class="fine">😈 💀 finish the song, 💀💀 with one strike at most, 💀💀💀 with none.</p>`:finished?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,CHDATA.stars[R.song.id]||0))}</span></div>`:''}
     ${names.length?`<p>Named voicings you played: ${names.join(', ')}.</p>`:'<p>None of your voicings were ones from the library this time. Open a card in Voicings to pick up a named one.</p>'}
     <p class="fine">★ finish the song. ★★ land 85% of the chords. ★★★ 95%, and meet the ask on most of them. Best on ${CH_DIFF[CHDATA.diff].name}: ${Math.max(prev,R.score).toLocaleString()}.</p>
     <p class="arcagain"><b>Play any chord to go again${R.random?' (another random chart)':''}.</b></p>
