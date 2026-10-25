@@ -43,7 +43,7 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 - [ ] Pick the section of a song (or a loop of it) so long charts don't take forever.
 - [ ] Graphics pass like Ears: a stage, a crowd that reacts, the band members.
 - [ ] A collection page: every named voicing you've played in a song gets ticked off.
-- [ ] Show the hand formula ("L 1 5 9 · R ♭3 ♭7 11") instead of asking you to remember names.
+- [x] Show the hand formula ("L 1 5 9 · R ♭3 ♭7 11") next to the name in the drill and Rush, until ★★ on that voicing.
 
 ## Reharm
 - [ ] A game (Loop Station: a loop that keeps playing, the slot glows, you play the move in the band, then a new key).
