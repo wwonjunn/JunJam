@@ -98,7 +98,18 @@ function nextChords(){
   if((opts.weird||G.devil) && Math.random()<0.4){const w=weirdRoot(pc); if(w) root=w;}   // Devil spells them oddly too
   return [{root,q,review}];
 }
+/* 💚 life chords (Game mode): about one chord in 18, glowing green, harder than the stage (a chord from a harder stage,
+   on chord stages; always on fire, any chord tone in the bass). Clear it first try, no hint: one life back (a big bonus
+   if you're full). Let it go and it costs nothing. */
+const LIFE_EVERY=18;
+function lifeChord(c){
+  if(!isProgStage()){ const harder=QUALS.filter(q=>q.stage>Math.min(5,typeof stageN==='number'&&stageN<=6?stageN:4)&&q.bass==null);
+    if(harder.length){ const q=pickOne(harder), pc=Math.floor(Math.random()*12); c={...c,q,root:defaultRoot(pc,q.minor),rn:null}; } }
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:false,life:true};
+  t.fire=fireFor(t,3); return t;
+}
 function withReq(c){
+  if(G&&!G.practice&&G.kills>=4&&Math.random()<1/LIFE_EVERY) return lifeChord(c);
   const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:!!c.review};
   // fire chords: about one in three, never more than three plain chords in a row (in Devil, every one)
   if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.devil||G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
@@ -167,7 +178,7 @@ function spawn(){
   const req=t.req;
   el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
     +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'')+(t.review?'<span class="rv" title="Back for another go: you missed it or it was slow last time">↻</span>':'');
-  if(t.fire) el.classList.add('fire');
+  if(t.fire) el.classList.add('fire'); if(t.life){ el.classList.add('life'); el.insertAdjacentHTML('beforeend','<span class="req lifelab">💚 first try: +1 life</span>'); }
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);
@@ -199,6 +210,7 @@ function tick(now){
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc'); srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),'fail');
+    if(e.t.life){ G.cool=Math.max(0.4,60/G.bpm); updateHud(); G.raf=requestAnimationFrame(tick); return; }   // a life chord that gets away costs nothing
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
@@ -240,6 +252,7 @@ function submit(notes){
     else reqNote=`The request was ${REQ_LABEL[e.req]}, so no double points this time.`;
   }
   if(e.t.fire){ res.tags.push({t:`🔥 ${e.t.fire.name} in the bass`,p:res.total*2}); res.total*=3; G.fireCleared++; }
+  if(e.t.life&&!G.practice){ if(e.misses===0&&!e.hinted){ if(G.lives<G.tier.lives){ G.lives++; res.tags.push({t:'💚 +1 life',p:0}); } else { res.tags.push({t:'💚 Full on lives: bonus',p:1000}); res.total+=1000; } } else res.tags.push({t:'💚 Not first try: no life this time',p:0}); }
   if(!G.practice) res.total=Math.round(res.total*G.tier.mult);
   recordStat(e.t,'clear',(performance.now()-e.born)/1000,e.misses===0);
   G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();

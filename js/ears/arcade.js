@@ -15,6 +15,10 @@ let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=A
    enemy armoured, and the key-setting cadence only when the key changes (every 6 calls), so you hold the key in your
    head. Endless: ranks at 10, 20 and 30 kills (💀 💀💀 💀💀💀), double points. */
 const ARC_DEVIL=[10,20,30];
+/* 💚 life fairies 🧚: about one call in 15 (never during a boss), asking from a harder level than you're on (the next
+   rung up, or the top of the pool). Answer it and you win a life back (a bonus if you're full); let it go and nothing's
+   lost: it just flies off. */
+const ARC_LIFE_EVERY=15;
 /* Bosses. In a world's run: after every three levels of the ladder, a 👹 that takes 5 hits, asking from those three
    levels; at the top of the ladder the chapter boss 🐲, 8 hits, from every level. A miss costs a life and the boss stays.
    The final boss 😈 is its own run: 20 hits, questions from every world (once every world has ★★). Beating a boss
@@ -152,7 +156,8 @@ const arcLevel=()=>ARC.kind==='world'?arcRungs(ARC.world)[ARC.rung]:ARC.q?ARC.q.
 function arcGen(){
   const R=ARC, due=R.again.findIndex(a=>a.at<=R.n);
   let lv=R.kind==='world'?arcRungs(R.world)[R.rung]:null, force;
-  if(R.mon&&R.mon.boss||R.bossNext){ const b=R.mon&&R.mon.boss?R.mon.bossOf:R.bossNext; lv=arcLv(b.pool[Math.floor(Math.random()*b.pool.length)].id); }
+  if(R.lifeNext){ const rs=R.kind==='world'?arcRungs(R.world):null, top=rs?rs[Math.min(rs.length-1,R.rung+1)]:R.pool[R.pool.length-1-Math.floor(Math.random()*Math.min(3,R.pool.length))]; lv=arcLv(top.id); }   // a level harder than now
+  else if(R.mon&&R.mon.boss||R.bossNext){ const b=R.mon&&R.mon.boss?R.mon.bossOf:R.bossNext; lv=arcLv(b.pool[Math.floor(Math.random()*b.pool.length)].id); }
   else if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
   else if(R.kind!=='world'){ const s=R.stretch.length&&Math.random()<(R.kind==='weekly'?0.35:0.2); lv=s?R.stretch[Math.floor(Math.random()*R.stretch.length)]:R.pool[Math.floor(Math.random()*R.pool.length)]; lv=arcLv(lv.id); }
   else if(R.rung&&Math.random()<0.3) lv=arcRungs(R.world)[Math.floor(Math.random()*R.rung)];   // older levels keep coming back
@@ -163,6 +168,7 @@ function arcGen(){
 function arcCall(){
   const R=ARC; if(!R.active||R.mode!=='run') return; arcStop(); clearDraft();
   if(R.lives<=0||R.kind!=='world'&&R.kills>=R.target&&!R.mon) return arcOver();
+  R.lifeNext=!R.mon&&!R.bossNext&&R.n>=4&&arcSeeded(()=>Math.random()<1/ARC_LIFE_EVERY);
   const q=R.q=arcSeeded(arcGen); R.n++; R.got=[]; R.done=false; R.tried=false;
   const bus=R.bus=newBus(); if(!bus) return;
   const t0=now()+0.1, end=arcSeeded(()=>q.play(bus,t0)), spb=60/R.bpm;
@@ -174,6 +180,7 @@ function arcCall(){
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   // (only one-answer enemies come armoured; a melody or a bass line is long enough already)
   if(!R.mon&&R.bossNext){ const b=R.bossNext; R.bossNext=null; R.mon={boss:true,bossOf:b,hp:b.hp,max:b.hp,face:b.face,size:b.size,x:1}; setTimeout(()=>arcFxBanner(`${b.name}!`,'#ff6b6b'),200); }
+  if(!R.mon&&R.lifeNext){ R.mon={life:true,hp:1,max:1,face:'🧚',size:42,x:1}; R.lifeNext=false; }
   if(!R.mon){ const need=arcNeed(q), brute=need===1&&arcSeeded(()=>R.kind==='weekly'||R.kind==='devil'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25);
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
@@ -245,6 +252,7 @@ function arcHit(notes){
   if(fire){ R.spell=0; R.mon.hp=boss?R.mon.hp-3:0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill=R.mon.hp>0?null:'🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
   let bossDown='';
+  if(R.mon.life&&kill){ if(R.lives<R.maxLives){ R.lives++; bossDown=' 💚 +1 life!'; } else { R.score+=800; bossDown=' 💚 Full on lives: +800'; } setTimeout(()=>arcFxBanner(bossDown.trim(),'#7dffb0'),250); }
   if(boss&&kill){ const b=R.mon.bossOf, bonus=400*b.hp; R.score+=bonus; R.lives=Math.min(R.maxLives,R.lives+1); bossDown=` ${b.name} down! +${bonus}`; setTimeout(()=>arcFxBanner(`${b.name} down!`,'#ffd23f'),300); if(b.kind==='final') R.won=true; }
   arcFxHit({notes,kill:!!kill,fire,brute:R.mon.brute,pts,quick:left>0.6,combo:R.combo});
   if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+(boss?0.18:0.3));   // a brute (or a boss) only staggers back
@@ -262,6 +270,8 @@ function arcHit(notes){
 }
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
+  if(R.mon&&R.mon.life){ arcFxMiss(); R.mon=null; arcRender(); $('arcMsg').textContent=`💚 It got away: no harm done. It was ${(q.options.find(o=>o.id===q.answer)||{}).label}.`; $('arcMsg').className='lmsg';   // a missed fairy costs nothing
+    killBus(R.bus); const b2=R.bus=newBus(); const e2=b2?q.compare(null,b2,now()+0.15):now()+1; R.timer=setTimeout(arcCall,Math.max(1200,(e2-now())*1000+400)); return; }
   R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
   if(R.mon&&R.mon.boss){ arcFxWallHit(); R.mon.x=Math.max(R.mon.x,0.55); }   // a boss hits the wall, backs off, and stays
   else { if(R.mon) R.kills++; arcFxMiss(); R.mon=null; }   // it got through (one fewer in a wave), winding up and charging the wall

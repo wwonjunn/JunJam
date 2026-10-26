@@ -7,6 +7,9 @@ let VCDATA=store.get('voicings',{stars:{},best:{},pool:'learned',fam:'all'});
 const saveVc=()=>store.set('voicings',VCDATA);
 const VC={active:false};
 const VC_KEYS=5, VC_LIVES=3;
+// 💚 life voicings in Rush and the bosses: about one in 16, a ●●● voicing with no formula and no shape. Play it in time
+// and win a life back (a bonus if you're full); run out of time and nothing's lost.
+const VC_LIFE_EVERY=16;
 /* Bosses: a gauntlet after every three or four chord types (every voicing of those types once, each in a new key, three
    lives, the Rush clock; a miss comes back later), a chapter boss for each family of chords, and the final boss: all of
    them. Beat one for its 👑. */
@@ -214,10 +217,11 @@ function vcRushNext(){
   if(R.boss&&!R.deck.length&&due<0&&R.again.length) due=0;   // a boss: the misses still owed come back before it's done
   if(R.boss&&!R.deck.length&&due<0){ R.won=true; return vcRushOver(); }   // every voicing played: the boss is beaten
   let item;
-  if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
+  if(R.n>=4&&due<0&&Math.random()<1/VC_LIFE_EVERY){ const hard=VOICINGS.filter(v=>v.diff===3); item={v:hard[Math.floor(Math.random()*hard.length)],pc:pickKeyPc(),of:1,i:0,life:true}; }
+  else if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
   else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
-  const t=vcIn(item.v,item.pc), fresh=!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
+  const t=vcIn(item.v,item.pc), fresh=!item.life&&!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
   R.seen.add(item.v.id);
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
   Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
@@ -232,7 +236,7 @@ function vcRushRender(){
   const R=VC, it=R.item, t=R.t;
   $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.boss?`${R.boss.kind==='final'?'😈':R.boss.kind==='chapter'?'👑':'👹'} ${gigAccHTML(R.boss.name)} · ${R.cleared} of ${R.pool.length}`:'Rush'}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="ebar vcbar"><i id="vcBar" style="width:${R.lost?0:Math.max(0,100*R.left/R.secs)}%"${R.lost?' class="boss"':''}></i></div>
-    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
+    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${it.life?'<em class="vclife">💚 +1 life</em>':vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
     ${vcDiagram(t,R.fresh||R.lost)}
     <div class="lmsg" id="vcMsg">${R.lost?'Time. Play it to go on.':''}</div>
     <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcEnd">End</button></div>`;
@@ -240,6 +244,7 @@ function vcRushRender(){
 }
 function vcRushTimeout(){
   const R=VC; clearInterval(R.tick); if(R.lost) return;
+  if(R.item.life){ R.lost=true; R.solved=true; vcRushRender(); vcHintKeys(R.t); vcStaff(R.t); vcPlay(R.t); $('vcMsg').textContent='💚 It got away: no harm done. This was the shape.'; $('vcMsg').className='lmsg'; R.timer=setTimeout(vcRushNext,2200); return; }   // a missed life voicing costs nothing
   R.lost=true; R.lives--; R.combo=0; R.missed[R.item.v.id]=(R.missed[R.item.v.id]||0)+1;
   R.again.push({v:R.item.v,pc:R.item.pc,at:R.n+3+Math.floor(Math.random()*3)});
   R.chain=R.chain.filter(x=>x.v.id!==R.item.v.id);
@@ -253,8 +258,9 @@ function vcRushNotes(notes){
     clearInterval(R.tick); R.solved=true;
     if(R.lost){ $('vcMsg').textContent='That\'s it. It\'ll come back.'; $('vcMsg').className='lmsg ok'; R.timer=setTimeout(vcRushNext,900); return; }
     const frac=Math.max(0,R.left/R.secs), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+150*frac)*mult*(R.item.v.diff>1?1+0.25*(R.item.v.diff-1):1));
-    R.score+=pts; R.combo++; R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
-    $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}`; $('vcMsg').className='lmsg ok';
+    R.score+=pts; R.combo++; if(!R.item.life) R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
+    let life=''; if(R.item.life){ if(R.lives<VC_LIVES){ R.lives++; life='  💚 +1 life!'; } else { R.score+=600; life='  💚 Full on lives: +600'; } }
+    $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}${life}`; $('vcMsg').className='lmsg ok';
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.item.v.name}.`;
     R.timer=setTimeout(vcRushNext,R.chain.length?380:650); return;
   }

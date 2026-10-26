@@ -128,6 +128,7 @@ function arcFxMonster(c,M){
   const kb=M.kb&&F.t-M.kb<0.25?(1-(F.t-M.kb)/0.25):0;   // the stagger after a hit
   const near=1-F.disp, hurry=near>0.75?Math.sin(F.t*40)*1.5:0;   // close to the wall it jitters: hurry up
   c.save(); c.fillStyle='rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(x,g+3,size*0.38*ease,5*ease,0,0,7); c.fill(); c.restore();
+  if(M.life){ const gr=c.createRadialGradient(x,g-size*0.5,2,x,g-size*0.5,size*0.9); gr.addColorStop(0,`rgba(125,255,176,${0.5+0.2*Math.sin(F.t*6)})`); gr.addColorStop(1,'rgba(125,255,176,0)'); c.fillStyle=gr; c.beginPath(); c.arc(x,g-size*0.5,size*0.9,0,7); c.fill(); }   // a 💚 fairy glows
   for(let i=(M.left||1)-1;i>=1;i--){ const sx=x+i*size*ARC_SEG, sb=Math.abs(Math.sin(walkT-i*0.7))*3, r=size*0.2*ease;   // one body segment per note still to play
     c.fillStyle='rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(sx,g+3,r,3,0,0,7); c.fill();
     const grd=c.createRadialGradient(sx-r*0.3,g-r-sb-r*0.3,1,sx,g-r-sb,r); grd.addColorStop(0,'#bff0a0'); grd.addColorStop(1,'#4f9a3c');

@@ -44,7 +44,10 @@ function chStart(id){
   const cards=[]; gigTimeline(song).forEach((bar,bi)=>bar.chords.forEach(ch=>{ if(!ch.c) return; const q=Q[ch.c.qid]; if(!q) return;
     cards.push({bi,beat:ch.at,dur:ch.dur,c:ch.c,q,sym:rootName(ch.c.root)+ch.c.suf+(ch.c.bass?'/'+rootName(ch.c.bass):''),state:'up'}); }));
   const t0=now()+2*song.beats*spb+0.3;   // two bars of count-in
-  cards.forEach((k,i)=>{ k.t=t0+k.beat*spb; k.end=k.t+k.dur*spb; k.tag=chPickTag(k,D,i); });
+  cards.forEach((k,i)=>{ k.t=t0+k.beat*spb; k.end=k.t+k.dur*spb; k.tag=chPickTag(k,D,i);
+    // 💚 life cards: about one in 16, asking for a named voicing. Meet it: in Devil a strike is wiped, otherwise a big lift to
+    // the band. Miss it: nothing lost.
+    if(i>=4&&Math.random()<1/16&&VOICINGS.some(v=>v.qid===k.c.qid)){ k.life=true; k.tag='named'; } });
   Object.assign(CH,{active:true,mode:'run',song,D,bpm,spb,t0,cards,cur:0,meter:0.6,strikes:0,score:0,combo:0,best:0,hits:{perfect:0,good:0,late:0,miss:0},tagsMet:0,named:{},prev:null,prevShape:null,parts:[],pops:[],shake:0});
   CH.tEnd=cards.length?cards[cards.length-1].end:t0;
   hideOv(); document.body.classList.add('nohud','vcmode'); document.body.classList.remove('menu'); $('voiceStage').hidden=false; $('modetag').textContent='Voicings: Comp Hero';
@@ -119,7 +122,8 @@ function chNotes(notes){
   R.score+=pts; R.meter=Math.min(1,R.meter+({perfect:0.06,good:0.045,late:0.02}[grade])*(met?1:0.5));
   Object.assign(k,{state:'hit',grade,met,named,pts,hitAt:now()}); R.prev=[...new Set(notes)]; R.prevShape=chShape(notes);
   chBurst(k); chHead();
-  if(R.D.devil&&!met) chStrike();   // in Devil the ask isn't optional
+  if(k.life&&met){ if(R.D.devil){ if(R.strikes>0){ R.strikes--; chHead(); } } else R.meter=Math.min(1,R.meter+0.3); R.pops=[{text:R.D.devil?'💚 Strike wiped!':'💚 The band lifts!',x:(R.hitX||110)+20,y:R.H*0.5-70,t0:now(),col:'#7dffb0'}]; }
+  if(R.D.devil&&!met&&!k.life) chStrike();   // in Devil the ask isn't optional (a life card's is a bonus)
   const bits=[{perfect:'Perfect',good:'Good',late:'Late'}[grade],named?named.name:null,k.tag!=='any'?(met?`✓ ${CH_TAG[k.tag]}`:`✗ not ${CH_TAG[k.tag]}`):null,smooth?'smooth':null].filter(Boolean);
   chFlash(`${k.sym}: ${bits.join(' · ')}  +${pts}`,met?'ok':'');
   kbMarks={}; R.prev.forEach(m=>kbMarks[m]=met?'k-chord':'k-tension'); paintKeys();
@@ -127,6 +131,7 @@ function chNotes(notes){
 function chLogic(){
   const R=CH; if(!R.active||R.mode!=='run') return; const t=now();
   R.cards.forEach(c=>{ if(c.state==='up'&&t>=c.t) c.state='on';
+    if((c.state==='up'||c.state==='on')&&t>=c.end&&c.life){ c.state='miss'; c.missAt=t; chFlash(`💚 ${c.sym} got away: no harm done`,''); return; }   // a missed life card costs nothing
     if((c.state==='up'||c.state==='on')&&t>=c.end){ c.state='miss'; c.missAt=t; R.combo=0; R.hits.miss++; R.meter-=0.14; R.shake=8; chHead(); chFlash(`Missed ${c.sym}`,'no');
       if(R.D.devil) chStrike(); else if(R.meter<=0){ R.meter=0; chOver(false); } } });
   if(R.mode==='run'&&t>R.tEnd+0.6) chOver(true);
@@ -150,14 +155,15 @@ function chDraw(){
   R.cards.forEach(k=>{ const x0=hx+(k.t-t)*CH_PX, x1=hx+(k.end-t)*CH_PX; if(x1<-20||x0>W+20) return;
     const y=H*0.22, h=H*0.56, w=Math.max(40,x1-x0-6);
     let fill='rgba(255,255,255,.10)', edge='rgba(255,255,255,.35)', ink='#e9ecff';
-    if(k.state==='on'){ fill='rgba(245,197,66,.20)'; edge='#f5c542'; }
+    if(k.life&&(k.state==='up'||k.state==='on')){ fill='rgba(70,224,138,.22)'; edge='#46e08a'; }
+    if(k.state==='on'&&!k.life){ fill='rgba(245,197,66,.20)'; edge='#f5c542'; }
     if(k.state==='hit'){ fill=k.met?'rgba(111,207,151,.28)':'rgba(127,211,255,.22)'; edge=k.grade==='perfect'?'#ffd23f':'#7fd3ff'; }
     if(k.state==='miss'){ fill='rgba(220,60,60,.18)'; edge='rgba(220,60,60,.7)'; ink='rgba(233,236,255,.45)'; }
     const pop=k.state==='hit'?Math.max(0,1-(t-k.hitAt)/0.25)*6:0;
     c.fillStyle=fill; c.strokeStyle=edge; c.lineWidth=2; chRound(c,x0+3-pop/2,y-pop/2,w+pop,h+pop,8); c.fill(); c.stroke();
     c.save(); c.beginPath(); c.rect(x0+3,y,w,h); c.clip();
     c.fillStyle=ink; c.font=`700 ${Math.min(30,h*0.42)}px Barlow Condensed, sans-serif`; c.textBaseline='top'; c.fillText(k.sym,x0+12,y+8);
-    c.font=`600 13px Barlow Condensed, sans-serif`; c.fillStyle=k.state==='miss'?ink:k.tag==='any'?'rgba(233,236,255,.6)':'#f5c542'; c.fillText(k.state==='hit'&&k.named?k.named.name:CH_TAG[k.tag],x0+12,y+h-22);
+    c.font=`600 13px Barlow Condensed, sans-serif`; c.fillStyle=k.state==='miss'?ink:k.tag==='any'?'rgba(233,236,255,.6)':'#f5c542'; c.fillText(k.state==='hit'&&k.named?k.named.name:(k.life?'💚 ':'')+CH_TAG[k.tag],x0+12,y+h-22);
     c.restore(); });
   // the hit line
   const glow=c.createLinearGradient(hx-14,0,hx+14,0); glow.addColorStop(0,'rgba(245,197,66,0)'); glow.addColorStop(0.5,'rgba(245,197,66,.35)'); glow.addColorStop(1,'rgba(245,197,66,0)');

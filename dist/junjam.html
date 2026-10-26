@@ -690,6 +690,12 @@ body.gigmode header .modetag{display:none}
 .vcbosses{margin-top:8px} .lick.vcboss{border-color:#b3261e;background:color-mix(in srgb, #b3261e 5%, transparent)} .lick.vcboss .ln{color:#b3261e}
 .lick.vcboss.chapter{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)} .lick.vcboss.chapter .ln{color:var(--brass)}
 .lick.vcboss.final{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 8%, transparent)} .lick.vcboss.final .ln{color:#7a1fa2}
+/* 💚 life chords: green instead of fire */
+.enemy.life,.enemy.fire.life{color:#eafff0;border-radius:10px;background:linear-gradient(180deg,#0f5a2e,#06291a);box-shadow:inset 0 0 0 2px #46e08a,0 0 22px rgba(70,224,138,.6);animation:lifeglow 1.2s ease-in-out infinite alternate}
+.enemy.fire.life::before{display:none} .enemy .lifelab{color:#9dffc4;background:rgba(0,0,0,.25)}
+@keyframes lifeglow{from{box-shadow:inset 0 0 0 2px #46e08a,0 0 14px rgba(70,224,138,.45)}to{box-shadow:inset 0 0 0 2px #8dffbb,0 0 28px rgba(70,224,138,.8)}}
+@media (prefers-reduced-motion: reduce){ .enemy.life{animation:none} }
+.vcask em.vclife{color:#1f9d55;border-color:#46e08a;font-weight:700;background:color-mix(in srgb, #46e08a 12%, transparent)}
 </style>
 <style>
 /* ==================================================================================================
@@ -2375,7 +2381,18 @@ function nextChords(){
   if((opts.weird||G.devil) && Math.random()<0.4){const w=weirdRoot(pc); if(w) root=w;}   // Devil spells them oddly too
   return [{root,q,review}];
 }
+/* 💚 life chords (Game mode): about one chord in 18, glowing green, harder than the stage (a chord from a harder stage,
+   on chord stages; always on fire, any chord tone in the bass). Clear it first try, no hint: one life back (a big bonus
+   if you're full). Let it go and it costs nothing. */
+const LIFE_EVERY=18;
+function lifeChord(c){
+  if(!isProgStage()){ const harder=QUALS.filter(q=>q.stage>Math.min(5,typeof stageN==='number'&&stageN<=6?stageN:4)&&q.bass==null);
+    if(harder.length){ const q=pickOne(harder), pc=Math.floor(Math.random()*12); c={...c,q,root:defaultRoot(pc,q.minor),rn:null}; } }
+  const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:false,life:true};
+  t.fire=fireFor(t,3); return t;
+}
 function withReq(c){
+  if(G&&!G.practice&&G.kills>=4&&Math.random()<1/LIFE_EVERY) return lifeChord(c);
   const t={root:c.root,q:c.q,suf:pickSuf(c.q),rn:c.rn||null,prog:c.prog||null,req:null,review:!!c.review};
   // fire chords: about one in three, never more than three plain chords in a row (in Devil, every one)
   if(G&&G.fireLvl){ G.fireGap=(G.fireGap||0)+1; if(G.devil||G.fireGap>3||Math.random()<0.28){ const f=fireFor(t,G.fireLvl); if(f){ t.fire=f; G.fireGap=0; return t; } } }
@@ -2444,7 +2461,7 @@ function spawn(){
   const req=t.req;
   el.innerHTML=symHTML(t)+(t.rn&&req!=='byear'?`<span class="prog">${t.rn}</span>`:'')+(req?`<span class="req">${REQ_LABEL[req]} ×2</span>`:'')
     +(t.fire?`<span class="req firelab">🔥 ${FIRE_LABEL[t.fire.k]} ×3</span>`:'')+(t.review?'<span class="rv" title="Back for another go: you missed it or it was slow last time">↻</span>':'');
-  if(t.fire) el.classList.add('fire');
+  if(t.fire) el.classList.add('fire'); if(t.life){ el.classList.add('life'); el.insertAdjacentHTML('beforeend','<span class="req lifelab">💚 first try: +1 life</span>'); }
   if(req==='byear') setTimeout(()=>playByEar(t),150);
   el.style.rotate=((Math.random()*5-2.5).toFixed(1))+'deg';
   $('lane').appendChild(el);
@@ -2476,6 +2493,7 @@ function tick(now){
   if(!G.practice && G.enemies.length && G.enemies[0].tf>=1){
     const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc'); srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),'fail');
+    if(e.t.life){ G.cool=Math.max(0.4,60/G.bpm); updateHud(); G.raf=requestAnimationFrame(tick); return; }   // a life chord that gets away costs nothing
     G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
@@ -2517,6 +2535,7 @@ function submit(notes){
     else reqNote=`The request was ${REQ_LABEL[e.req]}, so no double points this time.`;
   }
   if(e.t.fire){ res.tags.push({t:`🔥 ${e.t.fire.name} in the bass`,p:res.total*2}); res.total*=3; G.fireCleared++; }
+  if(e.t.life&&!G.practice){ if(e.misses===0&&!e.hinted){ if(G.lives<G.tier.lives){ G.lives++; res.tags.push({t:'💚 +1 life',p:0}); } else { res.tags.push({t:'💚 Full on lives: bonus',p:1000}); res.total+=1000; } } else res.tags.push({t:'💚 Not first try: no life this time',p:0}); }
   if(!G.practice) res.total=Math.round(res.total*G.tier.mult);
   recordStat(e.t,'clear',(performance.now()-e.born)/1000,e.misses===0);
   G.score+=res.total; addXP(res.total/25); G.combo++; G.maxCombo=Math.max(G.maxCombo,G.combo); G.kills++; if(e.misses===0) G.firstTry++; checkStars();
@@ -3162,6 +3181,10 @@ let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=A
    enemy armoured, and the key-setting cadence only when the key changes (every 6 calls), so you hold the key in your
    head. Endless: ranks at 10, 20 and 30 kills (💀 💀💀 💀💀💀), double points. */
 const ARC_DEVIL=[10,20,30];
+/* 💚 life fairies 🧚: about one call in 15 (never during a boss), asking from a harder level than you're on (the next
+   rung up, or the top of the pool). Answer it and you win a life back (a bonus if you're full); let it go and nothing's
+   lost: it just flies off. */
+const ARC_LIFE_EVERY=15;
 /* Bosses. In a world's run: after every three levels of the ladder, a 👹 that takes 5 hits, asking from those three
    levels; at the top of the ladder the chapter boss 🐲, 8 hits, from every level. A miss costs a life and the boss stays.
    The final boss 😈 is its own run: 20 hits, questions from every world (once every world has ★★). Beating a boss
@@ -3299,7 +3322,8 @@ const arcLevel=()=>ARC.kind==='world'?arcRungs(ARC.world)[ARC.rung]:ARC.q?ARC.q.
 function arcGen(){
   const R=ARC, due=R.again.findIndex(a=>a.at<=R.n);
   let lv=R.kind==='world'?arcRungs(R.world)[R.rung]:null, force;
-  if(R.mon&&R.mon.boss||R.bossNext){ const b=R.mon&&R.mon.boss?R.mon.bossOf:R.bossNext; lv=arcLv(b.pool[Math.floor(Math.random()*b.pool.length)].id); }
+  if(R.lifeNext){ const rs=R.kind==='world'?arcRungs(R.world):null, top=rs?rs[Math.min(rs.length-1,R.rung+1)]:R.pool[R.pool.length-1-Math.floor(Math.random()*Math.min(3,R.pool.length))]; lv=arcLv(top.id); }   // a level harder than now
+  else if(R.mon&&R.mon.boss||R.bossNext){ const b=R.mon&&R.mon.boss?R.mon.bossOf:R.bossNext; lv=arcLv(b.pool[Math.floor(Math.random()*b.pool.length)].id); }
   else if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
   else if(R.kind!=='world'){ const s=R.stretch.length&&Math.random()<(R.kind==='weekly'?0.35:0.2); lv=s?R.stretch[Math.floor(Math.random()*R.stretch.length)]:R.pool[Math.floor(Math.random()*R.pool.length)]; lv=arcLv(lv.id); }
   else if(R.rung&&Math.random()<0.3) lv=arcRungs(R.world)[Math.floor(Math.random()*R.rung)];   // older levels keep coming back
@@ -3310,6 +3334,7 @@ function arcGen(){
 function arcCall(){
   const R=ARC; if(!R.active||R.mode!=='run') return; arcStop(); clearDraft();
   if(R.lives<=0||R.kind!=='world'&&R.kills>=R.target&&!R.mon) return arcOver();
+  R.lifeNext=!R.mon&&!R.bossNext&&R.n>=4&&arcSeeded(()=>Math.random()<1/ARC_LIFE_EVERY);
   const q=R.q=arcSeeded(arcGen); R.n++; R.got=[]; R.done=false; R.tried=false;
   const bus=R.bus=newBus(); if(!bus) return;
   const t0=now()+0.1, end=arcSeeded(()=>q.play(bus,t0)), spb=60/R.bpm;
@@ -3321,6 +3346,7 @@ function arcCall(){
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   // (only one-answer enemies come armoured; a melody or a bass line is long enough already)
   if(!R.mon&&R.bossNext){ const b=R.bossNext; R.bossNext=null; R.mon={boss:true,bossOf:b,hp:b.hp,max:b.hp,face:b.face,size:b.size,x:1}; setTimeout(()=>arcFxBanner(`${b.name}!`,'#ff6b6b'),200); }
+  if(!R.mon&&R.lifeNext){ R.mon={life:true,hp:1,max:1,face:'🧚',size:42,x:1}; R.lifeNext=false; }
   if(!R.mon){ const need=arcNeed(q), brute=need===1&&arcSeeded(()=>R.kind==='weekly'||R.kind==='devil'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25);
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
@@ -3392,6 +3418,7 @@ function arcHit(notes){
   if(fire){ R.spell=0; R.mon.hp=boss?R.mon.hp-3:0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill=R.mon.hp>0?null:'🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
   let bossDown='';
+  if(R.mon.life&&kill){ if(R.lives<R.maxLives){ R.lives++; bossDown=' 💚 +1 life!'; } else { R.score+=800; bossDown=' 💚 Full on lives: +800'; } setTimeout(()=>arcFxBanner(bossDown.trim(),'#7dffb0'),250); }
   if(boss&&kill){ const b=R.mon.bossOf, bonus=400*b.hp; R.score+=bonus; R.lives=Math.min(R.maxLives,R.lives+1); bossDown=` ${b.name} down! +${bonus}`; setTimeout(()=>arcFxBanner(`${b.name} down!`,'#ffd23f'),300); if(b.kind==='final') R.won=true; }
   arcFxHit({notes,kill:!!kill,fire,brute:R.mon.brute,pts,quick:left>0.6,combo:R.combo});
   if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+(boss?0.18:0.3));   // a brute (or a boss) only staggers back
@@ -3409,6 +3436,8 @@ function arcHit(notes){
 }
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
+  if(R.mon&&R.mon.life){ arcFxMiss(); R.mon=null; arcRender(); $('arcMsg').textContent=`💚 It got away: no harm done. It was ${(q.options.find(o=>o.id===q.answer)||{}).label}.`; $('arcMsg').className='lmsg';   // a missed fairy costs nothing
+    killBus(R.bus); const b2=R.bus=newBus(); const e2=b2?q.compare(null,b2,now()+0.15):now()+1; R.timer=setTimeout(arcCall,Math.max(1200,(e2-now())*1000+400)); return; }
   R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
   if(R.mon&&R.mon.boss){ arcFxWallHit(); R.mon.x=Math.max(R.mon.x,0.55); }   // a boss hits the wall, backs off, and stays
   else { if(R.mon) R.kills++; arcFxMiss(); R.mon=null; }   // it got through (one fewer in a wave), winding up and charging the wall
@@ -3624,6 +3653,7 @@ function arcFxMonster(c,M){
   const kb=M.kb&&F.t-M.kb<0.25?(1-(F.t-M.kb)/0.25):0;   // the stagger after a hit
   const near=1-F.disp, hurry=near>0.75?Math.sin(F.t*40)*1.5:0;   // close to the wall it jitters: hurry up
   c.save(); c.fillStyle='rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(x,g+3,size*0.38*ease,5*ease,0,0,7); c.fill(); c.restore();
+  if(M.life){ const gr=c.createRadialGradient(x,g-size*0.5,2,x,g-size*0.5,size*0.9); gr.addColorStop(0,`rgba(125,255,176,${0.5+0.2*Math.sin(F.t*6)})`); gr.addColorStop(1,'rgba(125,255,176,0)'); c.fillStyle=gr; c.beginPath(); c.arc(x,g-size*0.5,size*0.9,0,7); c.fill(); }   // a 💚 fairy glows
   for(let i=(M.left||1)-1;i>=1;i--){ const sx=x+i*size*ARC_SEG, sb=Math.abs(Math.sin(walkT-i*0.7))*3, r=size*0.2*ease;   // one body segment per note still to play
     c.fillStyle='rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(sx,g+3,r,3,0,0,7); c.fill();
     const grd=c.createRadialGradient(sx-r*0.3,g-r-sb-r*0.3,1,sx,g-r-sb,r); grd.addColorStop(0,'#bff0a0'); grd.addColorStop(1,'#4f9a3c');
@@ -4945,6 +4975,9 @@ let VCDATA=store.get('voicings',{stars:{},best:{},pool:'learned',fam:'all'});
 const saveVc=()=>store.set('voicings',VCDATA);
 const VC={active:false};
 const VC_KEYS=5, VC_LIVES=3;
+// 💚 life voicings in Rush and the bosses: about one in 16, a ●●● voicing with no formula and no shape. Play it in time
+// and win a life back (a bonus if you're full); run out of time and nothing's lost.
+const VC_LIFE_EVERY=16;
 /* Bosses: a gauntlet after every three or four chord types (every voicing of those types once, each in a new key, three
    lives, the Rush clock; a miss comes back later), a chapter boss for each family of chords, and the final boss: all of
    them. Beat one for its 👑. */
@@ -5152,10 +5185,11 @@ function vcRushNext(){
   if(R.boss&&!R.deck.length&&due<0&&R.again.length) due=0;   // a boss: the misses still owed come back before it's done
   if(R.boss&&!R.deck.length&&due<0){ R.won=true; return vcRushOver(); }   // every voicing played: the boss is beaten
   let item;
-  if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
+  if(R.n>=4&&due<0&&Math.random()<1/VC_LIFE_EVERY){ const hard=VOICINGS.filter(v=>v.diff===3); item={v:hard[Math.floor(Math.random()*hard.length)],pc:pickKeyPc(),of:1,i:0,life:true}; }
+  else if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
   else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
-  const t=vcIn(item.v,item.pc), fresh=!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
+  const t=vcIn(item.v,item.pc), fresh=!item.life&&!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
   R.seen.add(item.v.id);
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
   Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
@@ -5170,7 +5204,7 @@ function vcRushRender(){
   const R=VC, it=R.item, t=R.t;
   $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.boss?`${R.boss.kind==='final'?'😈':R.boss.kind==='chapter'?'👑':'👹'} ${gigAccHTML(R.boss.name)} · ${R.cleared} of ${R.pool.length}`:'Rush'}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="ebar vcbar"><i id="vcBar" style="width:${R.lost?0:Math.max(0,100*R.left/R.secs)}%"${R.lost?' class="boss"':''}></i></div>
-    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
+    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${it.life?'<em class="vclife">💚 +1 life</em>':vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
     ${vcDiagram(t,R.fresh||R.lost)}
     <div class="lmsg" id="vcMsg">${R.lost?'Time. Play it to go on.':''}</div>
     <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcEnd">End</button></div>`;
@@ -5178,6 +5212,7 @@ function vcRushRender(){
 }
 function vcRushTimeout(){
   const R=VC; clearInterval(R.tick); if(R.lost) return;
+  if(R.item.life){ R.lost=true; R.solved=true; vcRushRender(); vcHintKeys(R.t); vcStaff(R.t); vcPlay(R.t); $('vcMsg').textContent='💚 It got away: no harm done. This was the shape.'; $('vcMsg').className='lmsg'; R.timer=setTimeout(vcRushNext,2200); return; }   // a missed life voicing costs nothing
   R.lost=true; R.lives--; R.combo=0; R.missed[R.item.v.id]=(R.missed[R.item.v.id]||0)+1;
   R.again.push({v:R.item.v,pc:R.item.pc,at:R.n+3+Math.floor(Math.random()*3)});
   R.chain=R.chain.filter(x=>x.v.id!==R.item.v.id);
@@ -5191,8 +5226,9 @@ function vcRushNotes(notes){
     clearInterval(R.tick); R.solved=true;
     if(R.lost){ $('vcMsg').textContent='That\'s it. It\'ll come back.'; $('vcMsg').className='lmsg ok'; R.timer=setTimeout(vcRushNext,900); return; }
     const frac=Math.max(0,R.left/R.secs), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+150*frac)*mult*(R.item.v.diff>1?1+0.25*(R.item.v.diff-1):1));
-    R.score+=pts; R.combo++; R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
-    $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}`; $('vcMsg').className='lmsg ok';
+    R.score+=pts; R.combo++; if(!R.item.life) R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
+    let life=''; if(R.item.life){ if(R.lives<VC_LIVES){ R.lives++; life='  💚 +1 life!'; } else { R.score+=600; life='  💚 Full on lives: +600'; } }
+    $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}${life}`; $('vcMsg').className='lmsg ok';
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.item.v.name}.`;
     R.timer=setTimeout(vcRushNext,R.chain.length?380:650); return;
   }
@@ -5284,7 +5320,10 @@ function chStart(id){
   const cards=[]; gigTimeline(song).forEach((bar,bi)=>bar.chords.forEach(ch=>{ if(!ch.c) return; const q=Q[ch.c.qid]; if(!q) return;
     cards.push({bi,beat:ch.at,dur:ch.dur,c:ch.c,q,sym:rootName(ch.c.root)+ch.c.suf+(ch.c.bass?'/'+rootName(ch.c.bass):''),state:'up'}); }));
   const t0=now()+2*song.beats*spb+0.3;   // two bars of count-in
-  cards.forEach((k,i)=>{ k.t=t0+k.beat*spb; k.end=k.t+k.dur*spb; k.tag=chPickTag(k,D,i); });
+  cards.forEach((k,i)=>{ k.t=t0+k.beat*spb; k.end=k.t+k.dur*spb; k.tag=chPickTag(k,D,i);
+    // 💚 life cards: about one in 16, asking for a named voicing. Meet it: in Devil a strike is wiped, otherwise a big lift to
+    // the band. Miss it: nothing lost.
+    if(i>=4&&Math.random()<1/16&&VOICINGS.some(v=>v.qid===k.c.qid)){ k.life=true; k.tag='named'; } });
   Object.assign(CH,{active:true,mode:'run',song,D,bpm,spb,t0,cards,cur:0,meter:0.6,strikes:0,score:0,combo:0,best:0,hits:{perfect:0,good:0,late:0,miss:0},tagsMet:0,named:{},prev:null,prevShape:null,parts:[],pops:[],shake:0});
   CH.tEnd=cards.length?cards[cards.length-1].end:t0;
   hideOv(); document.body.classList.add('nohud','vcmode'); document.body.classList.remove('menu'); $('voiceStage').hidden=false; $('modetag').textContent='Voicings: Comp Hero';
@@ -5359,7 +5398,8 @@ function chNotes(notes){
   R.score+=pts; R.meter=Math.min(1,R.meter+({perfect:0.06,good:0.045,late:0.02}[grade])*(met?1:0.5));
   Object.assign(k,{state:'hit',grade,met,named,pts,hitAt:now()}); R.prev=[...new Set(notes)]; R.prevShape=chShape(notes);
   chBurst(k); chHead();
-  if(R.D.devil&&!met) chStrike();   // in Devil the ask isn't optional
+  if(k.life&&met){ if(R.D.devil){ if(R.strikes>0){ R.strikes--; chHead(); } } else R.meter=Math.min(1,R.meter+0.3); R.pops=[{text:R.D.devil?'💚 Strike wiped!':'💚 The band lifts!',x:(R.hitX||110)+20,y:R.H*0.5-70,t0:now(),col:'#7dffb0'}]; }
+  if(R.D.devil&&!met&&!k.life) chStrike();   // in Devil the ask isn't optional (a life card's is a bonus)
   const bits=[{perfect:'Perfect',good:'Good',late:'Late'}[grade],named?named.name:null,k.tag!=='any'?(met?`✓ ${CH_TAG[k.tag]}`:`✗ not ${CH_TAG[k.tag]}`):null,smooth?'smooth':null].filter(Boolean);
   chFlash(`${k.sym}: ${bits.join(' · ')}  +${pts}`,met?'ok':'');
   kbMarks={}; R.prev.forEach(m=>kbMarks[m]=met?'k-chord':'k-tension'); paintKeys();
@@ -5367,6 +5407,7 @@ function chNotes(notes){
 function chLogic(){
   const R=CH; if(!R.active||R.mode!=='run') return; const t=now();
   R.cards.forEach(c=>{ if(c.state==='up'&&t>=c.t) c.state='on';
+    if((c.state==='up'||c.state==='on')&&t>=c.end&&c.life){ c.state='miss'; c.missAt=t; chFlash(`💚 ${c.sym} got away: no harm done`,''); return; }   // a missed life card costs nothing
     if((c.state==='up'||c.state==='on')&&t>=c.end){ c.state='miss'; c.missAt=t; R.combo=0; R.hits.miss++; R.meter-=0.14; R.shake=8; chHead(); chFlash(`Missed ${c.sym}`,'no');
       if(R.D.devil) chStrike(); else if(R.meter<=0){ R.meter=0; chOver(false); } } });
   if(R.mode==='run'&&t>R.tEnd+0.6) chOver(true);
@@ -5390,14 +5431,15 @@ function chDraw(){
   R.cards.forEach(k=>{ const x0=hx+(k.t-t)*CH_PX, x1=hx+(k.end-t)*CH_PX; if(x1<-20||x0>W+20) return;
     const y=H*0.22, h=H*0.56, w=Math.max(40,x1-x0-6);
     let fill='rgba(255,255,255,.10)', edge='rgba(255,255,255,.35)', ink='#e9ecff';
-    if(k.state==='on'){ fill='rgba(245,197,66,.20)'; edge='#f5c542'; }
+    if(k.life&&(k.state==='up'||k.state==='on')){ fill='rgba(70,224,138,.22)'; edge='#46e08a'; }
+    if(k.state==='on'&&!k.life){ fill='rgba(245,197,66,.20)'; edge='#f5c542'; }
     if(k.state==='hit'){ fill=k.met?'rgba(111,207,151,.28)':'rgba(127,211,255,.22)'; edge=k.grade==='perfect'?'#ffd23f':'#7fd3ff'; }
     if(k.state==='miss'){ fill='rgba(220,60,60,.18)'; edge='rgba(220,60,60,.7)'; ink='rgba(233,236,255,.45)'; }
     const pop=k.state==='hit'?Math.max(0,1-(t-k.hitAt)/0.25)*6:0;
     c.fillStyle=fill; c.strokeStyle=edge; c.lineWidth=2; chRound(c,x0+3-pop/2,y-pop/2,w+pop,h+pop,8); c.fill(); c.stroke();
     c.save(); c.beginPath(); c.rect(x0+3,y,w,h); c.clip();
     c.fillStyle=ink; c.font=`700 ${Math.min(30,h*0.42)}px Barlow Condensed, sans-serif`; c.textBaseline='top'; c.fillText(k.sym,x0+12,y+8);
-    c.font=`600 13px Barlow Condensed, sans-serif`; c.fillStyle=k.state==='miss'?ink:k.tag==='any'?'rgba(233,236,255,.6)':'#f5c542'; c.fillText(k.state==='hit'&&k.named?k.named.name:CH_TAG[k.tag],x0+12,y+h-22);
+    c.font=`600 13px Barlow Condensed, sans-serif`; c.fillStyle=k.state==='miss'?ink:k.tag==='any'?'rgba(233,236,255,.6)':'#f5c542'; c.fillText(k.state==='hit'&&k.named?k.named.name:(k.life?'💚 ':'')+CH_TAG[k.tag],x0+12,y+h-22);
     c.restore(); });
   // the hit line
   const glow=c.createLinearGradient(hx-14,0,hx+14,0); glow.addColorStop(0,'rgba(245,197,66,0)'); glow.addColorStop(0.5,'rgba(245,197,66,.35)'); glow.addColorStop(1,'rgba(245,197,66,0)');
