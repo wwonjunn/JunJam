@@ -188,7 +188,6 @@ const STAGE=Object.fromEntries(STAGES.map(s=>[s.n,s]));
 const stagePool=n=>n===7?QUALS:STAGE[n]&&STAGE[n].boss?QUALS.filter(q=>STAGE[n].boss.includes(q.stage)):QUALS.filter(q=>q.stage===n);
 // Progression bosses: one after every four (in the menu's order), then the chapter boss (all of them, 'p:mix'), then the
 // final boss ('p:final'): every chord stage and every progression together
-const PBOSS=[0,1,2].map(i=>({id:'boss'+(i+1),from:i*4,to:i*4+4}));
 const TIERS=[
   {id:'misty',   name:'Misty',           bpm:60, step:3, cap:1,lives:5,mult:1},
   {id:'autumn',  name:'Autumn Leaves',   bpm:120,step:5, cap:1,lives:3,mult:1.25},
@@ -217,6 +216,7 @@ const PROGS=[
   {id:'cliche',short:'Minor line cliché',name:'Minor line cliché',minor:true,ch:[[0,0,'min','I'],[0,0,'mmaj7','I'],[0,0,'min7','I'],[0,0,'min6','I']]},
 ];
 const PROG=Object.fromEntries(PROGS.map(p=>[p.id,p]));
+const PBOSS=[0,1,2].map(i=>({id:'boss'+(i+1),from:i*4,to:i===2?PROGS.length:i*4+4}));   // the last boss takes whatever's left (13 progressions: 4, 4, 5)
 // Degree label for a chord in a progression, e.g. IIIm7 or V/VII
 const degText=(rn,q,b)=>rn+q.suf+(b?'/'+b:'');
 function progChords(p,keyPc,pickFn=a=>a[Math.floor(Math.random()*a.length)]){

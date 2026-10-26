@@ -338,7 +338,7 @@ function updateHud(){
 }
 function pause(){ G.running=false; G.paused=true; cancelAnimationFrame(G.raf); metro.stop(); $('pauseOv').hidden=false; $('quitBtn').textContent=G.practice?'End session':'End run'; $('resumeBtn').focus(); }
 function resume(){ $('pauseOv').hidden=true; G.paused=false; G.running=true; G.last=performance.now(); G.raf=requestAnimationFrame(tick); metro.start(); }
-function hideOv(){ clearDraft(); ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
+function hideOv(){ clearDraft(); ['startOv','pauseOv','overOv','progOv','briefOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
 function gameOver(){ clearDraft();
   G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar();
   const acc=G.attempts?Math.round(100*(G.attempts-G.fails)/G.attempts):0;

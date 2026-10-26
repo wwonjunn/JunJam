@@ -124,7 +124,7 @@ function arcDevilHTML(){
 }
 
 /* ---------------- the run ---------------- */
-function arcStart(world){
+function arcStart(world,fromRung=0){
   arcStop(); synth.init();
   let devil=false; if(world.startsWith('devil:')){ devil=true; world=world.slice(6); }
   const kind=world==='final'?'final':devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
@@ -137,6 +137,7 @@ function arcStart(world){
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('arcBody').innerHTML='<div id="arcHead"></div><canvas class="arccv" id="arcCv"></canvas><div id="arcInfo"></div>';
   arcFxStart($('arcCv')); arcFxTheme(0);
+  if(kind==='world'&&fromRung) ARC.rung=Math.min(fromRung,arcRungs(world).length-1);   // started from a Chords briefing: begin at that level
   $('staff').innerHTML=staffSVG([],[]); $('verdict').className='verdict'; $('verdict').textContent='Listen, then play it back.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
   ARC.timer=setTimeout(arcCall,600);
 }

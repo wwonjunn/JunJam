@@ -18,7 +18,7 @@ const TRANSFER_KEYS=5;
 /* ---------------- menu pane ---------------- */
 function linesStarTotal(){ return allLicks().reduce((a,l)=>a+(LDATA.stars[l.id]||0),0); }
 function renderLinesPane(){
-  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||(LDATA.from==='fav'?isFav(l.id):lickFrom(l)===LDATA.from))&&(!LDATA.artist||l.artist===LDATA.artist))
+  const list=allLicks().filter(l=>(!LINES.over||lickIsOver(l,LINES.over))&&(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||(LDATA.from==='fav'?isFav(l.id):lickFrom(l)===LDATA.from))&&(!LDATA.artist||l.artist===LDATA.artist))
     .sort((a,b)=>a.diff-b.diff||lickLabel(a).localeCompare(lickLabel(b))||a.name.localeCompare(b.name));
   const artists=[...new Set(allLicks().map(l=>l.artist).filter(Boolean))].sort();
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
@@ -28,12 +28,14 @@ function renderLinesPane(){
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
-    <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
+    <p class="fine" style="margin:-4px 0 10px">${list.length} licks${LINES.over?` over the chords you came from <button class="chip" data-overclear>show every chord ✕</button>`:''}</p>
     <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span><span class="ltags">${(l.tags||[]).slice(0,3).map(t=>`<i>${t}</i>`).join('')}</span><span class="fav${isFav(l.id)?' on':''}${l.user?' withdel':''}" data-fav="${l.id}" title="${isFav(l.id)?'Remove from favourites':'Add to favourites'}">${isFav(l.id)?'♥':'♡'}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||`<p class="fine">${LDATA.from==='fav'?'No favourites yet. Tap the ♡ on any lick to save it here.':'Nothing here yet.'}</p>`}</div>
     <p class="fine" style="margin-top:12px">Difficulty comes from what the notes are over the chord and how you reach them: chord tones are easy, tensions harder, altered notes hardest unless you step through them chromatically; wide leaps, 16ths and chord changes add to it. ★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks from famous solos are short phrases from the <a href="https://jazzomat.hfm-weimar.de/" target="_blank" rel="noopener">Weimar Jazz Database</a> (Jazzomat Research Project, HfM Weimar), used under the <a href="https://opendatacommons.org/licenses/odbl/1.0/" target="_blank" rel="noopener">ODbL</a>. A few others follow formulas documented by teachers; the rest are Jun Jam originals.</p>
     ${importHTML()}`;
   $('linesPane').innerHTML=h;
 }
+// a lick over any of these chord types (its one chord, or any chord of its progression)
+const lickIsOver=(l,qids)=>l.over?qids.includes(l.over):!!(l.ch&&l.ch.some(c=>qids.includes(c[2])));
 function importHTML(){
   const roots=[...Array(12).keys()].map(pc=>`<option value="${pc}">${rootName(defaultRoot(pc,false))}</option>`).join('');
   const quals=['maj7','dom7','min7','hdim','maj','min','alt'].map(id=>`<option value="${id}">${Q[id].suf||'major'}</option>`).join('');
@@ -50,6 +52,7 @@ function bindLinesPane(){
   const p=$('linesPane');
   p.onchange=e=>{ if(e.target.id==='lArtist'){ LDATA.artist=e.target.value; if(LDATA.artist&&LDATA.from!=='all'&&LDATA.from!=='solo'&&LDATA.from!=='orig') LDATA.from='all'; saveLines(); renderLinesPane(); } };
   p.onclick=e=>{
+    if(e.target.closest('[data-overclear]')){ LINES.over=null; renderLinesPane(); return; }
     const lp=e.target.closest('[data-lp]'); if(lp){ if(lp.disabled) return; lp.dataset.lp==='swap'?lpSwap():lpStart(lp.dataset.lp); return; }   // practice: today's session, the weekly line's keys, or a different weekly line
     const f=e.target.closest('[data-fav]'); if(f){ e.stopPropagation(); toggleFav(f.dataset.fav); renderLinesPane(); return; }
     const b=e.target.closest('button,[data-del]'); if(!b) return;

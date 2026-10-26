@@ -29,6 +29,10 @@ A jazz piano trainer with two sides:
   find and it's kept under Yours. A band will play from the same charts later.
 - **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords say which chord tone your
   left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
+- **Chords briefings**: double-click a stage, progression or boss card for a short briefing (the chords coming up, or
+  the progression in C with its degrees; tempo and lives; your stars and what the next one needs) with Start (Enter), and
+  links to the same chords elsewhere: their named voicings in Voicings (scrolled there), the matching level of the Ears
+  game (it starts there), and the Lines licks over them (filtered).
 - **💚 Life answers** in every mode with lives: about one in 15–18, glowing green and harder than usual (Chords: a chord
   from a harder stage, always on fire; Ears: a 🧚 asking from the level above; Voicings Rush and bosses: a ●●● voicing
   with no formula; Comp Hero: a card asking for a named voicing). Get it right for a life back (a points bonus if you're

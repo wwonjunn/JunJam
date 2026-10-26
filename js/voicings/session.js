@@ -44,7 +44,7 @@ function renderVoicingsPane(){
   const fam=VCDATA.fam||'all', learned=VOICINGS.filter(v=>VCDATA.stars[v.id]).length;
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
-    return `<div class="vctype"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
+    return `<div class="vctype" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
       `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
   const best=VCDATA.best[VCDATA.pool];
   const withBosses=fam==='all'?VTYPES.map((qid,i)=>{ const html=list[i]||''; const bs=VBOSSES.filter(b=>b.after===qid); return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')+`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:list.join('');

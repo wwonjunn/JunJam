@@ -696,6 +696,12 @@ body.gigmode header .modetag{display:none}
 @keyframes lifeglow{from{box-shadow:inset 0 0 0 2px #46e08a,0 0 14px rgba(70,224,138,.45)}to{box-shadow:inset 0 0 0 2px #8dffbb,0 0 28px rgba(70,224,138,.8)}}
 @media (prefers-reduced-motion: reduce){ .enemy.life{animation:none} }
 .vcask em.vclife{color:#1f9d55;border-color:#46e08a;font-weight:700;background:color-mix(in srgb, #46e08a 12%, transparent)}
+/* Chords briefing */
+#briefOv{z-index:20;background:color-mix(in srgb, var(--lane) 70%, transparent)} .card.brief{max-width:620px;text-align:left;background:var(--lane);border:1.5px solid var(--line-strong);border-radius:10px;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.briefchords{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px} .briefchords span{font-family:var(--cond);font-weight:700;font-size:18px;border:1.5px solid var(--line-strong);border-radius:4px;padding:1px 8px}
+.brieflinks{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:4px 0 14px} .brieflinks .ghost{margin:0;text-align:left}
+.vctype.flash{animation:vcflash 1.6s ease-out} @keyframes vcflash{0%,30%{background:color-mix(in srgb, var(--brass) 22%, transparent)}100%{background:transparent}}
+.briefchords span em{display:block;font-style:normal;font-size:11px;color:var(--muted);font-weight:600}
 </style>
 <style>
 /* ==================================================================================================
@@ -1313,6 +1319,7 @@ applyTheme(themeGet('theme','classic'));
       </div>
       <div class="card eresults" id="eResults" hidden></div>
     </div>
+    <div class="overlay" id="briefOv" hidden><div class="card brief" id="briefCard"></div></div>
     <div class="overlay" id="progOv" hidden>
       <div class="card wide">
         <h2>Progress</h2>
@@ -1545,7 +1552,6 @@ const STAGE=Object.fromEntries(STAGES.map(s=>[s.n,s]));
 const stagePool=n=>n===7?QUALS:STAGE[n]&&STAGE[n].boss?QUALS.filter(q=>STAGE[n].boss.includes(q.stage)):QUALS.filter(q=>q.stage===n);
 // Progression bosses: one after every four (in the menu's order), then the chapter boss (all of them, 'p:mix'), then the
 // final boss ('p:final'): every chord stage and every progression together
-const PBOSS=[0,1,2].map(i=>({id:'boss'+(i+1),from:i*4,to:i*4+4}));
 const TIERS=[
   {id:'misty',   name:'Misty',           bpm:60, step:3, cap:1,lives:5,mult:1},
   {id:'autumn',  name:'Autumn Leaves',   bpm:120,step:5, cap:1,lives:3,mult:1.25},
@@ -1574,6 +1580,7 @@ const PROGS=[
   {id:'cliche',short:'Minor line cliché',name:'Minor line cliché',minor:true,ch:[[0,0,'min','I'],[0,0,'mmaj7','I'],[0,0,'min7','I'],[0,0,'min6','I']]},
 ];
 const PROG=Object.fromEntries(PROGS.map(p=>[p.id,p]));
+const PBOSS=[0,1,2].map(i=>({id:'boss'+(i+1),from:i*4,to:i===2?PROGS.length:i*4+4}));   // the last boss takes whatever's left (13 progressions: 4, 4, 5)
 // Degree label for a chord in a progression, e.g. IIIm7 or V/VII
 const degText=(rn,q,b)=>rn+q.suf+(b?'/'+b:'');
 function progChords(p,keyPc,pickFn=a=>a[Math.floor(Math.random()*a.length)]){
@@ -2621,7 +2628,7 @@ function updateHud(){
 }
 function pause(){ G.running=false; G.paused=true; cancelAnimationFrame(G.raf); metro.stop(); $('pauseOv').hidden=false; $('quitBtn').textContent=G.practice?'End session':'End run'; $('resumeBtn').focus(); }
 function resume(){ $('pauseOv').hidden=true; G.paused=false; G.running=true; G.last=performance.now(); G.raf=requestAnimationFrame(tick); metro.start(); }
-function hideOv(){ clearDraft(); ['startOv','pauseOv','overOv','progOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
+function hideOv(){ clearDraft(); ['startOv','pauseOv','overOv','progOv','briefOv'].forEach(i=>$(i).hidden=true); document.body.classList.remove('menu'); }
 function gameOver(){ clearDraft();
   G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar();
   const acc=G.attempts?Math.round(100*(G.attempts-G.fails)/G.attempts):0;
@@ -3290,7 +3297,7 @@ function arcDevilHTML(){
 }
 
 /* ---------------- the run ---------------- */
-function arcStart(world){
+function arcStart(world,fromRung=0){
   arcStop(); synth.init();
   let devil=false; if(world.startsWith('devil:')){ devil=true; world=world.slice(6); }
   const kind=world==='final'?'final':devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
@@ -3303,6 +3310,7 @@ function arcStart(world){
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('arcBody').innerHTML='<div id="arcHead"></div><canvas class="arccv" id="arcCv"></canvas><div id="arcInfo"></div>';
   arcFxStart($('arcCv')); arcFxTheme(0);
+  if(kind==='world'&&fromRung) ARC.rung=Math.min(fromRung,arcRungs(world).length-1);   // started from a Chords briefing: begin at that level
   $('staff').innerHTML=staffSVG([],[]); $('verdict').className='verdict'; $('verdict').textContent='Listen, then play it back.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
   ARC.timer=setTimeout(arcCall,600);
 }
@@ -4163,7 +4171,7 @@ const TRANSFER_KEYS=5;
 /* ---------------- menu pane ---------------- */
 function linesStarTotal(){ return allLicks().reduce((a,l)=>a+(LDATA.stars[l.id]||0),0); }
 function renderLinesPane(){
-  const list=allLicks().filter(l=>(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||(LDATA.from==='fav'?isFav(l.id):lickFrom(l)===LDATA.from))&&(!LDATA.artist||l.artist===LDATA.artist))
+  const list=allLicks().filter(l=>(!LINES.over||lickIsOver(l,LINES.over))&&(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||(LDATA.from==='fav'?isFav(l.id):lickFrom(l)===LDATA.from))&&(!LDATA.artist||l.artist===LDATA.artist))
     .sort((a,b)=>a.diff-b.diff||lickLabel(a).localeCompare(lickLabel(b))||a.name.localeCompare(b.name));
   const artists=[...new Set(allLicks().map(l=>l.artist).filter(Boolean))].sort();
   const seg=(items,cur,attr)=>`<div class="seg" role="group">${items.map(([v,t])=>`<button data-${attr}="${v}" aria-pressed="${v===cur}">${t}</button>`).join('')}</div>`;
@@ -4173,12 +4181,14 @@ function renderLinesPane(){
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select></div>
-    <p class="fine" style="margin:-4px 0 10px">${list.length} licks</p>
+    <p class="fine" style="margin:-4px 0 10px">${list.length} licks${LINES.over?` over the chords you came from <button class="chip" data-overclear>show every chord ✕</button>`:''}</p>
     <div class="licks">${list.map(l=>`<button class="lick" data-lick="${l.id}"><span class="ln">${LDIFF[l.diff]} · ${lickLabel(l)}</span><span class="lt">${l.name}</span><span class="lst"><b>${starStr(LDATA.stars[l.id]||0)}</b> ${l.notes.length} notes, over ${lickOver(l)}</span><span class="ltags">${(l.tags||[]).slice(0,3).map(t=>`<i>${t}</i>`).join('')}</span><span class="fav${isFav(l.id)?' on':''}${l.user?' withdel':''}" data-fav="${l.id}" title="${isFav(l.id)?'Remove from favourites':'Add to favourites'}">${isFav(l.id)?'♥':'♡'}</span>${l.user?`<span class="del" data-del="${l.id}" title="Delete this lick">×</span>`:''}</button>`).join('')||`<p class="fine">${LDATA.from==='fav'?'No favourites yet. Tap the ♡ on any lick to save it here.':'Nothing here yet.'}</p>`}</div>
     <p class="fine" style="margin-top:12px">Difficulty comes from what the notes are over the chord and how you reach them: chord tones are easy, tensions harder, altered notes hardest unless you step through them chromatically; wide leaps, 16ths and chord changes add to it. ★ learn it. ★★ four of the five new keys clean (no mistakes, no peeking). ★★★ all five clean. Licks from famous solos are short phrases from the <a href="https://jazzomat.hfm-weimar.de/" target="_blank" rel="noopener">Weimar Jazz Database</a> (Jazzomat Research Project, HfM Weimar), used under the <a href="https://opendatacommons.org/licenses/odbl/1.0/" target="_blank" rel="noopener">ODbL</a>. A few others follow formulas documented by teachers; the rest are Jun Jam originals.</p>
     ${importHTML()}`;
   $('linesPane').innerHTML=h;
 }
+// a lick over any of these chord types (its one chord, or any chord of its progression)
+const lickIsOver=(l,qids)=>l.over?qids.includes(l.over):!!(l.ch&&l.ch.some(c=>qids.includes(c[2])));
 function importHTML(){
   const roots=[...Array(12).keys()].map(pc=>`<option value="${pc}">${rootName(defaultRoot(pc,false))}</option>`).join('');
   const quals=['maj7','dom7','min7','hdim','maj','min','alt'].map(id=>`<option value="${id}">${Q[id].suf||'major'}</option>`).join('');
@@ -4195,6 +4205,7 @@ function bindLinesPane(){
   const p=$('linesPane');
   p.onchange=e=>{ if(e.target.id==='lArtist'){ LDATA.artist=e.target.value; if(LDATA.artist&&LDATA.from!=='all'&&LDATA.from!=='solo'&&LDATA.from!=='orig') LDATA.from='all'; saveLines(); renderLinesPane(); } };
   p.onclick=e=>{
+    if(e.target.closest('[data-overclear]')){ LINES.over=null; renderLinesPane(); return; }
     const lp=e.target.closest('[data-lp]'); if(lp){ if(lp.disabled) return; lp.dataset.lp==='swap'?lpSwap():lpStart(lp.dataset.lp); return; }   // practice: today's session, the weekly line's keys, or a different weekly line
     const f=e.target.closest('[data-fav]'); if(f){ e.stopPropagation(); toggleFav(f.dataset.fav); renderLinesPane(); return; }
     const b=e.target.closest('button,[data-del]'); if(!b) return;
@@ -5012,7 +5023,7 @@ function renderVoicingsPane(){
   const fam=VCDATA.fam||'all', learned=VOICINGS.filter(v=>VCDATA.stars[v.id]).length;
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
-    return `<div class="vctype"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
+    return `<div class="vctype" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
       `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
   const best=VCDATA.best[VCDATA.pool];
   const withBosses=fam==='all'?VTYPES.map((qid,i)=>{ const html=list[i]||''; const bs=VBOSSES.filter(b=>b.after===qid); return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')+`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:list.join('');
@@ -9176,6 +9187,75 @@ buildKeyboard(); renderMenu(); paintKeys();
 $('staff').innerHTML=staffSVG([],[]);
 initMIDI();
 sndStatus();
+</script>
+<script>
+/* Chords briefing. Double-click a stage, progression or boss card: a short card says what's coming (the chord types,
+   the tempo and lives, your stars and what the next one needs), with Start, and links to the same chords in the other
+   modes: their named voicings in Voicings, the matching level of the Ears game, and the Lines licks over them.
+   So each stage leads somewhere, instead of you having to know where to go next. */
+const BRIEF={id:null,last:{id:null,t:0}};
+// the chord types a stage or progression stage uses
+function briefQids(id){
+  if(typeof id==='number') return [...new Set(stagePool(id).map(q=>q.id))];
+  const pb=PBOSS.find(b=>'p:'+b.id===id), list=id==='p:mix'||id==='p:final'?PROGS:pb?PROGS.slice(pb.from,pb.to):[PROG[id.slice(2)]];
+  const q=new Set(list.flatMap(p=>progChords(p,0).map(c=>c.q.id))); if(id==='p:final') QUALS.forEach(x=>q.add(x.id));
+  return [...q];
+}
+const briefTitle=id=>typeof id==='number'?STAGE[id].t:id==='p:mix'?'Chapter boss: every progression':id==='p:final'?'Final boss: everything':PBOSS.find(b=>'p:'+b.id===id)?`Boss: ${PROGS.slice(PBOSS.find(b=>'p:'+b.id===id).from,PBOSS.find(b=>'p:'+b.id===id).to).map(p=>p.short).join(', ')}`:PROG[id.slice(2)].name;
+// the Ears game level that hears the most of these: Progressions for a progression, Chord qualities for chords
+function briefEars(id,qids){
+  if(typeof id==='string'){ const pb=PBOSS.find(b=>'p:'+b.id===id), rs=arcRungs('progs'), want=pb?PROGS[pb.from].id:id.slice(2), i=rs.findIndex(l=>l.p.set&&l.p.set.includes(want)); return {world:'progs',rung:Math.max(0,i<0?rs.length-1:i)}; }
+  const rs=arcRungs('chords'); let best=0, score=-1;
+  rs.forEach((l,i)=>{ if(l.gen!=='chord'||l.boss) return; const s=l.p.set.filter(x=>qids.includes(x)).length/l.p.set.length; if(s>score){ score=s; best=i; } });
+  return {world:'chords',rung:best};
+}
+function briefOpen(id){
+  stageN=id; store.set('stage',stageN); renderMenu(); BRIEF.id=id;
+  const qids=briefQids(id), sym=q=>symText({root:defaultRoot(0,Q[q].minor),q:Q[q]});
+  const t=tierOf(tierId), st=starsOf(id), fire=fireLevel(id), open=mode==='practice'||tierUnlocked(t);
+  const vs=VOICINGS.filter(v=>qids.includes(v.qid)), vtypes=VTYPES.filter(q=>qids.includes(q)), ears=briefEars(id,qids), el=arcRungs(ears.world)[ears.rung];
+  const licks=allLicks().filter(l=>lickIsOver(l,qids));
+  const P=typeof id==='string'&&PROG[id.slice(2)], pb=typeof id==='string'&&PBOSS.find(b=>'p:'+b.id===id);
+  // a progression: its chords in C with their degrees; a progression boss: the four it mixes; chords: the types
+  const chords=P?progChords(P,0).map(c=>`<span>${gigAccHTML(symText(c))}<em>${gigAccHTML(c.rn)}</em></span>`).join('')
+    :pb?PROGS.slice(pb.from,pb.to).map(p=>`<span>${p.short}</span>`).join('')
+    :id==='p:mix'?`<span>All ${PROGS.length} progressions</span>`:id==='p:final'?`<span>All ${PROGS.length} progressions</span><span>and every chord type</span>`
+    :qids.length>16?`<span>All ${qids.length} chord types</span>`:qids.map(q=>`<span>${gigAccHTML(sym(q))}</span>`).join('');
+  $('briefCard').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(briefTitle(id))}</span><span>${starStr(st,STAR_MAX)}${devilOf(id)?' '+'💀'.repeat(devilOf(id)):''}</span></div>
+    <div class="sec">What's coming</div><div class="briefchords">${chords}</div>
+    <p>${mode==='practice'?'Practice: no clock, take your time.':`${t.name}, ♩ = ${t.bpm}, ${t.lives} ${t.lives===1?'life':'lives'}${t.devil?'. Every chord on fire, no hints':''}.`}${fire&&mode==='game'?` 🔥 chords will ask for the ${['','3rd','3rd or 5th','3rd, 5th or 7th'][fire]} in the bass.`:''} 💚 life chords now and then.</p>
+    <p class="fine">${st<STAR_MAX?`Next star: ${STAR_GOALS[st]}`:'Every star. 😈 Devil is open for this one in the tempo list.'}</p>
+    <div class="sec">The same chords elsewhere</div>
+    <div class="brieflinks">
+      ${vs.length?`<button class="ghost" data-brief="voicings">🎹 Voicings: ${vs.length} named voicings for ${vtypes.length>4?'these chords':vtypes.map(sym).map(gigAccHTML).join(', ')}</button>`:''}
+      <button class="ghost" data-brief="ears">👂 Hear them: Ears game, ${arcWorld(ears.world).name}, from "${gigAccHTML(el.name)}"</button>
+      ${licks.length?`<button class="ghost" data-brief="lines">🎷 Lines: ${licks.length} lick${licks.length>1?'s':''} over these chords</button>`:''}
+    </div>
+    <div class="erow"><button class="go" id="briefGo"${open?'':' disabled'}>${open?`Start${mode==='game'?` at ♩ = ${t.bpm}`:''} (Enter)`:'Locked at this tempo'}</button><button class="ghost" id="briefBack">Back (Esc)</button></div>`;
+  $('briefOv').hidden=false;
+  $('briefGo').onclick=()=>{ $('briefOv').hidden=true; start(); };
+  $('briefBack').onclick=briefClose;
+  $('briefCard').querySelectorAll('[data-brief]').forEach(b=>b.onclick=()=>briefGo(b.dataset.brief,qids,ears));
+}
+function briefClose(){ $('briefOv').hidden=true; BRIEF.id=null; }
+function briefGo(where,qids,ears){
+  briefClose();
+  if(where==='ears'){ arcStart(ears.world,ears.rung); return; }
+  if(where==='lines'){ LINES.over=qids; LDATA.diff=0; LDATA.from='all'; LDATA.artist=''; side='lines'; renderMenu(); $('startOv').scrollTop=0; return; }
+  VCDATA.fam='all'; side='voicings'; renderMenu();   // Voicings, scrolled to the first of these chord types
+  const first=VTYPES.find(q=>qids.includes(q)), el=first&&document.querySelector(`.vctype[data-qid="${first}"]`);
+  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); } }); }
+}
+// two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
+function briefClicks(box,attr,parse){
+  box.addEventListener('click',e=>{ const b=e.target.closest('.stage'); if(!b||b.getAttribute('aria-disabled')==='true') return;
+    const id=parse(b.dataset[attr]), t=performance.now(), L=BRIEF.last;
+    if(L.id===id&&t-L.t<450){ BRIEF.last={id:null,t:0}; setTimeout(()=>briefOpen(id),0); } else BRIEF.last={id,t}; },true);
+}
+briefClicks($('stages'),'n',v=>+v); briefClicks($('progs'),'p',v=>v);
+document.addEventListener('keydown',e=>{ if($('briefOv').hidden) return;
+  if(e.key==='Escape'){ briefClose(); e.stopImmediatePropagation(); e.preventDefault(); }
+  else if(e.key==='Enter'){ const g=$('briefGo'); if(g&&!g.disabled) g.click(); e.stopImmediatePropagation(); e.preventDefault(); } },true);
 </script>
 </body>
 </html>
