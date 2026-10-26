@@ -32,7 +32,8 @@ A jazz piano trainer with two sides:
 - **Chords briefings**: double-click a stage, progression or boss card for a short briefing (the chords coming up, or
   the progression in C with its degrees; tempo and lives; your stars and what the next one needs) with Start (Enter), and
   links to the same chords elsewhere: their named voicings in Voicings (scrolled there), the matching level of the Ears
-  game (it starts there), and the Lines licks over them (filtered).
+  game (it starts there), and the Lines licks over them (filtered). Each voicing card links back to the Chords stage that drills
+  its chord type. Voicings is split into chapter tabs (triads and colours, major, minor and diminished, dominants, slash).
 - **💚 Life answers** in every mode with lives: about one in 15–18, glowing green and harder than usual (Chords: a chord
   from a harder stage, always on fire; Ears: a 🧚 asking from the level above; Voicings Rush and bosses: a ●●● voicing
   with no formula; Comp Hero: a card asking for a named voicing). Get it right for a life back (a points bonus if you're

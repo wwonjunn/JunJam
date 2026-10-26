@@ -57,6 +57,10 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 - [ ] A game (Loop Station: a loop that keeps playing, the slot glows, you play the move in the band, then a new key).
       Keep the current cards and drill as Classic.
 
+## Links between modes
+- [x] Chords briefings link to Voicings (chapter tab, scrolled), the Ears game (matching level) and Lines (filtered); voicing cards link back to their Chords stage.
+- [ ] Not urgent: in a briefing, show which licks (not just how many) go over these chords.
+
 ## Lines (decided: no race, and no rhythm grading)
 The transcribed timing isn't reliable. What matters is the order of the notes, which notes over which chord, and the
 sound each one makes. Rhythm is never graded.

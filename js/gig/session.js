@@ -288,7 +288,7 @@ function gigEdit(song){
     if(mine) GDATA.mine.find(m=>m.id===id).text=ta.value; else GDATA.mine.push({id,text:ta.value});
     if(!saveGig()){ if(!mine) GDATA.mine.pop(); return trMsg("Couldn't save: this browser's storage is full.",'no'); }
     trMsg('Saved under Yours.','ok'); gigShow(id); };
-  if(mine) $('gigDel').onclick=()=>{ if(!confirm(`Delete "${song.title}"?`)) return; GDATA.mine=GDATA.mine.filter(m=>m.id!==song.id); delete GDATA.fav[song.id]; saveGig(); gigList(); };
+  if(mine) $('gigDel').onclick=()=>{ if(!confirm(`Delete “${song.title}”?`)) return; GDATA.mine=GDATA.mine.filter(m=>m.id!==song.id); delete GDATA.fav[song.id]; saveGig(); gigList(); };
 }
 
 /* ---------------- keys ---------------- */

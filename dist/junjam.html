@@ -79,7 +79,7 @@ header{display:flex;align-items:baseline;gap:22px;padding:10px 18px 8px;flex-wra
 body.menu .panel{display:none}
 
 .enemy .req{display:block;font-family:var(--cond);font-weight:700;font-size:17px;line-height:1.2;color:var(--lane);background:var(--brass);border-radius:4px;padding:2px 8px;margin-top:6px;width:max-content}
-.card.wide{max-width:760px}
+.card.wide{max-width:1120px}
 .gridwrap{overflow-x:auto}
 .grid{border-collapse:separate;border-spacing:3px;font-family:var(--cond);font-weight:600;font-size:13px}
 .grid th{color:var(--muted);font-weight:600;text-align:right;padding-right:6px;white-space:nowrap}
@@ -702,6 +702,17 @@ body.gigmode header .modetag{display:none}
 .brieflinks{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:4px 0 14px} .brieflinks .ghost{margin:0;text-align:left}
 .vctype.flash{animation:vcflash 1.6s ease-out} @keyframes vcflash{0%,30%{background:color-mix(in srgb, var(--brass) 22%, transparent)}100%{background:transparent}}
 .briefchords span em{display:block;font-style:normal;font-size:11px;color:var(--muted);font-weight:600}
+/* Voicings chapter tabs */
+.vctabs{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 8px;border-bottom:2px solid var(--line-strong)}
+.vctabs button{background:transparent;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:8px 12px;font-family:var(--cond);font-weight:700;font-size:16px;color:var(--muted);cursor:pointer}
+.vctabs button span{font-size:12px;font-weight:600;margin-left:6px;opacity:.75}
+.vctabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)} .vctabs button:hover{color:var(--ink)}
+/* the chord types sit side by side; big ones span two columns, boss rows run the full width */
+.vcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2px 16px}
+.vcgrid .vctype{margin-top:10px;min-width:0} .vcgrid .vctype.span2{grid-column:span 2} .vcgrid .vcbosses{grid-column:1/-1}
+.vcgrid .vctype .licks{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+@media (max-width:600px){ .vcgrid .vctype.span2{grid-column:auto} }
+.vcback{margin:-2px 0 10px} .vcback .ghost{margin:0 0 0 6px}
 </style>
 <style>
 /* ==================================================================================================
@@ -4915,7 +4926,7 @@ const VOICINGS=[
   V('min9','pop','E♭maj7 over C','C2 C3 | Eb4 G4 Bb4 D5',2,'A minor 9 is a major 7 chord a minor 3rd up, over the root. Octave bass, E♭maj7 on top: the neo-soul minor.'),
   V('min9','spread','Wide minor 9','C2 G2 Bb2 | Eb4 G4 Bb4 D5',3,'1 5 ♭7 in the left hand, ♭3 5 ♭7 9 in the right. Wide enough to fill the keyboard, still clear.'),
   V('min11','spread','Kenny Barron','C3 G3 D4 | Eb4 Bb4 F5',3,'Kenny Barron\'s minor 11: the left hand stacks 1 5 9 in 5ths, the right stacks ♭3 ♭7 11 in 5ths. Two hands, all 5ths, over two octaves: the most beautiful minor chord in jazz.'),
-  V('min11','quartal','So What','C3 F3 Bb3 | Eb4 G4',2,'Bill Evans\' chord from Miles Davis\'s "So What": three 4ths stacked up from the root, then a major 3rd on top. Modal and open.'),
+  V('min11','quartal','So What','C3 F3 Bb3 | Eb4 G4',2,'Bill Evans\' chord from Miles Davis\'s “So What”: three 4ths stacked up from the root, then a major 3rd on top. Modal and open.'),
   V('min11','spread','Neo-soul minor 11','C3 Bb3 | Eb4 F4 G4',2,'Shell low, then a cluster of ♭3, 11 and 5. The 11 squeezed in the middle is the lofi minor.'),
   V('min13','spread','Dorian 13','C3 Bb3 | Eb4 A4 D5',3,'Shell low, then ♭3, 13 and 9 in 4ths. The natural 13 (A in C minor) makes it Dorian: the minor chord of fusion and city pop.'),
   V('mmaj7','spread','James Bond chord','C3 G3 | B3 D4 Eb4 G4',2,'Minor triad with a major 7 and 9: the chord that ends the 007 theme. B and D and E♭ packed together, pure suspense.'),
@@ -4937,15 +4948,15 @@ const VOICINGS=[
   V('dom13','shell','Count Basie 13','C2 Bb2 | E3 A3 D4',2,'Shell in the left (1 ♭7), then 3, 13 and 9 in 4ths. The big band 13: punchy and complete.'),
   V('dom13','shell','Red Garland 13','C3 Bb3 | E4 A4',1,'Just four notes: shell, then 3 and 13. Easy to grab and it already sounds like jazz.'),
   V('sus7','shell','Shell sus','C3 Bb3 | F4 G4',1,'Root and ♭7 low, the 4th and 5th a step apart up top. No 3rd, so it hangs in the air.'),
-  V('sus9','us','B♭ over C (Herbie sus)','C3 | Bb3 D4 F4',1,'A B♭ triad over a C bass gives 9sus4. Herbie Hancock made it the sound of "Maiden Voyage"; it\'s also the J-pop IV-over-V.'),
-  V('sus9','spread','Gospel sus 1–5, ♭7–9–4','C3 G3 | Bb3 D4 F4',2,'Root and 5th open, then a B♭ triad. The gospel "IV over V" before the final chord.'),
+  V('sus9','us','B♭ over C (Herbie sus)','C3 | Bb3 D4 F4',1,'A B♭ triad over a C bass gives 9sus4. Herbie Hancock made it the sound of “Maiden Voyage”; it\'s also the J-pop IV-over-V.'),
+  V('sus9','spread','Gospel sus 1–5, ♭7–9–4','C3 G3 | Bb3 D4 F4',2,'Root and 5th open, then a B♭ triad. The gospel “IV over V” before the final chord.'),
   V('sus13','us','B♭maj7 over C','C3 | Bb3 D4 F4 A4',2,'B♭maj7 over C: a 13sus4. Wide open, the fusion and neo-soul sus.'),
   V('susb9','us','B♭m over C (Phrygian)','C3 | Bb3 Db4 F4',2,'A B♭ minor triad over C gives 7sus4♭9, the Phrygian chord: Spanish, dark, the sound of flamenco and of Chick Corea.'),
   V('d7b9','us','D♭°7 over C','C3 | Db4 E4 G4 Bb4',2,'A 7♭9 is a diminished 7 a half step above the root, over the root. Find D♭°7 and put C under it.'),
   V('d7b9','shell','Shell plus 3 and ♭9','C3 Bb3 | E4 Db5',2,'Root and ♭7 low, 3 and ♭9 up top. The ♭9 on top is the tense note that falls into the next chord\'s 5th.'),
   V('d13b9','us','A over C7 (upper structure VI)','C3 E3 Bb3 | A4 Db5 E5',3,'An A major triad over the C7 shell gives 13, ♭9 and 3. The tight, dark-and-bright dominant of bebop ballads.'),
   V('d13b9','rootless','Rootless 13♭9','C3 | E4 A4 Bb4 Db5',2,'3 13 ♭7 ♭9 over the root: the rootless B13 with the 9 lowered.'),
-  V('d7s9','spread','Hendrix chord','C3 | E4 Bb4 D#5',1,'Root, then 3, ♭7 and ♯9 on top. The ♯9 is the ♭3 on top of a major 3rd: blues in one chord ("Purple Haze").'),
+  V('d7s9','spread','Hendrix chord','C3 | E4 Bb4 D#5',1,'Root, then 3, ♭7 and ♯9 on top. The ♯9 is the ♭3 on top of a major 3rd: blues in one chord (“Purple Haze”).'),
   V('d7s9','us','E♭ over C7 (upper structure ♭III)','C3 E3 Bb3 | Eb4 G4 Bb4',2,'An E♭ major triad over the C7 shell: ♯9, 5 and ♭7. Funk and gospel.'),
   V('alt','us','A♭ over C7 (upper structure ♭VI)','C3 E3 Bb3 | Ab4 C5 Eb5',2,'An A♭ major triad over the C7 shell gives ♭13, root and ♯9: the altered dominant in one shape. The most used upper structure.'),
   V('alt','us','G♭ over C7 (upper structure ♭V)','C3 E3 Bb3 | Gb4 Bb4 Db5',3,'A G♭ triad (the tritone sub) over the C7 shell: ♯11, ♭7, ♭9. Two dominants at once.'),
@@ -4999,12 +5010,17 @@ const VCHAPTERS=[
   {id:'dom',name:'Dominants',bosses:[['dom7','dom9','dom13'],['sus7','sus9','sus13','susb9'],['d7b9','d13b9','d7s9','alt'],['d7b13','d7s5','d7s11','d13s11']]},
   {id:'slash',name:'Slash chords',bosses:[]},
 ];
-VCDATA.boss=VCDATA.boss||{};
+VCDATA.boss=VCDATA.boss||{}; if(!VCDATA.ch) VCDATA.ch='tri';   // the chapter tab open in the list
 // every boss: {id, name, types, kind}
 const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>({'':'major',m:'minor'})[vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')]??vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')).join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
   {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
   {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
 VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
+// the chord types in a chapter tab ('all': every one)
+const vcChapterTypes=id=>id==='all'?VTYPES:(VBOSSES.find(b=>b.kind==='chapter'&&b.id===id)||{types:VTYPES}).types;
+// the Chords stage that drills a chord type (the extra types the library names sit with their nearest stage)
+const VC_XSTAGE={maj13:4,min13:4,sus9:4,sus13:4,min69:3,susb9:5,d13b9:5,d13s11:5,d7s5:5};
+const vcStageOf=qid=>Q[qid]?Q[qid].stage:VC_XSTAGE[qid]||null;
 const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives</span></button>`;
 
 /* ---------------- menu pane ---------------- */
@@ -5023,23 +5039,30 @@ function renderVoicingsPane(){
   const fam=VCDATA.fam||'all', learned=VOICINGS.filter(v=>VCDATA.stars[v.id]).length;
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
-    return `<div class="vctype" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
+    return `<div class="vctype${vs.length>=3?' span2':''}" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
       `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
   const best=VCDATA.best[VCDATA.pool];
-  const withBosses=fam==='all'?VTYPES.map((qid,i)=>{ const html=list[i]||''; const bs=VBOSSES.filter(b=>b.after===qid); return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')+`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:list.join('');
+  // one chapter at a time (tabs), its bosses after the types they cover, the final boss at the end of every tab
+  const tab=VCDATA.ch, inTab=vcChapterTypes(tab);
+  const withBosses=VTYPES.map((qid,i)=>{ if(!inTab.includes(qid)) return ''; const html=list[i]||''; const bs=fam==='all'?VBOSSES.filter(b=>b.after===qid):[]; return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')
+    +(fam==='all'?`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:'');
+  const tabs=`<div class="vctabs" role="tablist">${VCHAPTERS.map(c=>{ const ts=vcChapterTypes(c.id), n=VOICINGS.filter(v=>ts.includes(v.qid)).length, got=VOICINGS.filter(v=>ts.includes(v.qid)&&VCDATA.stars[v.id]).length;
+    return `<button role="tab" data-vch="${c.id}" aria-selected="${tab===c.id}">${c.name}<span>${got}/${n}</span></button>`; }).join('')}<button role="tab" data-vch="all" aria-selected="${tab==='all'}">All<span>${VOICINGS.length}</span></button></div>`;
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>
     ${chPaneHTML()}
     <div class="vcrush"><div><b>Rush <span class="fine">classic</span></b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
       <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n}${k==='learned'?`: ${learned}${learned<4?', so the starter set for now':''}`:''}</option>`).join('')}${Object.entries(VFAM).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
+    ${tabs}
     <div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,n])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${n}</button>`).join('')}</div>
-    ${withBosses}
+    <div class="vcgrid">${withBosses}</div>
     <p class="fine" style="margin-top:12px">● to ●●● is how hard the shape is. ★ learn it in C. ★★ four of the five new keys right first time without showing the shape. ★★★ all five. A MIDI keyboard is needed: these are two-hand chords.</p>`;
   chBindPane($('voicingsPane'));
 }
 function bindVoicingsPane(){
   $('voicingsPane').onclick=e=>{ const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
+    if(b.dataset.vch){ VCDATA.ch=b.dataset.vch; saveVc(); renderVoicingsPane(); return; }
     if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
     else if(b.dataset.vc) vcOpen(b.dataset.vc);
     else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; saveVc(); renderVoicingsPane(); }
@@ -5107,8 +5130,10 @@ function vcOpen(id){
     <p class="vctip">${gigAccHTML(v.tip)}</p>
     ${vcDiagram(t)}
     <div class="vchands"><span class="lh"><b>Left hand</b> ${t.lh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span><span class="rh"><b>Right hand</b> ${t.rh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span></div>
+    ${vcStageOf(v.qid)?`<p class="fine vcback">Drill ${gigAccHTML(vcSym(t))} chords against the clock: <button class="ghost" id="vcToChords">Chords: ${STAGE[vcStageOf(v.qid)].t}</button></p>`:''}
     ${sib.length?`<div class="sec">Other ways to play ${gigAccHTML(vcSym(t))}</div><div class="vcsib">${sib.map(x=>`<button class="ghost" data-vc="${x.id}">${gigAccHTML(x.name)}</button>`).join('')}</div>`:''}
     <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcRoll">Hands one after the other</button><button class="go" id="vcGo">Play it: C, then 5 keys</button><button class="ghost" id="vcBack">Back</button></div>`;
+  if($('vcToChords')) $('vcToChords').onclick=()=>{ vcToMenu(); side='hands'; renderMenu(); briefOpen(vcStageOf(v.qid)); };
   $('vcHear').onclick=()=>vcPlay(t); $('vcRoll').onclick=()=>vcPlay(t,true); $('vcGo').onclick=()=>vcDrillStart(id); $('vcBack').onclick=vcToMenu;
   $('vcBody').querySelectorAll('.vcsib [data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
   $('verdict').className='verdict'; $('verdict').textContent=`${vcSym(t)}: ${v.name}`; $('chips').innerHTML=''; $('why').textContent='Play it on your keyboard when you\'re ready, or press Play it.'; $('tags').textContent='';
@@ -6076,7 +6101,7 @@ function trLibRender(){
     <div class="trfolder trtoplevel" data-drop="">${cards('')?`${F.length?'<div class="fine trloose">Not in a folder</div>':''}<div class="licks">${cards('')}</div>`:F.length?'<p class="fine trfempty">Drag a transcription here to take it out of its folder.</p>':''}</div>`;
   const commit=msg=>{ if(!saveTr()) trMsg("Couldn't save that: this browser's storage is full.",'no'); else if(msg) trMsg(msg,'ok'); trLibRender(); };
   const move=(i,fid)=>{ const t=L[i]; if(!t) return; if(fid) t.folder=fid; else delete t.folder; const f=F.find(x=>x.id===fid); if(f) f.closed=false; commit(`Moved to ${f?f.name:'the top level'}.`); };
-  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete "${t.title}"? This can't be undone.`)) return; L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
+  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete “${t.title}”? This can't be undone.`)) return; L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
   const rename=i=>{ const t=L[i], n=t&&prompt('Name',t.title); if(n&&n.trim()){ t.title=n.trim(); commit(); } };
   const cardMenu=(e,i)=>{ const t=L[i]; trMenu(e,[{t:'Open',f:()=>trOpenSaved(i)},{t:'Rename',f:()=>rename(i)},null,
     ...F.filter(f=>f.id!==t.folder).map(f=>({t:`Move to 📁 ${trEsc(f.name)}`,f:()=>move(i,f.id)})),...(t.folder&&known.has(t.folder)?[{t:'Move out of the folder',f:()=>move(i,'')}]:[]),
@@ -6086,7 +6111,7 @@ function trLibRender(){
       TRDATA.folders=F.filter(x=>x!==f); commit(keep?`Folder deleted; its transcriptions are at the top level now.`:'Folder deleted.'); };
     if(!inside.length) return drop(true);
     trMenu(e,[{t:`Delete the folder, keep its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>drop(true)},
-      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete "${f.name}" and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
+      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete “${f.name}” and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
   $('trNewFolder').onclick=()=>{ const n=prompt('Folder name'); if(n&&n.trim()){ F.push({id:trNewId('f'),name:n.trim()}); commit(); } };
   el.onclick=e=>{ const g=k=>e.target.closest(`[data-${k}]`);
     if(g('del')) return del(+g('del').dataset.del);
@@ -6119,7 +6144,7 @@ async function trTabRecord(){
   try{ stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true,preferCurrentTab:false,selfBrowserSurface:'exclude',surfaceSwitching:'include'}); }
   catch(e){ $('trStatus').textContent='Recording cancelled.'; return; }
   const audio=stream.getAudioTracks();
-  if(!audio.length){ stream.getTracks().forEach(t=>t.stop()); $('trStatus').textContent='No sound came through. Choose a Chrome tab and tick "Also share tab audio".'; $('trStatus').className='trno'; return; }
+  if(!audio.length){ stream.getTracks().forEach(t=>t.stop()); $('trStatus').textContent='No sound came through. Choose a Chrome tab and tick “Also share tab audio”.'; $('trStatus').className='trno'; return; }
   stream.getVideoTracks().forEach(t=>t.enabled=false); // only the sound is used
   const rec=new MediaRecorder(new MediaStream(audio),{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm'}), chunks=[];
   const t0=performance.now(), MAX=6*60*1000;
@@ -6756,7 +6781,7 @@ function trPDF(){
     .clef{fill:#111;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif} .acc{font-family:'Noto Music',${v('--body')};font-size:15px;font-weight:600}
     .csym{font-family:${v('--hand')};font-weight:700;font-size:15px;fill:#111} .foot{text-align:center;font-size:10px;color:#999;margin-top:14px}</style></head>
     <body><h1>${trEsc(s.title)}</h1><p class="sub">${s.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[s.instrument]||{}).name||''} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)}</p>${lines}<p class="foot">Transcribed with Jun Jam</p></body></html>`); d.close();
-  const title=document.title; trMsg('In the print window, set Destination to "Save as PDF".');
+  const title=document.title; trMsg('In the print window, set Destination to “Save as PDF”.');
   const go=()=>{ document.title=s.title; f.contentWindow.focus(); f.contentWindow.print(); document.title=title; setTimeout(()=>f.remove(),1000); };
   Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,1500))]).then(()=>setTimeout(go,50));
 }
@@ -8956,7 +8981,7 @@ function gigEdit(song){
     if(mine) GDATA.mine.find(m=>m.id===id).text=ta.value; else GDATA.mine.push({id,text:ta.value});
     if(!saveGig()){ if(!mine) GDATA.mine.pop(); return trMsg("Couldn't save: this browser's storage is full.",'no'); }
     trMsg('Saved under Yours.','ok'); gigShow(id); };
-  if(mine) $('gigDel').onclick=()=>{ if(!confirm(`Delete "${song.title}"?`)) return; GDATA.mine=GDATA.mine.filter(m=>m.id!==song.id); delete GDATA.fav[song.id]; saveGig(); gigList(); };
+  if(mine) $('gigDel').onclick=()=>{ if(!confirm(`Delete “${song.title}”?`)) return; GDATA.mine=GDATA.mine.filter(m=>m.id!==song.id); delete GDATA.fav[song.id]; saveGig(); gigList(); };
 }
 
 /* ---------------- keys ---------------- */
@@ -9097,7 +9122,7 @@ function renderMenu(){
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
-$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); if(b.dataset.mode==='lines') LINES.over=null; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
 $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
 $('lHear').onclick=()=>linesPlay();
 $('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
@@ -9204,8 +9229,13 @@ function briefQids(id){
 const briefTitle=id=>typeof id==='number'?STAGE[id].t:id==='p:mix'?'Chapter boss: every progression':id==='p:final'?'Final boss: everything':PBOSS.find(b=>'p:'+b.id===id)?`Boss: ${PROGS.slice(PBOSS.find(b=>'p:'+b.id===id).from,PBOSS.find(b=>'p:'+b.id===id).to).map(p=>p.short).join(', ')}`:PROG[id.slice(2)].name;
 // the Ears game level that hears the most of these: Progressions for a progression, Chord qualities for chords
 function briefEars(id,qids){
-  if(typeof id==='string'){ const pb=PBOSS.find(b=>'p:'+b.id===id), rs=arcRungs('progs'), want=pb?PROGS[pb.from].id:id.slice(2), i=rs.findIndex(l=>l.p.set&&l.p.set.includes(want)); return {world:'progs',rung:Math.max(0,i<0?rs.length-1:i)}; }
-  const rs=arcRungs('chords'); let best=0, score=-1;
+  if(typeof id==='string'){ // the progressions level holding the most of them (a boss: its progressions; every one: the last level)
+    const pb=PBOSS.find(b=>'p:'+b.id===id), rs=arcRungs('progs'), want=pb?PROGS.slice(pb.from,pb.to).map(p=>p.id):PROG[id.slice(2)]?[id.slice(2)]:null;
+    if(!want) return {world:'progs',rung:rs.length-1};
+    let bi=rs.length-1, bs=0; rs.forEach((l,i)=>{ if(l.boss||!l.p.set) return; const n=want.filter(x=>l.p.set.includes(x)).length; if(n>bs){ bs=n; bi=i; } }); return {world:'progs',rung:bi}; }
+  const rs=arcRungs('chords');
+  if(qids.some(q=>Q[q]&&Q[q].bass!=null)&&!qids.some(q=>Q[q]&&Q[q].stage<6)) return {world:'chords',rung:Math.max(0,rs.findIndex(l=>l.gen==='inversion'))};   // slash chords: hearing the bass note
+  let best=0, score=-1;
   rs.forEach((l,i)=>{ if(l.gen!=='chord'||l.boss) return; const s=l.p.set.filter(x=>qids.includes(x)).length/l.p.set.length; if(s>score){ score=s; best=i; } });
   return {world:'chords',rung:best};
 }
@@ -9228,7 +9258,7 @@ function briefOpen(id){
     <div class="sec">The same chords elsewhere</div>
     <div class="brieflinks">
       ${vs.length?`<button class="ghost" data-brief="voicings">🎹 Voicings: ${vs.length} named voicings for ${vtypes.length>4?'these chords':vtypes.map(sym).map(gigAccHTML).join(', ')}</button>`:''}
-      <button class="ghost" data-brief="ears">👂 Hear them: Ears game, ${arcWorld(ears.world).name}, from "${gigAccHTML(el.name)}"</button>
+      <button class="ghost" data-brief="ears">👂 Hear them: Ears game, ${arcWorld(ears.world).name}, from “${gigAccHTML(el.name)}”</button>
       ${licks.length?`<button class="ghost" data-brief="lines">🎷 Lines: ${licks.length} lick${licks.length>1?'s':''} over these chords</button>`:''}
     </div>
     <div class="erow"><button class="go" id="briefGo"${open?'':' disabled'}>${open?`Start${mode==='game'?` at ♩ = ${t.bpm}`:''} (Enter)`:'Locked at this tempo'}</button><button class="ghost" id="briefBack">Back (Esc)</button></div>`;
@@ -9242,9 +9272,11 @@ function briefGo(where,qids,ears){
   briefClose();
   if(where==='ears'){ arcStart(ears.world,ears.rung); return; }
   if(where==='lines'){ LINES.over=qids; LDATA.diff=0; LDATA.from='all'; LDATA.artist=''; side='lines'; renderMenu(); $('startOv').scrollTop=0; return; }
-  VCDATA.fam='all'; side='voicings'; renderMenu();   // Voicings, scrolled to the first of these chord types
+  // Voicings, on the chapter tab that holds these chords (All if they span chapters), scrolled to the first of them
+  const chs=VCHAPTERS.filter(c=>vcChapterTypes(c.id).some(q=>qids.includes(q)));
+  VCDATA.fam='all'; VCDATA.ch=chs.length===1?chs[0].id:'all'; side='voicings'; renderMenu();
   const first=VTYPES.find(q=>qids.includes(q)), el=first&&document.querySelector(`.vctype[data-qid="${first}"]`);
-  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); } }); }
+  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } }); }   // the highlight goes once it has faded
 }
 // two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
 function briefClicks(box,attr,parse){

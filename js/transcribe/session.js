@@ -73,7 +73,7 @@ function trLibRender(){
     <div class="trfolder trtoplevel" data-drop="">${cards('')?`${F.length?'<div class="fine trloose">Not in a folder</div>':''}<div class="licks">${cards('')}</div>`:F.length?'<p class="fine trfempty">Drag a transcription here to take it out of its folder.</p>':''}</div>`;
   const commit=msg=>{ if(!saveTr()) trMsg("Couldn't save that: this browser's storage is full.",'no'); else if(msg) trMsg(msg,'ok'); trLibRender(); };
   const move=(i,fid)=>{ const t=L[i]; if(!t) return; if(fid) t.folder=fid; else delete t.folder; const f=F.find(x=>x.id===fid); if(f) f.closed=false; commit(`Moved to ${f?f.name:'the top level'}.`); };
-  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete "${t.title}"? This can't be undone.`)) return; L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
+  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete “${t.title}”? This can't be undone.`)) return; L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
   const rename=i=>{ const t=L[i], n=t&&prompt('Name',t.title); if(n&&n.trim()){ t.title=n.trim(); commit(); } };
   const cardMenu=(e,i)=>{ const t=L[i]; trMenu(e,[{t:'Open',f:()=>trOpenSaved(i)},{t:'Rename',f:()=>rename(i)},null,
     ...F.filter(f=>f.id!==t.folder).map(f=>({t:`Move to 📁 ${trEsc(f.name)}`,f:()=>move(i,f.id)})),...(t.folder&&known.has(t.folder)?[{t:'Move out of the folder',f:()=>move(i,'')}]:[]),
@@ -83,7 +83,7 @@ function trLibRender(){
       TRDATA.folders=F.filter(x=>x!==f); commit(keep?`Folder deleted; its transcriptions are at the top level now.`:'Folder deleted.'); };
     if(!inside.length) return drop(true);
     trMenu(e,[{t:`Delete the folder, keep its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>drop(true)},
-      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete "${f.name}" and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
+      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete “${f.name}” and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
   $('trNewFolder').onclick=()=>{ const n=prompt('Folder name'); if(n&&n.trim()){ F.push({id:trNewId('f'),name:n.trim()}); commit(); } };
   el.onclick=e=>{ const g=k=>e.target.closest(`[data-${k}]`);
     if(g('del')) return del(+g('del').dataset.del);
@@ -116,7 +116,7 @@ async function trTabRecord(){
   try{ stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true,preferCurrentTab:false,selfBrowserSurface:'exclude',surfaceSwitching:'include'}); }
   catch(e){ $('trStatus').textContent='Recording cancelled.'; return; }
   const audio=stream.getAudioTracks();
-  if(!audio.length){ stream.getTracks().forEach(t=>t.stop()); $('trStatus').textContent='No sound came through. Choose a Chrome tab and tick "Also share tab audio".'; $('trStatus').className='trno'; return; }
+  if(!audio.length){ stream.getTracks().forEach(t=>t.stop()); $('trStatus').textContent='No sound came through. Choose a Chrome tab and tick “Also share tab audio”.'; $('trStatus').className='trno'; return; }
   stream.getVideoTracks().forEach(t=>t.enabled=false); // only the sound is used
   const rec=new MediaRecorder(new MediaStream(audio),{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm'}), chunks=[];
   const t0=performance.now(), MAX=6*60*1000;
@@ -753,7 +753,7 @@ function trPDF(){
     .clef{fill:#111;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif} .acc{font-family:'Noto Music',${v('--body')};font-size:15px;font-weight:600}
     .csym{font-family:${v('--hand')};font-weight:700;font-size:15px;fill:#111} .foot{text-align:center;font-size:10px;color:#999;margin-top:14px}</style></head>
     <body><h1>${trEsc(s.title)}</h1><p class="sub">${s.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[s.instrument]||{}).name||''} · ♩ = ${s.tempo} · ${keyName(s.key.pc,s.key.minor)}</p>${lines}<p class="foot">Transcribed with Jun Jam</p></body></html>`); d.close();
-  const title=document.title; trMsg('In the print window, set Destination to "Save as PDF".');
+  const title=document.title; trMsg('In the print window, set Destination to “Save as PDF”.');
   const go=()=>{ document.title=s.title; f.contentWindow.focus(); f.contentWindow.print(); document.title=title; setTimeout(()=>f.remove(),1000); };
   Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,1500))]).then(()=>setTimeout(go,50));
 }

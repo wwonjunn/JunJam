@@ -13,8 +13,13 @@ function briefQids(id){
 const briefTitle=id=>typeof id==='number'?STAGE[id].t:id==='p:mix'?'Chapter boss: every progression':id==='p:final'?'Final boss: everything':PBOSS.find(b=>'p:'+b.id===id)?`Boss: ${PROGS.slice(PBOSS.find(b=>'p:'+b.id===id).from,PBOSS.find(b=>'p:'+b.id===id).to).map(p=>p.short).join(', ')}`:PROG[id.slice(2)].name;
 // the Ears game level that hears the most of these: Progressions for a progression, Chord qualities for chords
 function briefEars(id,qids){
-  if(typeof id==='string'){ const pb=PBOSS.find(b=>'p:'+b.id===id), rs=arcRungs('progs'), want=pb?PROGS[pb.from].id:id.slice(2), i=rs.findIndex(l=>l.p.set&&l.p.set.includes(want)); return {world:'progs',rung:Math.max(0,i<0?rs.length-1:i)}; }
-  const rs=arcRungs('chords'); let best=0, score=-1;
+  if(typeof id==='string'){ // the progressions level holding the most of them (a boss: its progressions; every one: the last level)
+    const pb=PBOSS.find(b=>'p:'+b.id===id), rs=arcRungs('progs'), want=pb?PROGS.slice(pb.from,pb.to).map(p=>p.id):PROG[id.slice(2)]?[id.slice(2)]:null;
+    if(!want) return {world:'progs',rung:rs.length-1};
+    let bi=rs.length-1, bs=0; rs.forEach((l,i)=>{ if(l.boss||!l.p.set) return; const n=want.filter(x=>l.p.set.includes(x)).length; if(n>bs){ bs=n; bi=i; } }); return {world:'progs',rung:bi}; }
+  const rs=arcRungs('chords');
+  if(qids.some(q=>Q[q]&&Q[q].bass!=null)&&!qids.some(q=>Q[q]&&Q[q].stage<6)) return {world:'chords',rung:Math.max(0,rs.findIndex(l=>l.gen==='inversion'))};   // slash chords: hearing the bass note
+  let best=0, score=-1;
   rs.forEach((l,i)=>{ if(l.gen!=='chord'||l.boss) return; const s=l.p.set.filter(x=>qids.includes(x)).length/l.p.set.length; if(s>score){ score=s; best=i; } });
   return {world:'chords',rung:best};
 }
@@ -37,7 +42,7 @@ function briefOpen(id){
     <div class="sec">The same chords elsewhere</div>
     <div class="brieflinks">
       ${vs.length?`<button class="ghost" data-brief="voicings">🎹 Voicings: ${vs.length} named voicings for ${vtypes.length>4?'these chords':vtypes.map(sym).map(gigAccHTML).join(', ')}</button>`:''}
-      <button class="ghost" data-brief="ears">👂 Hear them: Ears game, ${arcWorld(ears.world).name}, from "${gigAccHTML(el.name)}"</button>
+      <button class="ghost" data-brief="ears">👂 Hear them: Ears game, ${arcWorld(ears.world).name}, from “${gigAccHTML(el.name)}”</button>
       ${licks.length?`<button class="ghost" data-brief="lines">🎷 Lines: ${licks.length} lick${licks.length>1?'s':''} over these chords</button>`:''}
     </div>
     <div class="erow"><button class="go" id="briefGo"${open?'':' disabled'}>${open?`Start${mode==='game'?` at ♩ = ${t.bpm}`:''} (Enter)`:'Locked at this tempo'}</button><button class="ghost" id="briefBack">Back (Esc)</button></div>`;
@@ -51,9 +56,11 @@ function briefGo(where,qids,ears){
   briefClose();
   if(where==='ears'){ arcStart(ears.world,ears.rung); return; }
   if(where==='lines'){ LINES.over=qids; LDATA.diff=0; LDATA.from='all'; LDATA.artist=''; side='lines'; renderMenu(); $('startOv').scrollTop=0; return; }
-  VCDATA.fam='all'; side='voicings'; renderMenu();   // Voicings, scrolled to the first of these chord types
+  // Voicings, on the chapter tab that holds these chords (All if they span chapters), scrolled to the first of them
+  const chs=VCHAPTERS.filter(c=>vcChapterTypes(c.id).some(q=>qids.includes(q)));
+  VCDATA.fam='all'; VCDATA.ch=chs.length===1?chs[0].id:'all'; side='voicings'; renderMenu();
   const first=VTYPES.find(q=>qids.includes(q)), el=first&&document.querySelector(`.vctype[data-qid="${first}"]`);
-  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); } }); }
+  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } }); }   // the highlight goes once it has faded
 }
 // two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
 function briefClicks(box,attr,parse){

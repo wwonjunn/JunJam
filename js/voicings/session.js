@@ -20,12 +20,17 @@ const VCHAPTERS=[
   {id:'dom',name:'Dominants',bosses:[['dom7','dom9','dom13'],['sus7','sus9','sus13','susb9'],['d7b9','d13b9','d7s9','alt'],['d7b13','d7s5','d7s11','d13s11']]},
   {id:'slash',name:'Slash chords',bosses:[]},
 ];
-VCDATA.boss=VCDATA.boss||{};
+VCDATA.boss=VCDATA.boss||{}; if(!VCDATA.ch) VCDATA.ch='tri';   // the chapter tab open in the list
 // every boss: {id, name, types, kind}
 const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>({'':'major',m:'minor'})[vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')]??vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')).join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
   {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
   {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
 VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
+// the chord types in a chapter tab ('all': every one)
+const vcChapterTypes=id=>id==='all'?VTYPES:(VBOSSES.find(b=>b.kind==='chapter'&&b.id===id)||{types:VTYPES}).types;
+// the Chords stage that drills a chord type (the extra types the library names sit with their nearest stage)
+const VC_XSTAGE={maj13:4,min13:4,sus9:4,sus13:4,min69:3,susb9:5,d13b9:5,d13s11:5,d7s5:5};
+const vcStageOf=qid=>Q[qid]?Q[qid].stage:VC_XSTAGE[qid]||null;
 const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives</span></button>`;
 
 /* ---------------- menu pane ---------------- */
@@ -44,23 +49,30 @@ function renderVoicingsPane(){
   const fam=VCDATA.fam||'all', learned=VOICINGS.filter(v=>VCDATA.stars[v.id]).length;
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
-    return `<div class="vctype" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
+    return `<div class="vctype${vs.length>=3?' span2':''}" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
       `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
   const best=VCDATA.best[VCDATA.pool];
-  const withBosses=fam==='all'?VTYPES.map((qid,i)=>{ const html=list[i]||''; const bs=VBOSSES.filter(b=>b.after===qid); return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')+`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:list.join('');
+  // one chapter at a time (tabs), its bosses after the types they cover, the final boss at the end of every tab
+  const tab=VCDATA.ch, inTab=vcChapterTypes(tab);
+  const withBosses=VTYPES.map((qid,i)=>{ if(!inTab.includes(qid)) return ''; const html=list[i]||''; const bs=fam==='all'?VBOSSES.filter(b=>b.after===qid):[]; return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')
+    +(fam==='all'?`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:'');
+  const tabs=`<div class="vctabs" role="tablist">${VCHAPTERS.map(c=>{ const ts=vcChapterTypes(c.id), n=VOICINGS.filter(v=>ts.includes(v.qid)).length, got=VOICINGS.filter(v=>ts.includes(v.qid)&&VCDATA.stars[v.id]).length;
+    return `<button role="tab" data-vch="${c.id}" aria-selected="${tab===c.id}">${c.name}<span>${got}/${n}</span></button>`; }).join('')}<button role="tab" data-vch="all" aria-selected="${tab==='all'}">All<span>${VOICINGS.length}</span></button></div>`;
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>
     ${chPaneHTML()}
     <div class="vcrush"><div><b>Rush <span class="fine">classic</span></b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
       <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n}${k==='learned'?`: ${learned}${learned<4?', so the starter set for now':''}`:''}</option>`).join('')}${Object.entries(VFAM).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
+    ${tabs}
     <div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,n])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${n}</button>`).join('')}</div>
-    ${withBosses}
+    <div class="vcgrid">${withBosses}</div>
     <p class="fine" style="margin-top:12px">● to ●●● is how hard the shape is. ★ learn it in C. ★★ four of the five new keys right first time without showing the shape. ★★★ all five. A MIDI keyboard is needed: these are two-hand chords.</p>`;
   chBindPane($('voicingsPane'));
 }
 function bindVoicingsPane(){
   $('voicingsPane').onclick=e=>{ const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
+    if(b.dataset.vch){ VCDATA.ch=b.dataset.vch; saveVc(); renderVoicingsPane(); return; }
     if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
     else if(b.dataset.vc) vcOpen(b.dataset.vc);
     else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; saveVc(); renderVoicingsPane(); }
@@ -128,8 +140,10 @@ function vcOpen(id){
     <p class="vctip">${gigAccHTML(v.tip)}</p>
     ${vcDiagram(t)}
     <div class="vchands"><span class="lh"><b>Left hand</b> ${t.lh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span><span class="rh"><b>Right hand</b> ${t.rh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span></div>
+    ${vcStageOf(v.qid)?`<p class="fine vcback">Drill ${gigAccHTML(vcSym(t))} chords against the clock: <button class="ghost" id="vcToChords">Chords: ${STAGE[vcStageOf(v.qid)].t}</button></p>`:''}
     ${sib.length?`<div class="sec">Other ways to play ${gigAccHTML(vcSym(t))}</div><div class="vcsib">${sib.map(x=>`<button class="ghost" data-vc="${x.id}">${gigAccHTML(x.name)}</button>`).join('')}</div>`:''}
     <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcRoll">Hands one after the other</button><button class="go" id="vcGo">Play it: C, then 5 keys</button><button class="ghost" id="vcBack">Back</button></div>`;
+  if($('vcToChords')) $('vcToChords').onclick=()=>{ vcToMenu(); side='hands'; renderMenu(); briefOpen(vcStageOf(v.qid)); };
   $('vcHear').onclick=()=>vcPlay(t); $('vcRoll').onclick=()=>vcPlay(t,true); $('vcGo').onclick=()=>vcDrillStart(id); $('vcBack').onclick=vcToMenu;
   $('vcBody').querySelectorAll('.vcsib [data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
   $('verdict').className='verdict'; $('verdict').textContent=`${vcSym(t)}: ${v.name}`; $('chips').innerHTML=''; $('why').textContent='Play it on your keyboard when you\'re ready, or press Play it.'; $('tags').textContent='';
