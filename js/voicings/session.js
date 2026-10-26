@@ -19,7 +19,7 @@ const VCHAPTERS=[
 ];
 VCDATA.boss=VCDATA.boss||{};
 // every boss: {id, name, types, kind}
-const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')||'major').join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
+const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>({'':'major',m:'minor'})[vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')]??vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')).join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
   {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
   {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
 VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
@@ -217,7 +217,7 @@ function vcRushNext(){
   if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
   else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
-  const t=vcIn(item.v,item.pc), fresh=!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);
+  const t=vcIn(item.v,item.pc), fresh=!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
   R.seen.add(item.v.id);
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
   Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;

@@ -1645,7 +1645,7 @@ if(store.get('v',1)<2){
   store.set('best2',b); store.set('v',2);
 }
 const validStage=s=>typeof s==='number'?STAGES.some(x=>x.n===s):s==='p:mix'||s==='p:final'||(typeof s==='string'&&(!!PROG[s.slice(2)]||PBOSS.some(b=>'p:'+b.id===s)));
-let stageN=store.get('stage',2); if(!validStage(stageN)) stageN=Math.min(STAGES.length,+stageN||2); // e.g. the removed stage 8
+let stageN=store.get('stage',2); if(!validStage(stageN)) stageN=2; // e.g. the removed stage 8
 let G=null; // running game
 opts.smart=store.get('smart',true);
 let STATS=store.get('stats',{});
@@ -2315,10 +2315,11 @@ function fireFor(t,lvl){
   const k=kinds[Math.floor(Math.random()*kinds.length)], name=spellNote(60+mod12(t.root.pc+iv[k]),t.root,q).name;
   return {k,iv:iv[k],name};
 }
-/* Devil (the post-game, per stage, once it has ★★★★★): 260 bpm, one life, every chord on fire with any chord tone in
+/* Devil (the post-game, per stage, once it has ★★★★★): 200 bpm, one life, every chord on fire with any chord tone in
    the bass (3rd, 5th or 7th), odd spellings (B♯maj7, F♭7), and no hints. Its own ranks: 💀 16 chords, 💀💀 32, 💀💀💀 48. */
 const devilOf=id=>HSTARS['d:'+id]||0;
 const DEVIL_RUN=[16,32,48];
+const MAX_BPM=200;   // reaction time beyond this isn't musicianship
 const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),...PBOSS.map(b=>'p:'+b.id),'p:mix','p:final'];
 function runStars(){
   if(G.practice||G.kills<STAR_RUN) return 0;
@@ -2526,7 +2527,7 @@ function submit(notes){
     srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),g); if(clean) G.cleanTimes.push(s2); }
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
-  if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
+  if(!G.practice && G.kills%8===0){ G.wave++; G.bpm=Math.min(MAX_BPM,G.bpm+G.tier.step); }   // speeds up with each wave, never past 200
   G.enemies.shift(); renderAhead(); if(e.t.req==='byear') stopByEar();
   G.cool=G.practice?0.5:Math.max(0.4,60/G.bpm);
   fx(e,res);
@@ -3324,7 +3325,7 @@ function arcCall(){
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
   R.walk={x0:R.mon.x,t0:spawn,t1:R.close};   // it waits (out of sight, or where a brute stands) until then
-  arcRender(); if(R.kind==='devil') arcFxTheme(3); else if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
+  arcRender(); if(R.kind==='devil'||R.kind==='final') arcFxTheme(3); else if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
   kbMarks={}; const ref=arcRef(q), refPc=ref?ref.pc:q.keyPc;   // light the note you measure from, in every octave
   if(refPc!=null) for(const m in keyEls) if(mod12(+m-refPc)===0) kbMarks[m]='k-root'; if(ref&&ref.midi) kbMarks[ref.midi]='k-chord'; paintKeys();
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
@@ -4956,7 +4957,7 @@ const VCHAPTERS=[
 ];
 VCDATA.boss=VCDATA.boss||{};
 // every boss: {id, name, types, kind}
-const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')||'major').join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
+const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>({'':'major',m:'minor'})[vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')]??vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')).join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
   {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
   {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
 VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
@@ -5154,7 +5155,7 @@ function vcRushNext(){
   if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
   else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
-  const t=vcIn(item.v,item.pc), fresh=!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);
+  const t=vcIn(item.v,item.pc), fresh=!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
   R.seen.add(item.v.id);
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
   Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
@@ -5316,7 +5317,7 @@ function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientR
 function chHead(){ const R=CH, h=$('chHead'); if(!h) return; const n=R.cards.length, done=R.cards.filter(c=>c.state!=='up'&&c.state!=='on').length;
   h.innerHTML=`<div class="etop"><span class="etitle">${trEsc(R.song.title)}</span><span>${R.D.name} · ♩ = ${R.bpm}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>${done} of ${n}</span></div>
     ${R.D.devil?`<div class="chmeter"><span>Strikes</span><b class="chstrikes">${'✖'.repeat(R.strikes)}${'○'.repeat(3-R.strikes)}</b></div>`:`<div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`}`; }
-function chStrike(){ const R=CH; R.strikes++; R.shake=10; chHead(); if(R.strikes>=3) chOver(false); }
+function chStrike(){ const R=CH; if(R.mode!=='run') return; R.strikes++; R.shake=10; chHead(); if(R.strikes>=3) chOver(false); }
 
 /* ---------------- reading what you play ---------------- */
 const chShape=ns=>{ const s=[...new Set(ns)].sort((a,b)=>a-b); return s.map(m=>m-s[0]).join(','); };

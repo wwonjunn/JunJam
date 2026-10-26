@@ -77,7 +77,7 @@ function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientR
 function chHead(){ const R=CH, h=$('chHead'); if(!h) return; const n=R.cards.length, done=R.cards.filter(c=>c.state!=='up'&&c.state!=='on').length;
   h.innerHTML=`<div class="etop"><span class="etitle">${trEsc(R.song.title)}</span><span>${R.D.name} · ♩ = ${R.bpm}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>${done} of ${n}</span></div>
     ${R.D.devil?`<div class="chmeter"><span>Strikes</span><b class="chstrikes">${'✖'.repeat(R.strikes)}${'○'.repeat(3-R.strikes)}</b></div>`:`<div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`}`; }
-function chStrike(){ const R=CH; R.strikes++; R.shake=10; chHead(); if(R.strikes>=3) chOver(false); }
+function chStrike(){ const R=CH; if(R.mode!=='run') return; R.strikes++; R.shake=10; chHead(); if(R.strikes>=3) chOver(false); }
 
 /* ---------------- reading what you play ---------------- */
 const chShape=ns=>{ const s=[...new Set(ns)].sort((a,b)=>a-b); return s.map(m=>m-s[0]).join(','); };

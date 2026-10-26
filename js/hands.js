@@ -38,10 +38,11 @@ function fireFor(t,lvl){
   const k=kinds[Math.floor(Math.random()*kinds.length)], name=spellNote(60+mod12(t.root.pc+iv[k]),t.root,q).name;
   return {k,iv:iv[k],name};
 }
-/* Devil (the post-game, per stage, once it has ★★★★★): 260 bpm, one life, every chord on fire with any chord tone in
+/* Devil (the post-game, per stage, once it has ★★★★★): 200 bpm, one life, every chord on fire with any chord tone in
    the bass (3rd, 5th or 7th), odd spellings (B♯maj7, F♭7), and no hints. Its own ranks: 💀 16 chords, 💀💀 32, 💀💀💀 48. */
 const devilOf=id=>HSTARS['d:'+id]||0;
 const DEVIL_RUN=[16,32,48];
+const MAX_BPM=200;   // reaction time beyond this isn't musicianship
 const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),...PBOSS.map(b=>'p:'+b.id),'p:mix','p:final'];
 function runStars(){
   if(G.practice||G.kills<STAR_RUN) return 0;
@@ -249,7 +250,7 @@ function submit(notes){
     srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),g); if(clean) G.cleanTimes.push(s2); }
   G.prev=ev.per.map(p=>p.midi);
   if(!G.best||res.total>G.best.total) G.best={total:res.total,sym:symText(e.t),notes:ev.per.map(p=>p.spell.name),tags:res.tags.filter(t=>t.p>0&&t.t!=='Quick').map(t=>t.t)};
-  if(!G.practice && G.kills%8===0){ G.wave++; G.bpm+=G.tier.step; }
+  if(!G.practice && G.kills%8===0){ G.wave++; G.bpm=Math.min(MAX_BPM,G.bpm+G.tier.step); }   // speeds up with each wave, never past 200
   G.enemies.shift(); renderAhead(); if(e.t.req==='byear') stopByEar();
   G.cool=G.practice?0.5:Math.max(0.4,60/G.bpm);
   fx(e,res);

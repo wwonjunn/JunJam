@@ -178,7 +178,7 @@ function arcCall(){
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
   R.walk={x0:R.mon.x,t0:spawn,t1:R.close};   // it waits (out of sight, or where a brute stands) until then
-  arcRender(); if(R.kind==='devil') arcFxTheme(3); else if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
+  arcRender(); if(R.kind==='devil'||R.kind==='final') arcFxTheme(3); else if(R.kind==='world') arcFxTheme(Math.floor(R.rung/Math.max(1,arcRungs(R.world).length/4))); else arcFxTheme(Math.floor(4*R.kills/R.target));
   kbMarks={}; const ref=arcRef(q), refPc=ref?ref.pc:q.keyPc;   // light the note you measure from, in every octave
   if(refPc!=null) for(const m in keyEls) if(mod12(+m-refPc)===0) kbMarks[m]='k-root'; if(ref&&ref.midi) kbMarks[ref.midi]='k-chord'; paintKeys();
   R.tick=setInterval(()=>{ const t=now(), W=R.walk;
