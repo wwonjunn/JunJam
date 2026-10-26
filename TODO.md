@@ -1,5 +1,9 @@
 # Jun Jam to-do
 
+## Bosses
+- [x] Chords, Ears and Voicings: bosses every 3-4, chapter bosses, a final boss. Tempos capped at 200.
+- [ ] Play-test boss lengths (5/8/20 hits in Ears; gauntlet sizes in Voicings).
+
 ## Devil modes
 - [x] Chords (per stage), Ears (per world) and Comp Hero (per song), each with 💀 ranks.
 - [ ] Play-test how brutal they are; maybe a Devil leaderboard of your own bests.

@@ -15,6 +15,13 @@ let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=A
    enemy armoured, and the key-setting cadence only when the key changes (every 6 calls), so you hold the key in your
    head. Endless: ranks at 10, 20 and 30 kills (💀 💀💀 💀💀💀), double points. */
 const ARC_DEVIL=[10,20,30];
+/* Bosses. In a world's run: after every three levels of the ladder, a 👹 that takes 5 hits, asking from those three
+   levels; at the top of the ladder the chapter boss 🐲, 8 hits, from every level. A miss costs a life and the boss stays.
+   The final boss 😈 is its own run: 20 hits, questions from every world (once every world has ★★). Beating a boss
+   gives a life back. The fireball takes 3 off a boss's health instead of killing it. */
+const ARC_BOSS={boss:{face:'👹',size:66,hp:5,name:'Boss'},chapter:{face:'🐲',size:74,hp:8,name:'Chapter boss'},final:{face:'😈',size:82,hp:20,name:'Final boss'}};
+ARCDATA.final=ARCDATA.final||{best:0,beaten:false};
+const arcFinalOpen=()=>ARC_WORLDS.every(w=>arcStars(w)>=2);
 const saveArc=()=>store.set('earsArcade',ARCDATA);
 const ARC={active:false};
 const ARC_WORLDS=['degrees','melody','intervals','chords','progs'];   // the worlds you answer by playing (Pitch is Classic only)
@@ -99,11 +106,13 @@ function arcPaneHTML(){
   return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
     const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
     return `<button class="arcw" data-arc="${id}"><span class="lt">${w.name}</span><span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
-    ${arcDevilHTML()}
+    ${arcDevilHTML()}${arcFinalHTML()}
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
     <div class="sec arcclassic">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
 }
 
+function arcFinalHTML(){ const F=ARCDATA.final, open=arcFinalOpen();
+  return `<button class="arcw arcfinal" data-arc="final"${open?'':' disabled'}><span class="lt">😈 Final boss ${F.beaten?'🏆':''}</span><span class="lst">${open?(F.best?`Best ${F.best.toLocaleString()}`:'20 hits, questions from every world'):'Earn ★★ on every world to face it'}</span><span class="fine">Three lives. A boss every three levels and a chapter boss at the top of each ladder come before it.</span></button>`; }
 function arcDevilHTML(){
   const open=ARC_WORLDS.filter(w=>arcStars(w)>=3);
   if(!open.length) return '<p class="fine arcdevilhint">😈 Earn ★★★ on a world to unlock its Devil mode.</p>';
@@ -114,12 +123,13 @@ function arcDevilHTML(){
 function arcStart(world){
   arcStop(); synth.init();
   let devil=false; if(world.startsWith('devil:')){ devil=true; world=world.slice(6); }
-  const kind=devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
+  const kind=world==='final'?'final':devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
   Object.assign(ARC,{active:true,mode:'run',kind,world,maxLives:devil?1:ARC_LIVES,q:null,done:true,open:Infinity,mon:null,spell:0,rung:0,rungOk:0,lives:devil?1:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
   if(devil){ ARC.pool=arcRungs(world).filter(l=>!l.boss); ARC.stretch=[]; ARC.target=Infinity; }
+  else if(kind==='final'){ ARC.pool=ARC_WORLDS.flatMap(w=>arcRungs(w).filter(l=>!l.boss)); ARC.stretch=[]; ARC.target=Infinity; ARC.bossNext={...ARC_BOSS.final,kind:'final',pool:ARC.pool}; }
   else if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
     ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
-  $('modetag').textContent=devil?'Ears: 😈 Devil':kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
+  $('modetag').textContent=kind==='final'?'Ears: 😈 Final boss':devil?'Ears: 😈 Devil':kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('arcBody').innerHTML='<div id="arcHead"></div><canvas class="arccv" id="arcCv"></canvas><div id="arcInfo"></div>';
   arcFxStart($('arcCv')); arcFxTheme(0);
@@ -142,7 +152,8 @@ const arcLevel=()=>ARC.kind==='world'?arcRungs(ARC.world)[ARC.rung]:ARC.q?ARC.q.
 function arcGen(){
   const R=ARC, due=R.again.findIndex(a=>a.at<=R.n);
   let lv=R.kind==='world'?arcRungs(R.world)[R.rung]:null, force;
-  if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
+  if(R.mon&&R.mon.boss||R.bossNext){ const b=R.mon&&R.mon.boss?R.mon.bossOf:R.bossNext; lv=arcLv(b.pool[Math.floor(Math.random()*b.pool.length)].id); }
+  else if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
   else if(R.kind!=='world'){ const s=R.stretch.length&&Math.random()<(R.kind==='weekly'?0.35:0.2); lv=s?R.stretch[Math.floor(Math.random()*R.stretch.length)]:R.pool[Math.floor(Math.random()*R.pool.length)]; lv=arcLv(lv.id); }
   else if(R.rung&&Math.random()<0.3) lv=arcRungs(R.world)[Math.floor(Math.random()*R.rung)];   // older levels keep coming back
   // each level keeps its own key and decks, except in Devil, where every level shares the one held key
@@ -162,6 +173,7 @@ function arcCall(){
   R.open=spawn; R.callEnd=spawn; R.close=spawn+beats*spb*ARC_SLOW; R.beats=beats; R.spb=spb;
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   // (only one-answer enemies come armoured; a melody or a bass line is long enough already)
+  if(!R.mon&&R.bossNext){ const b=R.bossNext; R.bossNext=null; R.mon={boss:true,bossOf:b,hp:b.hp,max:b.hp,face:b.face,size:b.size,x:1}; setTimeout(()=>arcFxBanner(`${b.name}!`,'#ff6b6b'),200); }
   if(!R.mon){ const need=arcNeed(q), brute=need===1&&arcSeeded(()=>R.kind==='weekly'||R.kind==='devil'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25);
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
@@ -179,8 +191,8 @@ function arcRender(){
   const key=q.gen==='degree'?q.sub.match(/Key of ([^.]+)/)?.[1]:q.gen==='prog'?q.reveal.text.match(/ in ([A-G][♭♯]? (?:major|minor))/)?.[1]:null;
   const ref=arcRef(q);
   const head=$('arcHead'), info=$('arcInfo'); if(!head) return;
-  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='devil'?`😈 Devil: ${arcWorld(R.world).name}`:R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':arcWorld(R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC.maxLives)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
-    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):(R.kind==='devil'?`<b class="arccount">${R.kills} down · ${'💀'.repeat(ARC_DEVIL.filter(k=>R.kills>=k).length)||'next 💀 at 10'}</b>`:`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`)}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
+  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='final'?'😈 Final boss':R.kind==='devil'?`😈 Devil: ${arcWorld(R.world).name}`:R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':arcWorld(R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC.maxLives)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):(R.kind==='final'?`<b class="arccount">Every world</b>`:R.kind==='devil'?`<b class="arccount">${R.kills} down · ${'💀'.repeat(ARC_DEVIL.filter(k=>R.kills>=k).length)||'next 💀 at 10'}</b>`:`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`)}<span>${R.kind!=='world'&&lv.world?lv.world.name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${ref?`<em>${gigAccHTML(ref.label)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:q.gen==='melody'?`<em>${q.mel.length} notes</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
 `;
   info.innerHTML=`<div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
@@ -229,24 +241,30 @@ function arcHit(notes){
   const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1)*(1+0.35*(arcNeed(R.q)-1))*(R.kind==='devil'?2:1));
   R.score+=pts; R.combo++;
   let kill;
-  if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill='🔥'; }
+  const boss=R.mon.boss;
+  if(fire){ R.spell=0; R.mon.hp=boss?R.mon.hp-3:0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill=R.mon.hp>0?null:'🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
+  let bossDown='';
+  if(boss&&kill){ const b=R.mon.bossOf, bonus=400*b.hp; R.score+=bonus; R.lives=Math.min(R.maxLives,R.lives+1); bossDown=` ${b.name} down! +${bonus}`; setTimeout(()=>arcFxBanner(`${b.name} down!`,'#ffd23f'),300); if(b.kind==='final') R.won=true; }
   arcFxHit({notes,kill:!!kill,fire,brute:R.mon.brute,pts,quick:left>0.6,combo:R.combo});
-  if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+0.3);   // a brute only staggers back
-  R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
+  if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+(boss?0.18:0.3));   // a brute (or a boss) only staggers back
+  R.right++; if(!boss) R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
   earRecord(R.q.item,true,null); if(R.q.keyPc!=null) keyRecord(R.q.keyPc,true,null);
   let up='';
   if(R.kind==='world'&&R.rungOk>=ARC_STEP){ R.rungOk=0;
-    if(R.rung<arcRungs(R.world).length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; setTimeout(()=>arcFxBanner(`Level up: ${arcLevel().name}`),350); R.bpm=Math.max(72,R.bpm-8); }   // a breath when new answers join
-    else R.top++; }
-  $('arcMsg').textContent=`${fire?'Fireball! ':!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${up}`; $('arcMsg').className='lmsg ok';
+    const rs=arcRungs(R.world);
+    if(R.rung<rs.length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; setTimeout(()=>arcFxBanner(`Level up: ${arcLevel().name}`),350); R.bpm=Math.max(72,R.bpm-8);   // a breath when new answers join
+      if(R.rung%3===0) R.bossNext={...ARC_BOSS.boss,kind:'boss',pool:rs.slice(R.rung-3,R.rung)}; }   // three levels done: their boss first
+    else { R.top++; if(R.top===1) R.bossNext={...ARC_BOSS.chapter,kind:'chapter',pool:rs}; } }
+  $('arcMsg').textContent=`${fire?'Fireball! ':boss&&!kill?`Hit! ${R.mon.hp} to go. `:!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${bossDown}${up}`; $('arcMsg').className='lmsg ok';
   $('verdict').className='verdict ok'; $('verdict').textContent=R.q.reveal.text;
-  R.timer=setTimeout(arcCall,up?1300:kill?550:250);
+  R.timer=setTimeout(R.won?arcOver:arcCall,up||bossDown?1300:kill?550:250);
 }
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
-  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1; if(R.mon) R.kills++;   // it got through: one fewer in the wave
-  arcFxMiss(); R.mon=null;   // it winds up and charges the wall
+  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  if(R.mon&&R.mon.boss){ arcFxWallHit(); R.mon.x=Math.max(R.mon.x,0.55); }   // a boss hits the wall, backs off, and stays
+  else { if(R.mon) R.kills++; arcFxMiss(); R.mon=null; }   // it got through (one fewer in a wave), winding up and charging the wall
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
   R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(arcSeeded(Math.random)*3)});
   killBus(R.bus); const bus=R.bus=newBus();
@@ -261,6 +279,7 @@ function arcMiss(pick){
 function arcOver(quit){
   const R=ARC; arcStop(); arcFxStop(); clearDraft(); R.mode='over';
   if(R.kind==='devil') return arcDevilOver(quit);
+  if(R.kind==='final') return arcFinalOver(quit);
   if(R.kind!=='world') return arcWaveOver(quit);
   const w=R.world, reach=R.rung+1+(R.top>0?1:0), prevBest=ARCDATA.best[w]||0;
   if(R.score>prevBest) ARCDATA.best[w]=R.score; if(reach>(ARCDATA.reach[w]||0)) ARCDATA.reach[w]=Math.min(reach,arcRungs(w).length+1);
@@ -275,7 +294,19 @@ function arcOver(quit){
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
 }
-const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
+const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='final'?'final':ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
+function arcFinalOver(quit){
+  const R=ARC, F=ARCDATA.final, rec=R.score>F.best; F.best=Math.max(F.best,R.score); if(R.won) F.beaten=true;
+  addXP(R.xp+Math.round(R.score/60)+(R.won?300:0)); saveArc(); saveEars();
+  const left=R.mon&&R.mon.boss?R.mon.hp:0;
+  $('arcBody').innerHTML=`<h2>${R.won?'😈 The final boss is down':quit?'Run ended':'The final boss wins'}</h2>
+    <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.won?20:20-left} of 20</b>hits</div><div><b>${F.best.toLocaleString()}</b>best${rec&&R.score?' (new)':''}</div></div>
+    <p>${R.won?'Every world, beaten in one fight. 🏆':'Questions from every world. Three lives, and beating it is the end of the road.'}</p>
+    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
+  $('arcAgain').onclick=()=>arcStart('final'); $('arcMenu').onclick=arcToMenu;
+  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+}
 function arcDevilOver(quit){
   const R=ARC, w=R.world, rank=ARC_DEVIL.filter(k=>R.kills>=k).length, prev=ARCDATA.devil[w]||{rank:0,best:0};
   const rec=R.score>prev.best; ARCDATA.devil[w]={rank:Math.max(rank,prev.rank),best:Math.max(R.score,prev.best)};

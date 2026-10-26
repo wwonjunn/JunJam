@@ -136,7 +136,9 @@ function arcFxMonster(c,M){
   c.font=`${size}px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText(M.face,0,0);
   if(kb>0&&'filter' in c){ c.filter=`brightness(${1+kb*2.2})`; c.globalAlpha=kb; c.fillText(M.face,0,0); c.filter='none'; c.globalAlpha=1; }
   c.restore();
-  if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
+  if(M.boss){ const bw=70, bx=x-bw/2, by=g-size-18; c.fillStyle='rgba(0,0,0,.45)'; c.fillRect(bx-2,by-2,bw+4,10); c.fillStyle='#e23b3b'; c.fillRect(bx,by,bw*M.hp/M.max,6);   // a boss's health
+    c.font='700 11px Barlow Condensed, sans-serif'; c.textAlign='center'; c.fillStyle='#fff'; c.fillText(`${M.hp}/${M.max}`,x,by-4); }
+  else if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
     c.moveTo(px,py-6); c.lineTo(px+6,py); c.lineTo(px,py+6); c.lineTo(px-6,py); c.closePath(); c.fill(); c.stroke(); } }   // armour pips
 }
 function arcFxDying(c){

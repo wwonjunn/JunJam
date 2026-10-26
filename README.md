@@ -29,8 +29,14 @@ A jazz piano trainer with two sides:
   find and it's kept under Yours. A band will play from the same charts later.
 - **Five stars per Chords stage**: ★ clear 16 chords, ★★ 90% right first try. After that 🔥 chords say which chord tone your
   left hand has to put at the bottom, and you work out the note (C with the 3rd at the bottom is C/E): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ the 3rd, 5th or 7th at Cherokee tempo.
+- **Bosses** in every mode: a 👹 boss after every three or four stages that mixes them, a 👑 chapter boss for each
+  chapter, and a final boss of everything. Chords: bosses after stages 1–3 and 4–6 and after every four progressions,
+  Everything and "every progression" as chapter bosses, and a final boss of single chords and progressions mixed. Ears
+  game: a 5-hit 👹 mid-run after every three levels, an 8-hit 🐲 at the top of each ladder, and a 20-hit 😈 final boss
+  across every world (once each has ★★). Voicings: gauntlets of every voicing of 3–4 chord types once each, a chapter
+  boss per family, and all 86 as the final boss. No stage goes past 200 bpm (Cherokee 180, Donna Lee and Devil 200).
 - **😈 Devil modes** (the post-game, with their own 💀 ranks; normal stars are untouched):
-  - Chords, per stage at ★★★★★: 260 bpm, one life, every chord on fire (3rd, 5th or 7th in the bass), odd spellings,
+  - Chords, per stage at ★★★★★: 200 bpm, one life, every chord on fire (3rd, 5th or 7th in the bass), odd spellings,
     no hints. 💀 16 chords, 💀💀 32, 💀💀💀 48.
   - Ears game, per world at ★★★: every level mixed, one life, enemies 35% faster, every one-note enemy armoured, and the
     key held for 6 calls with the cadence only when it changes. Endless: 💀 10 down, 💀💀 20, 💀💀💀 30; double points.

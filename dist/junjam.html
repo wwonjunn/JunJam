@@ -682,6 +682,14 @@ body.gigmode header .modetag{display:none}
 .stage[data-tier="devil"]{border-color:#b3261e} .stage[data-tier="devil"] .t{color:#b3261e} .st .devil{letter-spacing:0;font-size:12px}
 .arcdevil{border-color:#b3261e;background:color-mix(in srgb, #b3261e 6%, transparent)} .arcdevil .lt{color:#b3261e} .arcdevilhint{margin:2px 0 8px}
 .chstrikes{font-family:var(--cond);font-size:16px;letter-spacing:3px;color:#b3261e} .chcard .seg button[data-chd="devil"]{color:#b3261e} .chcard .seg button[data-chd="devil"][aria-pressed="true"]{background:#b3261e;color:#fff}
+/* boss stages */
+.stage.boss{border-color:#b3261e} .stage.boss .n{color:#b3261e;font-weight:700}
+.stage.boss.chapter{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)} .stage.boss.chapter .n{color:var(--brass)}
+.stage.boss.final{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 8%, transparent)} .stage.boss.final .n{color:#7a1fa2}
+.arcfinal{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 7%, transparent);width:100%;margin:6px 0 8px} .arcfinal .lt{color:#7a1fa2} .arcfinal[disabled]{opacity:.6;cursor:default}
+.vcbosses{margin-top:8px} .lick.vcboss{border-color:#b3261e;background:color-mix(in srgb, #b3261e 5%, transparent)} .lick.vcboss .ln{color:#b3261e}
+.lick.vcboss.chapter{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)} .lick.vcboss.chapter .ln{color:var(--brass)}
+.lick.vcboss.final{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 8%, transparent)} .lick.vcboss.final .ln{color:#7a1fa2}
 </style>
 <style>
 /* ==================================================================================================
@@ -1519,18 +1527,26 @@ const STAGES=[
   {n:1,t:'Triads'},
   {n:2,t:'Seventh chords'},
   {n:3,t:'Sixths, sus and m(maj7)'},
+  {n:11,t:'Boss: stages 1 to 3',boss:[1,2,3]},
   {n:4,t:'Ninths, elevenths, thirteenths'},
   {n:5,t:'Altered dominants and ♯11s'},
   {n:6,t:'Pop colours: add9, 6/9, slash chords'},
-  {n:7,t:'Everything'},
+  {n:12,t:'Boss: stages 4 to 6',boss:[4,5,6]},
+  {n:7,t:'Chapter boss: everything',chapter:true},
 ];
+// the chords a stage draws from: its own, a boss's stages, or everything
+const STAGE=Object.fromEntries(STAGES.map(s=>[s.n,s]));
+const stagePool=n=>n===7?QUALS:STAGE[n]&&STAGE[n].boss?QUALS.filter(q=>STAGE[n].boss.includes(q.stage)):QUALS.filter(q=>q.stage===n);
+// Progression bosses: one after every four (in the menu's order), then the chapter boss (all of them, 'p:mix'), then the
+// final boss ('p:final'): every chord stage and every progression together
+const PBOSS=[0,1,2].map(i=>({id:'boss'+(i+1),from:i*4,to:i*4+4}));
 const TIERS=[
   {id:'misty',   name:'Misty',           bpm:60, step:3, cap:1,lives:5,mult:1},
   {id:'autumn',  name:'Autumn Leaves',   bpm:120,step:5, cap:1,lives:3,mult:1.25},
   {id:'atrain',  name:'Take the A Train',bpm:160,step:6, cap:2,lives:3,mult:1.5},
-  {id:'cherokee',name:'Cherokee',        bpm:240,step:8, cap:3,lives:3,mult:2},
-  {id:'donna',   name:'Donna Lee',       bpm:290,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
-  {id:'devil',   name:'😈 Devil',        bpm:260,step:10,cap:3,lives:1,mult:4,devil:true},   // unlocks per stage at ★★★★★ (hands.js)
+  {id:'cherokee',name:'Cherokee',        bpm:180,step:8, cap:3,lives:3,mult:2},
+  {id:'donna',   name:'Donna Lee',       bpm:200,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
+  {id:'devil',   name:'😈 Devil',        bpm:200,step:10,cap:3,lives:1,mult:4,devil:true},   // unlocks per stage at ★★★★★ (hands.js)
 ];
 /* Progressions as data: the common moves of J-pop, city pop and jazz, playable in any key.
    Each chord: [letter steps above the key, semitones above the key, quality id or list of variants, degree, bass degree for slash chords],
@@ -1628,7 +1644,7 @@ if(store.get('v',1)<2){
   Object.keys(b).forEach(k=>{ const [tier,st]=k.split(':'); if(st==='6'){ b[tier+':p:iiVI']=b[k]; delete b[k]; } });
   store.set('best2',b); store.set('v',2);
 }
-const validStage=s=>typeof s==='number'?s>=1&&s<=STAGES.length:s==='p:mix'||(typeof s==='string'&&!!PROG[s.slice(2)]);
+const validStage=s=>typeof s==='number'?STAGES.some(x=>x.n===s):s==='p:mix'||s==='p:final'||(typeof s==='string'&&(!!PROG[s.slice(2)]||PBOSS.some(b=>'p:'+b.id===s)));
 let stageN=store.get('stage',2); if(!validStage(stageN)) stageN=Math.min(STAGES.length,+stageN||2); // e.g. the removed stage 8
 let G=null; // running game
 opts.smart=store.get('smart',true);
@@ -2303,14 +2319,14 @@ function fireFor(t,lvl){
    the bass (3rd, 5th or 7th), odd spellings (B♯maj7, F♭7), and no hints. Its own ranks: 💀 16 chords, 💀💀 32, 💀💀💀 48. */
 const devilOf=id=>HSTARS['d:'+id]||0;
 const DEVIL_RUN=[16,32,48];
-const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),'p:mix'];
+const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),...PBOSS.map(b=>'p:'+b.id),'p:mix','p:final'];
 function runStars(){
   if(G.practice||G.kills<STAR_RUN) return 0;
   const tries=G.kills+G.escapes;
   if(!tries||G.firstTry/tries<0.9) return 1;
   if(!G.fireLvl||G.fireCleared<FIRE_RUN) return 2;
   if(G.fireLvl<3) return G.fireLvl+2;
-  return G.tier.bpm>=240&&G.escapes===0?5:4;
+  return G.tier.bpm>=180&&G.escapes===0?5:4;
 }
 function checkStars(){
   if(G.devil){ const id='d:'+stageN, n=DEVIL_RUN.filter(k=>G.kills>=k).length; if(n>(HSTARS[id]||0)){ HSTARS[id]=n; store.set('hstars',HSTARS); starToast(n,true); } return; }
@@ -2324,14 +2340,16 @@ function starToast(n,devil){
   $('lane').appendChild(el); setTimeout(()=>el.remove(),2300);
 }
 // "Next up" on the menu: the first thing in a J-pop band keys order that still has stars to earn
-const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','7','p:mix'];
+const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','11','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','12','7','p:boss1','p:boss2','p:boss3','p:mix'];
 function nextUp(){ for(let need=1;need<=STAR_MAX;need++){ const id=NEXT_ORDER.find(x=>starsOf(x)<need); if(id) return id; } return null; }
 function nextChords(){
   const st=stageN;
   // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
   const kw=opts.smart?[...Array(12).keys()].map(p=>keyWeight(p,'hands')):null;
   if(isProgStage()){
-    const p=st==='p:mix'?PROGS[Math.floor(Math.random()*PROGS.length)]:PROG[st.slice(2)];
+    const pb=PBOSS.find(b=>'p:'+b.id===st);
+    if(st==='p:final'&&Math.random()<0.5){ const q=pickOne(QUALS), pc=Math.floor(Math.random()*12); return [{root:defaultRoot(pc,q.minor),q}]; }   // the final boss: half single chords from every stage
+    const p=st==='p:mix'||st==='p:final'?PROGS[Math.floor(Math.random()*PROGS.length)]:pb?PROGS[pb.from+Math.floor(Math.random()*(pb.to-pb.from))]:PROG[st.slice(2)];
     let key=Math.floor(Math.random()*12);
     if(opts.smart){ // lean on shaky keys, and on keys where this progression's chords are weak
       const keys=[...Array(12).keys()].map(k=>{ const ch=progChords(p,k); return {k,w:kw[k]*ch.reduce((a,c)=>a+weightOf(c.q.id,c.root.pc),0)/ch.length}; });
@@ -2340,7 +2358,7 @@ function nextChords(){
     const label=`${p.short} in ${keyName(key,!!p.minor)}`;
     return progChords(p,key).map(c=>({...c,prog:label}));
   }
-  const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
+  const pool=stagePool(st);
   let q, pc, tries=0, review=false;
   const rk=srsPick(G.srs);   // a chord you're re-learning, if one is owed now
   if(rk){ const [qid,p]=rk.split(':'); q=Q[qid]; pc=+p; review=true; }
@@ -2404,7 +2422,7 @@ function newGame(){
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
      lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:tier.devil&&!practice?3:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[],devil:!!tier.devil&&!practice};
   // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
-  G.srs=opts.smart&&!isProgStage()?srsStart((stageN===7?QUALS:QUALS.filter(q=>q.stage===stageN)).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
+  G.srs=opts.smart&&!isProgStage()?srsStart(stagePool(stageN).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
@@ -3143,6 +3161,13 @@ let ARCDATA=store.get('earsArcade',{best:{},reach:{},stars:{}}); ARCDATA.daily=A
    enemy armoured, and the key-setting cadence only when the key changes (every 6 calls), so you hold the key in your
    head. Endless: ranks at 10, 20 and 30 kills (💀 💀💀 💀💀💀), double points. */
 const ARC_DEVIL=[10,20,30];
+/* Bosses. In a world's run: after every three levels of the ladder, a 👹 that takes 5 hits, asking from those three
+   levels; at the top of the ladder the chapter boss 🐲, 8 hits, from every level. A miss costs a life and the boss stays.
+   The final boss 😈 is its own run: 20 hits, questions from every world (once every world has ★★). Beating a boss
+   gives a life back. The fireball takes 3 off a boss's health instead of killing it. */
+const ARC_BOSS={boss:{face:'👹',size:66,hp:5,name:'Boss'},chapter:{face:'🐲',size:74,hp:8,name:'Chapter boss'},final:{face:'😈',size:82,hp:20,name:'Final boss'}};
+ARCDATA.final=ARCDATA.final||{best:0,beaten:false};
+const arcFinalOpen=()=>ARC_WORLDS.every(w=>arcStars(w)>=2);
 const saveArc=()=>store.set('earsArcade',ARCDATA);
 const ARC={active:false};
 const ARC_WORLDS=['degrees','melody','intervals','chords','progs'];   // the worlds you answer by playing (Pitch is Classic only)
@@ -3227,11 +3252,13 @@ function arcPaneHTML(){
   return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
     const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
     return `<button class="arcw" data-arc="${id}"><span class="lt">${w.name}</span><span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
-    ${arcDevilHTML()}
+    ${arcDevilHTML()}${arcFinalHTML()}
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
     <div class="sec arcclassic">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
 }
 
+function arcFinalHTML(){ const F=ARCDATA.final, open=arcFinalOpen();
+  return `<button class="arcw arcfinal" data-arc="final"${open?'':' disabled'}><span class="lt">😈 Final boss ${F.beaten?'🏆':''}</span><span class="lst">${open?(F.best?`Best ${F.best.toLocaleString()}`:'20 hits, questions from every world'):'Earn ★★ on every world to face it'}</span><span class="fine">Three lives. A boss every three levels and a chapter boss at the top of each ladder come before it.</span></button>`; }
 function arcDevilHTML(){
   const open=ARC_WORLDS.filter(w=>arcStars(w)>=3);
   if(!open.length) return '<p class="fine arcdevilhint">😈 Earn ★★★ on a world to unlock its Devil mode.</p>';
@@ -3242,12 +3269,13 @@ function arcDevilHTML(){
 function arcStart(world){
   arcStop(); synth.init();
   let devil=false; if(world.startsWith('devil:')){ devil=true; world=world.slice(6); }
-  const kind=devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
+  const kind=world==='final'?'final':devil?'devil':world==='daily'||world==='weekly'?world:'world', id=kind==='daily'?arcDay():kind==='weekly'?arcWeek():null;
   Object.assign(ARC,{active:true,mode:'run',kind,world,maxLives:devil?1:ARC_LIVES,q:null,done:true,open:Infinity,mon:null,spell:0,rung:0,rungOk:0,lives:devil?1:ARC_LIVES,score:0,combo:0,n:0,right:0,kills:0,misses:0,bpm:kind==='weekly'?84:72,ctx:{},again:[],missed:{},xp:0,top:0,rng:null,waveId:id});
   if(devil){ ARC.pool=arcRungs(world).filter(l=>!l.boss); ARC.stretch=[]; ARC.target=Infinity; }
+  else if(kind==='final'){ ARC.pool=ARC_WORLDS.flatMap(w=>arcRungs(w).filter(l=>!l.boss)); ARC.stretch=[]; ARC.target=Infinity; ARC.bossNext={...ARC_BOSS.final,kind:'final',pool:ARC.pool}; }
   else if(kind!=='world'){ ARC.rng=arcRng(arcSeed(kind+id)); const w=arcWavePool(kind,ARC.rng); ARC.pool=w.pool; ARC.stretch=w.stretch;
     ARC.target=kind==='daily'?ARC_DAILY:ARC_WEEKLY; ARC.practice=kind==='daily'&&!!ARCDATA.daily[id]; }
-  $('modetag').textContent=devil?'Ears: 😈 Devil':kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
+  $('modetag').textContent=kind==='final'?'Ears: 😈 Final boss':devil?'Ears: 😈 Devil':kind==='daily'?'Ears: Daily wave':kind==='weekly'?'Ears: Weekly boss':'Ears: Call & Response';
   hideOv(); document.body.classList.add('nohud','earsmode'); document.body.classList.remove('menu'); $('arcStage').hidden=false;
   $('arcBody').innerHTML='<div id="arcHead"></div><canvas class="arccv" id="arcCv"></canvas><div id="arcInfo"></div>';
   arcFxStart($('arcCv')); arcFxTheme(0);
@@ -3270,7 +3298,8 @@ const arcLevel=()=>ARC.kind==='world'?arcRungs(ARC.world)[ARC.rung]:ARC.q?ARC.q.
 function arcGen(){
   const R=ARC, due=R.again.findIndex(a=>a.at<=R.n);
   let lv=R.kind==='world'?arcRungs(R.world)[R.rung]:null, force;
-  if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
+  if(R.mon&&R.mon.boss||R.bossNext){ const b=R.mon&&R.mon.boss?R.mon.bossOf:R.bossNext; lv=arcLv(b.pool[Math.floor(Math.random()*b.pool.length)].id); }
+  else if(due>=0){ const a=R.again.splice(due,1)[0]; lv=arcLv(a.lv); force={answer:a.answer}; }
   else if(R.kind!=='world'){ const s=R.stretch.length&&Math.random()<(R.kind==='weekly'?0.35:0.2); lv=s?R.stretch[Math.floor(Math.random()*R.stretch.length)]:R.pool[Math.floor(Math.random()*R.pool.length)]; lv=arcLv(lv.id); }
   else if(R.rung&&Math.random()<0.3) lv=arcRungs(R.world)[Math.floor(Math.random()*R.rung)];   // older levels keep coming back
   // each level keeps its own key and decks, except in Devil, where every level shares the one held key
@@ -3290,6 +3319,7 @@ function arcCall(){
   R.open=spawn; R.callEnd=spawn; R.close=spawn+beats*spb*ARC_SLOW; R.beats=beats; R.spb=spb;
   // the monster: a fresh one at the far end, or a brute still standing from the last hit, walking from where it is now
   // (only one-answer enemies come armoured; a melody or a bass line is long enough already)
+  if(!R.mon&&R.bossNext){ const b=R.bossNext; R.bossNext=null; R.mon={boss:true,bossOf:b,hp:b.hp,max:b.hp,face:b.face,size:b.size,x:1}; setTimeout(()=>arcFxBanner(`${b.name}!`,'#ff6b6b'),200); }
   if(!R.mon){ const need=arcNeed(q), brute=need===1&&arcSeeded(()=>R.kind==='weekly'||R.kind==='devil'||(R.kind==='daily'?R.n>7:R.rung>=2)&&Math.random()<0.25);
     R.mon={hp:brute?2:1,max:brute?2:1,brute,face:sp.face,size:sp.size*(brute?1.25:1),segs:need,x:1}; }
   R.mon.segs=arcNeed(q); R.mon.left=R.mon.segs;
@@ -3307,8 +3337,8 @@ function arcRender(){
   const key=q.gen==='degree'?q.sub.match(/Key of ([^.]+)/)?.[1]:q.gen==='prog'?q.reveal.text.match(/ in ([A-G][♭♯]? (?:major|minor))/)?.[1]:null;
   const ref=arcRef(q);
   const head=$('arcHead'), info=$('arcInfo'); if(!head) return;
-  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='devil'?`😈 Devil: ${arcWorld(R.world).name}`:R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':arcWorld(R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC.maxLives)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
-    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):(R.kind==='devil'?`<b class="arccount">${R.kills} down · ${'💀'.repeat(ARC_DEVIL.filter(k=>R.kills>=k).length)||'next 💀 at 10'}</b>`:`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`)}<span>${R.kind!=='world'?WORLDS.find(w=>w.levels.some(l=>l.id===lv.id)).name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
+  head.innerHTML=`<div class="etop"><span class="etitle">${R.kind==='final'?'😈 Final boss':R.kind==='devil'?`😈 Devil: ${arcWorld(R.world).name}`:R.kind==='daily'?`Daily wave${R.practice?' (practice)':''}`:R.kind==='weekly'?'Weekly boss':arcWorld(R.world).name}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>♩ = ${R.bpm}</span><span class="lives">${[...Array(ARC.maxLives)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+    <div class="arcladder">${R.kind==='world'?rungs.map((l,i)=>`<i class="${i<R.rung?'done':i===R.rung?'cur':''}" title="${l.name}"></i>`).join(''):(R.kind==='final'?`<b class="arccount">Every world</b>`:R.kind==='devil'?`<b class="arccount">${R.kills} down · ${'💀'.repeat(ARC_DEVIL.filter(k=>R.kills>=k).length)||'next 💀 at 10'}</b>`:`<b class="arccount">${Math.min(R.kills+1,R.target)} of ${R.target}</b>`)}<span>${R.kind!=='world'&&lv.world?lv.world.name+': ':''}${gigAccHTML(lv.name)}${q.stretch?' · stretch':''}${q.review?' · back again':''}</span></div>
     <div class="arcask"><span id="arcPhase">Listen…</span><b>${ARC_ASK[q.gen]}</b>${key?`<em>Key of ${gigAccHTML(key)}</em>`:''}${ref?`<em>${gigAccHTML(ref.label)}</em>`:''}${q.gen==='prog'?`<em>${q.roots.length} chords</em>`:q.gen==='melody'?`<em>${q.mel.length} notes</em>`:''}</div>${q.gen==='chord'&&document.body.classList.contains('nomidi')?'<p class="fine">Clicking the keys? Pick the notes, then press Enter.</p>':''}
 `;
   info.innerHTML=`<div class="arcspell${R.spell>=ARC_SPELL?' ready':''}"><span>${R.spell>=ARC_SPELL?'🔥 Spell ready: your next right answer is a fireball':'Spell'}</span>${[...Array(ARC_SPELL)].map((_,k)=>`<i${k<R.spell?' class="on"':''}></i>`).join('')}</div>
@@ -3357,24 +3387,30 @@ function arcHit(notes){
   const pts=Math.round((100+100*left)*mult*(fire?3:1)*(R.mon.brute?1.5:1)*(1+0.35*(arcNeed(R.q)-1))*(R.kind==='devil'?2:1));
   R.score+=pts; R.combo++;
   let kill;
-  if(fire){ R.spell=0; R.mon.hp=0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill='🔥'; }
+  const boss=R.mon.boss;
+  if(fire){ R.spell=0; R.mon.hp=boss?R.mon.hp-3:0; R.lives=Math.min(ARC.maxLives,R.lives+1); kill=R.mon.hp>0?null:'🔥'; }
   else { R.spell=Math.min(ARC_SPELL,R.spell+1); R.mon.hp--; kill=R.mon.hp>0?null:'💥'; }
+  let bossDown='';
+  if(boss&&kill){ const b=R.mon.bossOf, bonus=400*b.hp; R.score+=bonus; R.lives=Math.min(R.maxLives,R.lives+1); bossDown=` ${b.name} down! +${bonus}`; setTimeout(()=>arcFxBanner(`${b.name} down!`,'#ffd23f'),300); if(b.kind==='final') R.won=true; }
   arcFxHit({notes,kill:!!kill,fire,brute:R.mon.brute,pts,quick:left>0.6,combo:R.combo});
-  if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+0.3);   // a brute only staggers back
-  R.right++; R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
+  if(kill){ R.mon=null; R.kills++; } else R.mon.x=Math.min(1,R.mon.x+(boss?0.18:0.3));   // a brute (or a boss) only staggers back
+  R.right++; if(!boss) R.rungOk++; R.xp+=3; R.bpm=Math.min(150,R.bpm+2);
   earRecord(R.q.item,true,null); if(R.q.keyPc!=null) keyRecord(R.q.keyPc,true,null);
   let up='';
   if(R.kind==='world'&&R.rungOk>=ARC_STEP){ R.rungOk=0;
-    if(R.rung<arcRungs(R.world).length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; setTimeout(()=>arcFxBanner(`Level up: ${arcLevel().name}`),350); R.bpm=Math.max(72,R.bpm-8); }   // a breath when new answers join
-    else R.top++; }
-  $('arcMsg').textContent=`${fire?'Fireball! ':!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${up}`; $('arcMsg').className='lmsg ok';
+    const rs=arcRungs(R.world);
+    if(R.rung<rs.length-1){ R.rung++; up=` Level up: ${arcLevel().name}.`; setTimeout(()=>arcFxBanner(`Level up: ${arcLevel().name}`),350); R.bpm=Math.max(72,R.bpm-8);   // a breath when new answers join
+      if(R.rung%3===0) R.bossNext={...ARC_BOSS.boss,kind:'boss',pool:rs.slice(R.rung-3,R.rung)}; }   // three levels done: their boss first
+    else { R.top++; if(R.top===1) R.bossNext={...ARC_BOSS.chapter,kind:'chapter',pool:rs}; } }
+  $('arcMsg').textContent=`${fire?'Fireball! ':boss&&!kill?`Hit! ${R.mon.hp} to go. `:!kill?'Hit! It\'s still coming. ':''}+${pts}${R.combo>2?` ×${mult.toFixed(1)}`:''}${left>0.6?' Quick!':''}${bossDown}${up}`; $('arcMsg').className='lmsg ok';
   $('verdict').className='verdict ok'; $('verdict').textContent=R.q.reveal.text;
-  R.timer=setTimeout(arcCall,up?1300:kill?550:250);
+  R.timer=setTimeout(R.won?arcOver:arcCall,up||bossDown?1300:kill?550:250);
 }
 function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
-  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1; if(R.mon) R.kills++;   // it got through: one fewer in the wave
-  arcFxMiss(); R.mon=null;   // it winds up and charges the wall
+  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  if(R.mon&&R.mon.boss){ arcFxWallHit(); R.mon.x=Math.max(R.mon.x,0.55); }   // a boss hits the wall, backs off, and stays
+  else { if(R.mon) R.kills++; arcFxMiss(); R.mon=null; }   // it got through (one fewer in a wave), winding up and charging the wall
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
   R.again.push({lv:q.lv.id,answer:q.answer,at:R.n+3+Math.floor(arcSeeded(Math.random)*3)});
   killBus(R.bus); const bus=R.bus=newBus();
@@ -3389,6 +3425,7 @@ function arcMiss(pick){
 function arcOver(quit){
   const R=ARC; arcStop(); arcFxStop(); clearDraft(); R.mode='over';
   if(R.kind==='devil') return arcDevilOver(quit);
+  if(R.kind==='final') return arcFinalOver(quit);
   if(R.kind!=='world') return arcWaveOver(quit);
   const w=R.world, reach=R.rung+1+(R.top>0?1:0), prevBest=ARCDATA.best[w]||0;
   if(R.score>prevBest) ARCDATA.best[w]=R.score; if(reach>(ARCDATA.reach[w]||0)) ARCDATA.reach[w]=Math.min(reach,arcRungs(w).length+1);
@@ -3403,7 +3440,19 @@ function arcOver(quit){
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
 }
-const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
+const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='final'?'final':ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
+function arcFinalOver(quit){
+  const R=ARC, F=ARCDATA.final, rec=R.score>F.best; F.best=Math.max(F.best,R.score); if(R.won) F.beaten=true;
+  addXP(R.xp+Math.round(R.score/60)+(R.won?300:0)); saveArc(); saveEars();
+  const left=R.mon&&R.mon.boss?R.mon.hp:0;
+  $('arcBody').innerHTML=`<h2>${R.won?'😈 The final boss is down':quit?'Run ended':'The final boss wins'}</h2>
+    <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.won?20:20-left} of 20</b>hits</div><div><b>${F.best.toLocaleString()}</b>best${rec&&R.score?' (new)':''}</div></div>
+    <p>${R.won?'Every world, beaten in one fight. 🏆':'Questions from every world. Three lives, and beating it is the end of the road.'}</p>
+    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
+  $('arcAgain').onclick=()=>arcStart('final'); $('arcMenu').onclick=arcToMenu;
+  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+}
 function arcDevilOver(quit){
   const R=ARC, w=R.world, rank=ARC_DEVIL.filter(k=>R.kills>=k).length, prev=ARCDATA.devil[w]||{rank:0,best:0};
   const rec=R.score>prev.best; ARCDATA.devil[w]={rank:Math.max(rank,prev.rank),best:Math.max(R.score,prev.best)};
@@ -3582,7 +3631,9 @@ function arcFxMonster(c,M){
   c.font=`${size}px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText(M.face,0,0);
   if(kb>0&&'filter' in c){ c.filter=`brightness(${1+kb*2.2})`; c.globalAlpha=kb; c.fillText(M.face,0,0); c.filter='none'; c.globalAlpha=1; }
   c.restore();
-  if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
+  if(M.boss){ const bw=70, bx=x-bw/2, by=g-size-18; c.fillStyle='rgba(0,0,0,.45)'; c.fillRect(bx-2,by-2,bw+4,10); c.fillStyle='#e23b3b'; c.fillRect(bx,by,bw*M.hp/M.max,6);   // a boss's health
+    c.font='700 11px Barlow Condensed, sans-serif'; c.textAlign='center'; c.fillStyle='#fff'; c.fillText(`${M.hp}/${M.max}`,x,by-4); }
+  else if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
     c.moveTo(px,py-6); c.lineTo(px+6,py); c.lineTo(px,py+6); c.lineTo(px-6,py); c.closePath(); c.fill(); c.stroke(); } }   // armour pips
 }
 function arcFxDying(c){
@@ -4893,6 +4944,23 @@ let VCDATA=store.get('voicings',{stars:{},best:{},pool:'learned',fam:'all'});
 const saveVc=()=>store.set('voicings',VCDATA);
 const VC={active:false};
 const VC_KEYS=5, VC_LIVES=3;
+/* Bosses: a gauntlet after every three or four chord types (every voicing of those types once, each in a new key, three
+   lives, the Rush clock; a miss comes back later), a chapter boss for each family of chords, and the final boss: all of
+   them. Beat one for its 👑. */
+const VCHAPTERS=[
+  {id:'tri',name:'Triads and colours',bosses:[['maj','min','sus2','sus4'],['dim','aug','add9','madd9']]},
+  {id:'maj',name:'Major sevenths',bosses:[['maj7','six','six9'],['maj9','maj13','mj7s11','mj7s5']]},
+  {id:'min',name:'Minor and diminished',bosses:[['min7','min6','min69'],['min9','min11','min13'],['mmaj7','hdim','dim7']]},
+  {id:'dom',name:'Dominants',bosses:[['dom7','dom9','dom13'],['sus7','sus9','sus13','susb9'],['d7b9','d13b9','d7s9','alt'],['d7b13','d7s5','d7s11','d13s11']]},
+  {id:'slash',name:'Slash chords',bosses:[]},
+];
+VCDATA.boss=VCDATA.boss||{};
+// every boss: {id, name, types, kind}
+const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')||'major').join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
+  {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
+  {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
+VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
+const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives</span></button>`;
 
 /* ---------------- menu pane ---------------- */
 const vcStarTotal=()=>VOICINGS.reduce((a,v)=>a+(VCDATA.stars[v.id]||0),0);
@@ -4911,8 +4979,9 @@ function renderVoicingsPane(){
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
     return `<div class="vctype"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
-      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; }).join('');
+      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
   const best=VCDATA.best[VCDATA.pool];
+  const withBosses=fam==='all'?VTYPES.map((qid,i)=>{ const html=list[i]||''; const bs=VBOSSES.filter(b=>b.after===qid); return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')+`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:list.join('');
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>
     ${chPaneHTML()}
@@ -4920,13 +4989,14 @@ function renderVoicingsPane(){
       <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n}${k==='learned'?`: ${learned}${learned<4?', so the starter set for now':''}`:''}</option>`).join('')}${Object.entries(VFAM).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
     <div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,n])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${n}</button>`).join('')}</div>
-    ${list}
+    ${withBosses}
     <p class="fine" style="margin-top:12px">● to ●●● is how hard the shape is. ★ learn it in C. ★★ four of the five new keys right first time without showing the shape. ★★★ all five. A MIDI keyboard is needed: these are two-hand chords.</p>`;
   chBindPane($('voicingsPane'));
 }
 function bindVoicingsPane(){
   $('voicingsPane').onclick=e=>{ const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
-    if(b.dataset.vc) vcOpen(b.dataset.vc);
+    if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
+    else if(b.dataset.vc) vcOpen(b.dataset.vc);
     else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; saveVc(); renderVoicingsPane(); }
     else if(b.id==='vcRushBtn') vcRushStart(); };
   $('voicingsPane').onchange=e=>{ if(e.target.id==='chSong') return; if(e.target.id==='vcPool'){ VCDATA.pool=e.target.value; saveVc(); renderVoicingsPane(); } };
@@ -5062,9 +5132,10 @@ function vcFinish(quit){ clearDraft();
    gives a few seconds per note, shrinking as your streak grows. A wrong try costs time and your combo; running out of
    time costs a life, shows the shape, and you play it before moving on. That voicing then comes back three to five
    chords later in another key, and again if you miss it again. A voicing you haven't learned is shown the first time. */
-function vcRushStart(){
-  vcStop(); const pool=vcPool();
-  Object.assign(VC,{active:true,mode:'rush',pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
+function vcBossStart(id){ const b=VBOSSES.find(x=>x.id===id); if(!b) return; vcRushStart(b); }
+function vcRushStart(boss=null){
+  vcStop(); const pool=boss?VOICINGS.filter(v=>boss.types.includes(v.qid)):vcPool();
+  Object.assign(VC,{active:true,mode:'rush',boss,deck:boss?shuffled(pool):null,won:false,pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
   vcShow(); vcRushNext();
 }
 function vcRushChain(){
@@ -5076,14 +5147,17 @@ function vcRushChain(){
 }
 function vcRushNext(){
   const R=VC; vcStop(); clearDraft(); if(R.lives<=0) return vcRushOver();
-  const due=R.again.findIndex(a=>a.at<=R.n);
+  let due=R.again.findIndex(a=>a.at<=R.n);
+  if(R.boss&&!R.deck.length&&due<0&&R.again.length) due=0;   // a boss: the misses still owed come back before it's done
+  if(R.boss&&!R.deck.length&&due<0){ R.won=true; return vcRushOver(); }   // every voicing played: the boss is beaten
   let item;
-  if(due>=0&&!R.chain.length){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
+  if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
+  else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
   const t=vcIn(item.v,item.pc), fresh=!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);
   R.seen.add(item.v.id);
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
-  Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
+  Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
   vcRushRender();
   if(fresh){ vcHintKeys(t); vcStaff(t); } else { kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); }
   $('verdict').className='verdict'; $('verdict').textContent=fresh?'New one: copy the shape.':''; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
@@ -5093,7 +5167,7 @@ function vcRushNext(){
 }
 function vcRushRender(){
   const R=VC, it=R.item, t=R.t;
-  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">Rush</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.boss?`${R.boss.kind==='final'?'😈':R.boss.kind==='chapter'?'👑':'👹'} ${gigAccHTML(R.boss.name)} · ${R.cleared} of ${R.pool.length}`:'Rush'}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="ebar vcbar"><i id="vcBar" style="width:${R.lost?0:Math.max(0,100*R.left/R.secs)}%"${R.lost?' class="boss"':''}></i></div>
     <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
     ${vcDiagram(t,R.fresh||R.lost)}
@@ -5110,10 +5184,10 @@ function vcRushTimeout(){
   $('verdict').className='verdict no'; $('verdict').textContent=R.lives?`${vcSym(R.t)}, ${R.item.v.name}: this one.`:'Out of lives. Play it once, then that\'s the run.';
 }
 function vcRushNotes(notes){
-  const R=VC; if(R.mode!=='rush'||!R.t) return;
+  const R=VC; if(R.mode!=='rush'||!R.t||R.solved) return;   // solved: waiting for the next one, so playing it again scores nothing
   const res=vcGrade(R.t,notes); vcMark(R.t,res);
   if(res.ok){
-    clearInterval(R.tick);
+    clearInterval(R.tick); R.solved=true;
     if(R.lost){ $('vcMsg').textContent='That\'s it. It\'ll come back.'; $('vcMsg').className='lmsg ok'; R.timer=setTimeout(vcRushNext,900); return; }
     const frac=Math.max(0,R.left/R.secs), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+150*frac)*mult*(R.item.v.diff>1?1+0.25*(R.item.v.diff-1):1));
     R.score+=pts; R.combo++; R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
@@ -5127,6 +5201,7 @@ function vcRushNotes(notes){
 }
 function vcRushOver(){
   const R=VC; vcStop(); clearDraft(); R.mode='results';
+  if(R.boss) return vcBossOver();
   const key=VCDATA.pool, prev=VCDATA.best[key]||0, rec=R.score>prev; if(rec) VCDATA.best[key]=R.score;
   addXP(R.xp+Math.round(R.score/100)); saveVc();
   const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>VOICE[id]);
@@ -5138,6 +5213,16 @@ function vcRushOver(){
   $('verdict').className='verdict'; $('verdict').textContent=''; kbMarks={}; paintKeys();
 }
 
+function vcBossOver(){
+  const R=VC, b=R.boss, n=R.pool.length; if(R.won) VCDATA.boss[b.id]=true; addXP(R.xp+(R.won?(b.kind==='final'?400:b.kind==='chapter'?150:60):0)); saveVc();
+  const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>VOICE[id]);
+  $('vcBody').innerHTML=`<h2>${R.won?`👑 ${gigAccHTML(b.name)}: beaten`:`${gigAccHTML(b.name)}: not this time`}</h2>
+    <div class="results"><div><b>${R.cleared} of ${n}</b>voicings</div><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.lives}</b>lives left</div></div>
+    ${weak.length?`<div class="sec">The ones that got you</div><div class="vcsib">${weak.map(v=>`<button class="ghost" data-vc="${v.id}">${gigAccHTML(vcSym(vcIn(v,0)))}: ${gigAccHTML(v.name)}</button>`).join('')}</div>`:''}
+    <div class="erow"><button class="go" id="vcAgain">Again</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
+  $('vcBody').querySelectorAll('[data-vc]').forEach(x=>x.onclick=()=>vcOpen(x.dataset.vc));
+  $('vcAgain').onclick=()=>vcBossStart(b.id); $('vcMenu').onclick=vcToMenu;
+}
 function vcToMenu(){ clearDraft();
   vcStop(); VC.active=false; $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
   side='voicings'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
@@ -8932,14 +9017,18 @@ function renderMenu(){
   const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage${s.boss?' boss':s.chapter?' boss chapter':''}" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">${s.boss?'👹 Boss':s.chapter?'👑 Chapter boss':`Stage ${s.n}`}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
-  $('progs').innerHTML=PROGS.map(p=>{
+  const pBossBtn=(id,cls,n,t,sub)=>`<button class="stage boss${cls}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${n}${tag(id)}</span><span class="t">${t}</span><span class="best">${stars(id)}${sub}${bestLine(id)?`. ${bestLine(id)}`:''}</span></button>`;
+  $('progs').innerHTML=PROGS.map((p,i)=>{
     const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
     const best=bestLine(id);
-    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`;
-  }).join('')+`<button class="stage" data-p="p:mix" aria-pressed="${stageN==='p:mix'}"><span class="n">&nbsp;${tag('p:mix')}</span><span class="t">All of them, mixed</span><span class="best">${stars('p:mix')}A random progression each time${bestLine('p:mix')?`. ${bestLine('p:mix')}`:''}</span></button>`;
+    const pb=PBOSS.find(b=>b.to===i+1);   // a boss after every four
+    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`
+      +(pb?pBossBtn('p:'+pb.id,'','👹 Boss',PROGS.slice(pb.from,pb.to).map(x=>x.short).join(', '),'Those four, mixed'):'');
+  }).join('')+pBossBtn('p:mix',' chapter','👑 Chapter boss','Every progression','A random one each time')
+    +pBossBtn('p:final',' final','🔥 Final boss','Everything: every chord stage and every progression','Single chords and whole progressions, mixed');
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);

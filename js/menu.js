@@ -38,14 +38,18 @@ function renderMenu(){
   const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    return `<button class="stage" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">Stage ${s.n}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage${s.boss?' boss':s.chapter?' boss chapter':''}" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">${s.boss?'👹 Boss':s.chapter?'👑 Chapter boss':`Stage ${s.n}`}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
-  $('progs').innerHTML=PROGS.map(p=>{
+  const pBossBtn=(id,cls,n,t,sub)=>`<button class="stage boss${cls}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${n}${tag(id)}</span><span class="t">${t}</span><span class="best">${stars(id)}${sub}${bestLine(id)?`. ${bestLine(id)}`:''}</span></button>`;
+  $('progs').innerHTML=PROGS.map((p,i)=>{
     const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
     const best=bestLine(id);
-    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`;
-  }).join('')+`<button class="stage" data-p="p:mix" aria-pressed="${stageN==='p:mix'}"><span class="n">&nbsp;${tag('p:mix')}</span><span class="t">All of them, mixed</span><span class="best">${stars('p:mix')}A random progression each time${bestLine('p:mix')?`. ${bestLine('p:mix')}`:''}</span></button>`;
+    const pb=PBOSS.find(b=>b.to===i+1);   // a boss after every four
+    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`
+      +(pb?pBossBtn('p:'+pb.id,'','👹 Boss',PROGS.slice(pb.from,pb.to).map(x=>x.short).join(', '),'Those four, mixed'):'');
+  }).join('')+pBossBtn('p:mix',' chapter','👑 Chapter boss','Every progression','A random one each time')
+    +pBossBtn('p:final',' final','🔥 Final boss','Everything: every chord stage and every progression','Single chords and whole progressions, mixed');
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);

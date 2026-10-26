@@ -7,6 +7,23 @@ let VCDATA=store.get('voicings',{stars:{},best:{},pool:'learned',fam:'all'});
 const saveVc=()=>store.set('voicings',VCDATA);
 const VC={active:false};
 const VC_KEYS=5, VC_LIVES=3;
+/* Bosses: a gauntlet after every three or four chord types (every voicing of those types once, each in a new key, three
+   lives, the Rush clock; a miss comes back later), a chapter boss for each family of chords, and the final boss: all of
+   them. Beat one for its 👑. */
+const VCHAPTERS=[
+  {id:'tri',name:'Triads and colours',bosses:[['maj','min','sus2','sus4'],['dim','aug','add9','madd9']]},
+  {id:'maj',name:'Major sevenths',bosses:[['maj7','six','six9'],['maj9','maj13','mj7s11','mj7s5']]},
+  {id:'min',name:'Minor and diminished',bosses:[['min7','min6','min69'],['min9','min11','min13'],['mmaj7','hdim','dim7']]},
+  {id:'dom',name:'Dominants',bosses:[['dom7','dom9','dom13'],['sus7','sus9','sus13','susb9'],['d7b9','d13b9','d7s9','alt'],['d7b13','d7s5','d7s11','d13s11']]},
+  {id:'slash',name:'Slash chords',bosses:[]},
+];
+VCDATA.boss=VCDATA.boss||{};
+// every boss: {id, name, types, kind}
+const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')||'major').join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
+  {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
+  {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
+VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
+const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives</span></button>`;
 
 /* ---------------- menu pane ---------------- */
 const vcStarTotal=()=>VOICINGS.reduce((a,v)=>a+(VCDATA.stars[v.id]||0),0);
@@ -25,8 +42,9 @@ function renderVoicingsPane(){
   const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
     const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
     return `<div class="vctype"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
-      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; }).join('');
+      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
   const best=VCDATA.best[VCDATA.pool];
+  const withBosses=fam==='all'?VTYPES.map((qid,i)=>{ const html=list[i]||''; const bs=VBOSSES.filter(b=>b.after===qid); return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')+`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:list.join('');
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>
     ${chPaneHTML()}
@@ -34,13 +52,14 @@ function renderVoicingsPane(){
       <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n}${k==='learned'?`: ${learned}${learned<4?', so the starter set for now':''}`:''}</option>`).join('')}${Object.entries(VFAM).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
     <div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,n])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${n}</button>`).join('')}</div>
-    ${list}
+    ${withBosses}
     <p class="fine" style="margin-top:12px">● to ●●● is how hard the shape is. ★ learn it in C. ★★ four of the five new keys right first time without showing the shape. ★★★ all five. A MIDI keyboard is needed: these are two-hand chords.</p>`;
   chBindPane($('voicingsPane'));
 }
 function bindVoicingsPane(){
   $('voicingsPane').onclick=e=>{ const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
-    if(b.dataset.vc) vcOpen(b.dataset.vc);
+    if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
+    else if(b.dataset.vc) vcOpen(b.dataset.vc);
     else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; saveVc(); renderVoicingsPane(); }
     else if(b.id==='vcRushBtn') vcRushStart(); };
   $('voicingsPane').onchange=e=>{ if(e.target.id==='chSong') return; if(e.target.id==='vcPool'){ VCDATA.pool=e.target.value; saveVc(); renderVoicingsPane(); } };
@@ -176,9 +195,10 @@ function vcFinish(quit){ clearDraft();
    gives a few seconds per note, shrinking as your streak grows. A wrong try costs time and your combo; running out of
    time costs a life, shows the shape, and you play it before moving on. That voicing then comes back three to five
    chords later in another key, and again if you miss it again. A voicing you haven't learned is shown the first time. */
-function vcRushStart(){
-  vcStop(); const pool=vcPool();
-  Object.assign(VC,{active:true,mode:'rush',pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
+function vcBossStart(id){ const b=VBOSSES.find(x=>x.id===id); if(!b) return; vcRushStart(b); }
+function vcRushStart(boss=null){
+  vcStop(); const pool=boss?VOICINGS.filter(v=>boss.types.includes(v.qid)):vcPool();
+  Object.assign(VC,{active:true,mode:'rush',boss,deck:boss?shuffled(pool):null,won:false,pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
   vcShow(); vcRushNext();
 }
 function vcRushChain(){
@@ -190,14 +210,17 @@ function vcRushChain(){
 }
 function vcRushNext(){
   const R=VC; vcStop(); clearDraft(); if(R.lives<=0) return vcRushOver();
-  const due=R.again.findIndex(a=>a.at<=R.n);
+  let due=R.again.findIndex(a=>a.at<=R.n);
+  if(R.boss&&!R.deck.length&&due<0&&R.again.length) due=0;   // a boss: the misses still owed come back before it's done
+  if(R.boss&&!R.deck.length&&due<0){ R.won=true; return vcRushOver(); }   // every voicing played: the boss is beaten
   let item;
-  if(due>=0&&!R.chain.length){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
+  if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
+  else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
   const t=vcIn(item.v,item.pc), fresh=!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);
   R.seen.add(item.v.id);
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
-  Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
+  Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
   vcRushRender();
   if(fresh){ vcHintKeys(t); vcStaff(t); } else { kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); }
   $('verdict').className='verdict'; $('verdict').textContent=fresh?'New one: copy the shape.':''; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
@@ -207,7 +230,7 @@ function vcRushNext(){
 }
 function vcRushRender(){
   const R=VC, it=R.item, t=R.t;
-  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">Rush</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.boss?`${R.boss.kind==='final'?'😈':R.boss.kind==='chapter'?'👑':'👹'} ${gigAccHTML(R.boss.name)} · ${R.cleared} of ${R.pool.length}`:'Rush'}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="ebar vcbar"><i id="vcBar" style="width:${R.lost?0:Math.max(0,100*R.left/R.secs)}%"${R.lost?' class="boss"':''}></i></div>
     <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
     ${vcDiagram(t,R.fresh||R.lost)}
@@ -224,10 +247,10 @@ function vcRushTimeout(){
   $('verdict').className='verdict no'; $('verdict').textContent=R.lives?`${vcSym(R.t)}, ${R.item.v.name}: this one.`:'Out of lives. Play it once, then that\'s the run.';
 }
 function vcRushNotes(notes){
-  const R=VC; if(R.mode!=='rush'||!R.t) return;
+  const R=VC; if(R.mode!=='rush'||!R.t||R.solved) return;   // solved: waiting for the next one, so playing it again scores nothing
   const res=vcGrade(R.t,notes); vcMark(R.t,res);
   if(res.ok){
-    clearInterval(R.tick);
+    clearInterval(R.tick); R.solved=true;
     if(R.lost){ $('vcMsg').textContent='That\'s it. It\'ll come back.'; $('vcMsg').className='lmsg ok'; R.timer=setTimeout(vcRushNext,900); return; }
     const frac=Math.max(0,R.left/R.secs), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+150*frac)*mult*(R.item.v.diff>1?1+0.25*(R.item.v.diff-1):1));
     R.score+=pts; R.combo++; R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
@@ -241,6 +264,7 @@ function vcRushNotes(notes){
 }
 function vcRushOver(){
   const R=VC; vcStop(); clearDraft(); R.mode='results';
+  if(R.boss) return vcBossOver();
   const key=VCDATA.pool, prev=VCDATA.best[key]||0, rec=R.score>prev; if(rec) VCDATA.best[key]=R.score;
   addXP(R.xp+Math.round(R.score/100)); saveVc();
   const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>VOICE[id]);
@@ -252,6 +276,16 @@ function vcRushOver(){
   $('verdict').className='verdict'; $('verdict').textContent=''; kbMarks={}; paintKeys();
 }
 
+function vcBossOver(){
+  const R=VC, b=R.boss, n=R.pool.length; if(R.won) VCDATA.boss[b.id]=true; addXP(R.xp+(R.won?(b.kind==='final'?400:b.kind==='chapter'?150:60):0)); saveVc();
+  const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>VOICE[id]);
+  $('vcBody').innerHTML=`<h2>${R.won?`👑 ${gigAccHTML(b.name)}: beaten`:`${gigAccHTML(b.name)}: not this time`}</h2>
+    <div class="results"><div><b>${R.cleared} of ${n}</b>voicings</div><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.lives}</b>lives left</div></div>
+    ${weak.length?`<div class="sec">The ones that got you</div><div class="vcsib">${weak.map(v=>`<button class="ghost" data-vc="${v.id}">${gigAccHTML(vcSym(vcIn(v,0)))}: ${gigAccHTML(v.name)}</button>`).join('')}</div>`:''}
+    <div class="erow"><button class="go" id="vcAgain">Again</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
+  $('vcBody').querySelectorAll('[data-vc]').forEach(x=>x.onclick=()=>vcOpen(x.dataset.vc));
+  $('vcAgain').onclick=()=>vcBossStart(b.id); $('vcMenu').onclick=vcToMenu;
+}
 function vcToMenu(){ clearDraft();
   vcStop(); VC.active=false; $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
   side='voicings'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();

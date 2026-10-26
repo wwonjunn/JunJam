@@ -672,3 +672,11 @@ body.gigmode header .modetag{display:none}
 .stage[data-tier="devil"]{border-color:#b3261e} .stage[data-tier="devil"] .t{color:#b3261e} .st .devil{letter-spacing:0;font-size:12px}
 .arcdevil{border-color:#b3261e;background:color-mix(in srgb, #b3261e 6%, transparent)} .arcdevil .lt{color:#b3261e} .arcdevilhint{margin:2px 0 8px}
 .chstrikes{font-family:var(--cond);font-size:16px;letter-spacing:3px;color:#b3261e} .chcard .seg button[data-chd="devil"]{color:#b3261e} .chcard .seg button[data-chd="devil"][aria-pressed="true"]{background:#b3261e;color:#fff}
+/* boss stages */
+.stage.boss{border-color:#b3261e} .stage.boss .n{color:#b3261e;font-weight:700}
+.stage.boss.chapter{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)} .stage.boss.chapter .n{color:var(--brass)}
+.stage.boss.final{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 8%, transparent)} .stage.boss.final .n{color:#7a1fa2}
+.arcfinal{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 7%, transparent);width:100%;margin:6px 0 8px} .arcfinal .lt{color:#7a1fa2} .arcfinal[disabled]{opacity:.6;cursor:default}
+.vcbosses{margin-top:8px} .lick.vcboss{border-color:#b3261e;background:color-mix(in srgb, #b3261e 5%, transparent)} .lick.vcboss .ln{color:#b3261e}
+.lick.vcboss.chapter{border-color:var(--brass);background:color-mix(in srgb, var(--brass) 8%, transparent)} .lick.vcboss.chapter .ln{color:var(--brass)}
+.lick.vcboss.final{border-color:#7a1fa2;background:color-mix(in srgb, #7a1fa2 8%, transparent)} .lick.vcboss.final .ln{color:#7a1fa2}

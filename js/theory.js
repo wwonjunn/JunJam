@@ -176,18 +176,26 @@ const STAGES=[
   {n:1,t:'Triads'},
   {n:2,t:'Seventh chords'},
   {n:3,t:'Sixths, sus and m(maj7)'},
+  {n:11,t:'Boss: stages 1 to 3',boss:[1,2,3]},
   {n:4,t:'Ninths, elevenths, thirteenths'},
   {n:5,t:'Altered dominants and ♯11s'},
   {n:6,t:'Pop colours: add9, 6/9, slash chords'},
-  {n:7,t:'Everything'},
+  {n:12,t:'Boss: stages 4 to 6',boss:[4,5,6]},
+  {n:7,t:'Chapter boss: everything',chapter:true},
 ];
+// the chords a stage draws from: its own, a boss's stages, or everything
+const STAGE=Object.fromEntries(STAGES.map(s=>[s.n,s]));
+const stagePool=n=>n===7?QUALS:STAGE[n]&&STAGE[n].boss?QUALS.filter(q=>STAGE[n].boss.includes(q.stage)):QUALS.filter(q=>q.stage===n);
+// Progression bosses: one after every four (in the menu's order), then the chapter boss (all of them, 'p:mix'), then the
+// final boss ('p:final'): every chord stage and every progression together
+const PBOSS=[0,1,2].map(i=>({id:'boss'+(i+1),from:i*4,to:i*4+4}));
 const TIERS=[
   {id:'misty',   name:'Misty',           bpm:60, step:3, cap:1,lives:5,mult:1},
   {id:'autumn',  name:'Autumn Leaves',   bpm:120,step:5, cap:1,lives:3,mult:1.25},
   {id:'atrain',  name:'Take the A Train',bpm:160,step:6, cap:2,lives:3,mult:1.5},
-  {id:'cherokee',name:'Cherokee',        bpm:240,step:8, cap:3,lives:3,mult:2},
-  {id:'donna',   name:'Donna Lee',       bpm:290,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
-  {id:'devil',   name:'😈 Devil',        bpm:260,step:10,cap:3,lives:1,mult:4,devil:true},   // unlocks per stage at ★★★★★ (hands.js)
+  {id:'cherokee',name:'Cherokee',        bpm:180,step:8, cap:3,lives:3,mult:2},
+  {id:'donna',   name:'Donna Lee',       bpm:200,step:10,cap:3,lives:1,mult:3,unlock:{tier:'cherokee',score:3000}},
+  {id:'devil',   name:'😈 Devil',        bpm:200,step:10,cap:3,lives:1,mult:4,devil:true},   // unlocks per stage at ★★★★★ (hands.js)
 ];
 /* Progressions as data: the common moves of J-pop, city pop and jazz, playable in any key.
    Each chord: [letter steps above the key, semitones above the key, quality id or list of variants, degree, bass degree for slash chords],

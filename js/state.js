@@ -11,7 +11,7 @@ if(store.get('v',1)<2){
   Object.keys(b).forEach(k=>{ const [tier,st]=k.split(':'); if(st==='6'){ b[tier+':p:iiVI']=b[k]; delete b[k]; } });
   store.set('best2',b); store.set('v',2);
 }
-const validStage=s=>typeof s==='number'?s>=1&&s<=STAGES.length:s==='p:mix'||(typeof s==='string'&&!!PROG[s.slice(2)]);
+const validStage=s=>typeof s==='number'?STAGES.some(x=>x.n===s):s==='p:mix'||s==='p:final'||(typeof s==='string'&&(!!PROG[s.slice(2)]||PBOSS.some(b=>'p:'+b.id===s)));
 let stageN=store.get('stage',2); if(!validStage(stageN)) stageN=Math.min(STAGES.length,+stageN||2); // e.g. the removed stage 8
 let G=null; // running game
 opts.smart=store.get('smart',true);

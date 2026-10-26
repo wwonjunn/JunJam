@@ -42,14 +42,14 @@ function fireFor(t,lvl){
    the bass (3rd, 5th or 7th), odd spellings (B♯maj7, F♭7), and no hints. Its own ranks: 💀 16 chords, 💀💀 32, 💀💀💀 48. */
 const devilOf=id=>HSTARS['d:'+id]||0;
 const DEVIL_RUN=[16,32,48];
-const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),'p:mix'];
+const STAR_IDS=()=>[...STAGES.map(s=>String(s.n)),...PROGS.map(p=>'p:'+p.id),...PBOSS.map(b=>'p:'+b.id),'p:mix','p:final'];
 function runStars(){
   if(G.practice||G.kills<STAR_RUN) return 0;
   const tries=G.kills+G.escapes;
   if(!tries||G.firstTry/tries<0.9) return 1;
   if(!G.fireLvl||G.fireCleared<FIRE_RUN) return 2;
   if(G.fireLvl<3) return G.fireLvl+2;
-  return G.tier.bpm>=240&&G.escapes===0?5:4;
+  return G.tier.bpm>=180&&G.escapes===0?5:4;
 }
 function checkStars(){
   if(G.devil){ const id='d:'+stageN, n=DEVIL_RUN.filter(k=>G.kills>=k).length; if(n>(HSTARS[id]||0)){ HSTARS[id]=n; store.set('hstars',HSTARS); starToast(n,true); } return; }
@@ -63,14 +63,16 @@ function starToast(n,devil){
   $('lane').appendChild(el); setTimeout(()=>el.remove(),2300);
 }
 // "Next up" on the menu: the first thing in a J-pop band keys order that still has stars to earn
-const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','7','p:mix'];
+const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','11','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','12','7','p:boss1','p:boss2','p:boss3','p:mix'];
 function nextUp(){ for(let need=1;need<=STAR_MAX;need++){ const id=NEXT_ORDER.find(x=>starsOf(x)<need); if(id) return id; } return null; }
 function nextChords(){
   const st=stageN;
   // Smart mix: weak chord-in-key pairs come up more, and so does every chord in a shaky key
   const kw=opts.smart?[...Array(12).keys()].map(p=>keyWeight(p,'hands')):null;
   if(isProgStage()){
-    const p=st==='p:mix'?PROGS[Math.floor(Math.random()*PROGS.length)]:PROG[st.slice(2)];
+    const pb=PBOSS.find(b=>'p:'+b.id===st);
+    if(st==='p:final'&&Math.random()<0.5){ const q=pickOne(QUALS), pc=Math.floor(Math.random()*12); return [{root:defaultRoot(pc,q.minor),q}]; }   // the final boss: half single chords from every stage
+    const p=st==='p:mix'||st==='p:final'?PROGS[Math.floor(Math.random()*PROGS.length)]:pb?PROGS[pb.from+Math.floor(Math.random()*(pb.to-pb.from))]:PROG[st.slice(2)];
     let key=Math.floor(Math.random()*12);
     if(opts.smart){ // lean on shaky keys, and on keys where this progression's chords are weak
       const keys=[...Array(12).keys()].map(k=>{ const ch=progChords(p,k); return {k,w:kw[k]*ch.reduce((a,c)=>a+weightOf(c.q.id,c.root.pc),0)/ch.length}; });
@@ -79,7 +81,7 @@ function nextChords(){
     const label=`${p.short} in ${keyName(key,!!p.minor)}`;
     return progChords(p,key).map(c=>({...c,prog:label}));
   }
-  const pool=st===7?QUALS:QUALS.filter(q=>q.stage===st);
+  const pool=stagePool(st);
   let q, pc, tries=0, review=false;
   const rk=srsPick(G.srs);   // a chord you're re-learning, if one is owed now
   if(rk){ const [qid,p]=rk.split(':'); q=Q[qid]; pc=+p; review=true; }
@@ -143,7 +145,7 @@ function newGame(){
      cool:0.3,sinceSpawn:99,prev:null,attempts:0,fails:0,hints:0,best:null,escaped:{},missed:{},times:[],slow:[],
      lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:tier.devil&&!practice?3:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[],devil:!!tier.devil&&!practice};
   // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
-  G.srs=opts.smart&&!isProgStage()?srsStart((stageN===7?QUALS:QUALS.filter(q=>q.stage===stageN)).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
+  G.srs=opts.smart&&!isProgStage()?srsStart(stagePool(stageN).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
