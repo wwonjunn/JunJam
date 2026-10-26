@@ -9009,7 +9009,7 @@ function renderMenu(){
   $('tiers').innerHTML=TIERS.map(t=>{
     const open=tierUnlocked(t);
     const bestAny=Math.max(0,...Object.entries(bests).filter(([k])=>k.startsWith(t.id+':')).map(([,v])=>v));
-    const sub=t.devil?(open?`Every chord 🔥 (any chord tone in the bass), odd spellings, no hints, 1 life, ×${t.mult} points`:`Earn ★★★★★ on this ${isProgStage()?'progression':'stage'} to unlock`)
+    const sub=t.devil?(open?`Every chord is 🔥: put its 3rd, 5th or 7th in the bass. Roots can be spelled B♯ or F♭. No hints, 1 life, ×${t.mult} points`:`Earn ★★★★★ on this ${isProgStage()?'progression':'stage'} to unlock`)
       :open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
