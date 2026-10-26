@@ -8992,6 +8992,12 @@ const MODES=[
 function renderHome(){
   $('modes').innerHTML=MODES.map((m,i)=>`<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span></button>`).join('');
 }
+// Devil unlocks stage by stage: say which stage is selected, how far it is, and where Devil is already open
+function devilLockText(){
+  const name=id=>{ id=String(id); if(id.startsWith('p:')){ const p=PROG[id.slice(2)], b=PBOSS.find(x=>'p:'+x.id===id); return p?p.short:b?`The boss of ${PROGS.slice(b.from,b.to).map(x=>x.short).join(', ')}`:id==='p:mix'?'Every progression':'The final boss'; } const st=STAGE[+id]; return !st?id:st.boss?`The boss of stages ${st.boss[0]}–${st.boss[st.boss.length-1]}`:st.chapter?'Everything':`Stage ${id}`; };
+  const open=STAR_IDS().filter(id=>starsOf(id)>=STAR_MAX).map(name);
+  return `Unlocks per stage at ★★★★★. ${name(stageN)} has ${starStr(starsOf(stageN),STAR_MAX)}.${open.length?` Open on: ${open.join(', ')}.`:''}`;
+}
 function renderMenu(){
   $('rankLine').textContent=rankLine();
   ['home','hands','ears','lines','reharm','voicings','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
@@ -9009,7 +9015,7 @@ function renderMenu(){
   $('tiers').innerHTML=TIERS.map(t=>{
     const open=tierUnlocked(t);
     const bestAny=Math.max(0,...Object.entries(bests).filter(([k])=>k.startsWith(t.id+':')).map(([,v])=>v));
-    const sub=t.devil?(open?`Every chord is 🔥: put its 3rd, 5th or 7th in the bass. Roots can be spelled B♯ or F♭. No hints, 1 life, ×${t.mult} points`:`Earn ★★★★★ on this ${isProgStage()?'progression':'stage'} to unlock`)
+    const sub=t.devil?(open?`Every chord is 🔥: put its 3rd, 5th or 7th in the bass. Roots can be spelled B♯ or F♭. No hints, 1 life, ×${t.mult} points`:devilLockText())
       :open?`${t.cap===1?'One chord at a time':`Up to ${t.cap} chords`}, ${t.lives} ${t.lives===1?'life':'lives'}${t.mult>1?`, ×${t.mult} points`:''}`:`Score ${t.unlock.score.toLocaleString()} on ${tierOf(t.unlock.tier).name} to unlock`;
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
