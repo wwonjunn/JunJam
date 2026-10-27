@@ -322,7 +322,7 @@ body.linesmode .panel{display:none}
 .lstaff svg{display:block}
 .lstaff .ln{stroke:var(--ink);stroke-width:1;opacity:.55}
 .lstaff .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
-.lstaff .acc{font-family:var(--body);font-size:15px;font-weight:600}
+.lstaff .acchalo{fill:none;stroke:var(--lane);stroke-width:5.5;stroke-linecap:round}
 .lstaff .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--muted)}
 .lmsg{min-height:1.4em;margin:0 0 12px;font-family:var(--hand);font-weight:700;font-size:20px}
 .lmsg.ok{color:var(--brass)} .lmsg.no{color:var(--wrong)}
@@ -5235,17 +5235,27 @@ function splitDur(at,d){
   }
   return out;
 }
+// A sharp or flat drawn as lines, staff-sized (a staff space is 10), so it reads the same on every computer, fonts or not.
+// Drawn twice: first wide in the background colour, so it stands clear of staff lines, beams and the note before it.
+function accSVG(a,x,cy,c){
+  const one=(x,a)=>a<0?`M${x-3} ${cy-17}V${cy+5}M${x-3} ${cy+5}C${x+6} ${cy},${x+7} ${cy-8},${x-3} ${cy-3}`
+    :`M${x-2.5} ${cy-12}V${cy+13}M${x+2.5} ${cy-13}V${cy+12}M${x-6} ${cy-2.5}L${x+6} ${cy-5.5}M${x-6} ${cy+5.5}L${x+6} ${cy+2.5}`;
+  const d=Math.abs(a)===2?(a<0?one(x-4,-1)+one(x+3,-1):`M${x-5} ${cy-5}L${x+5} ${cy+5}M${x+5} ${cy-5}L${x-5} ${cy+5}`):one(x,a);
+  return `<path class="acchalo" d="${d}"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${a>0?1.8:2}" stroke-linecap="round"/>`;
+}
 function lineStaffSVG(inst,idx,done){
-  const BW=78, X0=60, y=di=>40+(38-di)*5, xOf=t=>X0+t*BW;
-  const total=Math.max(inst.total||0,inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0)), W=Math.max(320,xOf(total)+24);
-  // pieces: each note split into writable values, tied together
+  const BW=78, X0=60, y=di=>40+(38-di)*5, ACCW=12;
   // pieces: each note split into writable values and tied; triplet notes are written as triplet 8ths or quarters
   const P=[]; inst.notes.forEach((n,i)=>n.tri?P.push({at:n.gat,d:n.gdur,n,i,first:true,tie:false,tri:true}):splitDur(n.gat,n.gdur).forEach((pc,k,arr)=>P.push({...pc,n,i,first:k===0,tie:k<arr.length-1})));
+  // a note with a sharp or flat gets extra room in front, so the sign never sits on the note before it in a fast run
+  const accAt=P.filter(p=>p.first&&p.n.spell.a).map(p=>p.at);
+  const xOf=(t,before=false)=>X0+t*BW+ACCW*accAt.filter(a=>before?a<t-1e-6:a<=t+1e-6).length;
+  const total=Math.max(inst.total||0,inst.notes.reduce((a,n)=>Math.max(a,n.gat+n.gdur),0)), W=Math.max(320,xOf(total)+24);
   const col=i=>done||i<idx?'var(--chord)':i===idx?'var(--brass)':'var(--ink)';
   let s=`<svg viewBox="0 0 ${W} 140" width="${W}" height="140" aria-label="The lick on a staff">`;
   for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*k)}" y2="${y(38-2*k)}"/>`;
   s+=`<text class="clef" x="10" y="${y(32)+9}" font-size="44">𝄞</text>`;
-  for(let b=4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b)-8}" x2="${xOf(b)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
+  for(let b=4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b,true)-8}" x2="${xOf(b,true)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
   inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="14">${symText(c)}</text>`; });
   // beam groups: consecutive notes shorter than a beat inside the same beat
   const groups=[]; let g=null;
@@ -5259,9 +5269,9 @@ function lineStaffSVG(inst,idx,done){
     for(let d=40;d<=di;d+=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
     s+=open?`<ellipse cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${c}" stroke-width="1.8"/>`
            :`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${c}"/>`;
-    if(p.first&&p.n.spell.a) s+=`<text class="acc" x="${cx-13}" y="${cy+5}" text-anchor="middle" fill="${c}">${ACC[p.n.spell.a]}</text>`;
+    if(p.first&&p.n.spell.a) s+=accSVG(p.n.spell.a,cx-15,cy,c);
     if([.75,1.5,3].some(v=>Math.abs(p.d-v)<1e-6)) s+=`<circle cx="${cx+10}" cy="${cy-(di%2===0?5:0)}" r="1.8" fill="${c}"/>`;
-    if(p.tie){ const nx=xOf(p.at+p.d), dn=di>=34; s+=`<path d="M${cx+4} ${cy+(dn?-7:7)} Q${(cx+nx)/2} ${cy+(dn?-16:16)} ${nx-4} ${cy+(dn?-7:7)}" fill="none" stroke="${c}" stroke-width="1.4"/>`; }
+    if(p.tie){ const nx=xOf(p.at+p.d,true), dn=di>=34; s+=`<path d="M${cx+4} ${cy+(dn?-7:7)} Q${(cx+nx)/2} ${cy+(dn?-16:16)} ${nx-4} ${cy+(dn?-7:7)}" fill="none" stroke="${c}" stroke-width="1.4"/>`; }
     if(p.d>=4-1e-6) return; // whole note: no stem
     const gr=inGroup.get(k);
     if(gr&&gr.items.length>1) return; // beamed below

@@ -312,7 +312,7 @@ body.linesmode .panel{display:none}
 .lstaff svg{display:block}
 .lstaff .ln{stroke:var(--ink);stroke-width:1;opacity:.55}
 .lstaff .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
-.lstaff .acc{font-family:var(--body);font-size:15px;font-weight:600}
+.lstaff .acchalo{fill:none;stroke:var(--lane);stroke-width:5.5;stroke-linecap:round}
 .lstaff .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--muted)}
 .lmsg{min-height:1.4em;margin:0 0 12px;font-family:var(--hand);font-weight:700;font-size:20px}
 .lmsg.ok{color:var(--brass)} .lmsg.no{color:var(--wrong)}
