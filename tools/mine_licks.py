@@ -1,8 +1,11 @@
 """Mine short licks from the Weimar Jazz Database (ODbL) into js/lines/solos.js.
-Uses the transcribers' own PHRASE boundaries, the chord under each beat, and the solo's feel."""
+Uses the transcribers' own PHRASE boundaries, the chord under each beat, and the solo's feel.
+   python3 tools/mine_licks.py wjazzd.db js/lines/solos.js [total]
+The licks already in the file are kept exactly as they are (stars and reviews are saved by id), and new ones are
+added until there are `total` (default 860), spread over every player and many tunes."""
 import sqlite3, json, random, re, sys, collections
 
-DB = sys.argv[1]; OUT = sys.argv[2]
+DB = sys.argv[1]; OUT = sys.argv[2]; TOTAL = int(sys.argv[3]) if len(sys.argv) > 3 else 860
 random.seed(7)
 con = sqlite3.connect(DB); cur = con.cursor()
 
@@ -93,38 +96,59 @@ for melid, perf, title, feel, tempo, trackid, inst in solos:
                                 notes=[[s, x, a] for s, x, a in zip(semis, d, ats)], nps=nps, leap=max(leaps),
                                 nleaps=sum(1 for x in leaps if x >= 5), pattern=tuple(pitches[i + 1] - pitches[i] for i in range(n - 1))))
 
-# Two per player (one with real jumps when there is one), plus extras from the richest players, no repeated shapes
-picked, seen = [], set()
-def take(c):
-    if c['pattern'] in seen: return False
-    seen.add(c['pattern']); picked.append(c); return True
-for perf, cs in sorted(cands.items()):
-    random.shuffle(cs)
-    jumpy = [c for c in cs if c['nleaps'] >= 2 and c['leap'] >= 5]
-    other = [c for c in cs if c not in jumpy]
-    for pool in (jumpy, other):
-        for c in pool:
-            if take(c): break
-extra = [c for cs in cands.values() for c in cs if c['nleaps'] >= 2]
-random.shuffle(extra)
-for c in extra:
-    if len(picked) >= 160: break
-    take(c)
+# The licks already in the file: kept line for line, and their shapes, ids and numbering are taken
+old_lines, seen, ids, count = [], set(), set(), collections.Counter()
+try:
+    for ln in open(OUT):
+        m = re.match(r"  Lk\('(wj\d+_\d+)',(\".*?\"),\d,'Solo',(\[\[.*?\]\]),(\[\[.*?\]\]),\{.*?artist:(\".*?\")", ln)
+        if not m: continue
+        old_lines.append(ln.rstrip('\n')); ids.add(m.group(1))
+        ns = json.loads(m.group(4)); seen.add(tuple(ns[i + 1][0] - ns[i][0] for i in range(len(ns) - 1)))
+        name = json.loads(m.group(2)); base = re.sub(r' \(\d+\)$', '', name); k = re.search(r' \((\d+)\)$', name)
+        key = (json.loads(m.group(5)), base); count[key] = max(count[key], int(k.group(1)) if k else 1)
+except FileNotFoundError: pass
+
+# A good line lands: its last note is a chord tone (or the 9) of the chord it ends on, and it doesn't stutter on one note
+TONES = {'dom7': [0, 4, 7, 10], 'min7': [0, 3, 7, 10], 'maj7': [0, 4, 7, 11], 'hdim': [0, 3, 6, 10], 'maj': [0, 4, 7], 'min': [0, 3, 7],
+         'six': [0, 4, 7, 9], 'min6': [0, 3, 7, 9], 'dim': [0, 3, 6, 9], 'dim7': [0, 3, 6, 9], 'mmaj7': [0, 3, 7, 11], 'aug': [0, 4, 8]}
+def quality(c):
+    last = c['ch'][-1]; tones = TONES.get(last[2], [0, 4, 7, 10])
+    land = (c['notes'][-1][0] - last[1]) % 12
+    stutter = max(collections.Counter(c['notes'][i][0] for i in range(len(c['notes']))).values()) / len(c['notes'])
+    return (2 if land in tones else 1 if land in (2, 9) else 0) - (2 if stutter > .4 else 0) + (1 if c['nleaps'] >= 1 else 0)
+for cs in cands.values():
+    for c in cs: c['q'] = quality(c) + random.random() * 1.5
+    cs.sort(key=lambda c: -c['q'])
+
+# New licks: one per player per round, best first, at most 4 from any one solo, never a shape already in, until TOTAL
+picked, per_solo = [], collections.Counter()
+for ln in old_lines: per_solo[re.match(r"  Lk\('wj(\d+)_", ln).group(1)] += 1
+players = sorted(cands); random.shuffle(players)
+while len(old_lines) + len(picked) < TOTAL:
+    added = False
+    for perf in players:
+        for c in cands[perf]:
+            if c['pattern'] in seen or per_solo[str(c['melid'])] >= 4 or c['q'] < 1: continue
+            seen.add(c['pattern']); per_solo[str(c['melid'])] += 1; picked.append(c); added = True; break
+        if len(old_lines) + len(picked) >= TOTAL: break
+    if not added: break
 
 # Difficulty at the app's own tempo: notes per beat, jumps and length (not the record's speed), split into thirds
+# (the app rates every lick again from its notes; this is only the starting guess)
 for c in picked:
     beats = c['notes'][-1][2] + c['notes'][-1][1]; c['score'] = len(c['notes']) / beats + 0.25 * c['nleaps'] + 0.08 * len(c['notes'])
-sc = sorted(c['score'] for c in picked); a, b = sc[len(sc) // 3], sc[2 * len(sc) // 3]
+sc = sorted(c['score'] for c in picked) or [0]; a, b = sc[len(sc) // 3], sc[2 * len(sc) // 3]
 for c in picked: c['diff'] = 1 if c['score'] <= a else 2 if c['score'] <= b else 3
 
-count = collections.Counter()
-lines = []
+lines = list(old_lines)
 for c in sorted(picked, key=lambda c: (c['diff'], c['perf'], c['title'])):
-    count[(c['perf'], c['title'])] += 1
-    k = count[(c['perf'], c['title'])]
+    key = (c['perf'], c['title']); count[key] += 1; k = count[key]
+    lid = f"wj{c['melid']}_{k}"
+    while lid in ids: k += 1; lid = f"wj{c['melid']}_{k}"
+    ids.add(lid)
     name = c['title'] + (f' ({k})' if k > 1 else '')
     tip = f"From {c['perf']}'s solo on {c['title']}" + (f" ({c['year']})" if c['year'] else '') + '.'
-    lines.append(f"  Lk('wj{c['melid']}_{k}',{json.dumps(name, ensure_ascii=False)},{c['diff']},'Solo',{json.dumps(c['ch'])},{json.dumps(c['notes'])},"
+    lines.append(f"  Lk('{lid}',{json.dumps(name, ensure_ascii=False)},{c['diff']},'Solo',{json.dumps(c['ch'])},{json.dumps(c['notes'])},"
                  f"{{swing:{1 if c['swing'] else 0},artist:{json.dumps(c['perf'], ensure_ascii=False)},src:WJAZZD,tip:{json.dumps(tip, ensure_ascii=False)}}}),")
 
 with open(OUT, 'w') as f:
@@ -133,5 +157,5 @@ with open(OUT, 'w') as f:
             '   This lick data is derived from that database and is shared under the Open Database License (ODbL 1.0):\n'
             '   https://opendatacommons.org/licenses/odbl/1.0/ . Each lick names the player and tune it comes from. */\n')
     f.write("const WJAZZD='https://jazzomat.hfm-weimar.de/';\nconst SOLO_LICKS=[\n" + '\n'.join(lines) + '\n];\n')
-print(len(picked), 'licks from', len({c['perf'] for c in picked}), 'players;', 'by difficulty', collections.Counter(c['diff'] for c in picked),
-      '; with 2+ jumps', sum(1 for c in picked if c['nleaps'] >= 2))
+print(len(old_lines), 'kept,', len(picked), 'new from', len({c['perf'] for c in picked}), 'players and',
+      len({(c['perf'], c['title']) for c in picked}), 'solos; by difficulty', collections.Counter(c['diff'] for c in picked))

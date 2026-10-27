@@ -59,7 +59,7 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 
 ## Links between modes
 - [x] Chords briefings link to Voicings (chapter tab, scrolled), the Ears game (matching level) and Lines (filtered); voicing cards link back to their Chords stage.
-- [ ] Not urgent: in a briefing, show which licks (not just how many) go over these chords.
+- [x] Briefings name four licks to try (a progression's own licks first), each starting its drill.
 
 ## Lines (decided: no race, and no rhythm grading)
 The transcribed timing isn't reliable. What matters is the order of the notes, which notes over which chord, and the
@@ -70,6 +70,8 @@ sound each one makes. Rhythm is never graded.
       review, and one new line. A day streak and a calendar.
 - [ ] Maybe: "where lines go": the app plays a short progression, and you drop the line onto the chord it belongs to.
 - [ ] No octave-up twist.
+- [x] Lick expansion: 222 to about 1,000 (860 from the Weimar solos, 82 new originals), with search, a chord filter and paging.
+- [ ] Play-test the new originals; tidy any solo phrase that sounds like half a thought (thumb it down?).
 - Keep the current library and drill as Classic.
 
 ## Gig

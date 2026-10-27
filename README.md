@@ -32,7 +32,8 @@ A jazz piano trainer with two sides:
 - **Chords briefings**: double-click a stage, progression or boss card for a short briefing (the chords coming up, or
   the progression in C with its degrees; tempo and lives; your stars and what the next one needs) with Start (Enter), and
   links to the same chords elsewhere: their named voicings in Voicings (scrolled there), the matching level of the Ears
-  game (it starts there), and the Lines licks over them (filtered). Each voicing card links back to the Chords stage that drills
+  game (it starts there), and the Lines licks over them (filtered), with four of them by name to start straight away
+  (for a progression, the licks that follow its own chord moves come first). Each voicing card links back to the Chords stage that drills
   its chord type. Voicings is split into chapter tabs (triads and colours, major, minor and diminished, dominants, slash).
 - **💚 Life answers** in every mode with lives: about one in 15–18, glowing green and harder than usual (Chords: a chord
   from a harder stage, always on fire; Ears: a 🧚 asking from the level above; Voicings Rush and bosses: a ●●● voicing
@@ -77,8 +78,10 @@ A jazz piano trainer with two sides:
   days left, reaching all 12 by Sunday (then it joins your vocabulary 🏅); and Today's practice, about five minutes in
   one button: the weekly line's keys for today, up to three older lines due back (spaced review: 1, 2, 5, 11 days...; a
   slip brings it back tomorrow), and one new line. A day streak with a 14-day calendar.
-- **Lines**: short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
-  learn in one key and then play in five more without looking. Import your own over MIDI.
+- **Lines**: about 1,000 short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
+  learn in one key and then play in five more without looking: 860 phrases from famous solos (78 players), 110
+  originals (minor ii–V–i, the Royal Road, Just the Two of Us, backdoor and tritone-sub ii–Vs...) and scale runs. Search by
+  tune, player or idea, filter by chord type, 60 shown at a time. Import your own over MIDI.
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
   backdoor, line clichés, pedal point, Coltrane changes, negative harmony, melody reharm...). Each has a card (what, why, where you hear it), before/after audio, a drill
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
@@ -138,6 +141,7 @@ js/lines/licks.js     the lick library as data (edit here to add licks), with so
 js/lines/solos.js     licks from real solos, generated from the Weimar Jazz Database (ODbL)
 js/lines/players.js   licks transcribed from players' own videos (A.N.M-PIANO), credited, filed with the solo licks
 js/lines/runs.js      scale runs that sound like music: pentatonic threes and fours, cascades, gospel and blues runs, the Magic Run…
+js/lines/more.js      more originals: minor ii–V–i, J-pop and city-pop progressions, backdoor, blues, gospel, neo-soul, runs
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/lines/practice.js  Lines practice: the line of the week, today's session, spaced review
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
@@ -169,7 +173,7 @@ when opened straight from disk.
 ```
 node tests/theory.test.js     # run checks
 python3 tools/bundle.py       # rebuild dist/junjam.html
-python3 tools/mine_licks.py wjazzd.db js/lines/solos.js   # regenerate solo licks (download wjazzd.db from jazzomat.hfm-weimar.de first)
+python3 tools/mine_licks.py wjazzd.db js/lines/solos.js 860   # add solo licks up to 860, keeping the ones already there (download wjazzd.db from jazzomat.hfm-weimar.de first)
 ```
 
 ## Credits

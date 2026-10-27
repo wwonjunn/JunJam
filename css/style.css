@@ -321,7 +321,7 @@ body.linesmode .panel{display:none}
 body.menu.nohud header .modetag{display:none}
 body.linesmode header .modetag{display:none}
 .lstaff svg{height:170px;width:auto;max-width:none}
-#lArtist{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 10px}
+#lArtist,#lChord,#lSearch{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 10px}
 .import a,.fine a{color:var(--brass)}
 .lick .fav{position:absolute;right:6px;top:2px;font-size:17px;color:var(--muted);padding:0 4px;line-height:1.2}
 .lick .fav.withdel{right:24px}
@@ -703,3 +703,6 @@ body.gigmode header .modetag{display:none}
 .vcgrid .vctype .licks{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
 @media (max-width:600px){ .vcgrid .vctype.span2{grid-column:auto} }
 .vcback{margin:-2px 0 10px} .vcback .ghost{margin:0 0 0 6px}
+
+#lSearch{flex:1 1 220px;min-width:0;border-radius:999px} .lmore{display:block;margin:10px auto 0}
+.brieflicks{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0 4px} .brieflicks i{font-style:normal;opacity:.6;font-size:12px}
