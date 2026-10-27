@@ -73,6 +73,11 @@ A jazz piano trainer with two sides:
   Each enemy says how many notes it takes and walks slower the more it needs: 👾 one note, 🐍 two, 🦎 three, 🐊 four,
   🐉 five, 🕷️ a chord, 🦖 a bass line; a serpent's segments get blasted off one note at a time.
   Play any chord to go again.
+- **Practice**: your own practice routines, like a workout app. A routine is a list of blocks (a mode, maybe a stage,
+  Ears world, Voicings tab or lick pick, minutes, a note); three to start from (Daily 45, Quick 10, Comping day), all
+  editable. Start opens each block's mode; a timer chip keeps time wherever you go (pause, skip, it survives a reload),
+  chimes when it's up and takes you to the next block. Sessions are logged with minutes per mode and a note for next
+  time; the page shows the week's minutes per mode, a streak and a 14-day calendar.
 - **Lines practice** (the Lines library and drill stay as Classic; rhythm is never graded, only the notes in order):
   a line of the week, learned in its own key and straight on into that day's new keys, round the circle of 4ths
   (C F B♭ E♭...), spread over the days left so it reaches all 12 by Sunday, or all the keys left in one go
@@ -146,6 +151,7 @@ js/lines/runs.js      scale runs that sound like music: pentatonic threes and fo
 js/lines/more.js      more originals: minor ii–V–i, J-pop and city-pop progressions, backdoor, blues, gospel, neo-soul, runs
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/lines/practice.js  Lines practice: the line of the week, today's session, spaced review
+js/plan.js            Practice: your routines, the block timer chip, the session log
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
 js/voicings/library.js  the voicing library (both hands, written in C) and the extra chord types it names

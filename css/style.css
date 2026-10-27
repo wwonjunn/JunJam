@@ -707,3 +707,34 @@ body.gigmode header .modetag{display:none}
 #lSearch{flex:1 1 220px;min-width:0;border-radius:999px} .lmore{display:block;margin:10px auto 0}
 .brieflicks{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0 4px} .brieflicks i{font-style:normal;opacity:.6;font-size:12px}
 .lrand{margin:0 0 10px;align-items:center;gap:6px}
+
+/* Practice: routines, the running block, the timer chip */
+.planchip{position:fixed;top:52px;right:16px;z-index:60;display:flex;align-items:center;gap:8px;background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 4px 3px 12px;font-family:var(--cond);font-size:14px;color:var(--ink);box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.planchip[hidden]{display:none}
+.planchip .pcw{cursor:pointer;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.planchip b{font-variant-numeric:tabular-nums;color:var(--brass)}
+.planchip button{font:inherit;background:transparent;border:1px solid var(--line-strong);border-radius:999px;color:var(--ink);padding:2px 9px;cursor:pointer}
+.planchip.due{border-color:var(--brass);animation:pdue 1.6s ease-in-out infinite} .planchip.due button[data-pc=next]{background:var(--brass);color:var(--bg);border-color:var(--brass)}
+.planchip.paused b{opacity:.5}
+@keyframes pdue{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--brass) 35%,transparent)}}
+@media (prefers-reduced-motion:reduce){.planchip.due{animation:none}}
+.prun{border:1.5px solid var(--brass);border-radius:12px;padding:10px 14px;margin:0 0 14px}
+.prun .lt{font-family:var(--cond);font-size:20px;font-weight:600} .prun .lt b{color:var(--brass);margin-left:8px}
+.prun textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:8px;padding:6px 8px;box-sizing:border-box}
+.proutines{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-bottom:14px}
+.proutine{border:1.5px solid var(--line-strong);border-radius:12px;padding:10px 12px;background:var(--panel);text-align:left}
+.proutine .lt{font-family:var(--cond);font-size:18px;font-weight:600}
+.pnew{font:inherit;color:var(--ink);cursor:pointer;border-style:dashed;text-align:center;min-height:90px}
+.pblks{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.pblk{font-size:12px;border-radius:999px;padding:1px 8px;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.pedit{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.pedit input,.pedit select{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:8px;padding:4px 8px;min-width:0}
+#peName{font-size:18px;max-width:340px}
+.perow{display:grid;grid-template-columns:120px minmax(140px,220px) 90px 1fr auto;gap:6px;align-items:center}
+.pemin input{width:52px} .pebtn{display:flex;gap:3px} .pebtn button{margin:0;padding:3px 8px}
+@media (max-width:720px){.perow{grid-template-columns:1fr 1fr}.perow>input[data-f=note]{grid-column:1/-1}}
+.pweek{display:flex;flex-direction:column;gap:4px;max-width:520px;margin-bottom:8px}
+.pbar{display:grid;grid-template-columns:80px 1fr 44px;align-items:center;gap:8px;font-size:14px}
+.pbar i{display:block;height:10px;border-radius:5px;background:var(--brass);min-width:3px} .pbar b{font-variant-numeric:tabular-nums;text-align:right}
+.plog{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px} .plog li{border-bottom:1px solid var(--line);padding-bottom:6px}
+.pnote{font-style:italic;opacity:.85} .linkish{background:none;border:none;color:var(--ink);opacity:.5;cursor:pointer;font:inherit}

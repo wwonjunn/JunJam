@@ -76,5 +76,9 @@ sound each one makes. Rhythm is never graded.
 - [ ] Play-test the new originals; tidy any solo phrase that sounds like half a thought (thumb it down?).
 - Keep the current library and drill as Classic.
 
+## Practice (routines)
+- [x] Routines of timed blocks, a timer chip across modes, a log with notes, weekly minutes and a streak.
+- [ ] Maybe: count only the minutes you actually played (notes coming in), and suggest a routine from what's weakest.
+
 ## Gig
 - [ ] Backing track quality (parked until the AI music tools are better).
