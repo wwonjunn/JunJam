@@ -74,12 +74,13 @@ A jazz piano trainer with two sides:
   🐉 five, 🕷️ a chord, 🦖 a bass line; a serpent's segments get blasted off one note at a time.
   Play any chord to go again.
 - **Lines practice** (the Lines library and drill stay as Classic; rhythm is never graded, only the notes in order):
-  a line of the week, learned in its own key the first time and then played from memory in new keys spread over the
-  days left, reaching all 12 by Sunday (then it joins your vocabulary 🏅); and Today's practice, about five minutes in
+  a line of the week, learned in its own key and straight on into that day's new keys, round the circle of 4ths
+  (C F B♭ E♭...), spread over the days left so it reaches all 12 by Sunday, or all the keys left in one go
+  (then it joins your vocabulary 🏅). After a session or a drill, play any chord to carry on; and Today's practice, about five minutes in
   one button: the weekly line's keys for today, up to three older lines due back (spaced review: 1, 2, 5, 11 days...; a
   slip brings it back tomorrow), and one new line. A day streak with a 14-day calendar.
 - **Lines**: about 1,000 short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
-  learn in one key and then play in five more without looking: 860 phrases from famous solos (78 players), 110
+  learn in one key and then play in five more without looking: 860 phrases from famous solos (78 players), about 110
   originals (minor ii–V–i, the Royal Road, Just the Two of Us, backdoor and tritone-sub ii–Vs...) and scale runs. Search by
   tune, player or idea, filter by chord type, 60 shown at a time. Import your own over MIDI.
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,

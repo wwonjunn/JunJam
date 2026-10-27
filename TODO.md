@@ -66,11 +66,13 @@ The transcribed timing isn't reliable. What matters is the order of the notes, w
 sound each one makes. Rhythm is never graded.
 - [x] Line of the week: one line all week. Monday, learn it in its own key; each day after, play it from memory in more
       keys (2, 4, 6, then all 12 by Sunday). Finishing adds it to your vocabulary with a badge.
+      Keys go round the circle of 4ths; the learn session flows into today's keys; today's share is fixed for the day;
+      "All the keys left" runs the rest in one go; any chord on the results carries on.
 - [x] Daily practice (about 5 minutes, one button): today's keys of the weekly line, 3 older lines due for spaced
       review, and one new line. A day streak and a calendar.
 - [ ] Maybe: "where lines go": the app plays a short progression, and you drop the line onto the chord it belongs to.
 - [ ] No octave-up twist.
-- [x] Lick expansion: 222 to about 1,000 (860 from the Weimar solos, 82 new originals), with search, a chord filter and paging.
+- [x] Lick expansion: 222 to about 1,000 (860 from the Weimar solos, 79 new originals; three that repeated older licks taken out), with search, a chord filter and paging.
 - [ ] Play-test the new originals; tidy any solo phrase that sounds like half a thought (thumb it down?).
 - Keep the current library and drill as Classic.
 

@@ -107,7 +107,7 @@ function pickLineKeys(){
 }
 function linesStart(id){
   const lick=lickById(id); if(!lick) return;
-  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null});
+  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null,after:null});
   synth.init(); hideOv(); document.body.classList.add('nohud','linesmode'); document.body.classList.remove('menu');
   $('linesStage').hidden=false; $('lResults').hidden=true; $('lPlay').hidden=false;
   linesRound();
@@ -230,6 +230,7 @@ function compUnder(c,ceil){
 function linesPlay(delay=.08){ if(!LINES.active) return 0; killBus(LINES.bus); LINES.bus=newBus(); if(!LINES.bus) return 0; const t0=now()+delay; return playLine(LINES.inst,LINES.lick,LINES.bus,t0,LDATA.tempo)-now(); }
 function linesNote(m){
   if(LINES.rec){ LINES.rec.notes.push({m,t:performance.now()}); const c=$('iCount'); if(c) c.textContent=`${LINES.rec.notes.length} notes`; return; }
+  if(LINES.after){ if(held.size>=3){ const f=LINES.after; LINES.after=null; f(); } return; }   // the results: any chord carries on
   const L=LINES; if(!L.active||L.done) return;
   const want=L.inst.notes[L.idx].midi, ok=mod12(m-want)===0;   // any octave, for every note: jump up or down mid-line if you like
   if(!ok&&LDATA.lh&&m<LH_SPLIT) return;   // left-hand comping below middle C, unless it's the note the lick wants
@@ -268,11 +269,12 @@ function linesFinish(quit){
   const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b> ${i===0?'learned':r.clean?'clean':r.revealed?'with notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</li>`).join('');
   $('lResults').innerHTML=`<h2>${quit?'Session ended':stars===3?'Perfect transfer':'Lick done'}</h2>${learned?`<div class="stars">${starStr(Math.max(stars,prev))}</div>`:''}
     <ul class="lkeys">${rows}</ul><p>+${L.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five new keys clean.'}`:''}</p>
-    <button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
+    <p class="fine">Play any chord to go again.</p><button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
   $('lAgain').onclick=()=>linesStart(L.lick.id); $('lBack').onclick=linesToMenu; $('lAgain').focus();
+  L.after=()=>linesStart(L.lick.id);
 }
 function linesToMenu(){
-  LINES.active=false; killBus(LINES.bus); clearTimeout(LINES.advance);
+  LINES.active=false; LINES.after=null; killBus(LINES.bus); clearTimeout(LINES.advance);
   $('linesStage').hidden=true; document.body.classList.remove('linesmode');
   side='lines'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
 }

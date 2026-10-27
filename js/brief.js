@@ -67,7 +67,7 @@ function briefOpen(id){
       ${vs.length?`<button class="ghost" data-brief="voicings">🎹 Voicings: ${vs.length} named voicings for ${vtypes.length>4?'these chords':vtypes.map(sym).map(gigAccHTML).join(', ')}</button>`:''}
       <button class="ghost" data-brief="ears">👂 Hear them: Ears game, ${arcWorld(ears.world).name}, from “${gigAccHTML(el.name)}”</button>
       ${licks.length?`<button class="ghost" data-brief="lines">🎷 Lines: all ${licks.length} lick${licks.length>1?'s':''} over these chords</button>`:''}
-      ${pick.length?`<div class="brieflicks">${pick.map(l=>`<button class="chip" data-brief="lick:${l.id}" title="${(lickLabel(l)+', over '+lickOver(l)).replace(/"/g,'&quot;')}">${gigAccHTML(l.name)} <i>${LDIFF[l.diff]}</i></button>`).join('')}</div>`:''}
+      ${pick.length?`<div class="brieflicks">${pick.map(l=>`<button class="chip" data-brief="lick:${l.id}" title="${(lickLabel(l)+', over '+lickOver(l)).replace(/"/g,'&quot;')}">${gigAccHTML(l.name.replace(/ \(\d+\)$/,''))}${l.artist?` · ${gigAccHTML(l.artist.split(' ').pop())}`:''} <i>${LDIFF[l.diff]}</i></button>`).join('')}</div>`:''}
     </div>
     <div class="erow"><button class="go" id="briefGo"${open?'':' disabled'}>${open?`Start${mode==='game'?` at ♩ = ${t.bpm}`:''} (Enter)`:'Locked at this tempo'}</button><button class="ghost" id="briefBack">Back (Esc)</button></div>`;
   $('briefOv').hidden=false;
