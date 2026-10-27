@@ -1,9 +1,9 @@
 /* Easter eggs: very rarely, a hit, a boss, a last life or a results screen gets a quiet nod to an anime, a game or a
    show instead of the usual effect. Rare on purpose: a small chance each time (a kill is about 1 in 400), and after one
-   shows up, none for the next ten minutes, in any mode. No pictures, only shapes, emoji and a few words.
+   shows up, none for the next three minutes, in any mode. No pictures, only shapes, emoji and a few words.
    To see one now, from the console: EGG.force='kame' (any id below), then trigger the event. */
 const EGG={force:null};
-const EGG_GAP=10*60*1000;
+const EGG_GAP=3*60*1000;   // only so two never come back to back
 function egg(list,p){
   if(EGG.force){ const f=list.find(x=>x.id===EGG.force); if(f) EGG.force=null; return f||null; }
   if(Math.random()>=p||Date.now()-store.get('eggAt',0)<EGG_GAP) return null;

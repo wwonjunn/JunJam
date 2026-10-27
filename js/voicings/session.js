@@ -74,14 +74,15 @@ function renderVoicingsPane(){
   const best=VCDATA.best[VCDATA.pool], learned=VPATH.filter(q=>vtStars(q)).length, nx=vcNextType();
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VPATH.length} chords, ${VOICINGS.length} named two-hand voicings, in six chapters from the easiest to the richest. Each chord is one lesson: learn every way to play it in C, then a mixed round from memory in new keys. ${vcStarTotal()} of ${VPATH.length*3} stars.</p>
-    <div class="erow vcnextrow"><button class="go" data-vt="${nx}">Next up: ${gigAccHTML(vcTypeName(nx))} (${vcWays(nx).length} way${vcWays(nx).length>1?'s':''})</button></div>
-    <div class="vcchaps">${chapters}<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div></div>
-    <p class="fine" style="margin-top:8px">★ finish the lesson. ★★ 80% of the mixed round clean (right first try, shape hidden). ★★★ all of it clean. ● to ●●● is how hard each shape is. A MIDI keyboard is needed: these are two-hand chords.</p>
-    <div class="sec" style="margin-top:16px">Games</div>
+    <div class="sec">Games</div>
     ${chPaneHTML()}
     <div class="vcrush"><div><b>Rush <span class="fine">classic</span></b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
       <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm}${k==='learned'?`: ${learned}${learned<2?', so the starter set for now':''}`:''}</option>`).join('')}${VCHAPTERS.map((c,i)=>`<option value="${c.id}"${VCDATA.pool===c.id?' selected':''}>Chapter ${i+1}: ${c.name}</option>`).join('')}${Object.entries(VFAM).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
+    <div class="sec" style="margin-top:16px">Flash cards: one lesson per chord</div>
+    <div class="erow vcnextrow"><button class="go" data-vt="${nx}">Next up: ${gigAccHTML(vcTypeName(nx))} (${vcWays(nx).length} way${vcWays(nx).length>1?'s':''})</button></div>
+    <div class="vcchaps">${chapters}<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div></div>
+    <p class="fine" style="margin-top:8px">★ finish the lesson. ★★ 80% of the mixed round clean (right first try, shape hidden). ★★★ all of it clean. ● to ●●● is how hard each shape is. A MIDI keyboard is needed: these are two-hand chords.</p>
     <details class="vcclassic"${VCDATA.dict?' open':''}><summary>Classic: every voicing, one card each</summary>${vcDictHTML()}</details>`;
   chBindPane($('voicingsPane'));
 }
