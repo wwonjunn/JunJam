@@ -706,3 +706,4 @@ body.gigmode header .modetag{display:none}
 
 #lSearch{flex:1 1 220px;min-width:0;border-radius:999px} .lmore{display:block;margin:10px auto 0}
 .brieflicks{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0 4px} .brieflicks i{font-style:normal;opacity:.6;font-size:12px}
+.lrand{margin:0 0 10px;align-items:center;gap:6px}

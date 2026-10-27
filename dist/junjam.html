@@ -716,6 +716,7 @@ body.gigmode header .modetag{display:none}
 
 #lSearch{flex:1 1 220px;min-width:0;border-radius:999px} .lmore{display:block;margin:10px auto 0}
 .brieflicks{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0 4px} .brieflicks i{font-style:normal;opacity:.6;font-size:12px}
+.lrand{margin:0 0 10px;align-items:center;gap:6px}
 </style>
 <style>
 /* ==================================================================================================
@@ -4990,6 +4991,11 @@ const lickChordOk=l=>{ const f=LCHORDS.find(c=>c[0]===LDATA.chord); return !f||!
 const lickText=l=>(l._txt=l._txt||[l.name,l.artist||'',lickLabel(l),l.tip||'',(l.tags||[]).join(' '),lickOver(l)].join(' ').toLowerCase());
 const lickSearchOk=l=>!LINES.q||LINES.q.toLowerCase().split(/\s+/).filter(Boolean).every(w=>lickText(l).includes(w));
 const LPAGE=60;
+// 🎲 a random lick of one difficulty, from what the filters show (or the whole library if they show none), new ones first
+function linesRandom(d){
+  const f=linesList().filter(l=>l.diff===d), pool=f.length?f:allLicks().filter(l=>l.diff===d), fresh=pool.filter(l=>!LDATA.stars[l.id]);
+  const from=fresh.length?fresh:pool; if(from.length) linesStart(from[Math.floor(Math.random()*from.length)].id,d);
+}
 function linesList(){
   return allLicks().filter(l=>(!LINES.over||lickIsOver(l,LINES.over))&&(!LDATA.diff||l.diff===LDATA.diff)&&(LDATA.from==='all'||(LDATA.from==='fav'?isFav(l.id):lickFrom(l)===LDATA.from))&&(!LDATA.artist||l.artist===LDATA.artist)&&lickChordOk(l)&&lickSearchOk(l))
     .sort((a,b)=>a.diff-b.diff||lickLabel(a).localeCompare(lickLabel(b))||a.name.localeCompare(b.name));
@@ -5007,6 +5013,7 @@ function renderLinesPane(){
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${lpPaneHTML()}
+    <div class="erow lrand"><span class="fine">Pick for me:</span>${[1,2,3].map(d=>`<button class="ghost" data-rand="${d}">🎲 ${LDIFF[d]}</button>`).join('')}</div>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select>
@@ -5038,6 +5045,7 @@ function bindLinesPane(){
   p.oninput=e=>{ if(e.target.id==='lSearch'){ LINES.q=e.target.value; LINES.show=LPAGE; $('lList').innerHTML=linesListHTML(); } };
   p.onclick=e=>{
     if(e.target.closest('[data-overclear]')){ LINES.over=null; LINES.show=LPAGE; renderLinesPane(); return; }
+    const rb=e.target.closest('[data-rand]'); if(rb){ linesRandom(+rb.dataset.rand); return; }
     if(e.target.closest('[data-more]')){ LINES.show=(LINES.show||LPAGE)+LPAGE; $('lList').innerHTML=linesListHTML(); return; }
     const lp=e.target.closest('[data-lp]'); if(lp){ if(lp.disabled) return; lp.dataset.lp==='swap'?lpSwap():lpStart(lp.dataset.lp); return; }   // practice: today's session, the weekly line's keys, or a different weekly line
     const f=e.target.closest('[data-fav]'); if(f){ e.stopPropagation(); toggleFav(f.dataset.fav); renderLinesPane(); return; }
@@ -5070,9 +5078,9 @@ function pickLineKeys(){
   const keys=[]; while(keys.length<1+TRANSFER_KEYS){ const k=weightedPick([...Array(12).keys()].filter(x=>!keys.includes(x)).map(pc=>({pc,w:keyWeight(pc,'hands')}))).pc; keys.push(k); }
   return keys;
 }
-function linesStart(id){
+function linesStart(id,rand=0){   // rand: the difficulty, when 🎲 picked it
   const lick=lickById(id); if(!lick) return;
-  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null,after:null});
+  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null,after:null,rand});
   synth.init(); hideOv(); document.body.classList.add('nohud','linesmode'); document.body.classList.remove('menu');
   $('linesStage').hidden=false; $('lResults').hidden=true; $('lPlay').hidden=false;
   linesRound();
@@ -5235,8 +5243,10 @@ function linesFinish(quit){
   $('lResults').innerHTML=`<h2>${quit?'Session ended':stars===3?'Perfect transfer':'Lick done'}</h2>${learned?`<div class="stars">${starStr(Math.max(stars,prev))}</div>`:''}
     <ul class="lkeys">${rows}</ul><p>+${L.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five new keys clean.'}`:''}</p>
     <p class="fine">Play any chord to go again.</p><button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
-  $('lAgain').onclick=()=>linesStart(L.lick.id); $('lBack').onclick=linesToMenu; $('lAgain').focus();
-  L.after=()=>linesStart(L.lick.id);
+  const rand=L.rand, next=()=>linesRandom(rand);   // a random lick: a chord brings another of the same difficulty
+  $('lAgain').onclick=()=>linesStart(L.lick.id,rand); $('lBack').onclick=linesToMenu; $('lAgain').focus();
+  if(rand){ $('lAgain').insertAdjacentHTML('beforebegin',`<button class="go" id="lRand">🎲 Another ${LDIFF[rand]}</button>`); $('lAgain').className='ghost'; $('lRand').onclick=next; $('lRand').focus(); $('lResults').querySelector('.fine:last-of-type').textContent=`Play any chord for another ${LDIFF[rand]} one.`; }
+  L.after=rand?next:()=>linesStart(L.lick.id);
 }
 function linesToMenu(){
   LINES.active=false; LINES.after=null; killBus(LINES.bus); clearTimeout(LINES.advance);

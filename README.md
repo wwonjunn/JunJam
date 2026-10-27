@@ -82,7 +82,8 @@ A jazz piano trainer with two sides:
 - **Lines**: about 1,000 short licks (jazz, bebop, Coltrane, blues, gospel, neo-soul, fusion, city pop and J-pop) that you
   learn in one key and then play in five more without looking: 860 phrases from famous solos (78 players), about 110
   originals (minor ii–V–i, the Royal Road, Just the Two of Us, backdoor and tritone-sub ii–Vs...) and scale runs. Search by
-  tune, player or idea, filter by chord type, 60 shown at a time. Import your own over MIDI.
+  tune, player or idea, filter by chord type, 60 shown at a time, or 🎲 Easy / Medium / Hard to be handed one
+  you haven't starred yet (any chord on the results hands you the next). Import your own over MIDI.
 - **Reharm**: 30 reharmonisation moves in three tiers (secondary dominants, IV/V, minor iv, passing diminished, tritone sub,
   backdoor, line clichés, pedal point, Coltrane changes, negative harmony, melody reharm...). Each has a card (what, why, where you hear it), before/after audio, a drill
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
