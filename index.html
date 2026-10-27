@@ -48,6 +48,8 @@
         <div class="seg" role="group" aria-label="Mode"><button id="mPractice">Practice</button><button id="mGame">Game</button></div>
         <p class="fine" id="starLine" style="margin:0 0 12px"></p>
         <div id="tierBox"><div class="sec">Tempo</div><div class="stages" id="tiers"></div></div>
+        <div class="sec">Your path <span class="fine">the recommended order, stages and progressions woven together: tap a step for its briefing</span></div>
+        <div class="pathstrip" id="pathStrip"></div>
         <div class="sec">Chords</div>
         <div class="stages" id="stages"></div>
         <div class="sec">Progressions: J-pop, city pop and jazz moves in every key</div>
@@ -59,6 +61,7 @@
           <label><input type="checkbox" id="optMetro"> Hi-hat on beats 2 and 4</label>
           <label><input type="checkbox" id="optSmart"> Smart mix: chords you miss or play slowly come back a few chords later, spaced further out each time you get them (and due ones return on later days); shaky keys come up more</label>
         </div>
+        <p class="fine pathnote" id="pathNote"></p>
         <button class="go" id="startBtn">Start</button><button class="ghost" id="progBtn">Progress</button>
         <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
         </div>
@@ -169,6 +172,7 @@
 <script src="js/gig/sheets.js"></script>
 <script src="js/gig/session.js"></script>
 <script src="js/gig/analysis.js"></script>
+<script src="js/path.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/brief.js"></script>
 <script src="js/plan.js"></script>

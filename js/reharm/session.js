@@ -8,7 +8,7 @@ const RH_KEYS=5, RH_BAR=1.25; // keys after the first, seconds per chord in play
 /* ---------------- menu pane ---------------- */
 const rhStarTotal=()=>REHARM_MOVES.reduce((a,m)=>a+(RHDATA.stars[m.id]||0),0);
 function renderReharmPane(){
-  const tier=(t,title)=>`<div class="sec" style="margin-top:12px">${title}</div><div class="licks">${REHARM_MOVES.filter(m=>m.tier===t).map(m=>
+  const tier=(t,title)=>`<div class="sec" style="margin-top:12px">${t}. ${title}${reharmPathNote(t)?` <span class="fine pathnote">${reharmPathNote(t)}</span>`:''}</div><div class="licks${reharmPathNote(t)?' laterset':''}">${REHARM_MOVES.filter(m=>m.tier===t).map(m=>
     `<button class="lick" data-move="${m.id}"><span class="ln">${rhChords(m.after,0,m.minor).map(c=>c.rn).join(' ')}</span><span class="lt">${m.name}</span><span class="lst"><b>${starStr(RHDATA.stars[m.id]||0)}</b></span><span class="rwhat">${m.what}</span></button>`).join('')}</div>`;
   $('reharmPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Reharm</h2>
     <p>Every chord type you've drilled has a job. Reharm teaches the jobs: swap or add chords so a progression pulls harder, slides smoother or changes colour, while still going where it was going. ${rhStarTotal()} of ${REHARM_MOVES.length*3} stars.</p>

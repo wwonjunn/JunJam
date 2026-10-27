@@ -44,6 +44,8 @@ with medals and a streak, the weekly boss, a reference note for every call, and 
 - The Classic levels stay as they are.
 
 ## Voicings (Comp Hero, the game)
+- [x] Revamp: one card per chord type with every way to play it, one lesson per chord type, stars per chord type, six chapters in order, the old dictionary as Classic.
+- [ ] Play-test the lesson length (each way in C, then max(5, ways + 2) from memory).
 - [x] First version: a Gig chart, scrolling chord cards with an ask on each, named voicings recognised, timing grades,
       a voice-leading bonus, a band meter, Easy/Normal/Hard. Rush and the cards stay as Classic.
 - [ ] Play-test the timing windows, the scroll speed and the band meter.
@@ -78,6 +80,8 @@ sound each one makes. Rhythm is never graded.
 
 ## Practice (routines)
 - [x] Routines of timed blocks, a timer chip across modes, a log with notes, weekly minutes and a streak.
+- [x] Workout-app redesign: My routines / Explore (13, each with its reason) / History, detail view, block-card editor with drag, steppers and a picker.
+- [x] A recommended order in every mode (js/path.js), soft: dimmed cards, a note, never locked.
 - [ ] Maybe: count only the minutes you actually played (notes coming in), and suggest a routine from what's weakest.
 
 ## Gig

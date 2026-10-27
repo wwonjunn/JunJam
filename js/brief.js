@@ -61,7 +61,8 @@ function briefOpen(id){
   $('briefCard').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(briefTitle(id))}</span><span>${starStr(st,STAR_MAX)}${devilOf(id)?' '+'💀'.repeat(devilOf(id)):''}</span></div>
     <div class="sec">What's coming</div><div class="briefchords">${chords}</div>
     <p>${mode==='practice'?'Practice: no clock, take your time.':`${t.name}, ♩ = ${t.bpm}, ${t.lives} ${t.lives===1?'life':'lives'}${t.devil?'. Every chord on fire, no hints':''}.`}${fire&&mode==='game'?` 🔥 chords will ask for the ${['','3rd','3rd or 5th','3rd, 5th or 7th'][fire]} in the bass.`:''} 💚 life chords now and then.</p>
-    <p class="fine">${st<STAR_MAX?`Next star: ${STAR_GOALS[st]}`:'Every star. 😈 Devil is open for this one in the tempo list.'}</p>
+    <p class="fine">${chordsStep(id)?`Step ${chordsStep(id)} of ${NEXT_ORDER.length}. `:''}${st<STAR_MAX?`Next star: ${STAR_GOALS[st]}`:'Every star. 😈 Devil is open for this one in the tempo list.'}</p>
+    ${chordsPathNote(id)?`<p class="fine pathnote">${gigAccHTML(chordsPathNote(id))}</p>`:''}
     <div class="sec">The same chords elsewhere</div>
     <div class="brieflinks">
       ${vs.length?`<button class="ghost" data-brief="voicings">🎹 Voicings: ${vs.length} named voicings for ${vtypes.length>4?'these chords':vtypes.map(sym).map(gigAccHTML).join(', ')}</button>`:''}
@@ -81,11 +82,11 @@ function briefGo(where,qids,ears){
   if(where==='ears'){ arcStart(ears.world,ears.rung); return; }
   if(where.startsWith('lick:')){ linesStart(where.slice(5)); return; }
   if(where==='lines'){ LINES.over=qids; LINES.q=''; LINES.show=0; LDATA.diff=0; LDATA.from='all'; LDATA.artist=''; LDATA.chord=''; side='lines'; renderMenu(); $('startOv').scrollTop=0; return; }
-  // Voicings, on the chapter tab that holds these chords (All if they span chapters), scrolled to the first of them
-  const chs=VCHAPTERS.filter(c=>vcChapterTypes(c.id).some(q=>qids.includes(q)));
-  VCDATA.fam='all'; VCDATA.ch=chs.length===1?chs[0].id:'all'; side='voicings'; renderMenu();
-  const first=VTYPES.find(q=>qids.includes(q)), el=first&&document.querySelector(`.vctype[data-qid="${first}"]`);
-  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } }); }   // the highlight goes once it has faded
+  // Voicings: the chapter holding the first of these chords on the path, opened and scrolled to it, these chords flashed
+  const first=VPATH.find(q=>qids.includes(q)); if(!first){ side='voicings'; renderMenu(); return; }
+  VCHAPTERS.forEach(c=>{ if(c.types.some(q=>qids.includes(q))) (VCDATA.open=VCDATA.open||{})[c.id]=true; });
+  vcShowType(first,false);
+  qids.forEach(q=>{ const x=document.querySelector(`#voicingsPane .vctcard[data-vt="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } });   // the highlight goes once it has faded
 }
 // two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
 function briefClicks(box,attr,parse){

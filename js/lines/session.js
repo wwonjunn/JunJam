@@ -47,7 +47,7 @@ function renderLinesPane(){
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${lpPaneHTML()}
-    <div class="erow lrand"><span class="fine">Pick for me:</span>${[1,2,3].map(d=>`<button class="ghost" data-rand="${d}">🎲 ${LDIFF[d]}</button>`).join('')}</div>
+    <div class="erow lrand"><span class="fine">Pick for me:</span>${[1,2,3].map(d=>`<button class="ghost${linesPathNote(d)?' later':''}" data-rand="${d}"${linesPathNote(d)?` title="${linesPathNote(d)}"`:''}>🎲 ${LDIFF[d]}</button>`).join('')}${(()=>{ const d=[2,3].find(d=>linesPathNote(d)); return d?`<span class="fine pathnote">${LDIFF[d]}: ${linesPathNote(d).replace(/^R/,'r')}</span>`:''; })()}</div>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select>

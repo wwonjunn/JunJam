@@ -11,7 +11,7 @@ const MODES=[
   {id:'plan',name:'Practice',blurb:'Your own routines: blocks of each mode on a timer, a log and notes',stat:()=>{ if(typeof PLAN==='undefined') return ''; if(PLAN.run) return 'A session is running'; const w=Object.values(planWeek()).reduce((a,b)=>a+b,0), st=planStreak(); return `${Math.round(w)} min this week${st?` · 🔥 ${st}-day streak`:''}`; }},
 ];
 function renderHome(){
-  $('modes').innerHTML=MODES.map((m,i)=>`<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span></button>`).join('');
+  $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}</button>`; }).join('');
 }
 // Devil unlocks stage by stage: say which stage is selected, how far it is, and where Devil is already open
 function devilLockText(){
@@ -43,26 +43,31 @@ function renderMenu(){
   }).join('');
   const nx=nextUp(), total=STAR_IDS().reduce((a,id)=>a+starsOf(id),0);
   $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*STAR_MAX} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try. From then on 🔥 chords say which chord tone your left hand has to put at the bottom (you work out the note): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ any of them (7th too) at Cherokee tempo without losing a life. Everything stays open either way.`;
-  const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
+  const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>(chordsStep(id)?`<span class="step">${chordsStep(id)}</span>`:'')+(id===nx?'<span class="nx">Next up</span>':'');
+  const later=id=>chordsAhead(id)?' later':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    return `<button class="stage${s.boss?' boss':s.chapter?' boss chapter':''}" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">${s.boss?'👹 Boss':s.chapter?'👑 Chapter boss':`Stage ${s.n}`}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage${s.boss?' boss':s.chapter?' boss chapter':''}${later(s.n)}" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">${s.boss?'👹 Boss':s.chapter?'👑 Chapter boss':`Stage ${s.n}`}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
-  const pBossBtn=(id,cls,n,t,sub)=>`<button class="stage boss${cls}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${n}${tag(id)}</span><span class="t">${t}</span><span class="best">${stars(id)}${sub}${bestLine(id)?`. ${bestLine(id)}`:''}</span></button>`;
+  const pBossBtn=(id,cls,n,t,sub)=>`<button class="stage boss${cls}${later(id)}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${n}${tag(id)}</span><span class="t">${t}</span><span class="best">${stars(id)}${sub}${bestLine(id)?`. ${bestLine(id)}`:''}</span></button>`;
   $('progs').innerHTML=PROGS.map((p,i)=>{
     const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
     const best=bestLine(id);
     const pb=PBOSS.find(b=>b.to===i+1);   // a boss after every four
-    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`
+    return `<button class="stage${later(id)}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`
       +(pb?pBossBtn('p:'+pb.id,'','👹 Boss',PROGS.slice(pb.from,pb.to).map(x=>x.short).join(', '),'Those four, mixed'):'');
   }).join('')+pBossBtn('p:mix',' chapter','👑 Chapter boss','Every progression','A random one each time')
     +pBossBtn('p:final',' final','🔥 Final boss','Everything: every chord stage and every progression','Single chords and whole progressions, mixed');
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);
+  $('pathNote').textContent=chordsPathNote(stageN);
+  const short=id=>{ const s=pathName(id); return s.replace(/^the boss of /,'👹 ').replace(/^the chapter boss$/,String(id)==='p:mix'?'👑 Every progression':'👑 Everything'); };
+  $('pathStrip').innerHTML=NEXT_ORDER.map((id,i)=>{ const st=starsOf(id); return `<button class="pstep${st?' got':''}${id===nx?' now':''}${String(stageN)===id?' sel':''}" data-step="${id}" title="${starStr(st,STAR_MAX)}"><i>${i+1}</i>${gigAccHTML(short(id))}${st?` <b>${'★'.repeat(st)}</b>`:''}</button>`; }).join('<span class="parr">›</span>');
   updateHud();
 }
+$('pathStrip').addEventListener('click',e=>{ const b=e.target.closest('[data-step]'); if(!b) return; const id=b.dataset.step; briefOpen(/^\d+$/.test(id)?+id:id); });
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});

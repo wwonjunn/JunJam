@@ -728,26 +728,97 @@ body.gigmode header .modetag{display:none}
 .planchip.paused b{opacity:.5}
 @keyframes pdue{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--brass) 35%,transparent)}}
 @media (prefers-reduced-motion:reduce){.planchip.due{animation:none}}
-.prun{border:1.5px solid var(--brass);border-radius:12px;padding:10px 14px;margin:0 0 14px}
-.prun .lt{font-family:var(--cond);font-size:20px;font-weight:600} .prun .lt b{color:var(--brass);margin-left:8px}
-.prun textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:8px;padding:6px 8px;box-sizing:border-box}
+.pnote{font-style:italic;opacity:.85} .linkish{background:none;border:none;color:var(--ink);opacity:.5;cursor:pointer;font:inherit}
+
+/* Voicings: the path of chapters, chord-type cards, the ways side by side */
+.vcchaps{display:flex;flex-direction:column;gap:8px}
+.vcchap{border:1.5px solid var(--line-strong);border-radius:12px;background:var(--panel)}
+.vcchap.cur{border-color:color-mix(in srgb,var(--brass) 60%,var(--line-strong))}
+.vcchead{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:36px 1fr auto 18px;gap:10px;align-items:center;padding:10px 14px;cursor:pointer}
+.vcchead:focus-visible{outline:2px solid var(--brass);border-radius:12px}
+.vccn{font-family:var(--cond);font-size:22px;font-weight:700;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line-strong)}
+.vcchap.cur .vccn{border-color:var(--brass);color:var(--brass)}
+.vcct{display:flex;flex-direction:column} .vcct b{font-family:var(--cond);font-size:18px} .vcct span{font-size:13px;color:var(--muted)}
+.vccs{font-size:13px;color:var(--muted);text-align:right;display:flex;flex-direction:column} .vccs em{color:var(--brass);font-style:normal}
+.vcpath{padding:0 12px 12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.vctcard.done{border-color:color-mix(in srgb,var(--good) 45%,var(--line-strong))}
+.vctcard.vcnext{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset}
+.vctcard .ln b{color:var(--brass)}
+.vcpre{display:block;font-size:12px;color:var(--brass);margin-top:4px}
+.vcnextrow{margin:0 0 12px}
+.vcways{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:8px 0}
+.vcway{border:1.5px solid var(--line-strong);border-radius:10px;padding:8px 10px}
+.vwh{display:flex;justify-content:space-between;gap:6px;font-size:14px} .vwh span{color:var(--muted);font-size:12px}
+.vwf{font-size:13px;color:var(--muted);margin:2px 0} .vcway .erow{margin-top:4px} .vcway .erow button{padding:3px 10px;font-size:13px}
+.vcprew{color:var(--brass);font-weight:600}
+.vcsteps{display:flex;gap:4px;margin:2px 0 8px} .vcsteps i{width:18px;height:6px;border-radius:3px;background:var(--line-strong)}
+.vcsteps i.learn{opacity:.7} .vcsteps i.cur{background:var(--brass)} .vcsteps i.on{background:var(--good)} .vcsteps i.meh{background:var(--tension)}
+.vcclassic{margin-top:16px} .vcclassic summary{cursor:pointer;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--muted)}
+.vctcard.flash{animation:vcflash 1.6s ease-out}
+.vctcard.later{opacity:.62} .vctcard.later:hover,.vctcard.later:focus-visible{opacity:1}
+/* the recommended path: step numbers, the next one, cards ahead dimmed (still open) */
+.step{display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 3px;margin-right:6px;border-radius:8px;border:1px solid var(--line-strong);font-size:11px;line-height:1;vertical-align:1px;color:var(--muted)}
+.later,.laterset>.lick{opacity:.62} .later:hover,.later:focus-visible,.laterset>.lick:hover{opacity:1}
+.arcw.arcnext{border-color:var(--brass)} .arcw .nx{display:inline-block;margin-left:6px;padding:0 5px;border-radius:3px;background:var(--brass);color:var(--lane);font-size:11px;line-height:16px}
+.pathnote{color:var(--brass)!important} p.pathnote{margin:4px 0}
+.mode .mnext{display:block;font-size:12px;color:var(--brass);margin-top:2px}
+.pathstrip{display:flex;flex-wrap:wrap;align-items:center;gap:4px 2px;margin:0 0 14px}
+.pstep{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:2px 10px 2px 3px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.pstep i{font-style:normal;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:inline-grid;place-items:center;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.pstep b{color:var(--brass);font-weight:400;font-size:11px} .pstep.got{border-color:color-mix(in srgb,var(--good) 50%,var(--line-strong))} .pstep.got i{background:var(--good);color:var(--lane)}
+.pstep.now{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset} .pstep.now i{background:var(--brass);color:var(--lane)} .pstep.sel{outline:2px solid var(--chord);outline-offset:1px}
+.parr{color:var(--muted);font-size:13px}
+/* Practice: tabs, routine cards, the detail view, the running checklist, the editor and its picker */
+.ptabs{display:flex;gap:4px;border-bottom:1.5px solid var(--line-strong);margin:4px 0 14px}
+.ptabs button{font:inherit;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--muted);background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;padding:6px 14px;cursor:pointer}
+.ptabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--brass)}
 .proutines{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-bottom:14px}
-.proutine{border:1.5px solid var(--line-strong);border-radius:12px;padding:10px 12px;background:var(--panel);text-align:left}
-.proutine .lt{font-family:var(--cond);font-size:18px;font-weight:600}
-.pnew{font:inherit;color:var(--ink);cursor:pointer;border-style:dashed;text-align:center;min-height:90px}
-.pblks{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
-.pblk{font-size:12px;border-radius:999px;padding:1px 8px;background:color-mix(in srgb,var(--ink) 10%,transparent)}
-.pedit{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-.pedit input,.pedit select{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:8px;padding:4px 8px;min-width:0}
-#peName{font-size:18px;max-width:340px}
-.perow{display:grid;grid-template-columns:120px minmax(140px,220px) 90px 1fr auto;gap:6px;align-items:center}
-.pemin input{width:52px} .pebtn{display:flex;gap:3px} .pebtn button{margin:0;padding:3px 8px}
-@media (max-width:720px){.perow{grid-template-columns:1fr 1fr}.perow>input[data-f=note]{grid-column:1/-1}}
+.proutine{border:1.5px solid var(--line-strong);border-radius:12px;padding:10px 12px;background:var(--panel);text-align:left;cursor:pointer}
+.proutine:hover,.proutine:focus-visible{border-color:var(--brass);outline:none}
+.proutine .fine{margin:6px 0 0}
+.prh{display:flex;justify-content:space-between;align-items:baseline;gap:8px} .prh b{font-family:var(--cond);font-size:18px} .prh span{color:var(--muted);font-size:13px;white-space:nowrap}
+.prh.big b{font-size:26px}
+.prm{font-size:16px;margin-top:4px} .prm span{font-size:12px;color:var(--muted);margin-left:4px}
+.pnew{font:inherit;color:var(--ink);border-style:dashed;text-align:center;min-height:86px}
+.pempty{border:1.5px dashed var(--line-strong);border-radius:12px;padding:14px 16px}
+.pdetail>.back{margin-bottom:6px}
+.pchk{list-style:none;padding:0;margin:8px 0 12px;display:flex;flex-direction:column;gap:5px}
+.pchk li{display:grid;grid-template-columns:24px 26px 1fr auto auto;gap:8px;align-items:center;border:1.5px solid var(--line-strong);border-radius:10px;padding:7px 10px;background:var(--panel)}
+.pchk li>i{font-style:normal;font-size:12px;width:22px;height:22px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.pchk li.now{border-color:var(--brass)} .pchk li.now>i{background:var(--brass);color:var(--lane)}
+.pchk li.done{opacity:.65} .pchk li.done>i{background:var(--good);color:var(--lane)}
+.pbi{font-size:18px;text-align:center} .pbt{display:flex;flex-direction:column;min-width:0} .pbt em{font-size:12px;color:var(--muted);font-style:normal}
+.pbm{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;white-space:nowrap}
+.prun{border:1.5px solid var(--brass);border-radius:12px;padding:10px 14px;margin:0 0 14px}
+.prun .pchk li{background:transparent}
+.prunh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap} .prunh b{font-family:var(--cond);font-size:20px} .prunh span{color:var(--muted);font-size:13px}
+.prclock{margin-left:auto;color:var(--brass)!important;font-size:18px!important;font-variant-numeric:tabular-nums}
+.prun textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:8px;padding:6px 8px;box-sizing:border-box;margin-top:6px}
+.pedhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px} .pedhead b{font-family:var(--cond);font-size:20px} .pedhead button{margin:0}
+#peName{font:inherit;font-family:var(--cond);font-size:22px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:8px;padding:4px 10px;width:100%;max-width:420px;box-sizing:border-box}
+.pecards{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}
+.pecard{display:grid;grid-template-columns:22px 1fr auto auto;gap:10px;align-items:center;border:1.5px solid var(--line-strong);border-radius:12px;padding:8px 10px;background:var(--panel)}
+.pecard.dragging{opacity:.4} .pecard.dropabove{box-shadow:0 -3px 0 var(--brass)} .pecard.dropbelow{box-shadow:0 3px 0 var(--brass)}
+.pegrip{cursor:grab;color:var(--muted);font-size:20px;user-select:none;text-align:center}
+.pebody{display:flex;flex-direction:column;gap:5px;min-width:0} .petop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pebody select,.pebody input{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:8px;padding:3px 8px;min-width:0}
+.pebody input{width:100%;box-sizing:border-box}
+.pestep{display:flex;align-items:center;gap:4px} .pestep button{margin:0;width:30px;height:30px;padding:0;border-radius:15px;font-size:18px;line-height:1} .pestep span{min-width:52px;text-align:center;font-size:13px} .pestep b{font-size:18px}
+.pemore{display:flex;gap:2px} .pemore button{margin:0;padding:3px 7px;font-size:14px}
+@media (max-width:720px){.pecard{grid-template-columns:22px 1fr}.pestep,.pemore{grid-column:2}}
+.padd{display:block;width:100%;border-style:dashed;margin:0}
+.ppick{border:1.5px solid var(--brass);border-radius:12px;padding:10px 12px;background:var(--panel)}
+.ppickh{display:flex;align-items:center;gap:8px;margin-bottom:8px} .ppickh b{font-family:var(--cond);font-size:18px} .ppickh button{margin:0}
+#ppSearch{flex:1;font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:999px;padding:4px 12px;min-width:0}
+.ppl{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:5px;max-height:320px;overflow:auto;margin-bottom:8px}
+.ppitem{font:inherit;font-size:14px;color:var(--ink);text-align:left;display:grid;grid-template-columns:24px 1fr auto;gap:6px;align-items:center;background:var(--bg);border:1.5px solid var(--line-strong);border-radius:8px;padding:6px 8px;cursor:pointer}
+.ppitem.on{border-color:var(--good)} .ppitem i{font-style:normal;color:var(--good);font-weight:700}
 .pweek{display:flex;flex-direction:column;gap:4px;max-width:520px;margin-bottom:8px}
-.pbar{display:grid;grid-template-columns:80px 1fr 44px;align-items:center;gap:8px;font-size:14px}
+.pbar{display:grid;grid-template-columns:100px 1fr 44px;align-items:center;gap:8px;font-size:14px}
 .pbar i{display:block;height:10px;border-radius:5px;background:var(--brass);min-width:3px} .pbar b{font-variant-numeric:tabular-nums;text-align:right}
 .plog{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px} .plog li{border-bottom:1px solid var(--line);padding-bottom:6px}
-.pnote{font-style:italic;opacity:.85} .linkish{background:none;border:none;color:var(--ink);opacity:.5;cursor:pointer;font:inherit}
+.pdanger{color:var(--wrong)!important;opacity:.8!important}
+.prules{display:flex;flex-wrap:wrap;gap:5px;padding:0;margin:0 0 10px;list-style:none;counter-reset:pr} .prules li{counter-increment:pr;font-size:13px;border:1.5px solid var(--line-strong);border-radius:999px;padding:2px 10px 2px 4px} .prules li::before{content:counter(pr);display:inline-grid;place-items:center;width:18px;height:18px;border-radius:9px;background:var(--brass);color:var(--lane);font-size:11px;margin-right:6px}
 </style>
 <style>
 /* ==================================================================================================
@@ -1322,6 +1393,8 @@ applyTheme(themeGet('theme','classic'));
         <div class="seg" role="group" aria-label="Mode"><button id="mPractice">Practice</button><button id="mGame">Game</button></div>
         <p class="fine" id="starLine" style="margin:0 0 12px"></p>
         <div id="tierBox"><div class="sec">Tempo</div><div class="stages" id="tiers"></div></div>
+        <div class="sec">Your path <span class="fine">the recommended order, stages and progressions woven together: tap a step for its briefing</span></div>
+        <div class="pathstrip" id="pathStrip"></div>
         <div class="sec">Chords</div>
         <div class="stages" id="stages"></div>
         <div class="sec">Progressions: J-pop, city pop and jazz moves in every key</div>
@@ -1333,6 +1406,7 @@ applyTheme(themeGet('theme','classic'));
           <label><input type="checkbox" id="optMetro"> Hi-hat on beats 2 and 4</label>
           <label><input type="checkbox" id="optSmart"> Smart mix: chords you miss or play slowly come back a few chords later, spaced further out each time you get them (and due ones return on later days); shaky keys come up more</label>
         </div>
+        <p class="fine pathnote" id="pathNote"></p>
         <button class="go" id="startBtn">Start</button><button class="ghost" id="progBtn">Progress</button>
         <div class="fine"><kbd>Esc</kbd> pauses. <kbd>?</kbd> shows a sample voicing for the lowest chord and resets your combo. No MIDI keyboard? Click keys or use the <kbd>A</kbd>–<kbd>'</kbd> row (<kbd>Z</kbd>/<kbd>X</kbd> shift octave), then press <kbd>Enter</kbd>. "Chord type by ear" chords show only the root: listen for major, minor, 7th and so on, and press <kbd>R</kbd> to hear them again.</div>
         </div>
@@ -3328,9 +3402,9 @@ function arcPaneHTML(){
   const todayRow=`<div class="arctoday">
     <button class="arcw arcday" data-arcd="daily"><span class="lt">Daily wave ${today?ARC_MEDAL[today.medal]:''}</span><span class="lst">${today?`Done today: ${today.score.toLocaleString()}. Play again for practice.`:`${ARC_DAILY} monsters from every world, plus today's stretch level. Your first try counts.`}</span><span class="fine">${streak?`🔥 ${streak}-day streak`:'Start a streak'}</span><span class="arccal">${cal}</span></button>
     <button class="arcw arcweek" data-arcd="weekly"><span class="lt">Weekly boss ${wk&&wk.beaten?'🏆':'👹'}</span><span class="lst">${wk?`${wk.beaten?'Beaten':'Best'}: ${wk.best.toLocaleString()} (${wk.kills} of ${ARC_WEEKLY})`:`${ARC_WEEKLY} armoured brutes, faster, from your top levels and one above each. Same wave all week.`}</span><span class="fine">Resets Monday</span></button></div>`;
-  return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_WORLDS.map(id=>{
-    const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
-    return `<button class="arcw" data-arc="${id}"><span class="lt">${w.name}</span><span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
+  return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_PATH.map((id,i)=>{
+    const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id], nx=earsNextWorld(), pre=earsPrereq(id), ahead=!arcStars(id)&&i>ARC_PATH.indexOf(nx);
+    return `<button class="arcw${id===nx?' arcnext':''}${ahead?' later':''}" data-arc="${id}"${pre?` title="Recommended first: ★ in ${arcWorld(pre).name}"`:''}><span class="lt"><span class="step">${i+1}</span>${w.name}${id===nx?' <span class="nx">Next up</span>':''}</span>${pre&&pre===nx?`<span class="fine pathnote">Recommended first: ★ in ${arcWorld(pre).name}</span>`:''}<span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
     ${arcDevilHTML()}${arcFinalHTML()}
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
     <div class="sec arcclassic">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
@@ -5046,7 +5120,7 @@ function renderLinesPane(){
   let h=`<button class="back" data-home>← All modes</button><h2>Lines</h2>
     <p>Short licks you can drop anywhere. Learn one in a key, then play it in five more without looking. ${linesStarTotal()} of ${allLicks().length*3} stars.</p>
     ${lpPaneHTML()}
-    <div class="erow lrand"><span class="fine">Pick for me:</span>${[1,2,3].map(d=>`<button class="ghost" data-rand="${d}">🎲 ${LDIFF[d]}</button>`).join('')}</div>
+    <div class="erow lrand"><span class="fine">Pick for me:</span>${[1,2,3].map(d=>`<button class="ghost${linesPathNote(d)?' later':''}" data-rand="${d}"${linesPathNote(d)?` title="${linesPathNote(d)}"`:''}>🎲 ${LDIFF[d]}</button>`).join('')}${(()=>{ const d=[2,3].find(d=>linesPathNote(d)); return d?`<span class="fine pathnote">${LDIFF[d]}: ${linesPathNote(d).replace(/^R/,'r')}</span>`:''; })()}</div>
     ${seg([[0,'All'],[1,'Easy'],[2,'Medium'],[3,'Hard']],LDATA.diff,'diff')} ${seg([[70,'Slow'],[100,'Medium'],[130,'Fast']],LDATA.tempo,'tempo')}
     <div class="chipsrow">${[['all','All'],['fav',`♥ Favourites (${Object.keys(LDATA.fav).filter(id=>lickById(id)).length})`],['solo','From famous solos'],['runs','Scale runs'],['orig','Originals'],['user','Yours']].map(([v,t])=>`<button class="chip" data-from="${v}" aria-pressed="${v===LDATA.from}">${t}</button>`).join('')}
       <select id="lArtist" aria-label="Artist"><option value="">Any player</option>${artists.map(a=>`<option${a===LDATA.artist?' selected':''}>${a}</option>`).join('')}</select>
@@ -5558,7 +5632,7 @@ const RH_KEYS=5, RH_BAR=1.25; // keys after the first, seconds per chord in play
 /* ---------------- menu pane ---------------- */
 const rhStarTotal=()=>REHARM_MOVES.reduce((a,m)=>a+(RHDATA.stars[m.id]||0),0);
 function renderReharmPane(){
-  const tier=(t,title)=>`<div class="sec" style="margin-top:12px">${title}</div><div class="licks">${REHARM_MOVES.filter(m=>m.tier===t).map(m=>
+  const tier=(t,title)=>`<div class="sec" style="margin-top:12px">${t}. ${title}${reharmPathNote(t)?` <span class="fine pathnote">${reharmPathNote(t)}</span>`:''}</div><div class="licks${reharmPathNote(t)?' laterset':''}">${REHARM_MOVES.filter(m=>m.tier===t).map(m=>
     `<button class="lick" data-move="${m.id}"><span class="ln">${rhChords(m.after,0,m.minor).map(c=>c.rn).join(' ')}</span><span class="lt">${m.name}</span><span class="lst"><b>${starStr(RHDATA.stars[m.id]||0)}</b></span><span class="rwhat">${m.what}</span></button>`).join('')}</div>`;
   $('reharmPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Reharm</h2>
     <p>Every chord type you've drilled has a job. Reharm teaches the jobs: swap or add chords so a progression pulls harder, slides smoother or changes colour, while still going where it was going. ${rhStarTotal()} of ${REHARM_MOVES.length*3} stars.</p>
@@ -5876,75 +5950,105 @@ const VC_KEYS=5, VC_LIVES=3;
 // 💚 life voicings in Rush and the bosses: about one in 16, a ●●● voicing with no formula and no shape. Play it in time
 // and win a life back (a bonus if you're full); run out of time and nothing's lost.
 const VC_LIFE_EVERY=16;
-/* Bosses: a gauntlet after every three or four chord types (every voicing of those types once, each in a new key, three
-   lives, the Rush clock; a miss comes back later), a chapter boss for each family of chords, and the final boss: all of
-   them. Beat one for its 👑. */
+/* The path: six chapters, easiest and most used first. A chapter holds chord types in order; each chord type is one card
+   with every way to play it, and one lesson (learn each way in C, then a mixed round from memory: a random way in a new
+   key each time). Stars go on the chord type. Nothing is locked: a card says what's recommended first if you skip ahead.
+   Bosses: a gauntlet in the middle of the longer chapters, a chapter boss at the end of each, and the final boss. */
 const VCHAPTERS=[
-  {id:'tri',name:'Triads and colours',bosses:[['maj','min','sus2','sus4'],['dim','aug','add9','madd9']]},
-  {id:'maj',name:'Major sevenths',bosses:[['maj7','six','six9'],['maj9','maj13','mj7s11','mj7s5']]},
-  {id:'min',name:'Minor and diminished',bosses:[['min7','min6','min69'],['min9','min11','min13'],['mmaj7','hdim','dim7']]},
-  {id:'dom',name:'Dominants',bosses:[['dom7','dom9','dom13'],['sus7','sus9','sus13','susb9'],['d7b9','d13b9','d7s9','alt'],['d7b13','d7s5','d7s11','d13s11']]},
-  {id:'slash',name:'Slash chords',bosses:[]},
+  {id:'tri',name:'Triads and pop colours',blurb:'The shapes every song uses: open triads, sus chords, add9. Start here.',types:['maj','min','sus4','sus2','add9','madd9','dim','aug'],mid:['maj','min','sus4','sus2']},
+  {id:'slash',name:'Slash chords',blurb:'A triad over another bass note: walking bass lines, and the J-pop IV over V.',types:['maj_3','maj_5','min_3','maj_2','dom7_3']},
+  {id:'shell',name:'Seventh chords: shells',blurb:'Root and 7th in the left hand, 3rd and 5th in the right: the layout jazz piano is built on.',types:['maj7','min7','dom7','six','min6','sus7','hdim','dim7','mmaj7'],mid:['maj7','min7','dom7','six','min6']},
+  {id:'nine',name:'Ninths: rootless A and B',blurb:'Bill Evans’ rootless voicings: the 9th in, the root left to the bass player.',types:['maj9','min9','dom9','dom13','sus9','six9']},
+  {id:'colour',name:'Colours: 11ths, 13ths, Lydian',blurb:'So What, Kenny Barron, the Lydian shimmer: the big modern sounds.',types:['maj13','mj7s11','mj7s5','min11','min13','min69','sus13','susb9'],mid:['maj13','mj7s11','mj7s5','min11']},
+  {id:'alt',name:'Altered dominants',blurb:'Upper structures and the rootless alt: the tension that pulls a V7 home.',types:['d7b9','d13b9','d7s9','alt','d7b13','d7s5','d7s11','d13s11'],mid:['d7b9','d13b9','d7s9','alt']},
 ];
-VCDATA.boss=VCDATA.boss||{}; if(!VCDATA.ch) VCDATA.ch='tri';   // the chapter tab open in the list
-// every boss: {id, name, types, kind}
-const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...ch.bosses.map((t,i)=>({id:`${ch.id}${i+1}`,name:`Boss: ${t.map(q=>({'':'major',m:'minor'})[vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')]??vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)).replace(/^C/,'')).join(', ')}`,types:t,kind:'boss',after:t[t.length-1]})),
-  {id:ch.id,name:`Chapter boss: ${ch.name}`,types:VTYPES.filter(q=>ch.id==='slash'?q.includes('_'):ch.bosses.flat().includes(q)),kind:'chapter'}]),
+const VPATH=VCHAPTERS.flatMap(c=>c.types);   // every chord type, in the order to learn them
+VCDATA.boss=VCDATA.boss||{}; VCDATA.tstars=VCDATA.tstars||null;
+// Stars per chord type. The first time, each type starts with the fewest stars you had on any of its voicings.
+if(!VCDATA.tstars){ VCDATA.tstars={}; VPATH.forEach(q=>{ const vs=VOICINGS.filter(v=>v.qid===q), m=Math.min(...vs.map(v=>VCDATA.stars[v.id]||0)); if(m) VCDATA.tstars[q]=m; }); store.set('voicings',VCDATA); }
+const vtStars=q=>VCDATA.tstars[q]||0;
+const vcWays=q=>VOICINGS.filter(v=>v.qid===q).sort((a,b)=>a.diff-b.diff);
+const vcTypeName=q=>{ const s=vcSym(vcIn(VOICINGS.find(v=>v.qid===q),0)); return q==='maj'?'C major':q==='min'?'C minor':s; };
+// every boss: {id, name, types, kind, after}
+const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...(ch.mid?[{id:`${ch.id}1`,name:`Boss: ${ch.mid.map(vcTypeName).join(', ')}`,types:ch.mid,kind:'boss',after:ch.mid[ch.mid.length-1]}]:[]),
+  {id:ch.id,name:`Chapter boss: ${ch.name}`,types:ch.types,kind:'chapter',after:ch.types[ch.types.length-1]}]),
   {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
-VBOSSES.filter(b=>b.kind==='chapter').forEach(b=>b.after=b.types[b.types.length-1]);
-// the chord types in a chapter tab ('all': every one)
-const vcChapterTypes=id=>id==='all'?VTYPES:(VBOSSES.find(b=>b.kind==='chapter'&&b.id===id)||{types:VTYPES}).types;
+const vcChapterTypes=id=>id==='all'?VPATH:(VCHAPTERS.find(c=>c.id===id)||{types:VPATH}).types;
+const vcChapterOf=q=>VCHAPTERS.find(c=>c.types.includes(q));
+// the chapter you're on: the first with a chord type not yet starred
+const vcCurChapter=()=>(VCHAPTERS.find(c=>c.types.some(q=>!vtStars(q)))||VCHAPTERS[VCHAPTERS.length-1]).id;
+// recommended first: the chord type before this one on the path, if it has no star yet (and this one has none either)
+function vcPrereq(q){ const i=VPATH.indexOf(q); if(i<=0||vtStars(q)) return null; const p=VPATH[i-1]; return vtStars(p)?null:p; }
+const vcNextType=()=>VPATH.find(q=>!vtStars(q))||VPATH.find(q=>vtStars(q)<3)||VPATH[0];
 // the Chords stage that drills a chord type (the extra types the library names sit with their nearest stage)
 const VC_XSTAGE={maj13:4,min13:4,sus9:4,sus13:4,min69:3,susb9:5,d13b9:5,d13s11:5,d7s5:5};
 const vcStageOf=qid=>Q[qid]?Q[qid].stage:VC_XSTAGE[qid]||null;
 const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives</span></button>`;
 
 /* ---------------- menu pane ---------------- */
-const vcStarTotal=()=>VOICINGS.reduce((a,v)=>a+(VCDATA.stars[v.id]||0),0);
-// The hand formula next to a voicing's name, until you've earned ★★ on it: the shape first, the name comes with time
-const vcCue=v=>(VCDATA.stars[v.id]||0)<2?`<em class="vcf">${vcHands(v)}</em>`:'';
+const vcStarTotal=()=>VPATH.reduce((a,q)=>a+vtStars(q),0);
+// The hand formula next to a voicing's name, until its chord type has ★★: the shape first, the name comes with time
+const vcCue=v=>Math.max(vtStars(v.qid),VCDATA.stars[v.id]||0)<2?`<em class="vcf">${vcHands(v)}</em>`:'';
 const vcHands=v=>{ const t=vcIn(v,0), lab=ns=>ns.map(m=>gigAccHTML(vcLab(t,m))).join(' '); return `L ${lab(t.lh)} · R ${lab(t.rh)}`; };
-const VC_POOLS={learned:'Voicings you\'ve learned',starter:'Starter set (the easy ones)',all:'Everything'};
+const VC_POOLS={learned:'Chords you\'ve learned',starter:'Starter set (the easy ones)',all:'Everything'};
 function vcPool(){
-  const p=VCDATA.pool, learned=VOICINGS.filter(v=>VCDATA.stars[v.id]);
+  const p=VCDATA.pool, learned=VOICINGS.filter(v=>vtStars(v.qid)||VCDATA.stars[v.id]);
   if(p==='all') return VOICINGS; if(p==='starter') return VOICINGS.filter(v=>v.diff===1);
   if(VFAM[p]) return VOICINGS.filter(v=>v.fam===p);
+  if(VCHAPTERS.some(c=>c.id===p)) return VOICINGS.filter(v=>vcChapterTypes(p).includes(v.qid));
   return learned.length>=4?learned:VOICINGS.filter(v=>v.diff===1);
 }
+const vcDots=d=>'●'.repeat(d)+'○'.repeat(3-d);
+function vcTypeCard(q,n){
+  const ways=vcWays(q), st=vtStars(q), next=q===vcNextType(), ahead=!st&&VPATH.indexOf(q)>VPATH.indexOf(vcNextType());   // ahead of the path: dimmed, still open
+  return `<button class="lick vctcard${next?' vcnext':''}${st?' done':''}${ahead?' later':''}" data-vt="${q}"><span class="ln">${n}${next?' · <b>Next up</b>':''}</span><span class="lt">${gigAccHTML(vcTypeName(q))}</span>
+    <span class="lst"><b>${starStr(st)}</b> ${ways.length} way${ways.length>1?'s':''}: ${ways.map(v=>vcDots(v.diff).replace(/○/g,'')).join(' ')}</span>
+    <span class="ltags">${[...new Set(ways.map(v=>VFAM[v.fam]))].slice(0,3).map(f=>`<i>${f}</i>`).join('')}</span></button>`;
+}
 function renderVoicingsPane(){
-  const fam=VCDATA.fam||'all', learned=VOICINGS.filter(v=>VCDATA.stars[v.id]).length;
-  const list=VTYPES.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
-    const sym=vcSym(vcIn(vs[0],0))+(qid==='maj'?' major':'');
-    return `<div class="vctype${vs.length>=3?' span2':''}" data-qid="${qid}"><div class="sec">${gigAccHTML(sym)} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
-      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; });   // one per chord type (bosses go in after)
-  const best=VCDATA.best[VCDATA.pool];
-  // one chapter at a time (tabs), its bosses after the types they cover, the final boss at the end of every tab
-  const tab=VCDATA.ch, inTab=vcChapterTypes(tab);
-  const withBosses=VTYPES.map((qid,i)=>{ if(!inTab.includes(qid)) return ''; const html=list[i]||''; const bs=fam==='all'?VBOSSES.filter(b=>b.after===qid):[]; return html+(bs.length?`<div class="licks vcbosses">${bs.map(vcBossCard).join('')}</div>`:''); }).join('')
-    +(fam==='all'?`<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>`:'');
-  const tabs=`<div class="vctabs" role="tablist">${VCHAPTERS.map(c=>{ const ts=vcChapterTypes(c.id), n=VOICINGS.filter(v=>ts.includes(v.qid)).length, got=VOICINGS.filter(v=>ts.includes(v.qid)&&VCDATA.stars[v.id]).length;
-    return `<button role="tab" data-vch="${c.id}" aria-selected="${tab===c.id}">${c.name}<span>${got}/${n}</span></button>`; }).join('')}<button role="tab" data-vch="all" aria-selected="${tab==='all'}">All<span>${VOICINGS.length}</span></button></div>`;
+  const open=VCDATA.open||(VCDATA.open={}), cur=vcCurChapter(); let n=0;
+  const chapters=VCHAPTERS.map((c,ci)=>{ const got=c.types.filter(q=>vtStars(q)).length, stars=c.types.reduce((a,q)=>a+vtStars(q),0), isOpen=open[c.id]??(c.id===cur);
+    const prevDone=ci===0||VCHAPTERS[ci-1].types.every(q=>vtStars(q)), cards=c.types.map(q=>{ n++; const b=VBOSSES.filter(x=>x.after===q&&x.kind!=='final'); return vcTypeCard(q,n)+b.map(vcBossCard).join(''); }).join('');
+    return `<div class="vcchap${isOpen?' open':''}${c.id===cur?' cur':''}" data-qid-chap="${c.id}"><button class="vcchead" data-vchap="${c.id}" aria-expanded="${isOpen}"><span class="vccn">${ci+1}</span><span class="vcct"><b>${c.name}</b><span>${c.blurb}</span></span><span class="vccs">${got} of ${c.types.length} chords · ${stars} of ${c.types.length*3} ★${!prevDone&&!got&&isOpen?`<em>Recommended after chapter ${ci}</em>`:''}</span><span class="vccar">${isOpen?'▾':'▸'}</span></button>
+      ${isOpen?`<div class="licks vcpath">${cards}</div>`:''}</div>`; }).join('');
+  const best=VCDATA.best[VCDATA.pool], learned=VPATH.filter(q=>vtStars(q)).length, nx=vcNextType();
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
-    <p>The same chord, many ways: ${VOICINGS.length} named voicings over ${VTYPES.length} chord types, written for two hands so they fill the keyboard. Each hand stays within a reach of about a 9th to a 10th. Learn one from its card, play it in six keys, then put it under pressure in Rush. ${vcStarTotal()} of ${VOICINGS.length*3} stars.</p>
+    <p>The same chord, many ways: ${VPATH.length} chords, ${VOICINGS.length} named two-hand voicings, in six chapters from the easiest to the richest. Each chord is one lesson: learn every way to play it in C, then a mixed round from memory in new keys. ${vcStarTotal()} of ${VPATH.length*3} stars.</p>
+    <div class="erow vcnextrow"><button class="go" data-vt="${nx}">Next up: ${gigAccHTML(vcTypeName(nx))} (${vcWays(nx).length} way${vcWays(nx).length>1?'s':''})</button></div>
+    <div class="vcchaps">${chapters}<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div></div>
+    <p class="fine" style="margin-top:8px">★ finish the lesson. ★★ 80% of the mixed round clean (right first try, shape hidden). ★★★ all of it clean. ● to ●●● is how hard each shape is. A MIDI keyboard is needed: these are two-hand chords.</p>
+    <div class="sec" style="margin-top:16px">Games</div>
     ${chPaneHTML()}
     <div class="vcrush"><div><b>Rush <span class="fine">classic</span></b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
-      <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n}${k==='learned'?`: ${learned}${learned<4?', so the starter set for now':''}`:''}</option>`).join('')}${Object.entries(VFAM).map(([k,n])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${n} only</option>`).join('')}</select>
+      <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm}${k==='learned'?`: ${learned}${learned<2?', so the starter set for now':''}`:''}</option>`).join('')}${VCHAPTERS.map((c,i)=>`<option value="${c.id}"${VCDATA.pool===c.id?' selected':''}>Chapter ${i+1}: ${c.name}</option>`).join('')}${Object.entries(VFAM).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
-    ${tabs}
-    <div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,n])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${n}</button>`).join('')}</div>
-    <div class="vcgrid">${withBosses}</div>
-    <p class="fine" style="margin-top:12px">● to ●●● is how hard the shape is. ★ learn it in C. ★★ four of the five new keys right first time without showing the shape. ★★★ all five. A MIDI keyboard is needed: these are two-hand chords.</p>`;
+    <details class="vcclassic"${VCDATA.dict?' open':''}><summary>Classic: every voicing, one card each</summary>${vcDictHTML()}</details>`;
   chBindPane($('voicingsPane'));
 }
+// the old dictionary: every voicing, grouped by chord type in path order, filtered by family
+function vcDictHTML(){
+  const fam=VCDATA.fam||'all';
+  return `<div class="seg vcfam" role="group" aria-label="Family"><button data-fam="all" aria-pressed="${fam==='all'}">All</button>${Object.entries(VFAM).map(([k,nm])=>`<button data-fam="${k}" aria-pressed="${fam===k}">${nm}</button>`).join('')}</div>
+    <div class="vcgrid">${VPATH.map(qid=>{ const vs=VOICINGS.filter(v=>v.qid===qid&&(fam==='all'||v.fam===fam)); if(!vs.length) return '';
+    return `<div class="vctype${vs.length>=3?' span2':''}" data-qid="${qid}"><div class="sec">${gigAccHTML(vcTypeName(qid))} <span>${vs.length} way${vs.length>1?'s':''}</span></div><div class="licks">${vs.map(v=>
+      `<button class="lick" data-vc="${v.id}"><span class="ln">${VFAM[v.fam]} · ${vcDots(v.diff)}${vcWide(v)?' · <b class="vcw" title="Two octaves or more from the lowest note to the highest: counts for Comp Hero\'s over-two-octaves ask">2 oct+</b>':''}</span><span class="lt">${gigAccHTML(v.name)}</span><span class="lst"><b>${starStr(VCDATA.stars[v.id]||0)}</b>${vcHands(v)}</span></button>`).join('')}</div></div>`; }).join('')}</div>
+    <p class="fine">One voicing at a time, in C and then five keys. Its stars are its own; the chord lessons above are the main path.</p>`;
+}
 function bindVoicingsPane(){
-  $('voicingsPane').onclick=e=>{ const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
-    if(b.dataset.vch){ VCDATA.ch=b.dataset.vch; saveVc(); renderVoicingsPane(); return; }
-    if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
+  $('voicingsPane').onclick=e=>{ if(e.target.closest('summary')){ setTimeout(()=>{ VCDATA.dict=e.target.closest('details').open; saveVc(); }); return; }
+    const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
+    if(b.dataset.vchap){ const id=b.dataset.vchap, o=VCDATA.open=VCDATA.open||{}; o[id]=!(o[id]??(id===vcCurChapter())); saveVc(); renderVoicingsPane(); return; }
+    if(b.dataset.vt) vcTypeOpen(b.dataset.vt);
+    else if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
     else if(b.dataset.vc) vcOpen(b.dataset.vc);
-    else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; saveVc(); renderVoicingsPane(); }
+    else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; VCDATA.dict=true; saveVc(); renderVoicingsPane(); }
     else if(b.id==='vcRushBtn') vcRushStart(); };
   $('voicingsPane').onchange=e=>{ if(e.target.id==='chSong') return; if(e.target.id==='vcPool'){ VCDATA.pool=e.target.value; saveVc(); renderVoicingsPane(); } };
 }
+// open a chapter in the list and scroll to a chord type (from a briefing or a practice block)
+function vcShowType(q,flash=true){ const c=vcChapterOf(q); if(c){ (VCDATA.open=VCDATA.open||{})[c.id]=true; }
+  side='voicings'; renderMenu(); const el=document.querySelector(`#voicingsPane [data-vt="${q}"].vctcard`);
+  if(el){ el.scrollIntoView({block:'center'}); if(flash){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1700); } } }
 
 /* ---------------- drawing a voicing ---------------- */
 // A small keyboard from the C below the lowest note to the B above the highest, left hand and right hand in two colours,
@@ -5996,6 +6100,22 @@ function vcMark(t,res){ kbMarks={}; const pcs=new Set(t.notes.map(mod12)); res.P
 function vcHintKeys(t){ kbMarks={}; t.notes.forEach(m=>kbMarks[m]='k-hint'); paintKeys(); }
 function vcRelease(){ if(VC.active) VC.tried=false; }   // all keys up: the next try is a new attempt
 
+/* ---------------- a chord type: every way to play it, then its lesson ---------------- */
+function vcTypeOpen(q){
+  vcStop(); const ways=vcWays(q), pre=vcPrereq(q), t0=vcIn(ways[0],0), st=vtStars(q), c=vcChapterOf(q);
+  Object.assign(VC,{active:true,mode:'type',type:q,v:ways[0],after:null});
+  vcShow(); kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]);
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(vcTypeName(q))}</span><span>${c?`Chapter ${VCHAPTERS.indexOf(c)+1}: ${c.name} · `:''}${starStr(st)}</span></div>
+    <p>${ways.length===1?'One way to play it':`${ways.length} ways to play it`}, easiest first. The lesson: each one in C with the shape shown, then ${Math.max(5,ways.length+2)} from memory in new keys, mixed.${pre?` <b class="vcprew">Recommended first: ★ on ${gigAccHTML(vcTypeName(pre))}.</b>`:''}</p>
+    <div class="vcways">${ways.map((v,i)=>{ const t=vcIn(v,0); return `<div class="vcway"><div class="vwh"><b>${i+1}. ${gigAccHTML(v.name)}</b><span>${VFAM[v.fam]} · ${vcDots(v.diff)}</span></div>${vcDiagram(t)}<div class="vwf">${vcHands(v)}</div><p class="fine">${gigAccHTML(v.tip)}</p><div class="erow"><button class="ghost" data-vh="${i}">Hear</button><button class="ghost" data-vc="${v.id}">Card</button></div></div>`; }).join('')}</div>
+    ${vcStageOf(q)?`<p class="fine vcback">Drill ${gigAccHTML(vcSym(t0))} chords against the clock: <button class="ghost" id="vcToChords">Chords: ${STAGE[vcStageOf(q)].t}</button></p>`:''}
+    <div class="erow"><button class="go" id="vcLesson">Start the lesson (Enter)</button><button class="ghost" id="vcBack">Back</button></div>`;
+  $('vcBody').querySelectorAll('[data-vh]').forEach(b=>b.onclick=()=>vcPlay(vcIn(ways[+b.dataset.vh],0)));
+  $('vcBody').querySelectorAll('.vcway [data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
+  if($('vcToChords')) $('vcToChords').onclick=()=>{ vcToMenu(); side='hands'; renderMenu(); briefOpen(vcStageOf(q)); };
+  $('vcLesson').onclick=()=>vcLessonStart(q); $('vcBack').onclick=vcToMenu;
+  $('verdict').className='verdict'; $('verdict').textContent=`${vcTypeName(q)}: ${ways.length} way${ways.length>1?'s':''}`; $('chips').innerHTML=''; $('why').textContent='Play any of them to try it, or start the lesson.'; $('tags').textContent='';
+}
 /* ---------------- learn: the card ---------------- */
 function vcOpen(id){
   vcStop(); const v=VOICE[id], t=vcIn(v,0);
@@ -6016,21 +6136,33 @@ function vcOpen(id){
 }
 
 /* ---------------- drill: C with the shape shown, then five keys from memory ---------------- */
+// n keys other than C, leaning on your shaky ones
+const vcKeys=n=>{ const ks=[]; while(ks.length<n){ const left=[...Array(11).keys()].map(x=>x+1).filter(x=>!ks.includes(x)); if(!left.length) ks.push(1+Math.floor(Math.random()*11)); else ks.push(weightedPick(left.map(pc=>({pc,w:keyWeight(pc,'hands')}))).pc); } return ks; };
+// Classic: one voicing, in C with the shape shown, then five keys from memory
 function vcDrillStart(id){
   vcStop(); const v=VOICE[id];
-  const keys=[0]; while(keys.length<1+VC_KEYS){ keys.push(weightedPick([...Array(12).keys()].filter(x=>!keys.includes(x)).map(pc=>({pc,w:keyWeight(pc,'hands')}))).pc); }
-  Object.assign(VC,{active:true,mode:'drill',v,keys,round:0,results:[],clean:0,xp:0});
-  vcShow(); vcRound();
+  vcRun({type:null,rounds:[{v,pc:0,learn:true},...vcKeys(VC_KEYS).map(pc=>({v,pc,learn:false}))]});
 }
+/* A chord lesson: every way in C with the shape shown (easiest first), then a mixed round from memory: each way at
+   least once, in new keys, in a shuffled order, at least five in all, never the same way twice running when there are more. */
+function vcLessonStart(q){
+  vcStop(); const ways=vcWays(q), n=Math.max(5,ways.length+2), keys=vcKeys(n);
+  let mix=[...ways]; while(mix.length<n) mix.push(ways[Math.floor(Math.random()*ways.length)]);
+  mix=shuffled(mix); for(let i=1;i<mix.length;i++) if(ways.length>1&&mix[i]===mix[i-1]){ const j=mix.findIndex((x,k)=>k>i&&x!==mix[i]&&x!==mix[k-1]); if(j>0) [mix[i],mix[j]]=[mix[j],mix[i]]; }
+  vcRun({type:q,rounds:[...ways.map(v=>({v,pc:0,learn:true})),...mix.map((v,i)=>({v,pc:keys[i],learn:false}))]});
+}
+function vcRun(o){ Object.assign(VC,{active:true,mode:'drill',...o,round:0,results:[],clean:0,xp:0}); vcShow(); vcRound(); }
 function vcRound(){
   vcStop(); clearDraft(); const R=VC;
-  Object.assign(R,{t:vcIn(R.v,R.keys[R.round]),mistakes:0,shown:R.round===0,done:false,tried:false});
+  const rd=R.rounds[R.round]; R.v=rd.v;
+  Object.assign(R,{t:vcIn(rd.v,rd.pc),mistakes:0,shown:rd.learn,done:false,tried:false});
   vcRender(); if(R.shown){ vcHintKeys(R.t); vcStaff(R.t); } else { kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); }
-  $('verdict').className='verdict'; $('verdict').textContent=R.round===0?'Copy the shape.':`${vcSym(R.t)}, ${R.v.name}. From memory.`; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
+  $('verdict').className='verdict'; $('verdict').textContent=R.rounds[R.round].learn?'Copy the shape.':`${vcSym(R.t)}, ${R.v.name}. From memory.`; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
 }
 function vcRender(){
-  const R=VC, t=R.t, learn=R.round===0;
-  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(R.v.name)}</span><span>${learn?'Learn it, in C':`New key ${R.round} of ${VC_KEYS}`}</span></div>
+  const R=VC, t=R.t, learn=R.rounds[R.round].learn, nl=R.rounds.filter(r=>r.learn).length, k=R.round-nl+1, nk=R.rounds.length-nl;
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.type?gigAccHTML(vcTypeName(R.type))+': ':''}${gigAccHTML(R.v.name)}</span><span>${learn?(R.type?`Learn way ${R.round+1} of ${nl}, in C`:'Learn it, in C'):`${R.type?'Mixed, from memory':'New key'} ${k} of ${nk}`}</span></div>
+    ${R.type?`<div class="vcsteps">${R.rounds.map((r,i)=>`<i class="${i<R.round||i===R.round&&R.done?(R.results[i]&&R.results[i].clean?'on':'meh'):i===R.round?'cur':''}${r.learn?' learn':''}"></i>`).join('')}</div>`:''}
     <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(R.v.name)}</span>${vcCue(R.v)}</div>
     ${vcDiagram(t,R.shown||R.done)}
     <div class="lmsg" id="vcMsg"></div>
@@ -6044,12 +6176,14 @@ function vcReveal(){ const R=VC; if(R.mode==='drill'&&!R.shown&&!R.done){ R.show
 function vcNotes(notes){
   const R=VC; if(!R.active) return;
   if(R.mode==='rush') return vcRushNotes(notes);
+  if(R.mode==='results'&&R.after&&new Set(notes).size>=3){ const f=R.after; R.after=null; f(); return; }   // any chord carries on
+  if(R.mode==='type'){ const hit=vcWays(R.type).find(v=>vcGrade(vcIn(v,0),notes).ok); if(hit){ vcMark(vcIn(hit,0),{ok:true,P:notes}); $('verdict').className='verdict ok'; $('verdict').textContent=`That's ${hit.name}.`; return; } }
   if(R.mode!=='drill'||R.done){ showAnalysis(null,null,null,notes); return; }
   const res=vcGrade(R.t,notes); vcMark(R.t,res);
   if(res.ok){
-    const clean=R.mistakes===0&&(R.round===0||!R.shown);
-    R.done=true; R.results.push({key:R.keys[R.round],clean,mistakes:R.mistakes,shown:R.round>0&&R.shown});
-    if(R.round>0&&clean) R.clean++; R.xp+=10+(clean?10:0);
+    const rd=R.rounds[R.round], clean=R.mistakes===0&&(rd.learn||!R.shown);
+    R.done=true; R.results.push({v:rd.v,key:rd.pc,learn:rd.learn,clean,mistakes:R.mistakes,shown:!rd.learn&&R.shown});
+    if(!rd.learn&&clean) R.clean++; R.xp+=10+(clean?10:0);
     vcRender(); $('vcMsg').textContent=(clean?'Clean.':`Got it${R.mistakes?`, after ${R.mistakes} wrong tr${R.mistakes>1?'ies':'y'}`:''}.`)+(res.note?' '+res.note:''); $('vcMsg').className='lmsg ok';
     vcStaff(R.t,R.t.notes.map(m=>{ const iv=mod12(m-R.t.root.pc); return iv===0?'root':R.t.q.ct.includes(iv)?'chord':'tension'; }));
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.v.name}.`; $('why').textContent='';
@@ -6060,17 +6194,24 @@ function vcNotes(notes){
   $('vcMsg').textContent=res.why; $('vcMsg').className='lmsg no';
   if(R.mistakes>=3&&!R.shown) $('why').textContent='Stuck? Press S to show the shape.';
 }
-function vcNext(){ const R=VC; if(!R.active||R.mode!=='drill'||!R.done) return; clearTimeout(R.timer); R.round++; if(R.round>VC_KEYS) return vcFinish(false); vcRound(); }
+function vcNext(){ const R=VC; if(!R.active||R.mode!=='drill'||!R.done) return; clearTimeout(R.timer); R.round++; if(R.round>=R.rounds.length) return vcFinish(false); vcRound(); }
 function vcFinish(quit){ clearDraft();
   const R=VC; vcStop();
-  const learned=R.results.length>0, finished=R.round>VC_KEYS, stars=!learned?0:finished&&R.clean===VC_KEYS?3:finished&&R.clean>=4?2:1;
-  const prev=VCDATA.stars[R.v.id]||0; if(stars>prev) VCDATA.stars[R.v.id]=stars;
+  // ★ the whole lesson done; ★★ 80% of the from-memory rounds clean; ★★★ all of them (a Classic drill: 4 and 5 of 5)
+  const nk=R.rounds.filter(r=>!r.learn).length, finished=R.round>=R.rounds.length, learned=R.results.some(r=>r.learn)&&(R.type?R.results.filter(r=>r.learn).length===R.rounds.filter(r=>r.learn).length:true);
+  const stars=!learned?0:!finished?1:R.clean===nk?3:R.clean>=Math.ceil(nk*.8)?2:1;
+  const box=R.type?VCDATA.tstars:VCDATA.stars, key=R.type||R.v.id, prev=box[key]||0; if(stars>prev) box[key]=stars;
+  if(R.type&&finished) R.rounds.forEach(r=>{ if(stars>(VCDATA.stars[r.v.id]||0)&&stars>=1) VCDATA.stars[r.v.id]=Math.max(VCDATA.stars[r.v.id]||0,1); });   // each way you played counts as learned for Rush
   addXP(R.xp); saveVc(); R.mode='results';
-  $('vcBody').innerHTML=`<h2>${quit?'Session ended':stars===3?'Every key clean':'Voicing done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
-    <ul class="lkeys">${R.results.map((r,i)=>`<li><b>${gigAccHTML(vcSym(vcIn(R.v,r.key)))}</b> ${i===0?'learned':r.clean?'clean':r.shown?'with the shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
-    <p>+${R.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five clean.'}`:''}</p>
-    <div class="erow"><button class="go" id="vcAgain">Again</button><button class="ghost" id="vcCard">Back to the card</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
-  $('vcAgain').onclick=()=>vcDrillStart(R.v.id); $('vcCard').onclick=()=>vcOpen(R.v.id); $('vcMenu').onclick=vcToMenu;
+  const nx=R.type&&stars>=1?VPATH[VPATH.indexOf(R.type)+1]:null, again=()=>R.type?vcLessonStart(R.type):vcDrillStart(R.v.id);
+  $('vcBody').innerHTML=`<h2>${quit?'Lesson ended':stars===3?'Every key clean':R.type?`${gigAccHTML(vcTypeName(R.type))}: done`:'Voicing done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
+    <ul class="lkeys">${R.results.map(r=>`<li><b>${gigAccHTML(vcSym(vcIn(r.v,r.key)))}</b> ${R.type?gigAccHTML(r.v.name)+': ':''}${r.learn?'learned':r.clean?'clean':r.shown?'with the shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
+    <p>+${R.xp} XP.${stars<3&&learned&&finished?` Next star: ${stars<2?`${Math.ceil(nk*.8)} of the ${nk} from memory clean.`:'all of them clean.'}`:''}</p>
+    <p class="fine">Play any chord ${nx?`for the next one: ${gigAccHTML(vcTypeName(nx))}`:'to go again'}.</p>
+    <div class="erow">${nx?`<button class="go" id="vcNextT">Next: ${gigAccHTML(vcTypeName(nx))}</button>`:''}<button class="${nx?'ghost':'go'}" id="vcAgain">Again</button><button class="ghost" id="vcCard">Back to the card</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
+  $('vcAgain').onclick=again; $('vcCard').onclick=()=>R.type?vcTypeOpen(R.type):vcOpen(R.v.id); $('vcMenu').onclick=vcToMenu;
+  if(nx) $('vcNextT').onclick=()=>vcTypeOpen(nx);
+  R.after=nx?()=>vcTypeOpen(nx):again;
 }
 
 /* ---------------- Rush ----------------
@@ -6173,7 +6314,7 @@ function vcBossOver(){
   $('vcAgain').onclick=()=>vcBossStart(b.id); $('vcMenu').onclick=vcToMenu;
 }
 function vcToMenu(){ clearDraft();
-  vcStop(); VC.active=false; $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
+  vcStop(); VC.active=false; VC.after=null; $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
   side='voicings'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu();
 }
 function vcKey(e){
@@ -6182,6 +6323,7 @@ function vcKey(e){
   if(e.key==='r'||e.key==='R'){ if(R.mode==='card') vcPlay(vcIn(R.v,0)); else if(R.t) vcPlay(R.t); return true; }
   if((e.key==='s'||e.key==='S')&&R.mode==='drill'){ vcReveal(); return true; }
   if((e.key==='Enter'||e.key===' ')&&R.mode==='drill'&&R.done){ e.preventDefault(); vcNext(); return true; }
+  if(e.key==='Enter'&&R.mode==='type'){ e.preventDefault(); vcLessonStart(R.type); return true; }
   return false;
 }
 </script>
@@ -9932,6 +10074,42 @@ function gigAnHTML(an){ if(!an) return '';
 }
 </script>
 <script>
+/* The recommended order in every mode. Nothing is locked: a card ahead of the path is dimmed, and picking it says what's
+   recommended first, the way a game map shows the next world. Voicings keeps its own path (VPATH, in voicings/session.js).
+   Chords: NEXT_ORDER (hands.js), stages and progressions woven together: triads and sevenths, then the pop progressions
+   that only need those, then sixths and sus, the jazz progressions, the extended and altered stages, the bosses.
+   Ears: hear notes in a key, then the distance between two notes, then whole melodies, then chords, then progressions.
+   Lines: Medium after five Easy licks with a star, Hard after five Medium. Reharm: its three tiers in order. */
+const ARC_PATH=['degrees','intervals','melody','chords','progs'];
+const LINES_GATE=5, RH_GATE=3;
+// a Chords stage or progression by name
+const pathName=id=>{ id=String(id); if(id.startsWith('p:')){ const p=PROG[id.slice(2)], b=PBOSS.find(x=>'p:'+x.id===id); return p?p.short:b?`the boss of ${PROGS.slice(b.from,b.to).map(x=>x.short).join(', ')}`:id==='p:mix'?'the chapter boss':'the final boss'; }
+  const st=STAGE[+id]; return !st?id:st.boss?`the boss of stages ${st.boss[0]}–${st.boss[st.boss.length-1]}`:st.chapter?'the chapter boss':st.t; };
+const chordsStep=id=>NEXT_ORDER.indexOf(String(id))+1;
+// the step before this one, if neither has a star yet
+function chordsPrereq(id){ id=String(id); if(starsOf(id)) return null; const i=NEXT_ORDER.indexOf(id); if(i<=0) return null; const p=NEXT_ORDER[i-1]; return starsOf(p)?null:p; }
+const chordsAhead=id=>{ const nx=nextUp(); return !starsOf(String(id))&&nx&&NEXT_ORDER.indexOf(String(id))>NEXT_ORDER.indexOf(nx); };
+function chordsPathNote(id){ const p=chordsPrereq(id); return p?`Recommended first: ★ on ${pathName(p)} (step ${chordsStep(p)}).`:''; }
+// Ears worlds in the game
+const earsNextWorld=()=>ARC_PATH.find(w=>!arcStars(w))||ARC_PATH.find(w=>arcStars(w)<3)||ARC_PATH[0];
+function earsPrereq(w){ const i=ARC_PATH.indexOf(w); if(i<=0||arcStars(w)) return null; const p=ARC_PATH[i-1]; return arcStars(p)?null:p; }
+// Lines: how many licks of a difficulty have a star
+const linesStarred=d=>allLicks().filter(l=>l.diff===d&&LDATA.stars[l.id]).length;
+function linesPathNote(d){ if(d<2) return ''; const n=linesStarred(d-1); return n>=LINES_GATE?'':`Recommended first: a star on ${LINES_GATE} ${LDIFF[d-1]} licks (${n} so far).`; }
+// Reharm tiers
+const RH_TIER=['','Everyday moves','Colour and motion','The modern sound'];
+function reharmPathNote(t){ if(t<2) return ''; const n=REHARM_MOVES.filter(m=>m.tier===t-1&&RHDATA.stars[m.id]).length; return n>=RH_GATE?'':`Recommended after ★ on ${RH_TIER[t-1].toLowerCase()} (${n} of ${RH_GATE}).`; }
+// the home cards: what's next in each mode
+function modeNextText(id){
+  if(id==='hands'){ const n=nextUp(); return n?`Next: ${pathName(n)}`:''; }
+  if(id==='voicings') return `Next: ${vcTypeName(vcNextType())}`;
+  if(id==='ears') return `Next: ${arcWorld(earsNextWorld()).name}`;
+  if(id==='lines'){ const d=[1,2,3].find(d=>linesStarred(d)<LINES_GATE)||3; return `Next: ${LDIFF[d]} licks`; }
+  if(id==='reharm'){ const m=[...REHARM_MOVES].sort((a,b)=>a.tier-b.tier).find(m=>!RHDATA.stars[m.id]); return m?`Next: ${m.name}`:''; }
+  return '';
+}
+</script>
+<script>
 /* ---------------- menu ---------------- */
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
 let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' | 'plan' | 'settings'
@@ -9945,7 +10123,7 @@ const MODES=[
   {id:'plan',name:'Practice',blurb:'Your own routines: blocks of each mode on a timer, a log and notes',stat:()=>{ if(typeof PLAN==='undefined') return ''; if(PLAN.run) return 'A session is running'; const w=Object.values(planWeek()).reduce((a,b)=>a+b,0), st=planStreak(); return `${Math.round(w)} min this week${st?` · 🔥 ${st}-day streak`:''}`; }},
 ];
 function renderHome(){
-  $('modes').innerHTML=MODES.map((m,i)=>`<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span></button>`).join('');
+  $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}</button>`; }).join('');
 }
 // Devil unlocks stage by stage: say which stage is selected, how far it is, and where Devil is already open
 function devilLockText(){
@@ -9977,26 +10155,31 @@ function renderMenu(){
   }).join('');
   const nx=nextUp(), total=STAR_IDS().reduce((a,id)=>a+starsOf(id),0);
   $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*STAR_MAX} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try. From then on 🔥 chords say which chord tone your left hand has to put at the bottom (you work out the note): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ any of them (7th too) at Cherokee tempo without losing a life. Everything stays open either way.`;
-  const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>id===nx?'<span class="nx">Next up</span>':'';
+  const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>(chordsStep(id)?`<span class="step">${chordsStep(id)}</span>`:'')+(id===nx?'<span class="nx">Next up</span>':'');
+  const later=id=>chordsAhead(id)?' later':'';
   $('stages').innerHTML=STAGES.map(s=>{
     const b=bests[bestKey(tierId,s.n)];
-    return `<button class="stage${s.boss?' boss':s.chapter?' boss chapter':''}" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">${s.boss?'👹 Boss':s.chapter?'👑 Chapter boss':`Stage ${s.n}`}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
+    return `<button class="stage${s.boss?' boss':s.chapter?' boss chapter':''}${later(s.n)}" data-n="${s.n}" aria-pressed="${s.n===stageN}"><span class="n">${s.boss?'👹 Boss':s.chapter?'👑 Chapter boss':`Stage ${s.n}`}${tag(String(s.n))}</span><span class="t">${s.t}</span><span class="best">${stars(s.n)}${mode==='game'?(b?`Best ${b.toLocaleString()} on ${tierOf(tierId).name}`:'Not played on this tempo'):'Practice at your own pace'}</span></button>`;
   }).join('');
   const bestLine=id=>{ const b=bests[bestKey(tierId,id)]; return mode==='game'?(b?`Best ${b.toLocaleString()}`:'Not played on this tempo'):''; };
-  const pBossBtn=(id,cls,n,t,sub)=>`<button class="stage boss${cls}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${n}${tag(id)}</span><span class="t">${t}</span><span class="best">${stars(id)}${sub}${bestLine(id)?`. ${bestLine(id)}`:''}</span></button>`;
+  const pBossBtn=(id,cls,n,t,sub)=>`<button class="stage boss${cls}${later(id)}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${n}${tag(id)}</span><span class="t">${t}</span><span class="best">${stars(id)}${sub}${bestLine(id)?`. ${bestLine(id)}`:''}</span></button>`;
   $('progs').innerHTML=PROGS.map((p,i)=>{
     const id='p:'+p.id, jp=(p.name.match(/\(([^)]*[぀-ヿ一-龯][^)]*)\)/)||[])[1]||(p.minor?'minor key':'');
     const best=bestLine(id);
     const pb=PBOSS.find(b=>b.to===i+1);   // a boss after every four
-    return `<button class="stage" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`
+    return `<button class="stage${later(id)}" data-p="${id}" aria-pressed="${stageN===id}"><span class="n">${jp||'&nbsp;'}${tag(id)}</span><span class="t">${p.short}</span><span class="best">${stars(id)}${progDegrees(p)}${best?`. ${best}`:''}</span></button>`
       +(pb?pBossBtn('p:'+pb.id,'','👹 Boss',PROGS.slice(pb.from,pb.to).map(x=>x.short).join(', '),'Those four, mixed'):'');
   }).join('')+pBossBtn('p:mix',' chapter','👑 Chapter boss','Every progression','A random one each time')
     +pBossBtn('p:final',' final','🔥 Final boss','Everything: every chord stage and every progression','Single chords and whole progressions, mixed');
   const t=tierOf(tierId);
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);
+  $('pathNote').textContent=chordsPathNote(stageN);
+  const short=id=>{ const s=pathName(id); return s.replace(/^the boss of /,'👹 ').replace(/^the chapter boss$/,String(id)==='p:mix'?'👑 Every progression':'👑 Everything'); };
+  $('pathStrip').innerHTML=NEXT_ORDER.map((id,i)=>{ const st=starsOf(id); return `<button class="pstep${st?' got':''}${id===nx?' now':''}${String(stageN)===id?' sel':''}" data-step="${id}" title="${starStr(st,STAR_MAX)}"><i>${i+1}</i>${gigAccHTML(short(id))}${st?` <b>${'★'.repeat(st)}</b>`:''}</button>`; }).join('<span class="parr">›</span>');
   updateHud();
 }
+$('pathStrip').addEventListener('click',e=>{ const b=e.target.closest('[data-step]'); if(!b) return; const id=b.dataset.step; briefOpen(/^\d+$/.test(id)?+id:id); });
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
@@ -10155,7 +10338,8 @@ function briefOpen(id){
   $('briefCard').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(briefTitle(id))}</span><span>${starStr(st,STAR_MAX)}${devilOf(id)?' '+'💀'.repeat(devilOf(id)):''}</span></div>
     <div class="sec">What's coming</div><div class="briefchords">${chords}</div>
     <p>${mode==='practice'?'Practice: no clock, take your time.':`${t.name}, ♩ = ${t.bpm}, ${t.lives} ${t.lives===1?'life':'lives'}${t.devil?'. Every chord on fire, no hints':''}.`}${fire&&mode==='game'?` 🔥 chords will ask for the ${['','3rd','3rd or 5th','3rd, 5th or 7th'][fire]} in the bass.`:''} 💚 life chords now and then.</p>
-    <p class="fine">${st<STAR_MAX?`Next star: ${STAR_GOALS[st]}`:'Every star. 😈 Devil is open for this one in the tempo list.'}</p>
+    <p class="fine">${chordsStep(id)?`Step ${chordsStep(id)} of ${NEXT_ORDER.length}. `:''}${st<STAR_MAX?`Next star: ${STAR_GOALS[st]}`:'Every star. 😈 Devil is open for this one in the tempo list.'}</p>
+    ${chordsPathNote(id)?`<p class="fine pathnote">${gigAccHTML(chordsPathNote(id))}</p>`:''}
     <div class="sec">The same chords elsewhere</div>
     <div class="brieflinks">
       ${vs.length?`<button class="ghost" data-brief="voicings">🎹 Voicings: ${vs.length} named voicings for ${vtypes.length>4?'these chords':vtypes.map(sym).map(gigAccHTML).join(', ')}</button>`:''}
@@ -10175,11 +10359,11 @@ function briefGo(where,qids,ears){
   if(where==='ears'){ arcStart(ears.world,ears.rung); return; }
   if(where.startsWith('lick:')){ linesStart(where.slice(5)); return; }
   if(where==='lines'){ LINES.over=qids; LINES.q=''; LINES.show=0; LDATA.diff=0; LDATA.from='all'; LDATA.artist=''; LDATA.chord=''; side='lines'; renderMenu(); $('startOv').scrollTop=0; return; }
-  // Voicings, on the chapter tab that holds these chords (All if they span chapters), scrolled to the first of them
-  const chs=VCHAPTERS.filter(c=>vcChapterTypes(c.id).some(q=>qids.includes(q)));
-  VCDATA.fam='all'; VCDATA.ch=chs.length===1?chs[0].id:'all'; side='voicings'; renderMenu();
-  const first=VTYPES.find(q=>qids.includes(q)), el=first&&document.querySelector(`.vctype[data-qid="${first}"]`);
-  if(el){ el.scrollIntoView({block:'start'}); qids.forEach(q=>{ const x=document.querySelector(`.vctype[data-qid="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } }); }   // the highlight goes once it has faded
+  // Voicings: the chapter holding the first of these chords on the path, opened and scrolled to it, these chords flashed
+  const first=VPATH.find(q=>qids.includes(q)); if(!first){ side='voicings'; renderMenu(); return; }
+  VCHAPTERS.forEach(c=>{ if(c.types.some(q=>qids.includes(q))) (VCDATA.open=VCDATA.open||{})[c.id]=true; });
+  vcShowType(first,false);
+  qids.forEach(q=>{ const x=document.querySelector(`#voicingsPane .vctcard[data-vt="${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } });   // the highlight goes once it has faded
 }
 // two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
 function briefClicks(box,attr,parse){
@@ -10193,39 +10377,76 @@ document.addEventListener('keydown',e=>{ if($('briefOv').hidden) return;
   else if(e.key==='Enter'){ const g=$('briefGo'); if(g&&!g.disabled) g.click(); e.stopImmediatePropagation(); e.preventDefault(); } },true);
 </script>
 <script>
-/* Practice: your own practice routines, like a workout app. A routine is a list of blocks (a mode, maybe a stage, world,
-   tab or lick pick, how many minutes, a note). Start runs it: each block opens its mode, a timer chip at the top keeps
-   time wherever you go, a soft chime says when it's up, and the chip moves you to the next block. A finished session is
-   logged with its minutes per mode and a note of your own; the page shows the week's minutes, a streak and the log.
-   The timer runs on the clock, not on a page: it survives switching modes and reloading. */
+/* Practice: your own practice routines, built like a workout app (Hevy, Strong). Three tabs:
+   My routines: your list; tap one for its blocks, then Start, Edit, Copy or Delete. The editor works on block cards
+     (drag to reorder, − and + for the minutes, a note each) and an Add-blocks picker with search and multi-select.
+   Explore: ready-made routines, each with the reason for its order. Start one as it is, or add it to yours.
+   History: the week's minutes per mode, a streak, a 14-day calendar and every session with its note.
+   A running session keeps its own copy of the routine. Each block opens its mode; a timer chip keeps time wherever you
+   go (pause, skip; it runs on the clock, so it survives a reload), chimes when time's up and takes you to the next block. */
 let PLAN=store.get('plan',null);
 const PLAN_MODES={hands:'Chords',voicings:'Voicings',lines:'Lines',ears:'Ears',reharm:'Reharm',gig:'Gig',free:'Your own'};
+const PLAN_ICON={hands:'🎹',voicings:'🖐️',lines:'🎷',ears:'👂',reharm:'🔀',gig:'🎤',free:'✏️'};
 const planBlock=(mode,min,target='',note='')=>({mode,min,target,note});
-if(!PLAN||!Array.isArray(PLAN.routines)) PLAN={routines:[
-  {id:'r1',name:'Daily 45',blocks:[planBlock('hands',5,'','Warm-up: a stage you are working on'),planBlock('voicings',10,'','A few new shapes, or one song in Comp Hero'),
-    planBlock('lines',10,'daily',"Today's practice: the weekly line and reviews"),planBlock('ears',8,'daily','The daily wave'),planBlock('gig',12,'','Play a tune with today’s voicings and line')]},
-  {id:'r2',name:'Quick 10',blocks:[planBlock('lines',5,'daily'),planBlock('ears',5,'daily')]},
-  {id:'r3',name:'Comping day',blocks:[planBlock('hands',10),planBlock('voicings',15,'dom'),planBlock('reharm',10),planBlock('gig',10,'','Comp the whole tune')]},
-],log:[],run:null,edit:null};
-const savePlan=()=>store.set('plan',PLAN);
+if(!PLAN||!Array.isArray(PLAN.routines)) PLAN={routines:[],log:[],run:null};
+PLAN.tab=PLAN.tab||'mine'; PLAN.edit=null; PLAN.pick=null;
+const savePlan=()=>{ const {edit,pick,...keep}=PLAN; store.set('plan',keep); };
+
+/* ---------------- the order every built-in routine follows ----------------
+   1. Warm up on something you already know: hands and reading get going, low stakes.
+   2. New material next, while you're freshest: learning a new voicing or line is the hardest work, so never last.
+   3. Then recall: spaced review and from-memory drills soon after learning are what make it stick; mixing skills
+      beats long blocks of one.
+   4. Ears as the change of pace: it needs attention but not your hands, so it sits between hands-heavy blocks.
+   5. Apply it last: real music with what you drilled turns drills into playing, and ending on something fun brings
+      you back tomorrow.
+   6. Blocks of 5 to 15 minutes: switch before autopilot. */
+const PLAN_RULES=['Warm up on something you know','New material while you’re fresh','Then recall it: review and from memory','Ears as the change of pace','Apply it in real music, last','5 to 15 minutes a block'];
+const B=planBlock;
+const PLAN_EXPLORE=[
+  {group:'Everyday',items:[
+    {id:'x_d30',name:'Daily 30',why:'The whole loop in half an hour: warm up, learn one new chord, review lines, ears, then play a tune.',blocks:[B('hands',5,'next','Warm-up: the step you’re on, a slow tempo is fine'),B('voicings',8,'next','New: the next chord on the Voicings path'),B('lines',7,'daily','Recall: the weekly line and the reviews that are due'),B('ears',5,'daily','Change of pace: the daily wave'),B('gig',5,'','Apply: one tune, with today’s voicing in it')]},
+    {id:'x_d45',name:'Daily 45',why:'The same loop with room to breathe: longer on the new chord and on the tune at the end.',blocks:[B('hands',5,'next','Warm-up'),B('voicings',10,'next','New chord, then Rush it if time’s left'),B('lines',10,'daily','Recall'),B('ears',8,'daily','Change of pace'),B('gig',12,'','Apply: comp it, then solo with the weekly line')]},
+    {id:'x_d60',name:'Deep work 60',why:'An hour, with harmony too: new comping and a new line early, Reharm once your ears are warm, a long tune to end.',blocks:[B('hands',8,'next','Warm-up'),B('voicings',12,'next','New chord'),B('lines',10,'week','New keys of the weekly line'),B('ears',8,'daily','Change of pace'),B('reharm',10,'','One move, then hear it in the ear quiz'),B('gig',12,'','Apply: reharm one bar of the tune')]},
+  ]},
+  {group:'Short',items:[
+    {id:'x_q10',name:'Quick 10',why:'For busy days: the two things that fade fastest when you skip, spaced review and ears.',blocks:[B('lines',5,'daily','The reviews that are due today'),B('ears',5,'daily','The daily wave keeps the streak')]},
+    {id:'x_q15',name:'Quick 15',why:'Nothing new, just keeping it all warm: chords, lines, ears.',blocks:[B('hands',5,'next','Chords at a tempo you can win'),B('lines',5,'daily','Reviews'),B('ears',5,'daily','Daily wave')]},
+    {id:'x_q20',name:'One new thing, 20',why:'Short but still moving forward: one new chord, then straight into using it.',blocks:[B('hands',4,'next','Warm-up'),B('voicings',8,'next','New chord'),B('voicings',4,'rush','Recall it under the clock'),B('gig',4,'','Find it in a tune')]},
+  ]},
+  {group:'Focus days',items:[
+    {id:'x_comp',name:'Comping day 45',why:'Learn a voicing, recall it under pressure, see what Reharm can do with it, then comp a whole song.',blocks:[B('hands',5,'next','Warm-up'),B('voicings',12,'next','New chord'),B('voicings',6,'rush','Recall: Rush'),B('reharm',10,'','A move that uses it'),B('voicings',12,'comp','Apply: Comp Hero, a whole song')]},
+    {id:'x_solo',name:'Soloing day 45',why:'The progression first so the changes are in your hands, then the weekly line in new keys, reviews, melodic ear work, and a solo.',blocks:[B('hands',5,'p:iiVI','Warm-up on the ii–V–I'),B('lines',10,'week','New keys of the weekly line'),B('lines',8,'daily','Reviews'),B('ears',7,'melody','Hear lines: melodies'),B('gig',15,'','Apply: solo over a tune with the line in it')]},
+    {id:'x_ears',name:'Ear day 30',why:'From single notes up to whole progressions: each world builds on the one before.',blocks:[B('ears',6,'degrees','Notes in the key'),B('ears',6,'intervals','Two notes'),B('ears',6,'melody','Whole melodies'),B('ears',6,'chords','Chord qualities'),B('ears',6,'progs','Progressions')]},
+    {id:'x_harm',name:'Harmony day 40',why:'Chords in the hands, a reharm move in the head, the same move by ear, then on a tune.',blocks:[B('hands',8,'next','Warm-up'),B('reharm',12,'','A new move'),B('ears',8,'progs','Hear progressions'),B('gig',12,'','Apply: reharm the tune')]},
+  ]},
+  {group:'Special',items:[
+    {id:'x_lesson',name:'Lesson prep 30',why:'Your teacher’s work first, while you’re freshest; then quick recall, then the lesson tune.',blocks:[B('free',10,'','What your teacher assigned'),B('lines',7,'daily','Reviews'),B('voicings',6,'rush','Rush'),B('gig',7,'','Play the lesson tune')]},
+    {id:'x_gig',name:'Before a gig 25',why:'No new material the day of a gig: warm, confident, the set run top to bottom.',blocks:[B('hands',5,'next','Easy warm-up'),B('voicings',10,'comp','Comp Hero on the set’s songs'),B('gig',10,'','Run the tunes, no stopping')]},
+    {id:'x_90',name:'Weekend 90',why:'The long session: everything in the usual order, two Lines blocks, and a long stretch on real tunes at the end.',blocks:[B('hands',10,'next','Warm-up'),B('voicings',15,'next','New chord'),B('lines',10,'week','Weekly line, new keys'),B('lines',10,'daily','Reviews'),B('ears',10,'daily','Change of pace'),B('reharm',10,'','A move'),B('gig',25,'','Tunes: learn a new one or polish one')]},
+  ]},
+];
+const planExplore=id=>PLAN_EXPLORE.flatMap(g=>g.items).find(x=>x.id===id);
+const planCopyOf=(r,name)=>({id:'r'+Date.now()+Math.floor(Math.random()*1000),name:name||r.name,why:r.why||'',blocks:JSON.parse(JSON.stringify(r.blocks))});
 // what a block can point at, per mode: [value, label]
 function planTargets(mode){
-  if(mode==='hands') return [['','Where you left off'],...STAGES.map(s=>[String(s.n),s.boss?`👹 ${s.t}`:s.chapter?`👑 ${s.t}`:`Stage ${s.n}: ${s.t}`]),...PROGS.map(p=>['p:'+p.id,p.short])];
-  if(mode==='voicings') return [['','The page'],...VCHAPTERS.map(c=>[c.id,c.name]),['all','Every chapter']];
-  if(mode==='lines') return [['','The page'],['daily',"Today's practice"],['week','Line of the week'],['rand1','🎲 Easy'],['rand2','🎲 Medium'],['rand3','🎲 Hard']];
-  if(mode==='ears') return [['','The page'],['daily','Daily wave'],...ARC_WORLDS.map(w=>[w,arcWorld(w).name])];
+  if(mode==='hands') return [['next','Next step on your path'],['','Where you left off'],...STAGES.map(s=>[String(s.n),s.boss?`👹 ${s.t}`:s.chapter?`👑 ${s.t}`:`Stage ${s.n}: ${s.t}`]),...PROGS.map(p=>['p:'+p.id,p.short])];
+  if(mode==='voicings') return [['next','Next chord on the path'],['rush','Rush (chords you’ve learned)'],['comp','Comp Hero'],['','The page'],...VCHAPTERS.map((c,i)=>[c.id,`Chapter ${i+1}: ${c.name}`])];
+  if(mode==='lines') return [['daily',"Today's practice"],['week','Line of the week'],['rand1','🎲 Easy'],['rand2','🎲 Medium'],['rand3','🎲 Hard'],['','The page']];
+  if(mode==='ears') return [['daily','Daily wave'],['next','Next world on the path'],...ARC_PATH.map(w=>[w,arcWorld(w).name]),['','The page']];
   return [['','']];
 }
+const PLAN_MODE_BLURB={hands:'Chords against the clock',voicings:'Two-hand voicings, Rush, Comp Hero',lines:'Licks in all 12 keys',ears:'The ear game',reharm:'Substitutions and why they work',gig:'Lead sheets to play from',free:'Anything outside the app: scales, a tune, sight-reading'};
 const planTargetName=b=>{ const t=planTargets(b.mode).find(x=>x[0]===b.target); return t&&t[0]?t[1]:''; };
 const planMins=r=>r.blocks.reduce((a,b)=>a+(+b.min||0),0);
 const fmtClock=s=>`${Math.floor(Math.max(0,s)/60)}:${String(Math.floor(Math.max(0,s)%60)).padStart(2,'0')}`;
+const planModesLine=r=>[...new Set(r.blocks.map(b=>PLAN_ICON[b.mode]))].join(' ');
 
 /* ---------------- running a routine ---------------- */
 // seconds spent in the current block (the clock keeps going between modes; pausing holds it)
 const planElapsed=()=>{ const r=PLAN.run; return !r?0:(r.held??(Date.now()-r.t0))/1000; };
-const planRoutine=()=>PLAN.run&&PLAN.routines.find(x=>x.id===PLAN.run.rid);
-function planStart(rid){ const r=PLAN.routines.find(x=>x.id===rid); if(!r||!r.blocks.length) return;
-  PLAN.run={rid,i:0,t0:Date.now(),held:null,done:[],chimed:false}; savePlan(); planOpenBlock(); }
+const planRoutine=()=>PLAN.run&&(PLAN.run.r||PLAN.routines.find(x=>x.id===PLAN.run.rid));
+function planStart(r){ if(!r||!r.blocks.length) return; PLAN.run={rid:r.id,r:JSON.parse(JSON.stringify(r)),i:0,t0:Date.now(),held:null,done:[],chimed:false}; PLAN.tab='mine'; PLAN.view=null; savePlan(); planOpenBlock(); }
 // take the current block's mode, at its stage, world, tab or pick
 function planOpenBlock(){
   const r=planRoutine(), b=r&&r.blocks[PLAN.run.i]; planChip(); if(!b) return;
@@ -10233,15 +10454,15 @@ function planOpenBlock(){
   const t=b.target;
   if(b.mode==='free'){ side='plan'; renderMenu(); return; }
   if(b.mode==='gig'){ gigOpen(); return; }
-  if(b.mode==='hands'&&t){ stageN=t.startsWith('p:')?t:+t; store.set('stage',stageN); }
-  if(b.mode==='voicings'&&t){ VCDATA.ch=t; VCDATA.fam='all'; }
+  if(b.mode==='hands'&&t){ const id=t==='next'?nextUp():t; if(id){ stageN=/^\d+$/.test(id)?+id:id; store.set('stage',stageN); } }
+  if(b.mode==='voicings'&&t){ if(t==='next'){ vcTypeOpen(vcNextType()); return; } if(t==='rush'){ VCDATA.pool='learned'; vcRushStart(); return; } if(t==='comp'){ side='voicings'; renderMenu(); const c=document.querySelector('#voicingsPane .chcard'); if(c) c.scrollIntoView({block:'center'}); return; } (VCDATA.open=VCDATA.open||{})[t]=true; side='voicings'; renderMenu(); const el=document.querySelector(`#voicingsPane [data-vchap="${t}"]`); if(el) el.scrollIntoView({block:'start'}); return; }
   if(b.mode==='lines'){ LINES.over=null; if(t==='daily'||t==='week'){ lpStart(t); return; } if(t.startsWith('rand')){ linesRandom(+t.slice(4)); return; } }
-  if(b.mode==='ears'&&t){ arcStart(t); return; }
+  if(b.mode==='ears'&&t){ arcStart(t==='next'?earsNextWorld():t); return; }
   side=b.mode; renderMenu(); $('startOv').scrollTop=0;
 }
 function planNext(){
   const run=PLAN.run, r=planRoutine(); if(!run||!r) return;
-  run.done.push({mode:r.blocks[run.i].mode,secs:Math.round(planElapsed())});
+  run.done.push({mode:r.blocks[run.i].mode,secs:Math.round(planElapsed()),i:run.i});
   run.i++; run.t0=Date.now(); run.held=null; run.chimed=false;
   if(run.i>=r.blocks.length) return planFinish();
   savePlan(); planOpenBlock();
@@ -10250,10 +10471,10 @@ function planPause(){ const r=PLAN.run; if(!r) return; if(r.held==null) r.held=D
 // the session goes into the log (blocks you finished, and the one you were in), and you're asked for a note
 function planFinish(){
   const run=PLAN.run, r=planRoutine(); if(!run) return;
-  if(r&&run.i<r.blocks.length&&planElapsed()>=30) run.done.push({mode:r.blocks[run.i].mode,secs:Math.round(planElapsed())});
+  if(r&&run.i<r.blocks.length&&planElapsed()>=30) run.done.push({mode:r.blocks[run.i].mode,secs:Math.round(planElapsed()),i:run.i});
   const secs=run.done.reduce((a,d)=>a+d.secs,0);
-  if(secs>=60) PLAN.log.unshift({d:arcDay(),t:Date.now(),name:r?r.name:'Practice',blocks:run.done,note:''});
-  PLAN.run=null; PLAN.fresh=secs>=60; savePlan(); planChip(); if(side==='home') renderHome();   // the home card drew before this file loaded
+  if(secs>=60) PLAN.log.unshift({d:arcDay(),t:Date.now(),name:r?r.name:'Practice',blocks:run.done.map(({mode,secs})=>({mode,secs})),note:'',planned:r?planMins(r):0});
+  PLAN.run=null; PLAN.fresh=secs>=60; savePlan(); planChip();
   if(!atHome()) goHome(); side='plan'; renderMenu(); $('startOv').scrollTop=0;
 }
 // the chip: the block and the time left, wherever you are; when it's up, a chime and "next"
@@ -10265,11 +10486,11 @@ function planChip(){
   const b=r.blocks[run.i], left=b.min*60-planElapsed(), nx=r.blocks[run.i+1];
   if(left<=0&&!run.chimed){ run.chimed=true; savePlan(); planChime(); }
   c.hidden=false; c.classList.toggle('due',left<=0); c.classList.toggle('paused',run.held!=null);
-  c.innerHTML=`<span class="pcw" data-pc="page" title="Open Practice">${run.i+1}/${r.blocks.length} ${PLAN_MODES[b.mode]}${planTargetName(b)?` · ${planTargetName(b)}`:''}</span>
+  c.innerHTML=`<span class="pcw" data-pc="page" title="Open Practice">${PLAN_ICON[b.mode]} ${run.i+1}/${r.blocks.length} ${PLAN_MODES[b.mode]}${planTargetName(b)?` · ${planTargetName(b)}`:''}</span>
     <b>${left>0?fmtClock(left):`+${fmtClock(-left)}`}</b>
     <button data-pc="pause" title="${run.held!=null?'Resume':'Pause'}">${run.held!=null?'▶':'⏸'}</button>
     <button data-pc="next" title="${nx?`Next: ${PLAN_MODES[nx.mode]}`:'Finish'}">${left<=0?(nx?`Next: ${PLAN_MODES[nx.mode]} ⏭`:'Finish ✓'):'⏭'}</button>`;
-  if(run.held==null) planTick=setInterval(planChip,1000);
+  if(run.held==null) planTick=setInterval(()=>{ planChip(); if(side==='plan'&&!$('startOv').hidden&&!PLAN.edit) planRunTick(); },1000);
 }
 function planChime(){ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.05; tone(79,t,1.4,46,'mellow',bus); tone(84,t+.18,1.8,42,'mellow',bus); }
 $('planChip').addEventListener('click',e=>{ const b=e.target.closest('[data-pc]'); if(!b) return;
@@ -10279,73 +10500,135 @@ $('planChip').addEventListener('click',e=>{ const b=e.target.closest('[data-pc]'
 function planWeek(){ const d=new Date(), day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); const from=arcDay(d), by={};
   PLAN.log.filter(s=>s.d>=from).forEach(s=>s.blocks.forEach(b=>by[b.mode]=(by[b.mode]||0)+b.secs/60)); return by; }
 function planStreak(){ const days=new Set(PLAN.log.map(s=>s.d)); let n=0; const d=new Date(); if(!days.has(arcDay(d))) d.setDate(d.getDate()-1); while(days.has(arcDay(d))){ n++; d.setDate(d.getDate()-1); } return n; }
+const planBlockLine=b=>`<span class="pbi">${PLAN_ICON[b.mode]}</span><span class="pbt"><b>${PLAN_MODES[b.mode]}</b>${planTargetName(b)?` · ${gigAccHTML(planTargetName(b))}`:''}${b.note?`<em>${gigAccHTML(b.note)}</em>`:''}</span><span class="pbm">${b.min} min</span>`;
+// the running session: a checklist, the current block with its clock
+function planRunHTML(){
+  const run=PLAN.run, r=planRoutine(); if(!run||!r) return '';
+  const left=r.blocks[run.i].min*60-planElapsed();
+  return `<div class="prun"><div class="prunh"><b>${gigAccHTML(r.name)}</b><span>block ${run.i+1} of ${r.blocks.length}</span><span class="prclock" id="plClock">${left>0?`${fmtClock(left)} left`:`${fmtClock(-left)} over`}</span></div>
+    <ol class="pchk">${r.blocks.map((b,i)=>{ const d=run.done.find(x=>x.i===i); return `<li class="${d?'done':i===run.i?'now':''}">${d?'<i>✓</i>':`<i>${i+1}</i>`}${planBlockLine(b)}${d?`<span class="pbm">${Math.round(d.secs/60)} min</span>`:''}</li>`; }).join('')}</ol>
+    <div class="erow"><button class="go" data-pl="open">Go there</button><button class="ghost" data-pl="pause">${run.held!=null?'Resume':'Pause'}</button><button class="ghost" data-pl="next">${r.blocks[run.i+1]?`Next: ${PLAN_MODES[r.blocks[run.i+1].mode]}`:'Finish'}</button><button class="ghost" data-pl="end">End session</button></div></div>`;
+}
+function planRunTick(){ const el=$('plClock'), run=PLAN.run, r=planRoutine(); if(!el||!run||!r) return; const left=r.blocks[run.i].min*60-planElapsed(); el.textContent=left>0?`${fmtClock(left)} left`:`${fmtClock(-left)} over`; }
+function planRoutineCard(r,kind){
+  return `<div class="proutine" data-open="${kind}:${r.id}" tabindex="0" role="button"><div class="prh"><b>${gigAccHTML(r.name)}</b><span>${planMins(r)} min</span></div>
+    <div class="prm">${planModesLine(r)} <span>${r.blocks.length} block${r.blocks.length>1?'s':''}</span></div>${r.why?`<p class="fine">${gigAccHTML(r.why)}</p>`:''}</div>`;
+}
 function renderPlanPane(){
-  const run=PLAN.run, cur=planRoutine(), week=planWeek(), wk=Object.values(week).reduce((a,b)=>a+b,0), top=Math.max(1,...Object.values(week)), st=planStreak();
-  const days=new Set(PLAN.log.map(s=>s.d));
-  const cal=[...Array(14)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-13+i); const on=days.has(arcDay(d)); return `<i class="${on?'on':''}${i===13?' today':''}" title="${arcDay(d)}">${on?'✓':''}</i>`; }).join('');
-  const chips=r=>r.blocks.map(b=>`<span class="pblk m-${b.mode}">${PLAN_MODES[b.mode]} ${b.min}′</span>`).join('');
-  let h=`<button class="back" data-home>← All modes</button><h2>Practice</h2>
-    <p>Your own routines. Start one and each block opens its mode; the timer at the top keeps time wherever you go and tells you when to move on.</p>`;
-  if(run&&cur){ const b=cur.blocks[run.i], left=b.min*60-planElapsed();
-    h+=`<div class="prun"><div class="sec">Now: ${gigAccHTML(cur.name)}, block ${run.i+1} of ${cur.blocks.length}</div>
-      <div class="lt">${PLAN_MODES[b.mode]}${planTargetName(b)?` · ${gigAccHTML(planTargetName(b))}`:''} <b>${left>0?`${fmtClock(left)} left`:'time’s up'}</b></div>${b.note?`<p class="fine">${gigAccHTML(b.note)}</p>`:''}
-      <div class="erow"><button class="go" data-pl="open">Go there</button><button class="ghost" data-pl="pause">${run.held!=null?'Resume':'Pause'}</button><button class="ghost" data-pl="next">${cur.blocks[run.i+1]?`Next: ${PLAN_MODES[cur.blocks[run.i+1].mode]}`:'Finish'}</button><button class="ghost" data-pl="end">End session</button></div></div>`; }
+  if(PLAN.edit) return renderPlanEditor();
+  const tab=PLAN.tab, st=planStreak();
+  let h=`<button class="back" data-home>← All modes</button><h2>Practice</h2>${planRunHTML()}`;
   if(PLAN.fresh&&PLAN.log[0]){ const s=PLAN.log[0];
-    h+=`<div class="prun"><div class="sec">Done: ${gigAccHTML(s.name)}, ${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} minutes${st>1?` · 🔥 ${st}-day streak`:''}</div>
+    h+=`<div class="prun pdone"><div class="prunh"><b>Done: ${gigAccHTML(s.name)}</b><span>${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} minutes${st>1?` · 🔥 ${st}-day streak`:''}</span></div>
       <textarea id="plNote" rows="2" placeholder="A note for next time: what felt shaky, what clicked, what to do tomorrow">${gigAccHTML(s.note||'')}</textarea>
-      <div class="erow"><button class="go" data-pl="savenote">Save note</button></div></div>`; }
-  if(PLAN.edit) h+=planEditorHTML();
-  else h+=`<div class="sec">Routines</div><div class="proutines">${PLAN.routines.map(r=>`<div class="proutine"><div class="lt">${gigAccHTML(r.name)} <span class="fine">${planMins(r)} min</span></div><div class="pblks">${chips(r)}</div>
-      <div class="erow"><button class="go" data-pl="start" data-r="${r.id}"${run?' disabled':''}>Start</button><button class="ghost" data-pl="edit" data-r="${r.id}">Edit</button><button class="ghost" data-pl="copy" data-r="${r.id}">Copy</button></div></div>`).join('')}
-      <button class="proutine pnew" data-pl="new">+ New routine</button></div>`;
-  h+=`<div class="sec">This week: ${Math.round(wk)} minutes${st?` · 🔥 ${st}-day streak`:''}</div>
-    <div class="pweek">${Object.keys(PLAN_MODES).filter(m=>week[m]).map(m=>`<div class="pbar"><span>${PLAN_MODES[m]}</span><i style="width:${Math.round(week[m]/top*100)}%"></i><b>${Math.round(week[m])}′</b></div>`).join('')||'<p class="fine">Nothing yet this week.</p>'}</div>
-    <div class="arccal">${cal}</div>
-    <div class="sec">Log</div>${PLAN.log.length?`<ul class="plog">${PLAN.log.slice(0,15).map((s,i)=>`<li><b>${s.d}</b> ${gigAccHTML(s.name)}, ${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} min <span class="fine">${[...new Set(s.blocks.map(b=>PLAN_MODES[b.mode]))].join(', ')}</span>${s.note?`<br><span class="pnote">${gigAccHTML(s.note)}</span>`:''} <button class="linkish" data-pl="delog" data-i="${i}" title="Remove from the log">×</button></li>`).join('')}</ul>`:'<p class="fine">Finished sessions show up here, with your notes.</p>'}`;
+      <div class="erow"><button class="go" data-pl="savenote">Save note</button><button class="ghost" data-pl="skipnote">Skip</button></div></div>`; }
+  h+=`<div class="ptabs" role="tablist">${[['mine','My routines'],['explore','Explore'],['history','History']].map(([k,n])=>`<button role="tab" data-ptab="${k}" aria-selected="${tab===k}">${n}</button>`).join('')}</div>`;
+  if(PLAN.view) h+=planDetailHTML();
+  else if(tab==='mine') h+=PLAN.routines.length?`<div class="proutines">${PLAN.routines.map(r=>planRoutineCard(r,'mine')).join('')}<button class="proutine pnew" data-pl="new">+ New routine</button></div>`
+      :`<div class="pempty"><p>No routines yet. Pick one in <b>Explore</b> to start from, or build your own.</p><div class="erow"><button class="go" data-ptab="explore">Explore routines</button><button class="ghost" data-pl="new">+ New routine</button></div></div>`;
+  else if(tab==='explore') h+=`<p class="fine" style="margin:0 0 4px">Every routine here is built in the same order:</p><ol class="prules">${PLAN_RULES.map(x=>`<li>${x}</li>`).join('')}</ol>
+      ${PLAN_EXPLORE.map(g=>`<div class="sec">${g.group}</div><div class="proutines">${g.items.map(r=>planRoutineCard(r,'x')).join('')}</div>`).join('')}`;
+  else h+=planHistoryHTML();
   $('planPane').innerHTML=h;
 }
-function planEditorHTML(){
-  const e=PLAN.edit, opt=(list,cur)=>list.map(([v,t])=>`<option value="${v}"${v===cur?' selected':''}>${gigAccHTML(t)}</option>`).join('');
-  return `<div class="sec">Edit routine</div><div class="pedit">
-    <input id="peName" value="${gigAccHTML(e.name)}" placeholder="Name" maxlength="40">
-    ${e.blocks.map((b,i)=>`<div class="perow" data-i="${i}"><select data-f="mode">${opt(Object.entries(PLAN_MODES),b.mode)}</select>
-      ${b.mode==='free'||planTargets(b.mode).length<2?'<span></span>':`<select data-f="target">${opt(planTargets(b.mode),b.target)}</select>`}
-      <label class="pemin"><input type="number" min="1" max="120" data-f="min" value="${b.min}"> min</label>
-      <input data-f="note" value="${gigAccHTML(b.note||'')}" placeholder="${b.mode==='free'?'What to do (scales, a tune, sight-reading…)':'Note (optional)'}">
-      <span class="pebtn"><button class="ghost" data-pe="up"${i?'':' disabled'}>↑</button><button class="ghost" data-pe="down"${i<e.blocks.length-1?'':' disabled'}>↓</button><button class="ghost" data-pe="del">×</button></span></div>`).join('')}
-    <button class="ghost" data-pe="add">+ Add a block</button>
-    <p class="fine">${planMins(e)} minutes in all.</p>
-    <div class="erow"><button class="go" data-pe="save">Save</button><button class="ghost" data-pe="cancel">Cancel</button>${PLAN.routines.some(r=>r.id===e.id)?'<button class="ghost" data-pe="remove">Delete routine</button>':''}</div></div>`;
+function planDetailHTML(){
+  const [kind,id]=PLAN.view.split(':'), r=kind==='x'?planExplore(id):PLAN.routines.find(x=>x.id===id); if(!r){ PLAN.view=null; return ''; }
+  return `<div class="pdetail"><button class="back" data-pl="close">← ${kind==='x'?'Explore':'My routines'}</button>
+    <div class="prh big"><b>${gigAccHTML(r.name)}</b><span>${planMins(r)} min · ${r.blocks.length} blocks</span></div>${r.why?`<p>${gigAccHTML(r.why)}</p>`:''}
+    <ol class="pchk">${r.blocks.map((b,i)=>`<li><i>${i+1}</i>${planBlockLine(b)}</li>`).join('')}</ol>
+    <div class="erow"><button class="go" data-pl="start"${PLAN.run?' disabled title="A session is already running"':''}>Start</button>${kind==='x'?'<button class="ghost" data-pl="adopt">Add to my routines</button>':'<button class="ghost" data-pl="edit">Edit</button><button class="ghost" data-pl="copy">Copy</button><button class="ghost" data-pl="del">Delete</button>'}</div></div>`;
 }
+function planHistoryHTML(){
+  const week=planWeek(), wk=Object.values(week).reduce((a,b)=>a+b,0), top=Math.max(1,...Object.values(week)), st=planStreak(), days=new Set(PLAN.log.map(s=>s.d));
+  const cal=[...Array(14)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-13+i); const on=days.has(arcDay(d)); return `<i class="${on?'on':''}${i===13?' today':''}" title="${arcDay(d)}">${on?'✓':''}</i>`; }).join('');
+  return `<div class="sec">This week: ${Math.round(wk)} minutes${st?` · 🔥 ${st}-day streak`:''}</div>
+    <div class="pweek">${Object.keys(PLAN_MODES).filter(m=>week[m]).map(m=>`<div class="pbar"><span>${PLAN_ICON[m]} ${PLAN_MODES[m]}</span><i style="width:${Math.round(week[m]/top*100)}%"></i><b>${Math.round(week[m])}′</b></div>`).join('')||'<p class="fine">Nothing yet this week.</p>'}</div>
+    <div class="arccal">${cal}</div>
+    <div class="sec">Sessions</div>${PLAN.log.length?`<ul class="plog">${PLAN.log.slice(0,30).map((s,i)=>`<li><b>${s.d}</b> ${gigAccHTML(s.name)}, ${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} min${s.planned?` of ${s.planned}`:''} <span class="fine">${[...new Set(s.blocks.map(b=>PLAN_ICON[b.mode]))].join(' ')}</span>${s.note?`<br><span class="pnote">${gigAccHTML(s.note)}</span>`:''} <button class="linkish" data-pl="delog" data-i="${i}" title="Remove from the log">×</button></li>`).join('')}</ul>`:'<p class="fine">Finished sessions show up here, with your notes.</p>'}`;
+}
+
+/* ---------------- the editor: block cards, steppers, drag to reorder, the Add-blocks picker ---------------- */
+function renderPlanEditor(){
+  const e=PLAN.edit, opt=(list,cur)=>list.map(([v,t])=>`<option value="${v}"${v===cur?' selected':''}>${gigAccHTML(t)}</option>`).join('');
+  let h=`<div class="pedhead"><button class="ghost" data-pe="cancel">Cancel</button><b>${PLAN.routines.some(r=>r.id===e.id)?'Edit routine':'New routine'}</b><button class="go" data-pe="save"${e.blocks.length?'':' disabled'}>Save</button></div>
+    <input id="peName" value="${gigAccHTML(e.name)}" placeholder="Routine name" maxlength="40">
+    <p class="fine">${planMins(e)} minutes · ${e.blocks.length} block${e.blocks.length===1?'':'s'}. Drag a card by ≡ to move it.</p>
+    <div class="pecards">${e.blocks.map((b,i)=>`<div class="pecard" data-i="${i}" draggable="true">
+      <span class="pegrip" title="Drag to move">≡</span>
+      <div class="pebody"><div class="petop"><span class="pbi">${PLAN_ICON[b.mode]}</span><b>${PLAN_MODES[b.mode]}</b>
+        ${planTargets(b.mode).length>1?`<select data-f="target" aria-label="What in ${PLAN_MODES[b.mode]}">${opt(planTargets(b.mode),b.target)}</select>`:''}</div>
+        <input data-f="note" value="${gigAccHTML(b.note||'')}" placeholder="${b.mode==='free'?'What to do: scales, a tune, sight-reading…':'Note (why this block, what to focus on)'}"></div>
+      <div class="pestep"><button class="ghost" data-pe="minus" aria-label="One minute less">−</button><span><b>${b.min}</b> min</span><button class="ghost" data-pe="plus" aria-label="One minute more">+</button></div>
+      <div class="pemore"><button class="ghost" data-pe="up"${i?'':' disabled'} aria-label="Move up">↑</button><button class="ghost" data-pe="down"${i<e.blocks.length-1?'':' disabled'} aria-label="Move down">↓</button><button class="ghost" data-pe="dup" title="Duplicate">⧉</button><button class="ghost" data-pe="del" title="Remove">×</button></div></div>`).join('')}</div>
+    ${PLAN.pick?planPickerHTML():'<button class="ghost padd" data-pe="pick">+ Add blocks</button>'}
+    ${PLAN.routines.some(r=>r.id===e.id)?'<p style="margin-top:16px"><button class="linkish pdanger" data-pe="remove">Delete this routine</button></p>':''}`;
+  $('planPane').innerHTML=h;
+}
+// every block you can add: a mode and what in it, with what it's for
+function planChoices(){ return Object.keys(PLAN_MODES).flatMap(m=>planTargets(m).map(([t,label])=>({mode:m,target:t,label:label||PLAN_MODE_BLURB[m]}))); }
+function planPickerHTML(){
+  const P=PLAN.pick, q=(P.q||'').toLowerCase(), list=planChoices().filter(c=>(!P.mode||c.mode===P.mode)&&(!q||(PLAN_MODES[c.mode]+' '+c.label).toLowerCase().includes(q)));
+  return `<div class="ppick"><div class="ppickh"><b>Add blocks</b><input id="ppSearch" type="search" placeholder="Search: rush, ii–V, melodies…" value="${gigAccHTML(P.q||'')}"><button class="ghost" data-pe="pickclose">Close</button></div>
+    <div class="chipsrow">${[['','All'],...Object.entries(PLAN_MODES)].map(([k,n])=>`<button class="chip" data-pm="${k}" aria-pressed="${(P.mode||'')===k}">${k?PLAN_ICON[k]+' ':''}${n}</button>`).join('')}</div>
+    <div class="ppl" id="ppList">${planPickListHTML(list)}</div>
+    <div class="erow"><button class="go" data-pe="pickadd"${P.sel.length?'':' disabled'}>Add ${P.sel.length||''} block${P.sel.length===1?'':'s'}</button></div></div>`;
+}
+const planPickKey=c=>c.mode+'|'+c.target;
+function planPickListHTML(list){ const sel=PLAN.pick.sel; return list.map(c=>{ const k=planPickKey(c), n=sel.filter(x=>x===k).length;
+  return `<button class="ppitem${n?' on':''}" data-pk="${k}"><span class="pbi">${PLAN_ICON[c.mode]}</span><span><b>${PLAN_MODES[c.mode]}</b> ${gigAccHTML(c.label)}</span>${n?`<i>${n>1?'×'+n:'✓'}</i>`:''}</button>`; }).join('')||'<p class="fine">Nothing matches.</p>'; }
 // keep what's typed in the editor before it redraws
 function planReadEditor(){ const e=PLAN.edit; if(!e) return; const n=$('peName'); if(n) e.name=n.value;
-  document.querySelectorAll('#planPane .perow').forEach(row=>{ const b=e.blocks[+row.dataset.i]; row.querySelectorAll('[data-f]').forEach(x=>{ const f=x.dataset.f; b[f]=f==='min'?Math.max(1,Math.min(120,+x.value||1)):x.value; }); }); }
-$('planPane').addEventListener('change',e=>{ const f=e.target.dataset&&e.target.dataset.f; if(!PLAN.edit||!f) return; planReadEditor();
-  if(f==='mode'){ const b=PLAN.edit.blocks[+e.target.closest('.perow').dataset.i]; b.target=''; } renderPlanPane(); });
+  document.querySelectorAll('#planPane .pecard').forEach(card=>{ const b=e.blocks[+card.dataset.i]; card.querySelectorAll('[data-f]').forEach(x=>b[x.dataset.f]=x.value); }); }
+const PLAN_DEFAULT_MIN={hands:5,voicings:10,lines:8,ears:6,reharm:10,gig:10,free:10};
+
+$('planPane').addEventListener('change',e=>{ if(!PLAN.edit||!e.target.dataset.f) return; planReadEditor(); renderPlanPane(); });
+$('planPane').addEventListener('input',e=>{ if(e.target.id==='ppSearch'){ PLAN.pick.q=e.target.value; const P=PLAN.pick, q=P.q.toLowerCase(); $('ppList').innerHTML=planPickListHTML(planChoices().filter(c=>(!P.mode||c.mode===P.mode)&&(!q||(PLAN_MODES[c.mode]+' '+c.label).toLowerCase().includes(q)))); } });
+$('planPane').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('.proutine[data-open]')){ e.preventDefault(); e.target.click(); } });
 $('planPane').addEventListener('click',e=>{
-  const p=e.target.closest('[data-pl]'), q=e.target.closest('[data-pe]');
-  if(p){ const a=p.dataset.pl, r=PLAN.routines.find(x=>x.id===p.dataset.r);
-    if(a==='start') planStart(r.id);
-    else if(a==='open') planOpenBlock();
-    else if(a==='pause') planPause();
-    else if(a==='next') planNext();
+  const t=e.target, tabB=t.closest('[data-ptab]'), card=t.closest('.proutine[data-open]'), p=t.closest('[data-pl]'), q=t.closest('[data-pe]'), pm=t.closest('[data-pm]'), pk=t.closest('[data-pk]');
+  if(tabB){ PLAN.tab=tabB.dataset.ptab; PLAN.view=null; savePlan(); renderPlanPane(); return; }
+  if(card&&!p){ PLAN.view=card.dataset.open; renderPlanPane(); $('startOv').scrollTop=0; return; }
+  if(p){ const a=p.dataset.pl, [kind,id]=(PLAN.view||':').split(':'), r=kind==='x'?planExplore(id):PLAN.routines.find(x=>x.id===id);
+    if(a==='start') planStart(r);
+    else if(a==='close') PLAN.view=null;
+    else if(a==='adopt'){ const c=planCopyOf(r); PLAN.routines.push(c); PLAN.tab='mine'; PLAN.view='mine:'+c.id; savePlan(); }
+    else if(a==='edit'){ PLAN.edit=JSON.parse(JSON.stringify(r)); }
+    else if(a==='copy'){ const c=planCopyOf(r,r.name+' (copy)'); PLAN.routines.push(c); PLAN.view='mine:'+c.id; savePlan(); }
+    else if(a==='del'){ if(!confirm(`Delete “${r.name}”?`)) return; PLAN.routines=PLAN.routines.filter(x=>x.id!==r.id); PLAN.view=null; savePlan(); }
+    else if(a==='new'){ PLAN.edit={id:'r'+Date.now(),name:'My routine',blocks:[]}; PLAN.pick={sel:[],q:'',mode:''}; }
+    else if(a==='open') { planOpenBlock(); return; }
+    else if(a==='pause') { planPause(); return; }
+    else if(a==='next') { planNext(); return; }
     else if(a==='end'){ if(confirm('End this session? The time so far is logged.')) planFinish(); return; }
-    else if(a==='savenote'){ PLAN.log[0].note=$('plNote').value.trim(); PLAN.fresh=false; savePlan(); renderPlanPane(); }
-    else if(a==='edit') { PLAN.edit=JSON.parse(JSON.stringify(r)); renderPlanPane(); }
-    else if(a==='copy'){ PLAN.routines.push({...JSON.parse(JSON.stringify(r)),id:'r'+Date.now(),name:r.name+' (copy)'}); savePlan(); renderPlanPane(); }
-    else if(a==='new'){ PLAN.edit={id:'r'+Date.now(),name:'My routine',blocks:[planBlock('hands',10)]}; renderPlanPane(); }
-    else if(a==='delog'){ PLAN.log.splice(+p.dataset.i,1); savePlan(); renderPlanPane(); }
-    return; }
-  if(q){ planReadEditor(); const ed=PLAN.edit, a=q.dataset.pe, row=q.closest('.perow'), i=row?+row.dataset.i:-1;
-    if(a==='add') ed.blocks.push(planBlock('lines',5));
-    else if(a==='del') ed.blocks.splice(i,1);
+    else if(a==='savenote'){ PLAN.log[0].note=$('plNote').value.trim(); PLAN.fresh=false; savePlan(); }
+    else if(a==='skipnote'){ PLAN.fresh=false; savePlan(); }
+    else if(a==='delog'){ PLAN.log.splice(+p.dataset.i,1); savePlan(); }
+    if(a!=='start') renderPlanPane(); return; }
+  if(pm){ PLAN.pick.mode=pm.dataset.pm; renderPlanPane(); return; }
+  if(pk){ PLAN.pick.sel.push(pk.dataset.pk); planReadEditor(); renderPlanPane(); return; }   // tap again to add it twice
+  if(q){ planReadEditor(); const ed=PLAN.edit, a=q.dataset.pe, card=q.closest('.pecard'), i=card?+card.dataset.i:-1, b=ed.blocks[i];
+    if(a==='minus') b.min=Math.max(1,b.min-1);
+    else if(a==='plus') b.min=Math.min(120,b.min+1);
     else if(a==='up'&&i>0) [ed.blocks[i-1],ed.blocks[i]]=[ed.blocks[i],ed.blocks[i-1]];
     else if(a==='down'&&i<ed.blocks.length-1) [ed.blocks[i+1],ed.blocks[i]]=[ed.blocks[i],ed.blocks[i+1]];
-    else if(a==='save'){ if(!ed.blocks.length) return; ed.name=ed.name.trim()||'My routine'; const k=PLAN.routines.findIndex(r=>r.id===ed.id); if(k>=0) PLAN.routines[k]=ed; else PLAN.routines.push(ed); PLAN.edit=null; savePlan(); }
-    else if(a==='cancel') PLAN.edit=null;
-    else if(a==='remove'){ if(!confirm(`Delete “${ed.name}”?`)) return; PLAN.routines=PLAN.routines.filter(r=>r.id!==ed.id); PLAN.edit=null; savePlan(); }
+    else if(a==='dup') ed.blocks.splice(i+1,0,{...b});
+    else if(a==='del') ed.blocks.splice(i,1);
+    else if(a==='pick') PLAN.pick={sel:[],q:'',mode:''};
+    else if(a==='pickclose') PLAN.pick=null;
+    else if(a==='pickadd'){ PLAN.pick.sel.forEach(k=>{ const [m,tg]=k.split('|'); ed.blocks.push(planBlock(m,PLAN_DEFAULT_MIN[m],tg)); }); PLAN.pick=null; }
+    else if(a==='save'){ if(!ed.blocks.length) return; ed.name=ed.name.trim()||'My routine'; const k=PLAN.routines.findIndex(r=>r.id===ed.id); if(k>=0) PLAN.routines[k]=ed; else PLAN.routines.push(ed); PLAN.edit=null; PLAN.pick=null; PLAN.tab='mine'; PLAN.view='mine:'+ed.id; savePlan(); }
+    else if(a==='cancel'){ PLAN.edit=null; PLAN.pick=null; }
+    else if(a==='remove'){ if(!confirm(`Delete “${ed.name}”?`)) return; PLAN.routines=PLAN.routines.filter(r=>r.id!==ed.id); PLAN.edit=null; PLAN.pick=null; PLAN.view=null; savePlan(); }
     renderPlanPane(); }
 });
+// drag a block card to a new place (the ↑ ↓ buttons do the same without a mouse)
+let planDrag=null;
+$('planPane').addEventListener('dragstart',e=>{ const c=e.target.closest&&e.target.closest('.pecard'); if(!c) return; planReadEditor(); planDrag=+c.dataset.i; c.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',String(planDrag)); });
+$('planPane').addEventListener('dragover',e=>{ const c=e.target.closest&&e.target.closest('.pecard'); if(planDrag==null||!c) return; e.preventDefault();
+  document.querySelectorAll('#planPane .pecard').forEach(x=>x.classList.remove('dropabove','dropbelow')); const r=c.getBoundingClientRect(); c.classList.add(e.clientY<r.top+r.height/2?'dropabove':'dropbelow'); });
+$('planPane').addEventListener('drop',e=>{ const c=e.target.closest&&e.target.closest('.pecard'); if(planDrag==null||!c) return; e.preventDefault();
+  const r=c.getBoundingClientRect(), bl=PLAN.edit.blocks, from=planDrag; let to=+c.dataset.i+(e.clientY<r.top+r.height/2?0:1); const [m]=bl.splice(from,1); if(to>from) to--; bl.splice(to,0,m); planDrag=null; renderPlanPane(); });
+$('planPane').addEventListener('dragend',()=>{ planDrag=null; document.querySelectorAll('#planPane .pecard').forEach(x=>x.classList.remove('dragging','dropabove','dropbelow')); });
 planChip(); if(side==='home') renderHome();   // the home card drew before this file loaded
 </script>
 </body>

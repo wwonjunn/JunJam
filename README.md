@@ -73,11 +73,14 @@ A jazz piano trainer with two sides:
   Each enemy says how many notes it takes and walks slower the more it needs: 👾 one note, 🐍 two, 🦎 three, 🐊 four,
   🐉 five, 🕷️ a chord, 🦖 a bass line; a serpent's segments get blasted off one note at a time.
   Play any chord to go again.
-- **Practice**: your own practice routines, like a workout app. A routine is a list of blocks (a mode, maybe a stage,
-  Ears world, Voicings tab or lick pick, minutes, a note); three to start from (Daily 45, Quick 10, Comping day), all
-  editable. Start opens each block's mode; a timer chip keeps time wherever you go (pause, skip, it survives a reload),
-  chimes when it's up and takes you to the next block. Sessions are logged with minutes per mode and a note for next
-  time; the page shows the week's minutes per mode, a streak and a 14-day calendar.
+- **Practice**: practice routines, built like a workout app. My routines, Explore (13 ready-made routines: everyday,
+  short, focus days and special ones like lesson prep or the day of a gig, each with the reason for its order) and
+  History. Every built-in routine follows the same order: warm up on something you know, new material while you're
+  fresh, then recall it, ears as the change of pace, apply it in real music last, 5 to 15 minutes a block. The editor:
+  block cards you drag to reorder, − and + for minutes, a note each, and an Add-blocks picker with search and
+  multi-select. Start opens each block's mode at its stage, chord, world or pick; a timer chip keeps time wherever you
+  go (pause, skip, it survives a reload), chimes when it's up and takes you on; the page shows the session as a
+  checklist. Sessions are logged with planned and actual minutes and a note; History shows the week per mode and a streak.
 - **Lines practice** (the Lines library and drill stay as Classic; rhythm is never graded, only the notes in order):
   a line of the week, learned in its own key and straight on into that day's new keys, round the circle of 4ths
   (C F B♭ E♭...), spread over the days left so it reaches all 12 by Sunday, or all the keys left in one go
@@ -94,9 +97,16 @@ A jazz piano trainer with two sides:
   where you play the move in six keys while the app plays the progression around you, and an ear quiz.
 - **Voicings**: 86 named two-hand voicings over 44 chord types (Kenny Barron, So What, Bill Evans rootless A and B,
   upper-structure triads, the Mu chord, the Hendrix and James Bond chords, Herbie sus, gospel stacks, neo-soul clusters,
-  slash chords...), each hand within about a 10th. Learn one from its card (a keyboard diagram labelled by degree, both
-  hands named), play it in C and then five keys from memory, then Rush: a timed game that often asks for one chord two or
-  three ways in a row; a miss shows the shape, you play it, and it comes back a few chords later. Graded on the exact layout, in any octave.
+  slash chords...), each hand within about a 10th, on a path of six chapters from the easiest to the richest (triads
+  and pop colours, slash chords, seventh-chord shells, rootless ninths, 11ths/13ths/Lydian, altered dominants). Each
+  chord type is one card with every way to play it side by side, and one lesson: each way in C with the shape shown,
+  then a mixed round from memory (a random way in a new key each time). Stars go on the chord type. Bosses inside the
+  chapters, a chapter boss at the end of each, a final boss. Rush and Comp Hero are the games; the old one-card-per-voicing
+  dictionary stays at the bottom as Classic. Graded on the exact layout, in any octave.
+- **A recommended order everywhere, nothing locked**: Chords shows its path as one strip (stages and progressions
+  woven together), Ears numbers its worlds (scale degrees, intervals, melodies, chords, progressions), Voicings has its
+  chapters, Lines suggests Medium after five Easy licks and Hard after five Medium, Reharm its three tiers. Cards ahead of
+  the path are dimmed, picking one says what's recommended first, and the home cards say what's next in each mode.
 - **Transcribe** (button on the home screen): drop in an mp3 (or record a browser tab), choose a solo transcription or a
   lead sheet, select the part, and get editable sheet music with chords. Rhythms are written down to 32nds, with triplets,
   quintuplets, sextuplets and septuplets. Edit in a piano roll, either on the beat or as played (every note where it
@@ -151,7 +161,8 @@ js/lines/runs.js      scale runs that sound like music: pentatonic threes and fo
 js/lines/more.js      more originals: minor ii–V–i, J-pop and city-pop progressions, backdoor, blues, gospel, neo-soul, runs
 js/lines/session.js   Lines drill (learn, then transfer to new keys), import your own
 js/lines/practice.js  Lines practice: the line of the week, today's session, spaced review
-js/plan.js            Practice: your routines, the block timer chip, the session log
+js/plan.js            Practice: your routines, Explore, the editor, the block timer chip, the session log
+js/path.js            the recommended order in every mode (soft: dimmed cards and a note, never locked)
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
 js/voicings/library.js  the voicing library (both hands, written in C) and the extra chord types it names
