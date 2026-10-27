@@ -1857,6 +1857,6015 @@ Bmaj7 B♭7/D | E♭m7 E♭m7/G♭ A♭m11 A♭m11/B♭ | Bmaj13 B♭7/D | E♭m
 Bmaj7 B♭/D | E♭m7 Fm7♭5 | G♭maj9 B B | Cm7♭5 B |
 B♭7♯5 |`,
 
+`title: ハルジオン (Harujion)
+by: YOASOBI
+genre: J-pop
+feel: Driving pop
+source: U-FRET chord chart
+tempo: 130
+key: Cm
+[Intro]
+A♭ B♭ | Gm Cm | A♭ Gm | Cm D♭ |
+A♭ B♭ | Gm Cm | A♭ B♭ | Cm |
+[A]
+A♭ B♭ | Gm Cm | Fm B° | Cm D♭ |
+A♭ B♭ | Gm Cm | Fm B° | Cm |
+[B]
+A♭ B♭/A♭ | Gm Cm | D♭ E♭ | A♭ B♭ |
+G7 Csus4 | C |
+[C]
+A♭ B♭ | Gm Cm | A♭ G7 | B° Cm |
+D♭ E♭ | A♭ B♭ | Gm B° | Cm D♭ |
+A♭ G7 |
+[Interlude]
+Cm A♭ | G7 | Cm A♭ | G7 |
+[D]
+Cm A♭ | G7 | Cm | A♭ G7 |
+[E]
+A♭ B♭/A♭ | Gm Cm | D♭ E♭ | A♭ B♭/A♭ |
+Gm Cm | D♭ E♭ |
+[F]
+A♭ B♭/A♭ | Gm Cm | D♭ E♭ | A♭ B♭ |
+G7 Csus4 | C B♭ |
+[G]
+A♭ B♭ | Gm Cm | B♭ | A♭ G7 |
+B° Cm | D♭ E♭ |
+[H]
+A♭ B♭ | Gm B° | Cm | A♭ G7 |
+[I]
+A B | A♭m D♭m | A A♭7 | C° D♭m |
+D E | A B | A♭m C° | D♭m D |
+E | A A♭7 | A B |
+[Outro]
+A B | A♭m D♭m | A B | E |`,
+
+`title: 怪物 (Kaibutsu)
+by: YOASOBI
+genre: J-pop
+feel: Fast pop
+source: U-FRET chord chart
+tempo: 184
+key: E
+[A]
+G♯m | G♯m | E D♯ | G♯m |
+G♯m | G♯m | E | D♯ G♯m |
+[B]
+E D♯ | G♯m | E D♯ | G♯m B |
+E F♯ | G° G♯m | B | E D♯ |
+[C]
+A B | G♯m | C♯m A | G♯ G♯/C |
+C♯m Bm | E | A B | G♯ G♯/C |
+C♯m | A B |
+[Interlude]
+A B | G♯m C♯m | A G♯ |
+[D]
+G♯m | B | E C♯m | D♯ G♯m |
+B | E C♯m | D♯ |
+[Interlude 2]
+G♯m B | E D♯ | G♯m B | E D♯ |
+G♯m B | E D♯ | G♯m B | E D♯ |
+[E]
+G♯m | G♯m | E | D♯ |
+G♯m | G♯m | E | D♯ |
+G♯m B | E D♯ | G♯m B | E D♯ |
+G♯m B | E D♯ |
+[Interlude 3]
+G♯m B |
+[F]
+F♯ G♯ | Fm | A♯m F♯ | F F/A |
+A♯m | G♯m C♯ | F♯ G♯ | A° A♯m |
+F♯ G♯ |
+[G]
+A♯ C | Am | Dm A♯ | A A/C♯ |
+Dm Cm | F | A♯ C | A A/C♯ |
+Dm | A♯ C |
+[Interlude 4]
+A♯ C | Am Dm | A♯ A | A/C♯ Dm |
+Cm F |
+[H]
+Bm7♭5 Gm/A♯ | A A/C♯ | Dm | A♯ C |
+[Outro]
+Dm F | Gm A | Dm F | Gm A |
+Dm F | Gm A | Dm F | Gm A |
+Dm |`,
+
+`title: 祝福 (Shukufuku)
+by: YOASOBI
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 150
+key: Am
+[A]
+F F♯ | G Em | Am | Dm E♭ |
+E C | C/B♭ | F F♯ | G Em |
+Am | Dm E | Am |
+[Interlude]
+B♭ Gm | Am B♭ | Gm | Am B♭ |
+Gm | Am E♭ | Cm D |
+[B]
+Fmaj7 Em7 | Am7 Dm7 | E7 Am7 | Gm7 C |
+Fmaj7 G | Em7 A | Dm7 G | C |
+[C]
+C/B♭ F | G | Em Am | Dm E |
+C C/B♭ | F G | Em Am | Dm E |
+[D]
+C D | Bm E | Am B/E♭ | Em G |
+D♭m7♭5 Am/C | Bm7♭5 E | Am | Bm Em |
+[Interlude 2]
+F Dm | Em F | Dm | Em F |
+Dm |
+[E]
+Em F | Dm Em | F | Dm Em |
+F | Dm Em | F | Dm Em |
+Am |
+[F]
+Bm C | D Bm | Em | Am B7 |
+G | G/F C | D Bm | Em |
+Am B7 |
+[G]
+C D | Bm Em | Am B/E♭ | Em Dm7 |
+G | C D | D/C Bm | E Am |
+Am | B♭° B |
+[H]
+D♭ | Cm F | B♭m C/E | Fm E♭m |
+A♭ Dm7♭5 | B♭m/D♭ | Cm7♭5 F | B♭m |
+Cm D♭ |
+[Interlude 3]
+Cm F | B♭m C/E | Fm |
+[I]
+E♭m A♭ | Dm7♭5 | B♭m/D♭ Cm7♭5 | B° |
+B♭m Cm7 | Fm E+ | E♭m | A♭ B♭m |
+E♭ Fm |
+[Outro]
+F♯ E♭m | Fm F♯ | E♭m | Fm F♯ |
+E♭m | Fm F♯ | E♭m |`,
+
+`title: 勇者 (Yūsha)
+by: YOASOBI
+genre: J-pop
+feel: Anime pop
+source: U-FRET chord chart
+tempo: 162
+key: Gm
+[A]
+Gm7 F | Em7♭5 Am | D7 | Gm7 F |
+Em7♭5 Am | D7 | Gm7 F | Em7♭5 Am |
+D7 | Gm7 F | Em7♭5 Am | D7 |
+[Interlude]
+Gm7 E♭maj7 | D7 |
+[B]
+Gm7 | Gm7 | Gm7 E♭maj7 | D7 |
+Gm7 | Gm7 | Gm7 E♭maj7 | D7 |
+[C]
+Gm7 | Gm7 | E♭maj7 D7 | D7 |
+[D]
+E♭maj7 | F Dm7 | Gm7 | Cm7 D♭° |
+D7 Gm7 | Fm7 | B♭7 E♭maj7 | F |
+Dm7 Gm7 | G Cm7 | D7 | D7 |
+[Interlude 2]
+Gm7 E♭maj7 | Dm7 |
+[E]
+Gm7 F | Em7♭5 | Am D7 | Gm7 F |
+E♭maj7 D7 |
+[F]
+E♭maj7 D7 | Gm7 | Cm7 Dm7 | Gm7 G |
+E♭maj7 D7 | Gm7 | Cm7 Dm7 | Gm7 |
+E♭maj7 | Dm7 Gm7 | Cm7 Dm7 | Gm7 |
+E♭maj7 Dm7 | Gm7 | E♭maj7 D7 |
+[Interlude 3]
+Gm7 F | Em7♭5 Am | D7 | Gm7 F |
+Em7♭5 Am | D7 |
+[G]
+Gm7 F | Em7♭5 Am | D7 | Gm7 F |
+Em7♭5 | Am D7 |
+[H]
+E♭maj7 | F | Dm7 Gm7 | G♭m7 Cm7 |
+D7 Gm7 | G |
+[I]
+D7 E♭maj7 | F | Dm7 Gm7 | Cm7 D7 |
+Gm7 Fm7 | B♭7 | Em7 | E♭maj7 |
+Dm7 Gm7 | G Cm7 | D7 | E♭maj7 |
+[Interlude 4]
+F Dm7 | Gm7 | Cm7 D7 | Gm7 G♭m7 |
+Fm7 B♭7 |
+[J]
+E♭maj7 F | G♭° Gm7 | Cm7 | Dm7 |
+[Outro]
+Gm7 F | Em7♭5 Am | D7 | Gm7 F |
+Em7♭5 Am | D7 |`,
+
+`title: たぶん (Tabun)
+by: YOASOBI
+genre: J-pop
+feel: Mid pop
+source: U-FRET chord chart
+tempo: 100
+key: Dm
+form: A Interlude B C D Interlude 2 B E F D Interlude 3 G H I J Outro
+[A]
+B♭maj7 C | A7 Dm7 | Cm7 F7 | B♭maj7 C |
+[Interlude]
+B♭maj7 C | Am7 Dm7 |
+[B]
+B♭maj7 C | Am7 Dm7 | B♭maj7 A7 | Dm7 E♭ |
+F |
+[C]
+B♭maj7 C | F | B♭maj7 C | F F7 |
+[D]
+B♭maj7 C | Am7 Dm7 | Gm7 A7 | Dm7 Cm7 |
+F7 | B♭maj7 C | Am7 Dm7 | Gm7 C |
+[Interlude 2]
+B♭maj7 C | Am7 Dm7 | Gm7 C | F F7 |
+[E]
+B♭maj7 C | Am7 Dm7 | B♭maj7 C | F F7 |
+[F]
+B♭maj7 C | Am7 Dm7 | B♭maj7 A7 | Dm7 E♭ |
+F | B♭maj7 C | Am7 Dm7 | B♭maj7 C |
+F F7 |
+[Interlude 3]
+B♭maj7 C | Am7 Dm7 | Gm7 A7 | Dm7 Cm7 |
+F7 | B♭maj7 C | Am7 Dm7 | Gm7 C |
+[G]
+B♭maj7 | Am7 Dm7 | Gm7 A7 | Dm7 Cm7 |
+F7 | B♭maj7 | Am7 Dm7 | Gm7 A7 |
+[H]
+B♭maj7 C |
+[I]
+Bmaj7 D♭ | B♭m7 E♭m7 | A♭m7 B♭7 | E♭m7 D♭m7 |
+G♭7 | Bmaj7 D♭ | B♭m7 E♭m7 | A♭m7 D♭ |
+G♭ |
+[J]
+Bmaj7 D♭ | B♭m7 E♭m7 | A♭m7 B♭7 | E♭m7 D♭m7 |
+G♭7 | Cm7♭5 Bmaj7 | B♭7 E♭m7 | A♭m7 D♭ |
+G♭ | Bmaj7 D♭ |
+[Outro]
+Bmaj7 D♭ | B♭m7 E♭m7 | A♭m7 B♭7 | E♭m7 D♭m7 |
+G♭7 | Bmaj7 D♭ | B♭m7 E♭m7 | A♭m7 D♭ |
+Bmaj7 D♭ | B♭m7 E♭m7 | A♭m7 D♭ | G♭ |`,
+
+`title: 感電 (Kanden)
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Funk
+source: U-FRET chord chart
+tempo: 137
+key: B
+form: Intro A B C D Interlude E B C D F F C C D
+[Intro]
+B B/D♯ | C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 |
+A♯m7♭5 D♯7 | C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 |
+D♯7 |
+[A]
+C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 | A♯m7♭5 D♯7 |
+C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 | D♯7 G♯ |
+[B]
+C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 | A♯m7♭5 D♯7 |
+C♯m7 D♯m7 | G♯m7 Gm7 | F♯m7 B7 | Fm7♭5 Emaj7 |
+D♯m7 D° | C♯m7 C7 | B B/D♯ |
+[C]
+G♯m7 C♯7 | F♯7 B7 | Fm7♭5 Emaj7 | D♯7 G♯m7 |
+G♯m7 C♯7 | F♯7 B7 | Fm7♭5 Emaj7 | F♯7 B7 |
+[D]
+Emaj7 F♯7 | D♯m7 G♯m7 | A♯m7♭5 D♯7 | G♯m7 |
+C♯m7 B7 | F♯/A♯ G♯m7 |
+[Interlude]
+C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 | D♯7 |
+[E]
+C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 | A D♯7 |
+C♯m7 D♯m7 | G♯m7 B7 | Fm7♭5 Emaj7 | D♯7 G♯ |
+[F]
+G♯ Bm7 | E Amaj7 | Emaj7 D♯7 | G♯m7 |
+G♯ Bm7 | E Amaj7 | Emaj7 D♯7 | G♯m7 |`,
+
+`title: KICK BACK
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Punk
+source: U-FRET chord chart
+tempo: 185
+key: B♭m
+form: Intro A B C D E A F G H I D E A
+[Intro]
+B♭m F | B♭m F | B♭m F | B♭m F |
+[A]
+B♭m F | B♭m F | B♭m F | B♭m F |
+[B]
+B♭m F | B♭m F | B♭m F | B♭m F |
+Gm A | Dm G | B♭ E♭ | G |
+[C]
+E G♭ | A♭m | D♭m E♭m | A♭m |
+A B | A♭ | G♭m A♭ |
+[D]
+D♭m G♭m | A♭ D♭m | G♭m E | A B |
+C° | D♭m G♭m | A♭ D♭m |
+[E]
+A A♭ | D♭m | A A♭ | D♭m |
+A A♭ | D♭m |
+[F]
+B♭m F | B♭m F | B♭m F | B♭m F |
+Gm Am | Dm G | B♭ E♭ | G |
+[G]
+A♭ Gm7♭5 | C Fm | A♭/E♭ A♭ | D♭m E♭ |
+A♭ Gm7♭5 | C Fm | E♭m A♭ | D♭ E♭ |
+Fm Gm7♭5 | C Fm | G♭m A♭sus4 | A♭ |
+[H]
+D♭m G♭m | A♭ D♭m | G♭m E | A B |
+D♭m C+ | E/B | B♭m7♭5 |
+[I]
+A A♭ | D♭m | A A♭/C | D♭m |
+D♭m C+ | E/B B♭m7♭5 | A A♭ | Gm G♭m |
+Fm Em | E♭m A♭ |`,
+
+`title: ピースサイン (Peace Sign)
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 143
+key: Cm
+form: Intro Interlude A B C Interlude A B D Interlude 2 E Interlude 3 F
+[Intro]
+A♭ B♭ | B° Cm | E♭ |
+[Interlude]
+A♭ B♭ | Cm E♭ | G7 B° | Cm |
+A♭ B♭ | Cm E♭ | G7 B° | Cm |
+[A]
+Cm Fm7 | B♭ Cm | Cm Fm7 | B♭ Cm |
+Cm Fm7 | B♭ Cm | Cm Fm7 | B♭ Cm |
+[B]
+Fm7 Cm | A♭ B♭ | Fm7 Cm | Fm7 Gm7 |
+A♭ B♭ |
+[C]
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | B° Cm | B D♭ | E♭ |
+[D]
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | G7 Cm | B D♭ | E♭ |
+[Interlude 2]
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+[E]
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+[Interlude 3]
+A♭ B♭ | B° Cm | E♭ | A♭ B♭ |
+B° Cm | E♭ |
+[F]
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | Cm E♭ | A♭ B° | Cm E♭ |
+A♭ B♭ | G7 Cm | B D♭ | E♭ |
+A♭ B♭ | G7 Cm | B D♭ | E♭ |`,
+
+`title: 馬と鹿 (Uma to Shika)
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Anthem
+source: U-FRET chord chart
+tempo: 75
+key: Cm
+form: A B C Interlude A D E Interlude F C G
+[A]
+Cm A♭ | B♭ E♭ | B♭/D | Cm F7 |
+B♭ E♭ | Cm A♭ | B♭ E♭ | B♭/D |
+Cm F7 | B♭ E♭ |
+[B]
+A♭ E♭ | G7 Cm | D♭ E♭ | Fm |
+B♭m A♭ | G7 Cm | Fm7 B♭ | E♭ E♭7 |
+[C]
+A♭ B♭ | Cm F7 | Dm7♭5 G7 | Cm C7 |
+A♭ B♭ | Cm F7 | A♭ | B♭ Cm |
+E♭ | A♭ B♭ | Cm A♭7 | A♭ B♭ |
+Cm E♭ | A♭ B♭ | Cm G7 | A♭ B♭ |
+E♭ |
+[Interlude]
+A♭ B♭ | Cm Gm7 | A♭ B♭ | Cm E♭ |
+A♭ B♭ | Cm Gm7 | B♭ G7 | Cm |
+[D]
+A♭ E♭ | Dm7♭5 G7 | Cm | D♭ E♭ |
+Fm E♭ | B♭m A♭ | G7 Cm | Fm7 B♭ |
+E♭ E♭7 |
+[E]
+A♭ B♭ | Cm F7 | Dm7♭5 G7 | Cm C7 |
+A♭ B♭ | Cm F7 | A♭ | B♭ Cm |
+E♭ | A♭ B♭ | Cm G7 | A♭ B♭ |
+Cm E♭ | A♭ B♭ | Cm | G7 A♭ |
+B♭ E♭ |
+[F]
+E♭m B♭m7 | B G♭ | Fm7 G7 | Cm D7 |
+Gm C7 | F B♭ | Dm7♭5 G7 | Cm |
+E♭m B♭m7 | B G♭ | Fm7 G7 | Cm |
+A♭ B♭ | Cm Gm | A♭ B♭ | E♭ |
+[G]
+A♭ B♭ | Cm G7 | A♭ B♭ | Cm E♭ |
+A♭ B♭ | Cm G7 | A♭ B♭ | E♭ |`,
+
+`title: 打上花火 (Uchiage Hanabi)
+by: DAOKO × 米津玄師
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 95
+key: E♭m
+form: Intro A B C Interlude D E F Interlude 2 C G Interlude 3 H C Interlude 4 Interlude 4 Outro
+[Intro]
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+[A]
+B D♭ | E♭m D♭ | B D♭ | E♭m G♭ |
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+[B]
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+B D♭ | E♭m G♭ | B D♭ | G♭ |
+[C]
+B D♭ | E♭m B♭m7 | B D♭ | E♭m G♭ |
+B D♭ | E♭m B♭m7 | B D♭ | B D♭ |
+E♭m |
+[Interlude]
+B D♭ | E♭m G♭ | B D♭ | E♭m |
+[D]
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+[E]
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+[F]
+B D♭ | E♭m G♭ | B D♭ |
+[Interlude 2]
+B D♭ |
+[G]
+B | D♭ | E♭m | D♭/F D♭ |
+[Interlude 3]
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+[H]
+B D♭ | E♭m G♭ | B D♭ | E♭m G♭ |
+B D♭ | E♭m G♭ | B D♭ |
+[Interlude 4]
+B D♭ | E♭m B♭m7 | B D♭ | E♭m G♭ |
+B D♭ | E♭m B♭m7 | B D♭ | B D♭ |
+E♭m |
+[Outro]
+B D♭ | E♭m G♭ | B D♭ | E♭m |`,
+
+`title: 灰色と青 (Haiiro to Ao)
+by: 米津玄師 + 菅田将暉
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: E
+form: Intro A A B C Interlude Interlude 2 D A E C Interlude F G C Interlude H I Outro
+[Intro]
+E/G♯ A | B C♯m | E A | B E |
+[A]
+E/G♯ A | B C♯m | E/G♯ A | B C° |
+C♯m A | B E |
+[B]
+A B | C♯m | A | B C♯m |
+A B | C° C♯m | F♯7 B | A E |
+[C]
+C♯m A | B E | C♯m A | B E |
+C♯m A | B E | A B | C♯m |
+[Interlude]
+A B | E |
+[Interlude 2]
+E/G♯ A | B C♯m | E/G♯ A | B E |
+[D]
+E/G♯ A | B C♯m | E/G♯ A | B |
+C° | C♯m A | B E |
+[E]
+A B | C♯m | A B | C♯m E |
+A B | C° C♯m | F♯7 B | A E |
+[F]
+F♯m7 C♯m | C° C♯m | A B | C♯m |
+F♯m7 C♯m | C° C♯m | F♯m7 G♯m7 | A C |
+B Am7 |
+[G]
+C♯m A | B E | C♯m A | B E |
+E/G♯ A | B E | C♯m A | B |
+[H]
+F♯m7 C♯m | C° C♯m | A B | C♯m B |
+[I]
+F♯m7 C♯m | C° C♯m | A B | E |
+[Outro]
+E A | B E |`,
+
+`title: 地球儀 (Chikyūgi)
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 76
+key: B♭
+form: Intro A B Interlude C Interlude 2 D Interlude C Interlude E Interlude 3 F Outro
+[Intro]
+F Gm7 | E♭maj7 | F Gm7 | E♭maj7 |
+[A]
+B♭ B♭sus4 | B♭ | Gm7 B♭/F | E♭maj7 B♭/D |
+Cm7 Gm7 | E♭maj7 G♭° | Gm7 | Fsus4 B♭ |
+[B]
+B♭ B♭sus4 | B♭ | Gm7 B♭/F | E♭maj7 B♭/D |
+Cm7 Gm7 | E♭maj7 G♭° | Gm7 | Fsus4 |
+[Interlude]
+B♭ |
+[C]
+B♭/D E♭maj7 | F Gm7 | E♭maj7 F | Gm7 F/A |
+B♭ | B♭/D E♭maj7 | F E♭maj7 | G♭° Gm7 |
+Cm7 F | Dm7 Gm7 | E♭maj7 F | Gm7 |
+Cm7 F | Dm7 Gm7 | E♭maj7 F | B♭ |
+[Interlude 2]
+F Gm7 | E♭maj7 | F Gm7 | E♭maj7 |
+[D]
+B♭ B♭sus4 | B♭ | Gm7 B♭/F | E♭maj7 B♭ |
+Cm7 Gm7 | E♭maj7 F | Gm7 F/A | B♭ Fsus4 |
+[E]
+Gm7 F | E♭maj7 F | E♭maj7 F | Gm7 |
+Cm7 Gm7 | E♭maj7 |
+[Interlude 3]
+Fsus4 |
+[F]
+E♭maj7 F | Gm7 | E♭maj7 F | Gm7 F/A |
+B♭ | B♭/D E♭maj7 | F E♭maj7 | G♭° Gm7 |
+Cm7 F | Dm7 Gm7 | E♭maj7 F | Gm7 |
+Cm7 F | Dm7 Gm7 | E♭maj7 G♭° | Gm7 |
+Cm7 F | Dm7 Gm7 | E♭maj7 F | B♭ |
+[Outro]
+F Gm7 | E♭maj7 | F Gm7 | E♭maj7 |`,
+
+`title: アイネクライネ (Eine Kleine)
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 84
+key: D♭
+form: A B C D B C E F G
+[A]
+G♭ D♭ | A♭ B♭m7 | G♭ D♭ | F F7 |
+B♭m7 | G♭ D♭ | F F7 | B♭m7 |
+G♭ D♭ | A♭ G♭ | G♭ |
+[B]
+G♭ D♭ | A♭ B♭m7 | G♭ D♭ | F F7 |
+B♭m7 | G♭ D♭ | F F7 | B♭m7 |
+G♭ D♭ | A♭ D♭ | A♭ D♭ |
+[C]
+E♭m7 Fm7 | G♭ A♭ | E♭m7 Fm7 | G♭ A♭ |
+D♭ | E♭m7 Fm7 | G♭ A♭ | G♭ |
+D♭ A♭ | G♭ | G♭ |
+[D]
+B♭m7 E♭m7 | G♭ A♭ | D♭ | B♭m7 E♭m7 |
+G♭ A♭ | D♭ | B♭m7 E♭m7 | G♭ A♭ |
+D♭ | F7 B♭m7 | G♭ A♭ | D♭ |
+F7 B♭m7 | D♭ D♭sus4 | D♭ D♭sus4 | D♭ |
+[E]
+B♭m7 E♭m7 | G♭ A♭ | D♭ | B♭m7 E♭m7 |
+G♭ A♭ | D♭ | B♭m7 E♭m7 | G♭ A♭ |
+D♭ | F7 B♭m7 | G♭ A♭ | D♭ |
+F7 B♭m7 | D♭ D♭sus4 | D♭ D♭sus4 | D♭ |
+E♭m7 Fm7 | G♭ A♭ | E♭m7 Fm7 | G♭ A♭ |
+D♭ | E♭m7 Fm7 | G♭ A♭ | G♭ D♭ |
+A♭ |
+[F]
+E♭m7 Fm7 | G♭ A♭ | E♭m7 Fm7 | G♭ A♭ |
+D♭ | E♭m7 Fm7 | G♭ A♭ | G♭ D♭ |
+G♭ |
+[G]
+B♭m7 E♭m7 | G♭ A♭ | D♭ | B♭m7 E♭m7 |
+G♭ A♭ | D♭ | B♭m7 E♭m7 | G♭ A♭ |
+D♭ | F7 B♭m7 | G♭ A♭ | D♭ |
+F7 B♭m7 | G♭ A♭ | D♭ | F F7 |
+B♭m7 G♭ | A♭ D♭ |`,
+
+`title: LOSER
+by: 米津玄師 (Kenshi Yonezu)
+genre: J-pop
+feel: Dance rock
+source: U-FRET chord chart
+tempo: 100
+key: F♯
+form: Intro A B C Interlude A D B C E C F Outro
+[Intro]
+Bm7 | F♯m A | Bm C♯ | F♯m A |
+Bm C♯ |
+[A]
+F♯m A | Bm C♯ | F♯m A | Bm C♯ |
+[B]
+Dmaj7 E | F♯m | A Bm | C♯m F♯m |
+Dmaj7 E | F♯m | A Bm | C♯ |
+[C]
+D♯m B | C♯ F♯ | D♯m B | C♯ F♯ |
+D♯m B | C♯ F♯ | D♯m B | C♯ F♯ |
+[Interlude]
+F♯m A | Bm C♯ |
+[D]
+F♯m Aadd9/E | Bm C♯ | F♯m Aadd9/E | Bm C♯ |
+F♯m A | Bm C♯ | F♯m A | Bm C♯ |
+[E]
+D♯m B | F♯ C♯ | D♯m B | F♯ C♯ |
+D♯m B | F♯ C♯ | D♯m B | F♯ C♯ |
+B C♯ | D♯m F♯ | B C♯ | D♯m F♯ |
+B C♯ | D♯m F♯ | B C♯ |
+[F]
+D♯m B | C♯ F♯ | D♯m B | C♯ F♯ |
+D♯m B | C♯ F♯ |
+[Outro]
+D♯m B | C♯ F♯ | F♯m A | Bm C♯ |
+F♯m |`,
+
+`title: I LOVE...
+by: Official髭男dism
+genre: J-pop
+feel: Pop ballad
+source: U-FRET chord chart
+tempo: 104
+key: A
+form: Intro A B C Interlude D E F G H Interlude I
+[Intro]
+D A/C♯ | Bm7 F♯m | E/G♯ A | A/C♯ E |
+D A/C♯ | Bm7 F♯m | E/G♯ A | A/C♯ E |
+[A]
+D C♯7 | F♯m Em7 | A D | C♯7 F♯m |
+Em7 A | D C♯7 | F♯m Em | A D |
+C♯7 F♯m | Em A |
+[B]
+D C♯7 | F♯m Em | A | D C♯7 |
+Bm E | A |
+[C]
+D E | C♯m F° | F♯m | Bm D/E |
+A A7 | D E | C♯m F° | F♯m |
+Bm A/C♯ | Dm Esus4 |
+[Interlude]
+Dmaj7 C♯m7 | Dmaj7 F♯m |
+[D]
+D E | Amaj7 F♯m | D C♯7 | F♯m |
+E D♯m7♭5 | Dm A/C♯ | Am/C | Bm D/E |
+[E]
+Dmaj7 C♯7 | F♯m Em | A | Dmaj7 C♯7 |
+F♯m Em | D♯m7♭5 | Dmaj7 C♯7 | F♯m Em |
+A | Dmaj7 C♯7 | Bm E | A |
+[F]
+D E | C♯m F° | F♯m | Bm A/C♯ |
+Dm Esus4 | A A7 |
+[G]
+D E | F° F♯m | Bm C♯m | D E |
+F♯m Dm | Em F | Esus4 |
+[H]
+E D | E C♯7 | F° F♯m | Bm D/E |
+A | D E | C♯m F° | F♯m |
+Bm A/C♯ | Dm Esus4 | E |
+[I]
+D Esus4 | E A |`,
+
+`title: ノーダウト (No Doubt)
+by: Official髭男dism
+genre: J-pop
+feel: Funk pop
+source: U-FRET chord chart
+tempo: 119
+key: A
+form: Intro A A B Interlude A A C D B Outro
+[Intro]
+F♯7 | Bm E7 | A D | Bm E7 |
+A D |
+[A]
+Bm E7 | A D | Bm E7 | A D |
+[B]
+Bm E7 | A D | Bm E7 | A D |
+G F♯7 | Bm E7 | Em7 A | D |
+[Interlude]
+Bm E7 | A D | Bm E7 | A D |
+[C]
+Bm E7 | A D | Bm E7 | A D |
+A D | G | Bm E7 | Em7 F♯7 |
+[D]
+A D | G F♯7 | Bm E7 | A |
+G F♯7 | Bm E7 | Em7 A | D |
+[Outro]
+Bm E7 | A D | Bm E7 | A D |
+Bm |`,
+
+`title: 115万キロのフィルム (115 Man Kilo no Film)
+by: Official髭男dism
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 95
+key: E♭
+[A]
+A♭ Gm7 | Fm7 | E♭ D♭ | Dm7♭5 G7 |
+Cm B♭ | Am7♭5 | Fm7 B♭ | E♭ A♭m7 |
+D♭ | E♭ A♭m7 | B♭ | E♭ Dm7♭5 |
+G7 | Cm Bm7 | B♭m7 E♭ | Dm7♭5 G7 |
+Cm B♭ | Am7♭5 | Fm7 B♭ | Gm7 Cm |
+Fm7 B♭ | E♭ E♭7 | Dm7♭5 G7 | Cm B♭ |
+Am7♭5 | Fm7 B♭ | E♭ Dm7♭5 | G7 |
+Cm B° | B♭ C7 | Fm7 Fmmaj7 | B♭ |
+E♭ Dm7♭5 | G7 | Cm B° | B♭ C7 |
+A♭ B♭/A♭ | Gm7 C7 | Fm7 B♭ | E♭ |
+E♭ Dm7♭5 | G7 | Cm B♭m | E♭ |
+Dm7♭5 G7 | Cm B♭ | Am7♭5 | Fm7 B♭ |
+Gm7 Cm | Fm7 B♭ | E♭ E♭7 | Dm7♭5 G7 |
+Cm B♭ | Am7♭5 | Fm7 B♭ | E♭ Dm7♭5 |
+G7 | Cm B° | B♭ C7 | Fm7 Fmmaj7 |
+B♭ | E♭ Dm7♭5 | G7 | Cm B° |
+B♭ C7 | A♭ B♭/A♭ | Gm7 C7 | Fm7 B♭ |
+E♭ | G7 Cm | A♭m7 D♭ | E♭ |
+E♭ Dm7♭5 | G7 Cm | B° | E♭/B♭ Am7♭5 |
+Fm7 B♭ | E♭ B♭ | E♭ Dm7♭5 | G7 |
+Cm B° | B♭ C7 | Fm7 Fmmaj7 | B♭ |
+E♭ Dm7♭5 | G7 | Cm B° | B♭ C7 |
+A♭ B♭/A♭ | Gm7 C7 | Fm7 B♭ | E♭ Dm7♭5 |
+G7 | Cm B° | E♭/B♭ Am7♭5 | A♭ B♭/A♭ |
+Gm7 C7 | Fm7 B♭ | E♭ | Fm7 B♭ |
+B D♭ | E♭maj7 |`,
+
+`title: Cry Baby
+by: Official髭男dism
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 133
+key: D♭
+[A]
+Fm Dm7♭5 | D♭ | Gm7♭5 E° | Fm Dm7♭5 |
+D♭ Gm7♭5 | C Dm |
+[B]
+C/E F | F/A Gm | A D | Dm C/E |
+F Bm7♭5 | Gm A♭° | A |
+[C]
+D D♭m7♭5 | G♭ Bm | D♭° D | D♭/E♭ F7 |
+G♭ Fm | B♭m | E♭m Fm | B♭m D♭/A♭ |
+Gm7♭5 | G♭ Fm | A° B♭m | A+ D♭/A♭ |
+Gm7♭5 | G♭ Fm | B♭ E♭m | Fm B♭m |
+D♭/A♭ G♭ | A♭ B♭m | D♭/F G♭ | A♭ B♭ |
+C |
+[D]
+Fm Dm7♭5 | D♭ | Gm7♭5 E° | Fm Dm7♭5 |
+D♭ Gm7♭5 | E° C |
+[Interlude]
+Fm | Fm Cm | B♭m C | D♭ A♭ |
+Fm E° | Fm Cm | B♭m C | D♭ A♭ |
+Fm E° |
+[E]
+Dm C/E | F F/A | Gm A | D |
+Dm C/E | F Bm7♭5 | Gm C7 | Am7♭5 D |
+Gm A | Dsus4 D |
+[F]
+D D♭m7♭5 | G♭ Bm | D♭° D | D♭/E♭ F7 |
+G♭ Fm | B♭m | E♭m Fm | B♭m D♭/A♭ |
+Gm7♭5 | G♭ Fm | A° B♭m | A+ D♭/A♭ |
+Gm7♭5 | G♭ Fm | B♭ E♭m | Fm B♭m |
+D♭/A♭ E♭m | Fm G♭ | A♭ A | B D♭m |
+E/A♭ A | B | Bm G♭/A♭ | G♭ A♭ |
+B♭m D♭/F | G♭ A♭ | B♭ |`,
+
+`title: 宿命 (Shukumei)
+by: Official髭男dism
+genre: J-pop
+feel: Brass pop
+source: U-FRET chord chart
+tempo: 105
+key: F
+form: Intro A B C A D E F C Interlude G
+[Intro]
+F B♭ | C D♭° | Dm7 | B♭ F |
+Gm7 C7 |
+[A]
+F Am7 | B♭ C | D♭° Dm7 | Dm7 C |
+Bm7♭5 Gm7 | Bm7♭5 C7 | F Am7 | B♭ C |
+D♭° Dm7 | Dm7 C | Bm7♭5 Gm7 | G♭7 F |
+[B]
+F B♭ | C D♭° | Dm7 | F B♭ |
+C D♭° | Dm7 | F B♭ | C D♭° |
+Dm7 | Gm7 Am7 | B♭ Bm7♭5 | C |
+[C]
+F D♭° | Dm7 E♭ | B♭ F | Gm7 D♭° |
+F D♭° | Dm7 E♭ | B♭ F | Gm7 B♭m7 |
+F |
+[D]
+F B♭ | C D♭° | Dm7 | F B♭ |
+C D♭° | Dm7 | F B♭ | C D♭° |
+Dm7 | Gm7 Am7 | B♭ Bm7♭5 | C D♭° |
+[E]
+F D♭° | Dm7 E♭ | B♭ F | Gm7 D♭° |
+F D♭° | Dm7 E♭ | B♭ F | Gm7 B♭m7 |
+F | F B♭ | C D♭° | Dm7 |
+B♭ F | Gm7 C7 | F B♭ | C D♭° |
+Dm7 | B♭ F | Gm7 C7 |
+[F]
+F Am7 | B♭ C | D♭° Dm7 | Dm7 C |
+Bm7♭5 Gm7 | Bm7♭5 C7 | F C | Dm Em7♭5 |
+D♭° | A7 Dm7 | C7 Bm7♭5 | Gm7 B♭m7 |
+C |
+[Interlude]
+F D♭° | Dm7 E♭ | B♭ F | Gm7 D♭° |
+F D♭° | Dm7 E♭ |
+[G]
+Gm7 B♭m7 | F |`,
+
+`title: SOULSOUP
+by: Official髭男dism
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 160
+key: D
+[Intro]
+Em7 Asus4 | F♯m7/B B | Em7 Asus4 | F♯m7/B B |
+[A]
+Em7 Asus4 | Dmaj7 G | D/F♯ Em7 | F♯7 Bsus4 |
+B | Em7 Asus4 | Dmaj7 G | D/F♯ Em7 |
+F♯7 G | D/F♯ Em7 | F♯7 |
+[Interlude]
+Em7 Asus4 | F♯m7/B B |
+[B]
+Em7 Asus4 | Dmaj7 G | D/F♯ Em7 | F♯7 Bsus4 |
+B | Em7 Asus4 | Dmaj7 G | D/F♯ Em7 |
+F♯m7 Gm7 | Asus4 A |
+[C]
+D D7 | G C9 | Bm7 E7 | Em7 C9 |
+D D+ | G D/F♯ | Em7 F♯m7 | G A |
+Bm F♯ |
+[D]
+G A | Bm7 B | Em7 F♯7 | Bm7 D |
+G A | Bm7 B | Em7 F♯m7 | Bsus4 B |
+Em7 Asus4 |
+[Interlude 2]
+F♯m7/B B | Em7 Asus4 | F♯m7/B B |
+[E]
+Am D7 | Gmaj7 C9 | F♯m7 | F♯7 Bsus4 |
+B | Am D7 | Gmaj7 D/F♯ | Em7 |
+D/F♯ Gmaj7 | D/F♯ Em7 | A D |
+[Interlude 3]
+Dmaj7 D7 | G C9 | Bm7 E7 | Em7 C9 |
+D D+ | G D/F♯ |
+[F]
+Em7 F♯m7 | G F♯m7 | Em7 F♯m7 | Gmaj7 Bm |
+F♯ |
+[Interlude 4]
+C♯m7/F♯ F♯ |
+[G]
+G A | Bm7 B | Em7 F♯7 | Bm7 D |
+G A | Bm7 B | Em7 F♯m7 | Gmaj7 F♯sus4 |
+F♯ |
+[H]
+Em7 A | D G | Em7 F♯7 | Bm Am7 |
+D | G A/G | Bm7 B | Em7 F♯m7 |
+Gmaj7 F♯m7 | Em7 | F♯m7 Gmaj7 | D/F♯ |
+Em7 F♯m7 | Bsus4 B |
+[Outro]
+Em7 Asus4 | F♯m7/B B | Em7 Asus4 | F♯m7/B B |
+Em7 F♯m7 | G |`,
+
+`title: 一途 (Ichizu)
+by: King Gnu
+genre: J-pop
+feel: Fast rock
+source: U-FRET chord chart
+tempo: 190
+key: A
+form: Intro A A A B C Interlude D A C E Interlude 2 A F Outro
+[Intro]
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+[A]
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+[B]
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D | C♯ | D A7 |
+B♭ G |
+[C]
+G♯m B♭ | D♯m C♯m | Cm7♭5 B | B♭ A |
+G♯m B♭ | D♯m C♯m | Cm7♭5 B | B♭ A |
+[Interlude]
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+[D]
+F♯m Bm | E A | D B | E C♯ |
+F♯m Bm | E A | D B | E |
+[E]
+G♯m B♭ | D♯m C♯ | Cm7♭5 B | B♭ A |
+G♯m B♭ | D♯m C♯ | Cm7♭5 B | B♭ A |
+[Interlude 2]
+F♯m A7 | D C♯ | D A7 | B♭ G |
+[F]
+F♯m A | D C♯ | D A7 | B♭ G |
+F♯m A7 | D C♯ | D A7 | B♭ G |
+[Outro]
+F♯m |`,
+
+`title: 逆夢 (Sakayume)
+by: King Gnu
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 70
+key: F♯
+form: Intro A B Interlude C D E F G Interlude H D I F J Interlude 2 K J L Interlude 3 M M Interlude 4 N Outro
+[Intro]
+Em7 F♯m/A | D C♯m7♭5 | F♯ | Bm D/A |
+G♯m7♭5 | G D/F♯ | Em A |
+[A]
+Dm Gm | C F | A♯ Bm7♭5 | C C♯° |
+[B]
+Dm Gm | C F | A♯ Bm7♭5 | C C♯° |
+Dm D♯m |
+[Interlude]
+F♯ A♯ | D♯m | B Bm |
+[C]
+F♯ A♯ | D♯m | B Bm | F♯ A♯ |
+D♯m | B Bm |
+[D]
+D E | F♯m | A C♯ | F♯m |
+Bm F | G |
+[E]
+D E | F♯m A | C♯ F♯m | Bm |
+[F]
+C♯ D♯m | G♯m | C♯ F♯ | B G♯ |
+C♯ A♯ |
+[G]
+D♯m | G♯m C♯ | F♯ | B G♯ |
+C♯ A♯ |
+[H]
+F♯ A♯ | D♯m | B | Bm |
+[I]
+D E | F♯m | A C♯ | F♯m |
+Bm |
+[J]
+D♯m G♯m | C♯ F♯ | B G♯ | C♯ A♯ |
+[Interlude 2]
+D♯m G♯m | C♯ F♯ | B G♯ | C♯ A♯ |
+[K]
+D♯m G♯m | C♯ F♯ | B G♯ | C♯ A♯ |
+D♯m G♯m | C♯ A♯ | B G♯ | C♯ A♯ |
+[L]
+D♯m G♯m | C♯ F♯ | B G♯ | C♯ |
+A♯ |
+[Interlude 3]
+G B | Em | C Cm |
+[M]
+G B | Em | C | Cm |
+[Interlude 4]
+G B | Em |
+[N]
+D C | Cm F |
+[Outro]
+G B | Em | C Cm | G |`,
+
+`title: カメレオン (Kamereon)
+by: King Gnu
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: C
+form: A B Interlude C D E F Interlude D G H I J
+[A]
+C F | G | E/A♭ Am | C/G D/F♯ |
+G |
+[B]
+C F | G | E Am | C/G D/F♯ |
+G | F/A G/B |
+[Interlude]
+Dm C | B♭ | Gm Am | A G/B |
+A/D♭ |
+[C]
+Dm C | G/B | C G/B | Am |
+F♯m7♭5 F | Gsus4 G |
+[D]
+Dm C | G/B | C G/B | Am |
+Fmaj7 | G |
+[E]
+C F | G | E/A♭ | Am C/G |
+D/F♯ | G |
+[F]
+C F | G F | E E/A♭ | Am C/G |
+D/F♯ | G | F/A G/B |
+[G]
+C C/E | F | Dm | F E |
+E/A♭ | Am C/G | D/F♯ | F/G G |
+[H]
+C F | G | F E | E/A♭ Am |
+C/G D/F♯ | F/G G | Dm C/E | Fm |
+[I]
+F B♭ | C | B♭ A | A/D♭ Dm |
+F/C G/B | B♭/C |
+[J]
+F C/E | Dm G/B | C | B♭ A |
+A/D♭ Dm | C G/B | B♭/C | B♭/D C/E |`,
+
+`title: 飛行艇 (Hikōtei)
+by: King Gnu
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 84
+key: F♯m
+form: Intro A B C D A B C C E E E E F F G H
+[Intro]
+F♯m | F♯m E | D Bm | C♯ |
+[A]
+F♯m E | D Bm7 | C♯m7 |
+[B]
+F♯m E | D | Bm7 C♯m7 |
+[C]
+F♯m | E | D | Bm7 C♯m7 |
+[D]
+F♯m | E | D | Bm7 C♯m7 |
+F♯m | F♯m E | D Bm | C♯ |
+[E]
+F♯m G | A B♭° | Bm | Em7 C |
+Cm G | C♯7 |
+[F]
+Gm | F | D♯ | Cm7 Dm7 |
+[G]
+Gm F | Em7♭5 D♯ | Dm7 C♯ | Cm7 B♭ |
+Am7♭5 D7 |
+[H]
+Gm F | Em7♭5 D♯ | Dm7 C♯ | Cm7 B♭ |
+Am7♭5 D7 | Gm |`,
+
+`title: SPECIALZ
+by: King Gnu
+genre: J-pop
+feel: Fast rock
+source: U-FRET chord chart
+tempo: 192
+key: F♯m
+form: Interlude Interlude 2 B C D E F G Interlude 2 B C H H I J Interlude J Interlude K F G C J Outro
+[Interlude]
+F♯m |
+[Interlude 2]
+F♯m A | D C♯ |
+[B]
+F♯m A | D C♯ |
+[C]
+F♯m A | D C♯ | F♯m A | D C♯ |
+F♯m A | D C♯ | F♯m A | D C♯ |
+[D]
+F♯m A | D C♯ | F♯m A | D C♯ |
+F♯m | A D | C♯ F♯m | A D |
+[E]
+C♯ |
+[F]
+F♯m A | D C♯ | F♯m A | D C♯ |
+F♯m A | D C♯ | F♯m A | D |
+C♯ |
+[G]
+F♯m A | D C♯ | F♯m A | D C♯ |
+F♯m A | D C♯ | F♯m A |
+[H]
+D | F♯m E | D |
+[I]
+C♯ | C♯ | C♯ | C♯ |
+[J]
+F♯m |
+[K]
+F♯m | F♯m | F♯m | F♯m |
+[Outro]
+F♯m |`,
+
+`title: 点描の唄 (Tenbyō no Uta)
+by: Mrs. GREEN APPLE feat. 井上苑子
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 72
+key: C
+[A]
+C Am | Fm C | Am F | C Am7 |
+Fm C | Am7 F | G |
+[B]
+C F | G C | E7 Am7 | Gm7 F |
+Fm | C F | G C | G |
+Am Am7 | F F/G | C |
+[C]
+F F/G | Am Am7 | F F/G | Am Am7 |
+F G | C G | Am Am7 | F G |
+C |
+[D]
+Am F | G C | G E7 | Am F |
+G | A♭° Am | F G | C G |
+B♭ Am | F G | C F | B♭ |
+[E]
+C F | G C | G | E7 Am |
+Gm7 F | Fm | C F | G C |
+G | Am Am7 | C F | F/G C |
+Am7/F Am7 | Am7/F Am7 |
+[F]
+Am F | G C | G E7 | Am Am7 |
+F G | A♭° Am | F G | C |
+G B♭ | Am F | A♭° Am | B♭ Am |
+F G | C |
+[G]
+C F | G Am | F G | Am |
+F G | Am Em | F G | C |
+F Em | Dm G | C | F Em |
+Dm G | C |
+[H]
+C F | G Am | C | F G |
+A♭° Am | C F | A♭° Am | G B♭ |
+Am | G A♭° |
+[I]
+Am F | G C | G E7 | Am Am7/G |
+F G | A♭° Am | F G | C G |
+B♭ Am | F G | C |
+[J]
+C F | G Am | F G | C |
+F G | Am Em | F G | C |
+[K]
+F G | Am F | G C | F G |
+Am | Em F | G C | C Am |
+Fm C | Am F | G C |`,
+
+`title: 僕のこと (Boku no Koto)
+by: Mrs. GREEN APPLE
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: G
+form: A B C D Interlude E F G H I J Interlude K
+[A]
+G A/C♯ | C G | D/F♯ | Em A/C♯ |
+C G | B7 Em | Bm7 C | G |
+D/F♯ C | F G |
+[B]
+G A/C♯ | C G | Em A/C♯ | Am7 D |
+G | B7 C | Am7 D | E♭° |
+Am7 D |
+[C]
+G D | Em Bm7 | C G | Am7 D |
+E♭° | Em Bm7 | Am7 D | E♭° |
+C D | Em Bm7 | Am7 D |
+[D]
+G D | Em Bm7 | C G/B | Am7 D |
+G F | Em A7 | C D | Em |
+Bm7 Am7 | D Cm7 |
+[Interlude]
+G E♭° | Em C | G/B C | D E♭° |
+Em A7 | E♭ F | B♭ D7 |
+[E]
+G A/C♯ | C D | G | Em A/C♯ |
+C G | E♭° Em | Bm7 C | G |
+C A/C♯ | D E♭° | Em Bm7 | C G |
+Am7 D | B7 |
+[F]
+Em Bm7 | C D | G D/F♯ | Em Bm7 |
+C D | G D/F♯ | Em Bm7 | C E♭° |
+C D | Em Bm7 | Am7 D | G F/A |
+B♭ | B♭ Cm7 | Dm7 E♭ | F |
+[G]
+B♭ F/A | Gm Dm7 | E♭ F♯° | Gm |
+Dm7 E♭ | F B♭ | D7 | Gm Dm7 |
+E♭ D7 | E♭ F♯° | Gm Dm7 | Cm7 F |
+B♭ D7 | E♭ E♭° | Gm Dm7 | Cm7 F |
+C♯ A♭/C | Dm7♭5 E♭ | D7 |
+[H]
+G D | Em Bm7 | C G/B | Am7 D |
+G | F | Em A7 | G/B C |
+Em | Bm7 C | D Cm7 | D |
+[I]
+G D/F♯ | Em Bm7 | C G/B | Am7 D |
+E♭° | Em Bm7 | C D | G |
+B7 C | D Em |
+[J]
+Bm7 Am7 | D Cm7 |
+[K]
+G A/C♯ | C G | D/F♯ | Em A/C♯ |
+C G | B7 Em | Bm7 C | G |
+Am7 D |`,
+
+`title: インフェルノ (Inferno)
+by: Mrs. GREEN APPLE
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 180
+key: E
+form: Intro A A B C A E C F G
+[Intro]
+C♯m7 B | A E | B | C♯m7 B |
+A E | C♯m7 B | A E | B |
+C♯m7 B | A E | G♯7 |
+[A]
+C♯m7 A | B C° | C♯m7 A | B E |
+C♯m7 A | B C° | C♯m7 A | B E |
+[B]
+A E | D♯m7♭5 E | A E | B |
+[C]
+C♯m7 F♯m7 | B E | B | C♯m7 A |
+B E | G♯7 | C♯m7 F♯m7 | B E |
+B | C♯m7 A | B E | C° C♯m7 |
+A B | E |
+[E]
+A E | D♯m7♭5 E | A E | B E |
+A E | D♯m7♭5 E | A E | B G♯7 |
+[F]
+C♯m7 D | E B | C♯m7 D | A B |
+F♯m7 G♯m7 | A C° |
+[G]
+E A | B C° | C♯m7 A | B E |
+G♯7 | C♯m7 D♯m7♭5 | E G♯m7 | A C° |
+E B | C♯m7 A | B C° | D♯m7♭5 C♯m7 |
+A Amaj7 | Amaj7 B | C♯m7 E | Amaj7 C° |
+C♯m7 E | Amaj7 B | C♯m7 E | Amaj7 C° |
+D♯m7♭5 E |`,
+
+`title: ダンスホール (Dance Hall)
+by: Mrs. GREEN APPLE
+genre: J-pop
+feel: Bright pop
+source: U-FRET chord chart
+tempo: 140
+key: A
+form: A Interlude B C D E Interlude 2 F G D H Interlude 3 I J K L
+[A]
+G A | Bm | G G♯° | D |
+D/A B♭+ | Bm Em7 | A D | G A |
+D A |
+[Interlude]
+D/F♯ G | A B♭° | Bm Am | D |
+Gmaj7 C | A |
+[B]
+D G | A D | A/C♯ Bm | E7 |
+A C | D |
+[C]
+A/C♯ Bm | E7 | A B♭° | Bm |
+E7 | A D |
+[D]
+G A | Bm | G G♯° | D |
+F♯m B♭° | Bm Em7 | A D |
+[E]
+G A | Bm | G G♯° | D |
+A B♭° | Bm | Em7 A | D |
+[Interlude 2]
+G A |
+[F]
+D G | A B♭° | Bm E7 | A D |
+[G]
+A/C♯ Bm | E7 | A F♯ | Bm |
+E7 | A D |
+[H]
+G A | Bm | G G♯° | D |
+A B♭° | Bm Em7 | A D |
+[Interlude 3]
+G A | D | Bm A | D |
+Bm A | D | E D | G A |
+Bm | G A | Bm | A B♭° |
+Bm | D/A D♯/B♭ |
+[I]
+G♯ B♭ | Cm | G♯ A° | D♯ |
+Gm Cm | Fm B♭ | D♯ |
+[J]
+G♯ B♭ | Cm | G♯ A° | D♯ |
+B♭ B° | Cm |
+[K]
+A B | C♯m A | B♭° | E G♯m |
+C° | C♯m F♯m | B E |
+[L]
+A B | C♯m A | B♭° E | F♯m |
+B C° | C♯m F♯m | B E | F♯m B |
+E |`,
+
+`title: Soranji
+by: Mrs. GREEN APPLE
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 70
+key: F
+form: A Interlude B C D E F G Interlude 2 H I E J K L Interlude 3 M N Z Z 2 Interlude 4 Z 3 Z 4 Interlude 5 Z 5 Outro
+[A]
+F F/A | B♭ | C D♭° | Dm |
+F/A B♭ | C F | B♭ | F B♭ |
+F B♭ |
+[Interlude]
+Csus4 C |
+[B]
+F/A B♭ | F Csus4 | C | F/A B♭ |
+C/E F | F/A B♭ | F/C D♭° | Dm F/A |
+Gm C | F |
+[C]
+F/A B♭ | F Csus4 | C | F/A B♭ |
+C/E F | F/A B♭ | F/C D♭° | B♭ F/A |
+Gm C | F |
+[D]
+Dm C | B♭ | F/A Gm | F/A |
+B♭ B♭m | C |
+[E]
+F/A B♭ | C D♭° | Dm F/A | Gm7 C |
+[F]
+A Dm | F/A | B♭ C | A7 |
+Dm F/A | Gm F/A | B♭ C | F |
+[G]
+F C | Dm | F/A B♭ | C Dm |
+F/A B♭ | C Dm | F/A B♭ | C F |
+[Interlude 2]
+B♭ F/A | Fm/A♭ C |
+[H]
+F/A B♭ | F C | F/A B♭ | C/E F |
+F/A B♭ | F/C D♭° | B♭ F/A | Gm C |
+[I]
+F Dm | C | B♭ F/A | Gm F/A |
+B♭ B♭m | C |
+[J]
+A Dm | F/A | B♭ C | A7 Dm |
+F/A Gm | F/A | B♭ C | F |
+[K]
+C F | C Dm | F/A B♭ | C Dm |
+F/A B♭ | C Dm | F/A B♭ | C F |
+[L]
+F A/D♭ | Dm | F/A B♭ | A7 Dm |
+G♭° Gm | A/D♭ Dm | F/A B♭ | C E♭ |
+[Interlude 3]
+C/E F | B♭ | F/A B♭ | D♭° Dm |
+E♭ C | D♭ |
+[M]
+G♭ B | D♭ D° | E♭m G♭/B♭ | A♭m D♭ |
+[N]
+B♭ E♭m | G♭/B♭ | B D♭ | B♭ |
+E♭m A♭m | B D♭ | G♭ |
+[Z]
+D♭ G♭ | D♭ E♭m | G♭/B♭ B | D♭ E♭m |
+G♭/B♭ A♭m | B♭/D E♭m | G♭/B♭ B | D♭ G♭ |
+[Z 2]
+B♭/D G♭/E | E♭m7 | B♭/D G♭/D♭ | Cm7♭5 B |
+D♭ E♭m | G♭/B♭ | G♭ D♭ | E♭m G♭/B♭ |
+[Interlude 4]
+B D♭ | E♭m G♭/B♭ |
+[Z 3]
+B B♭/D | E♭m G♭/B♭ | B D♭ | G♭ B♭/D |
+[Z 4]
+G♭/E E♭m7 |
+[Interlude 5]
+B♭/D G♭/D♭ | Cm7♭5 |
+[Z 5]
+B D♭ | E♭m G♭/B♭ | B D♭ | G♭ |
+[Outro]
+B D♭ | E♭m G♭/B♭ | B D♭ | E♭m G♭/B♭ |
+B D♭ | E♭m G♭/B♭ | B D♭ | G♭ |`,
+
+`title: 春愁 (Shunshū)
+by: Mrs. GREEN APPLE
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 156
+key: B♭
+form: A B C D A B E F G
+[A]
+E♭ B♭ | F Gm | Dm | E♭ B♭ |
+F Gm |
+[B]
+E♭ B♭ | F G♭° | Gm Dm | E♭ B♭ |
+F Gm |
+[C]
+B♭ F | Gm | E♭ F | B♭ |
+B♭ F | Gm | Dm Cm | F B♭ |
+[D]
+E♭ F | Gm Dm | E♭ F | Gm |
+E♭ F | Gm Dm | E♭ F | B♭ |
+E♭ F | Gm Dm | E♭ F | B♭ |
+E♭ B♭ | Gm C | F B♭ | B♭ |
+[E]
+B♭ F | Gm | E♭ F | B♭ |
+B♭ F | Gm Dm | Cm F | B♭ |
+[F]
+E♭ F | Gm Dm | E♭ F | Gm |
+E♭ F | Gm Dm | E♭ F | B♭ |
+E♭ F | Gm Dm | E♭ G♭° | Gm |
+E♭ B♭ | Gm C | F | E♭ F |
+Gm Dm | E♭ F | Gm | E♭ F |
+Gm Dm | E♭ F | B♭ |
+[G]
+B♭ F | Gm | E♭ F | B♭ |
+B♭ F | G | Dm |`,
+
+`title: 天国 (Tengoku)
+by: Mrs. GREEN APPLE
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: B
+[A]
+E D♯m | G♯m F♯ | E F♯ | G♯m |
+A E | F♯ | G♯m F♯ | E F♯ |
+B |
+[B]
+A G♯m | G B | F♯/A♯ G♯m | F♯ A |
+E C♯/F | F♯ |
+[C]
+G♯m F♯ | E B | F♯/A♯ G♯m | D♯7 E |
+F♯ B | D♯7 G♯m | B/D♯ E | F♯ B |
+D♯7 G♯m | D♯7 E | F♯ B |
+[Interlude]
+G♯m B/D♯ | E B | F♯/A♯ | G♯m B/D♯ |
+[D]
+E F♯ | G♯m F♯ | E F♯ | G♯m |
+A E | F♯ | G♯m F♯ | E |
+F♯ B |
+[E]
+G♯m B/D♯ | E | B F♯/A♯ | G♯m D♯7 |
+E F♯ | B F♯/A♯ | G♯m B/D♯ | E B |
+F♯/A♯ | G♯m D♯7 | E G° | B D♯7 |
+[F]
+G♯m | F♯ | E B | F♯/A♯ |
+G♯m | D♯7 | C♯m F♯ | B |
+[G]
+G♯m | F♯/A♯ | B C♯ | C♯m D♯m |
+Em F♯ |
+[H]
+G♯m B/D♯ | E F♯ | B | F♯/A♯ G♯m |
+G° E | G° B | F♯/A♯ G♯m | B/D♯ E |
+F♯ B | D♯7 G♯m | D♯7 E | F♯ B |
+[I]
+C G | G♯° | Am Em | F C |
+Dm D/F♯ | G | C♯ G♯ | F/A A♯m |
+C♯/F | G D | Em A | D |
+[J]
+D♯ A♯ | B° | Cm D♯/G | G♯ D♯ |
+Fm F/A | A♯ | E B | G♯/C Dm |
+Am | B F♯ | G♯m C♯ | F♯ |
+[Outro]
+G D/F♯ | Em G/B | C D |`,
+
+`title: 踊り子 (Odoriko)
+by: Vaundy
+genre: J-pop
+feel: Groovy pop
+source: U-FRET chord chart
+tempo: 120
+key: G
+form: Intro A B C D B E B C D C D B F F C D
+[Intro]
+G B7 | Em C |
+[A]
+G B7 | Em C | G B7 | Em C |
+[B]
+G B7 | Em C | Cm | G B7 |
+Em C | Cm |
+[C]
+G | B7 |
+[D]
+Em | C Cm |
+[E]
+G | G | B7 | Em |
+Em | C |
+[F]
+G | B7 | Em | C Cm |`,
+
+`title: 不可幸力 (Fukakōryoku)
+by: Vaundy
+genre: J-pop
+feel: Funk
+source: U-FRET chord chart
+tempo: 100
+key: B♭
+form: Intro A A B C Interlude B D E B E C
+[Intro]
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+[A]
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+[B]
+Dm Cm | B♭ A7 | Dm Cm | B♭ A7 |
+E♭maj7 |
+[C]
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+[Interlude]
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+[D]
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+Dm B♭ | Gm A7 | Dm B♭ | Gm A7 |
+E♭maj7 |
+[E]
+B♭ A7 | Dm Cm | F | B♭ A7 |
+Dm Cm | F | B♭ A7 | Dm Cm |
+F | B♭ A7 | E♭maj7 |`,
+
+`title: 東京フラッシュ (Tokyo Flash)
+by: Vaundy
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 102
+key: D
+form: Intro A B C Interlude A B C Interlude 2 D C E Outro
+[Intro]
+Dmaj7 C♯7 | F♯m Gmaj7 | Dmaj7 C♯7 | F♯m Gmaj7 |
+[A]
+Dmaj7 C♯7 | F♯m | Gmaj7 | Dmaj7 C♯7 |
+F♯m | Gmaj7 |
+[B]
+Dmaj7 C♯7 | F♯m Gmaj7 | Dmaj7 C♯7 | F♯m Gmaj7 |
+[C]
+Dmaj7 | C♯7 | F♯m | Gmaj7 |
+Dmaj7 | C♯7 | F♯m | Gmaj7 |
+Dmaj7 |
+[Interlude]
+C♯7 F♯m | Gmaj7 | Dmaj7 C♯7 | F♯m Gmaj7 |
+[Interlude 2]
+C♯7 F♯m | Gmaj7 |
+[D]
+Dmaj7 C♯7 | F♯m | Gmaj7 | Dmaj7 C♯7 |
+F♯m Gmaj7 |
+[E]
+C♯7 | F♯m | Gmaj7 | Dmaj7 |
+C♯7 | F♯m | Gmaj7 | Dmaj7 |
+[Outro]
+C♯7 F♯m | Gmaj7 | Dmaj7 C♯7 | F♯m Gmaj7 |`,
+
+`title: 花占い (Hanauranai)
+by: Vaundy
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 143
+key: Gm
+form: A Interlude B C D Interlude 2 E C D Interlude 2 C F
+[A]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | E♭maj7 F |
+Dm7 Gm7 |
+[Interlude]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | E♭maj7 F |
+Dm7 Gm7 |
+[B]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | E♭maj7 F |
+Dm7 Gm7 | E♭maj7 F | Dm7 Gm7 | Gm7/F |
+E♭maj7 F | Dm7 Gm7 | Gm7/F |
+[C]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | Cm7 Dm7 |
+G♭maj7 D |
+[D]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | E♭maj7 F |
+Dm7 Gm7 | B♭ |
+[Interlude 2]
+E♭maj7 F | Dm7 Gm7 | Gm7/F |
+[E]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | E♭maj7 F |
+Dm7 | E♭maj7 F | Dm7 Gm7 | Gm7/F |
+E♭maj7 F | Dm7 Gm7 | Gm7/F |
+[F]
+E♭maj7 F | Dm7 Gm7 | Gm7/F | E♭maj7 F |
+Dm7 Gm7 | E♭maj7 F | Dm7 Gm7 | Gm7/F |
+E♭maj7 F | Dm7 Gm7 | B♭ | E♭maj7 |`,
+
+`title: 恋風邪にのせて (Koikaze ni Nosete)
+by: Vaundy
+genre: J-pop
+feel: Pop
+source: U-FRET chord chart
+tempo: 152
+key: E
+form: Intro A B C D Interlude E B C F C D Outro
+[Intro]
+A E | A E |
+[A]
+A | A G♯m | C♯m |
+[B]
+C♯m | E | F♯m | G♯m C♯ |
+[C]
+A | E | G♯ | G♯/C C♯m |
+C+ B | E A | E | G♯ |
+G♯/C C♯m | C+ B | F♯m | G♯m C♯ |
+[D]
+A |
+[Interlude]
+E A | E |
+[E]
+A | G♯m | C♯m |
+[F]
+A G♯m | C♯m | E | F♯m |
+G♯m C♯ |
+[Outro]
+E A | E |`,
+
+`title: うっせぇわ (Usseewa)
+by: Ado
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 178
+key: Bm
+form: A Interlude B B C Interlude D Interlude B E F G Interlude 2 H I Outro
+[A]
+Bm | F♯ Bm |
+[Interlude]
+Bm |
+[B]
+Bm |
+[C]
+Bm | Em D | F♯/C♯ Bm |
+[D]
+G F♯ | Bm Bm/D | G F♯ | Bm Bm/D |
+G F♯ | Bm Bm/D | F♯ Bm | G |
+F♯ D | F♯ Bm | G F♯/B♭ | Bm B/E♭ |
+F♯/C♯ F♯/B♭ | Bm A | Bm |
+[E]
+Bm F♯ | Bm |
+[F]
+Bm | B♭m Bm | B♭m Bm | B♭m Bm |
+B♭m Bm | B♭m Bm | B♭m Bm | Em Bm/D |
+F♯/C♯ Bm |
+[G]
+G F♯ | Bm Bm/D | G F♯ | Bm Bm/D |
+G F♯ | Bm D | F♯/C♯ F♯/B♭ | Bm Em |
+F♯/C♯ Bm/D | F♯/C♯ Bm | G F♯ | Bm B/E♭ |
+F♯/C♯ F♯/B♭ | Bm A | Bm A | Bm |
+[Interlude 2]
+G F♯ | Bm D | G F♯ | Bm |
+G F♯ | Bm D | G F♯ | Bm |
+[H]
+Bm | A | G |
+[I]
+G♯ G | Cm Cm/E♭ | G♯ G | Cm Cm/E♭ |
+G♯ G | Cm Cm/E♭ | G/D G/B | Cm Cm/E♭ |
+G/D | E♭ G/D | Cm | G♯ G |
+Cm C/E | G/D G/B | Cm B♭ | Cm |
+B♭ Cm | B♭ Cm |
+[Outro]
+Cm |`,
+
+`title: 新時代 (Shin Jidai)
+by: Ado
+genre: J-pop
+feel: Dance pop
+source: U-FRET chord chart
+tempo: 140
+key: Em
+form: A Interlude B C D E Interlude 2 F C D E Interlude 3 G
+[A]
+C | G/B Em7 | Em9 |
+[Interlude]
+Em | G A | Em7 D | G A |
+Em7 A |
+[B]
+Em7 G | A B | Em7 G | A B |
+[C]
+Em7 G | A B | Em7 | G A |
+B |
+[D]
+C D | Am7 Em7 | C D | Am7 G |
+C | D Am7 | Em7 C | D F |
+[E]
+Am7 C | Em7 Am7 | C Em7 | Am7 C |
+Em7 | Am7 C | Em7 |
+[Interlude 2]
+C D | Am7 G | C D | Am7 Bm7 |
+G Em7 | D | G Em7 | D |
+[F]
+Em7 | A B | Em7 G | A B |
+[Interlude 3]
+C D | Am7 G | C D | Am7 Em7 |
+C D | Am7 Em7 | C D | Am7 |
+[G]
+Em7 |`,
+
+`title: 唱 (Show)
+by: Ado
+genre: J-pop
+feel: Electro swing
+source: U-FRET chord chart
+tempo: 156
+key: E♭m
+form: A Interlude B C D E G H I A J G
+[A]
+Bmaj7 A♭m | E♭m | Bmaj7 D♭ | E♭m B♭ |
+[Interlude]
+B♭ |
+[B]
+B♭ | B♭ | B♭ | B♭ |
+B♭ |
+[C]
+B♭ | B♭ | B♭ | B♭ |
+[D]
+E♭m | E♭m | E♭m D♭ | Bmaj7 E♭m |
+D♭ | B |
+[E]
+E♭m D♭ | Bmaj7 | E♭m D♭ | Bmaj7 |
+E♭m D♭ | Bmaj7 | E♭m D♭ |
+[G]
+E♭m | E♭m | E♭m | E♭m |
+E♭m |
+[H]
+E♭m | E♭m | E♭m | E♭m E♭ |
+[I]
+Bmaj7 A♭m | E♭m | Bmaj7 D♭ | E♭m |
+[J]
+E♭m D♭ | Bmaj7 | E♭m D♭ | Bmaj7 |
+E♭m D♭ | Bmaj7 | E♭m D♭ | Bmaj7 |
+E♭m D♭ |`,
+
+`title: 私は最強 (Watashi wa Saikyō)
+by: Ado
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 150
+key: E
+form: Intro A Interlude B C D Interlude E F G H Interlude 2 I J K Interlude 3 L
+[Intro]
+Bsus4 |
+[A]
+E A | B C♯m | G♯m A | B E |
+E/G♯ A | G♯ C♯m | F♯ A | E/G♯ |
+[Interlude]
+A B | C♯m | E/G♯ A | B/F♯ E |
+E/G♯ A | B C♯m | E/G♯ A | C B |
+[B]
+E/G♯ A | E/G♯ A | E/G♯ A | C♯m B |
+E/G♯ A | E/G♯ A | E/G♯ A | F♯m B |
+G♯/C |
+[C]
+C♯m G♯m | A E | B/D♯ | C♯m G♯m |
+A | Am/C D |
+[D]
+E A | B C♯m | G♯m A | B |
+E E/G♯ | A G♯/C | C♯m | F♯ A |
+E/G♯ |
+[E]
+E/G♯ A | E/G♯ A | E/G♯ A | C♯m C |
+D |
+[F]
+G D/F♯ | Em G7 | C G/B | A D |
+B/D♯ Em | Emmaj7 Em7 | A | C D |
+E |
+[G]
+C♯m G♯m | A B | C♯m G♯m | A E |
+C♯m G♯m | A B | C♯m G♯m | A |
+Am/C D |
+[H]
+E A | B C♯m | G♯m A | Am E |
+E/G♯ A | G♯/C C♯m | F♯ A | F♯m |
+[Interlude 2]
+G♯m A | G♯m | F♯m G♯m | A B |
+F♯m G♯m | A G♯m | A B | Am/C D |
+[I]
+E A | B C♯m | G♯m A | B E |
+E/G♯ A | G♯/C C♯m | F♯ A | D |
+[J]
+E F♯m | G♯m | G♯/C C♯m | G♯m A |
+B C♯m | B A | E/G♯ F♯m | G♯m |
+A E |
+[K]
+F♯m G♯m | A E |
+[Interlude 3]
+F♯m G♯m | A | E F♯m | G♯m A |
+[L]
+E F♯m | G♯m A | E |`,
+
+`title: 逆光 (Gyakkō)
+by: Ado
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 176
+key: D♭
+[Intro]
+G♭ G | G♭ G | G♭ G | G♭ G |
+B♭m G♭ | D♭ F | B♭m G♭ | D♭ A♭ |
+B♭m G♭ | D♭ F | B♭m G♭ | D♭ A♭ |
+[A]
+B♭m G♭ | D♭ F | B♭m G♭ | D♭ A♭ |
+B♭m G♭ | D♭ F | B♭m G♭ | D♭ A♭ |
+B♭m |
+[B]
+G♭ D♭ | F B♭m | G♭ D♭ | A♭ |
+[C]
+B♭m | D♭ | D♭ | E♭m |
+E♭m | E° | F | F |
+B♭m | D♭ | D♭ | E♭m |
+E♭m | E° | F | B♭m |
+[Interlude]
+D♭ | E♭m E° | F |
+[D]
+B♭m D♭ | A♭ | G♭ F | B♭m D♭ |
+A♭ | G♭ F |
+[E]
+B♭m A♭ | G♭ | F B♭m | A♭ |
+G♭ |
+[F]
+B♭m | D♭ | D♭ | E♭m |
+E♭m | E° | F | F |
+B♭m | D♭ | D♭ | E♭m |
+E♭m | E° | F | D♭° |
+[Interlude 2]
+D♭° |
+[G]
+B♭m D♭ | D♭ | A♭ F7/A | G♭ |
+B♭m D♭ | D♭ | G♭ F |
+[H]
+Bm | D | D | Em |
+Em | F° | G♭ | G♭ |
+Bm | D | D | Em |
+Em | F° | G♭ | Bm |
+[Outro]
+D | Em F° | G♭ | Bm |`,
+
+`title: カタオモイ (Kataomoi)
+by: Aimer
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: D♭
+form: A B A B Interlude A C D
+[A]
+D♭ D♭/F | B♭m | G♭ Fm7 | E♭m7 A♭ |
+D♭ D♭/F | B♭m | G♭ Fm7 | E♭m7 A♭ |
+D♭ D♭/F | B♭m | G♭ Fm7 | E♭m7 A♭ |
+D♭ D♭/F | B♭m | G♭ Fm7 | E♭m7 A♭ |
+[B]
+G♭ A♭ | B♭m | G♭ A♭ | B♭m |
+G♭ A♭ | B♭m | G♭ A♭ |
+[Interlude]
+D♭ Fm7 | G♭ G♭m7 | D♭ Fm7 | G♭ G♭m7 |
+A♭ |
+[C]
+G♭ A♭ | B♭m | G♭ A♭ | B♭m |
+G♭ A♭ | B♭m |
+[D]
+G♭ D♭/F | E♭m7 A♭ |`,
+
+`title: 蝶々結び (Chōchō Musubi)
+by: Aimer
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 72
+key: C
+[A]
+C G | A♭° | Am C/G | F G |
+C F/C | C G/B | Am C/G | F G |
+C |
+[B]
+Dm C | Am G | C/E F | Gsus4 G |
+D♭ |
+[C]
+F♯m7 D♭m7 | D A | F♯m7 D♭m7 | B7/E♭ E |
+F° | F♯m7 D♭m7 | D A | F♯m7 E |
+D A | D A |
+[Interlude]
+C |
+[D]
+C Csus4 | C G/B | Am D7 | F G |
+C Csus4 | C G/B | Am C/G | F G |
+C |
+[E]
+Dm C | Am G | C/E F | G D♭ |
+[F]
+F♯m7 D♭m7 | D A | F♯m7 D♭m7 | B7/E♭ E |
+F° | F♯m7 D♭m7 | D A | F♯m7 E |
+D E | F° |
+[G]
+F♯m7 D♭m7 | D A | F♯m7 D♭m7 | D A |
+[Interlude 2]
+F♯m7 D♭m7 | D A | F♯m7 E | D G |
+[H]
+F C | G Am7 | F C | G Am7 |
+F C | G Am7 | F C | G Am7 |
+[I]
+F C | G Am7 | F C | G Am7 |`,
+
+`title: 茜さす (Akane Sasu)
+by: Aimer
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 78
+key: F♯
+form: Intro A B C D Interlude B C D E F Interlude 2 G Outro
+[Intro]
+D♯m C♯/F | F♯sus4 F♯ | D♯m B | F♯/C♯ C♯ |
+C♯sus4 C♯ |
+[A]
+F♯ Bm | F♯ | C♯/F D♯m | C♯ B |
+C♯ D♯m | B C♯ |
+[B]
+F♯ Bm | F♯ | C♯/F D♯m | C♯ B |
+C♯ D° | D♯m C♯ | Cm7♭5 | B C♯ |
+B |
+[C]
+C♯/B | A♯m7 D♯7 | G♯m7 F♯ | E C♯ |
+[D]
+A♯7 D♯m | C♯/F F♯sus4 | F♯ | C♯/F D♯m |
+B C♯sus4 | C♯ D♯m | C♯/F F♯ | A♯7 |
+D♯m B | C♯sus4 C♯ | B C♯ | B C♯sus4 |
+C♯ D♯m |
+[Interlude]
+C♯/F F♯ | B C♯ |
+[E]
+C♯ G♯m7 | F♯/A♯ | B C♯ | A♯7 |
+[F]
+D♯m C♯/F | F♯sus4 F♯ | C♯/F D♯m | B C♯sus4 |
+C♯ D♯m | C♯/F F♯ | A♯7 | D♯m B |
+C♯sus4 C♯ | B C♯ | B C♯sus4 | C♯ D♯m |
+[Interlude 2]
+C♯ Cm7♭5 |
+[G]
+B C♯ | B C♯sus4 | C♯ |
+[Outro]
+D♯m C♯/F | F♯sus4 F♯ | D♯m B | F♯/C♯ C♯ |
+C♯sus4 C♯ | Badd9 |`,
+
+`title: 炎 (Homura)
+by: LiSA
+genre: J-pop
+feel: Anime ballad
+source: U-FRET chord chart
+tempo: 74
+key: A
+form: Intro A B C A D E F
+[Intro]
+Bm A | G D | Bm A | G D |
+[A]
+Bm G | A D | A/C♯ | Bm G |
+A D | A/C♯ | Bm G | A D |
+A/C♯ | Bm G | A Bm |
+[B]
+A G | F♯m | Bm C♯m7♭5 | F♯ Bm |
+Bm7/A | Gm Am | B♭ B° | C A/C♯ |
+[C]
+C♯m A | B E | B/D♯ | C♯m A |
+B G♯ | C♯m A | B G♯ | A |
+E/G♯ C♯m | D♯m7♭5 G♯ | C♯m B | A B |
+C♯m B | A E | Bm A | G D |
+[D]
+A G | F♯m | Bm C♯m7♭5 | F♯ Bm |
+Bm7/A | Gm Am | B♭ B° | C A/C♯ |
+Em C | D G | D/F♯ | Em C |
+D G | D/F♯ |
+[E]
+Em C | D Em | D | D♯ Cm |
+Dm Gsus4 | G | Em D | C G |
+B |
+[F]
+C♯m A | B E | B/D♯ | C♯m A |
+B G♯ | C♯m A | B G♯ | A |
+E/G♯ C♯m | D♯m7♭5 G♯ | C♯m B | A E/G♯ |
+G♯ C♯m | B | A E/G♯ | G♯ C♯m |
+B A | B C♯m | B A | E |
+C♯m B | A E | Bm A | G D |`,
+
+`title: 明け星 (Akeboshi)
+by: LiSA
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 150
+key: E♭m
+form: Intro A B C D Interlude E A Interlude 2 F C D Interlude 3 G H Outro
+[Intro]
+Cm |
+[A]
+Cm | Cm A♭ | B♭ |
+[B]
+A♭ Fm | G |
+[C]
+E♭m D♭/F | G♭ | A♭m B♭ | E♭m E♭m7/D♭ |
+B B♭ | E♭m D♭ | Cm7♭5 | B A♭m |
+B♭ |
+[D]
+E♭m D♭/F | G♭ | A♭m D♭ | G♭ E♭m |
+A♭m B♭ | E♭m D♭ | Cm7♭5 | Fm7♭5 B♭ |
+B |
+[Interlude]
+B B♭ | A♭m B♭ | Cm |
+[E]
+Cm | Cm | A♭ B♭ | Fm Gm |
+Cm |
+[Interlude 2]
+Cm A♭ | G |
+[F]
+Fm | A♭ G |
+[Interlude 3]
+E♭m |
+[G]
+E♭m | E♭m |
+[H]
+E♭m D♭ | G♭ E♭m | A♭m B♭m | Bmaj7 B♭ |
+[Outro]
+E♭m |`,
+
+`title: 高嶺の花子さん (Takane no Hanako-san)
+by: back number
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 127
+key: A
+[A]
+Dmaj7 Eadd9 | C♯m7 F♯m | Bm7 E | C♯m7 F♯7 |
+Dmaj7 E | C♯m7 F♯m | Bm7 E6 | C♯m7 F♯sus4 |
+F♯sus4 Dmaj7 | A B | C♯sus4 E | Dmaj7 A |
+Bm7 Esus4 | A | Dmaj7 A | Bm7 Esus4 |
+A |
+[B]
+Bm7 F♯m | D E | A | Bm F♯m |
+Dmaj7 E | A C♯ |
+[C]
+Dmaj7 E | C♯m7 F♯ | Bm7 E | A |
+Dmaj7 E | C♯m F♯m | Bm7 | E A |
+C♯ | Dmaj7 E | C♯m7 F♯m | Bm E |
+C♯m7 F♯m | Dmaj7 E | C♯m7 F♯m | Bm E |
+C♯m7 F♯ |
+[D]
+Dmaj7 A | Bm7 Esus4 | A | Dmaj7 A |
+Bm7 Esus4 | A |
+[E]
+Bm7 F♯m | D E | A | Bm7 F♯m |
+Dmaj7 E | A C♯ |
+[F]
+Dmaj7 E | C♯m7 F♯ | Bm7 E | A |
+Dmaj7 E | C♯m7 F♯m | Bm7 | E A |
+C♯ |
+[G]
+Bm7 E | A F♯m | Bm7 C♯ | F♯m F♯ |
+Bm7 E | A F♯m | Dmaj7 E | A C♯ |
+[H]
+Dmaj7 E | C♯m7 F♯ | Bm7 E | A |
+[I]
+Dmaj7 E | C♯m7 F♯ | Bm7 E | A |
+Dmaj7 E | C♯m7 F♯m | Bm7 | E A |
+C♯ | Dmaj7 E | C♯m7 F♯m | Bm E |
+C♯m7 F♯m | Dmaj7 E | C♯m7 F♯m | Bm E |
+C♯m7 F♯ | F♯sus4 F♯7sus4 |`,
+
+`title: クリスマスソング (Christmas Song)
+by: back number
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: B
+form: Intro A B C D A B E Interlude F C G H Outro
+[Intro]
+E B/D♯ | D C♯ | F♯m B | E F♯ |
+A E/G♯ | F♯ B | E F♯ | A E/G♯ |
+F♯ B |
+[A]
+A E | A E | A E | F♯ |
+A B | E |
+[B]
+C♯m B | A E | C♯m F♯ | A B |
+[C]
+E | B | C♯m F♯ | A E |
+F♯ | A B |
+[D]
+E | B | C♯m F♯ | A E |
+F♯ | A | B | E F♯ |
+A E/G♯ | F♯ B | E |
+[E]
+E | B | C♯m F♯ | A E |
+F♯ | A | B E |
+[Interlude]
+C♯m F♯ | A B | C° |
+[F]
+C♯m | F♯ | A B | A E/G♯ |
+F♯ |
+[G]
+E | B | C♯m F♯ | A E |
+F♯ | A | B C♯m | F♯ |
+[H]
+A | B |
+[Outro]
+E F♯ | A E/G♯ | F♯ B | E F♯ |
+A E/G♯ | F♯ B | E |`,
+
+`title: 水平線 (Suiheisen)
+by: back number
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 73
+key: B♭
+form: Intro A B C Interlude A B C Interlude 2 D E Outro
+[Intro]
+B♭ F | E♭ B♭ | D/A | Gm Dm |
+E♭ Fsus4 | F Fsus4 | F |
+[A]
+B♭ E♭ | F B♭ | Gm Dm | E♭ Fsus4 |
+F | B♭ E♭ | F B♭ | Gm Dm |
+E♭ Fsus4 | F |
+[B]
+Cm F | B♭ Gm | Cm Dm | E♭ Fsus4 |
+F |
+[C]
+B♭ E♭ | F G♭° | Gm Dm | E♭ F |
+B♭ E♭ | F G♭° | Gm Dm | E♭ F |
+[Interlude]
+B♭ Fsus4 | F E♭ | Fsus4 F |
+[Interlude 2]
+Gm Dm | E♭ B♭ | D/A | Gm Dm |
+E♭ Fsus4 | F Fsus4 | F |
+[D]
+B♭ E♭ | F G♭° | Gm Dm | E♭ |
+[E]
+C F | G A♭° | Am Em | F G |
+C F | G A♭° | Am Em | F G |
+Am Em | F G |
+[Outro]
+C Gsus4 | G F | C E/B | Am Em |
+F Gsus4 | G Gsus4 | G C |`,
+
+`title: ハッピーエンド (Happy End)
+by: back number
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: F♯m
+form: Intro A B C D A B E F G C H Outro
+[Intro]
+D C♯7 | F♯m B7 | D E |
+[A]
+D A | Bm7 F♯m | D A | Bm7 F♯m |
+[B]
+D C♯7 | F♯m A | Bm7 C♯7 |
+[C]
+D | E/D C♯m7 | F° F♯m | Bm7 E |
+F♯m C♯7 |
+[D]
+D | E/D C♯m7 | F° F♯m | Bm7 E |
+A Dm7 |
+[E]
+D | E/D C♯m7 | F° F♯m | Bm7 E |
+A | G F♯m | F E | D♯m7♭5 D |
+E | F G |
+[F]
+D A | Bm7 F♯m | E |
+[G]
+D | E/D C♯m7 | F° F♯m | Bm7 |
+E |
+[H]
+D | E/D C♯m7 | F° F♯m | Bm7 E |
+[Outro]
+D C♯7 | F♯m B7 | D E | D C♯7 |
+F♯m B7 | D E |`,
+
+`title: 瞬き (Mabataki)
+by: back number
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 84
+key: E♭
+form: A Interlude B C D B C E Interlude 2 F
+[A]
+A♭ B♭/A♭ | Gm7 Cm | Fm7 B♭ | E♭ E♭7 |
+[Interlude]
+A♭ B♭ | Gm7 Cm | Fm7 B♭ | E♭ |
+[B]
+A♭ Gm7 | G♭ | Fm7 B♭ | B° Cm |
+B♭m7 | A♭ Gm7 | G♭ | Fm7 B♭ |
+E♭ E♭7 |
+[C]
+Cm Gm7 | A♭ B♭ | E♭ | A♭ B |
+D♭ E♭ |
+[D]
+G A♭ | B♭ | Gm7 Cm | Fm7 B♭ |
+E♭ E♭7 | G | A♭ B♭ | Gm7 Cm |
+Fm7 B♭ | E♭ E♭7 |
+[E]
+G A♭ | B♭ | Gm7 Cm | Fm7 B♭ |
+E♭ E♭7 | G | A♭ B♭ | Gm7 Cm |
+Fm7 B♭ | E♭ |
+[Interlude 2]
+Gm7 Cm | Fm7 B♭ | E♭ |
+[F]
+G A♭ | B♭ | Gm7 Cm | Fm7 B♭ |
+E♭ E♭7 | G | A♭ B♭ | Gm7 Cm |
+Fm7 B♭ | A♭ B♭ | Gm7 Cm | Fm7 B♭ |
+E♭ |`,
+
+`title: 裸の心 (Hadaka no Kokoro)
+by: あいみょん (Aimyon)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: A♭
+form: Intro A B C Interlude D B C Interlude 2 E C Outro
+[Intro]
+A♭ E♭ | D♭ C | B♭m D♭/E♭ | E♭ A♭ |
+A♭sus4 A♭ |
+[A]
+A♭ E♭ | D♭ A♭ | D♭ A♭ | B♭m D♭/E♭ |
+E♭ | A♭ E♭ | D♭ A♭ | D♭ A♭ |
+B♭m D♭/E♭ | A♭ |
+[B]
+Cm Fm | A♭/E♭ | D♭ A♭ | A♭sus4 A♭ |
+Cm C/E | Fm A♭/E♭ | B♭/D B♭ | D♭/E♭ E♭ |
+[C]
+A♭ E♭ | D♭ A♭ | D♭ A♭/C | B♭m E♭ |
+A♭ E♭ | D♭ C | B♭m D♭/E♭ | A♭ A♭sus4 |
+A♭ |
+[Interlude]
+A♭ E♭ | D♭ C | B♭m D♭/E♭ |
+[D]
+A♭ E♭ | D♭ A♭ | D♭ A♭ | B♭m D♭/E♭ |
+E♭ | A♭ E♭ | D♭ A♭ | D♭ A♭ |
+B♭m D♭/E♭ | A♭ A♭sus4 | A♭ |
+[Interlude 2]
+A♭ E♭ | Fm Cm | D♭ E♭ | A♭ E♭ |
+Fm Cm | D♭ E♭sus4 | E♭ |
+[E]
+A♭ E♭ | D♭ A♭ | D♭ A♭/C | B♭m E♭ |
+A♭ E♭ | D♭ C | B♭m D♭/E♭ | E♭ |
+[Outro]
+A♭ E♭ | D♭ C | B♭m D♭/E♭ | A♭ A♭sus4 |
+A♭ |`,
+
+`title: 君はロックを聴かない (Kimi wa Rock wo Kikanai)
+by: あいみょん (Aimyon)
+genre: J-pop
+feel: Folk rock
+source: U-FRET chord chart
+tempo: 80
+key: G
+form: Intro A B C D B C E Interlude F D Outro
+[Intro]
+C D | Bm7 Em | Am7 B7 | Em |
+C D | Bm7 Em | Am7 D |
+[A]
+G D | C D | G | C D |
+Bm7 Em | C D |
+[B]
+G D | C D | G | C D |
+Bm7 Em | C D | G |
+[C]
+C D | G Em | C D |
+[D]
+C D | Bm7 Em | C D | E♭° Em |
+C D | G D/F♯ | Em | C G |
+C D | G |
+[E]
+C D | Bm7 Em | C D | E♭° Em |
+C D | G D/F♯ | Em | C G |
+C D |
+[Interlude]
+C D | Bm7 Em | C D | Bm7 Em |
+C D | Bm7 Em | Am7 D |
+[F]
+C D | G Em | C D | Bm7 Em |
+C D | G Em | C G | C G |
+C D |
+[Outro]
+C D | Bm7 Em | Am7 B7 | Em |
+C D | Bm7 Em | Am7 D | Cmaj7 |`,
+
+`title: ハルノヒ (Haru no Hi)
+by: あいみょん (Aimyon)
+genre: J-pop
+feel: Folk pop
+source: U-FRET chord chart
+tempo: 90
+key: A
+form: Intro A B A C D A E F G H I Interlude J
+[Intro]
+A C♯m7 | D Bm7 | E | A C♯m7 |
+D Bm7 | A E |
+[A]
+A C♯m7 | D | Bm7 E | A C♯m7 |
+D | Bm7 E |
+[B]
+D E | F♯m | D E | A E |
+[C]
+D E | F♯m | D E | A |
+D E | A | D E | A A7 |
+D E | C♯m7 F♯m | D E |
+[D]
+A C♯m7 | D E | A | D C♯m7 |
+D | E | A C♯m7 | D E |
+A | D C♯m7 | F♯m | D E |
+A E |
+[E]
+D E | F♯m | D E | A |
+[F]
+D E | A | D E | A A7 |
+D E | C♯m7 F♯m | D E |
+[G]
+A C♯m7 | D E | A | D C♯m7 |
+A | D E | A C♯m7 | D E |
+A | D C♯m7 | F♯m | D E |
+F♯m E | D E | F♯m E | D E |
+[H]
+D E | F♯m | D E | A |
+D E | F♯m | D E | A E |
+[I]
+A C♯m7 | D E | A | D C♯m7 |
+D | E | A C♯m7 | D C♯7 |
+F♯m | D E | C♯m7 F♯m | D |
+E |
+[Interlude]
+A C♯m7 | D E |
+[J]
+A C♯m7 | D | Bm7 E | A C♯m7 |
+D Bm7 | E A |`,
+
+`title: 愛を伝えたいだとか (Ai wo Tsutaetai da to ka)
+by: あいみょん (Aimyon)
+genre: J-pop
+feel: Groove
+source: U-FRET chord chart
+tempo: 82
+key: A
+form: Intro A A B A A C D B Outro
+[Intro]
+Em Cm | Bm A |
+[A]
+Dmaj7 C♯7 | F♯m7 B7 | Dmaj7 C♯7 | F♯m7 A |
+[B]
+Dmaj7 C♯7 | F♯m7 | Dmaj7 C♯7 | F♯m7 A |
+Dmaj7 C♯7 | F♯m7 A | Dmaj7 C♯7 | F♯m7 A |
+Dmaj7 C♯7 | F♯m7 A | Dmaj7 C♯7 | F♯m7 A |
+[C]
+Dmaj7 C♯7 | F♯m7 | Dmaj7 C♯7 | F♯m7 A |
+Dmaj7 C♯7 | F♯m7 A | Dmaj7 C♯7 | F♯m7 A |
+Dmaj7 C♯7 | F♯m7 A | Dmaj7 C♯7 | F♯m7 |
+[D]
+D | C♯7 | F♯m7 D | C♯7 |
+D C♯7 | D C♯7 |
+[Outro]
+Dmaj7 C♯7 | F♯m7 | Dmaj7 C♯7 | F♯m7 A |
+Dmaj7 C♯7 | F♯m7 A | Dmaj7 C♯7 | F♯m7 A |
+Dmaj7 C♯7 | F♯m7 A | Dmaj7 C♯7 | F♯m7 A |`,
+
+`title: チェリー (Cherry)
+by: スピッツ (Spitz)
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 134
+key: C
+form: Intro A B A C D Interlude E F
+[Intro]
+C G | Am F | C G | Am F |
+C G | Am F | C G | Am F |
+[A]
+C G | Am Em | F C | F G |
+C G | Am Em | F G | C Am |
+F G | Cadd9 |
+[B]
+G Am | Em F | C | Am Em |
+F C | Am Em | F C | Am Em |
+F G | C |
+[C]
+G Am | Em F | C | Am Em |
+F C | Am Em | F C | Am Em |
+F G | C | B♭add9 Am |
+[D]
+F Am | F | Am G | F Fmaj7 |
+[Interlude]
+C G | Am F | C G | Am F |
+C G | Am F | C G | Am F |
+[E]
+C G | Am Em | F G | C Am |
+F G | C |
+[F]
+G Am | Em F | C | Am Em |
+F C | Am Em | F C | Am Em |
+F G | C | Am Em | F C |
+Am Em | F C | Am Em | F C |
+Am Em | F G | C |`,
+
+`title: ロビンソン (Robinson)
+by: スピッツ (Spitz)
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 127
+key: F♯m
+form: A B C D E B F G H
+[A]
+Dmaj7 C♯m7 | F♯sus4 F♯m | Dmaj7 C♯m7 | F♯sus4 F♯m |
+Dmaj7 C♯m7 | F♯sus4 F♯m | Dmaj7 C♯m7 | F♯sus4 F♯m |
+A Bm7 | E F♯m | D A | D E |
+[B]
+A Bm7 | E F♯m | D A | D Esus4 |
+E |
+[C]
+C♯m7 F♯m | Bm7 | E7 C♯m7 | F♯7 Bm7 |
+E7sus4 E7 | C♯7sus4 C♯7 |
+[D]
+D E/D | C♯7 F♯m | D E | C♯m7 |
+D E/D | C♯7 F♯m | Dmaj7 E | F♯m |
+Dmaj7 C♯m7 | F♯sus4 F♯m | Dmaj7 C♯m7 | F♯sus4 F♯m |
+[E]
+A Bm7 | E F♯m | D A | D E |
+[F]
+C♯m7 F♯m7 | Bm7 | E7 C♯m7 | F♯7 Bm7 |
+E7sus4 E7 | C♯7sus4 C♯7 |
+[G]
+D E/D | C♯7 F♯m | D E | C♯m7 |
+D E/D | C♯7 F♯m | Dmaj7 E | F♯m |
+[H]
+D E/D | C♯7 F♯m | Dmaj7 E | F♯m |
+Bm7 C♯m7 | F♯sus4 F♯ |`,
+
+`title: 空も飛べるはず (Sora mo Toberu Hazu)
+by: スピッツ (Spitz)
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 130
+key: C
+[A]
+C G | Am | C G | Am |
+C G | Am | Fmaj7 | C Dm |
+G Am | F C | D7 G | C Dm |
+G Am | F C | D7 G | Am Fmaj7 |
+Dm7 Em7 | Fmaj7 G7 |
+[B]
+C G | Am | F G | C |
+F G | Em7 Am | D7 G7 | C G |
+Am F | G C | F G | Em7 Am |
+F G7 | C G | Am | C G |
+Am | C G | Am | Fmaj7 |
+[C]
+C Dm | G Am | F C | D7 G |
+Am Fmaj7 | Dm7 Em7 | Fmaj7 G |
+[D]
+C G | Am | F G | C |
+F G | Em7 Am | D7 G7 | C G |
+Am | F G | C | F G |
+Em7 Am | F G7 | Am7 Fmaj7 | Am7 Fmaj7 |
+Dm7 Em7 | Fmaj7 G |
+[E]
+C G | Am | F G | C |
+F G | Em7 Am | D7 G7 | C G |
+Am F | G C | F G | Em7 Am |
+F G7 | C G | Am | C G |
+Am | C G | Am | Fmaj7 |
+G C |`,
+
+`title: 楓 (Kaede)
+by: スピッツ (Spitz)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 78
+key: A♭
+form: A B C D E B F G F H
+[A]
+D♭ E♭ | A♭ Fm | D♭ E♭ | A♭ |
+A♭ Cm | Fm B♭ | D♭ E♭ | A♭ Cm |
+Fm B♭ | D♭ E♭ | A♭ |
+[B]
+D♭ E♭ | A♭ Fm | D♭ E♭ | A♭ |
+D♭ E♭ | A♭ Fm | B♭m C7 |
+[C]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+[D]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+D♭ D♭sus4 | D♭ |
+[E]
+A♭ Cm | Fm B♭ | D♭ E♭ | A♭ Cm |
+Fm B♭ | D♭ E♭ | A♭ |
+[F]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+[G]
+G♭ A♭ | G♭ Fm | E♭ | D♭ E♭ |
+A♭ Fm | D♭ E♭ | A♭ | D♭ E♭ |
+A♭ Fm | B♭m C7 |
+[H]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |`,
+
+`title: Tomorrow never knows
+by: Mr.Children
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: C
+[A]
+C G | Am G | D/F♯ F | E/C |
+F/A G | F Em | Dm C | B♭ |
+[Interlude]
+Fmaj7 G/F | Em Fmaj7 | Fmaj7 G/F | Em Fmaj7 |
+[B]
+Fmaj7 G/F | Em7 Fmaj7 | Fmaj7 G/F | Am9 |
+Fmaj7 G/F | Em7 Fmaj7 | Fmaj7 G | Am9 |
+Fmaj7 G/F | Em7 Fmaj7 | Fmaj7 G/F | Am9 |
+Fmaj7 G/F | Em7 Fmaj7 | Fmaj7 G | Am9 |
+[C]
+Fmaj7 G/F | Em7 Am7 | Dm9 Cadd9 | Fmaj7 C |
+G |
+[D]
+C F | G E7 | Am F | G E7 |
+C F | G E7 | Am F | D |
+F G/F | F G | C | C G |
+Am G | D/F♯ F | E/C | F/A G |
+F Em | Dm C | B♭ G |
+[E]
+Fmaj7 G/F | Em7 Fmaj7 | Fmaj7 G/F | Am9 |
+Fmaj7 G/F | Em7 Fmaj7 | Fmaj7 G/F | Am9 |
+[F]
+Fmaj7 G/F | Em7 Am7 | Dm6 Cadd9 | Fmaj7 C |
+G |
+[G]
+C F | G E7 | Am F | G E7 |
+C F | G E7 | Am F | D |
+F G/F | F G | B♭ | B♭ F |
+A♭ Gsus4 | G | B♭ F | A♭ Gsus4 |
+G |
+[H]
+F G/F | F G/F | F G/F | F G |
+A |
+[I]
+D G | A F♯7 | Bm G | A F♯7 |
+D G | A F♯7 | Bm G | E |
+D G | A F♯7 | Bm G | A F♯7 |
+D G | A F♯7 | Bm G | E |
+G A/G | G A | D | D A |
+Bm A | E/A♭ G | D/F♯ | G/B A |
+G D/F♯ | Em D | C A | G |
+G D/F♯ | Em D |`,
+
+`title: innocent world
+by: Mr.Children
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 142
+key: E
+[A]
+E A | C♯m Dadd9 | E A | C♯m Dadd9 |
+A/B |
+[B]
+E C♯m | G♯m C♯m | E F♯m | B7 E |
+C♯m G♯m | C♯m E | F♯m B7 | E |
+G♯m A | F♯m C° | C♯m | E F♯m |
+G♯m | A G♯m | F♯ B7 |
+[C]
+G♯7 A | E | F♯ B7 | G♯7 |
+A E | C♯7 | F♯m G♯m | Am E |
+A C♯m | Dadd9 |
+[Interlude]
+E A | C♯m Dadd9 | A/B |
+[D]
+E C♯m | G♯m C♯m | E F♯m | B7 E |
+C♯m G♯m | C♯m E | F♯m B7 | E |
+[E]
+G♯m A | F♯m C° | C♯m | E F♯m |
+G♯m | A G♯m | F♯ B7 | G♯7 |
+[F]
+A E |
+[G]
+F♯ B7 | G♯7 | A E | C♯7 |
+[H]
+F♯m G♯m | Am Amaj7 | B7 Amaj7 | B7 |
+[Interlude 2]
+G♯m C♯m | Dadd9 |
+[I]
+B7 G♯m | A F♯m | C° | C♯m E |
+F♯m7 G♯m7 | A G♯m | F♯ B7 | G♯7 |
+[J]
+A E | F♯ B7 | G♯7 | A E |
+C♯7 | F♯m G♯m | A | F♯m G♯m |
+Am F♯m | G♯m Am | C♯m E | A♯° A |
+Dadd9 G♯m | A♯° Am | Esus4 E |`,
+
+`title: HANABI
+by: Mr.Children
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 120
+key: D♭
+form: A B C D E F G H I F J K L M
+[A]
+B♭m7 E♭m7 | A♭ D♭ | G♭maj7 E♭7 | A♭sus4 F7 |
+B♭m7 E♭m7 | A♭ D♭ | G♭maj7 E♭7 | A♭sus4 A♭ |
+[B]
+D♭add9 A♭/D♭ | B♭m7 G♭maj7 | A♭ | Fm7 B♭m7 |
+Fm7 B♭m7 | E♭m7 A♭sus4 | A♭ |
+[C]
+D♭add9 A♭/D♭ | B♭m7 G♭maj7 | A♭ | Fm7 B♭m7 |
+Fm7 B♭m7 | E♭m7 A♭ | F7 |
+[D]
+B♭m7 G♭ | A♭ D♭ | G♭maj7 E♭7 | A♭sus4 F7 |
+B♭m7 G♭ | A♭ D♭ | G♭maj7 E♭7 | A♭ |
+[E]
+D♭add9 A♭/D♭ | B♭m7 G♭maj7 | A♭ | Fm7 B♭m7 |
+Fm7 B♭m7 | E♭m7 E♭m7/A♭ | A♭ D♭sus4 | D♭ D♭sus4 |
+D♭ | D♭sus4 D♭ |
+[F]
+G♭maj7 A♭/G♭ | Fm7 B♭m7 | E♭m7 A♭7 | Fm7 B♭m7 |
+E♭m7 E♭m7/A♭ | F |
+[G]
+G♭maj7 A♭/G♭ | Fm7 B♭m7 | E♭m7 A♭ | A♭/G♭ Fm7 |
+F7 B♭m7 | E♭m7 E♭m7/A♭ | G♭maj7 |
+[H]
+D♭add9 A♭/D♭ | B♭m7 G♭maj7 | A♭ | Fm7 B♭m7 |
+Fm7 B♭m7 | E♭m7 | A♭ F7 |
+[I]
+B♭m7 G♭ | A♭ D♭ | G♭maj7 E♭7 | A♭sus4 F7 |
+B♭m7 G♭ | A♭ D♭ | G♭maj7 E♭7 | A♭ D♭sus4 |
+D♭ D♭sus4 | D♭ | D♭sus4 D♭ |
+[J]
+G♭maj7 A♭/G♭ | Fm7 B♭m7 | E♭m7 A♭ | A♭/G♭ Fm7 |
+F7 B♭m7 | E♭m7 E♭m7/A♭ | D♭ |
+[K]
+A♭ B♭m7 | A♭m7 D♭ | G♭ | Fm7 B♭m7 |
+E♭m7 E♭m7/A♭ | Em7/A |
+[L]
+Gmaj7 A/G | G♭m7 Bm7 | Em7 Em7/A | G♭m7 Bm7 |
+Em7 Em7/A | G♭ |
+[M]
+Gmaj7 A/G | G♭m7 Bm7 | Em7 A | A/G G♭m7 |
+G♭/A Bm7 | Em7 Em7/A | Bm7 | D Gmaj7 |
+Bm7 Em7 | Asus4 A | Bm7 G | A D |
+Gmaj7 E7 | Asus4 G♭7 | Bm7 G | A D |
+Gmaj7 E7 | Asus4 A | Gmaj7 |`,
+
+`title: しるし (Shirushi)
+by: Mr.Children
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 70
+key: D♭
+form: A B C D B E F G H
+[A]
+D♭ Cm7♭5 | F B♭m | B♭m7 G♭ | G♭/A♭ G♭m/A♭ |
+[B]
+D♭ F7sus4 | F7 B♭m7 | E♭sus4 E♭ | G♭ G♭/A♭ |
+A♭ D♭ | G♭m | D♭ F7sus4 | F7 B♭m |
+B♭m7 E♭sus4 | E♭ | G♭ G♭/A♭ | A♭ D♭ |
+D♭maj7 D♭ |
+[C]
+E♭m7 A♭ | A♭7 F7 | B♭m7 | E♭m7 A♭sus4 |
+A♭ |
+[D]
+D♭sus4 D♭ | F7sus4 F7 | B♭m B♭m7 | E♭7 |
+E♭m7 Fm7 | G♭ E♭ | A♭ | D♭sus4 D♭ |
+F7sus4 F7 | B♭m B♭m7 | E♭7 | D♭ G♭ |
+G♭/A♭ D♭ | G♭m |
+[E]
+E♭m7 A♭ | A♭7 F7 | B♭m | B♭m7 E♭m7 |
+A♭sus4 A♭ |
+[F]
+D♭sus4 D♭ | F7sus4 F7 | B♭m B♭m7 | E♭7 |
+E♭m7 Fm7 | G♭ E♭ | A♭ | D♭sus4 D♭ |
+F7sus4 F7 | B♭m B♭m7 | E♭7 | D♭ G♭ |
+G♭/A♭ D♭ | Cm7♭5 B♭m | B♭m7 G♭ | G♭/A♭ |
+D♭ Cm7♭5 | F B♭m | B♭m7 G♭ | G♭/A♭ |
+[G]
+D♭sus4 D♭ | F7sus4 F7 | B♭m7 E♭7 | E♭m7 Fm7 |
+G♭ E♭add9 | G♭/A♭ G/A |
+[H]
+Dsus4 D | G♭7sus4 G♭7 | Bm Bm7 | E7 |
+Em7 G♭m7 | G E | A | Dsus4 D |
+G♭7sus4 G♭7 | Bm Bm7 | E7 | D G |
+G/A D | G | G/A D | D♭m7♭5 G♭7 |
+Bm Bm7 | G G/A | D D♭m7♭5 | G♭7 Bm |
+Bm7 G | G/A | D D♭m7♭5 | G♭7 Bm |
+Bm7 G | G/A | D D♭m7♭5 | G♭7 Bm |
+Bm7 G | G/A |`,
+
+`title: 名もなき詩 (Na mo Naki Uta)
+by: Mr.Children
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 140
+key: G
+form: A B B C D E B C D E F G H I
+[A]
+G |
+[B]
+G | Am7 G |
+[C]
+C D | B7 Em | Em7 | Am7 Bm7 |
+C D |
+[D]
+G | Am7 Cadd9 |
+[E]
+G Bm7 | C B7sus4 | B7 Em | A7 C |
+Dsus4 D | G Bm7 | C B7sus4 | B7 Em |
+A7 C | D G |
+[F]
+Am7 Em | E♭6 D | G Em | C E♭ |
+G Em | C D |
+[G]
+C | D | B7 Em | Em7 |
+Am7 Bm7 | C D | C/D C♯/E♭ |
+[H]
+A♭ Cm | C♯ C7sus4 | C7 Fm | B♭7 C♯ |
+E♭sus4 E♭ | A♭ Cm | C♯ C7sus4 | C7 Fm |
+B♭7 C♯ | E | F♯ A♭ |
+[I]
+A♭ | B♭m7 | C♯ A♭ | B♭m7 E♭ |
+A♭6 |`,
+
+`title: First Love
+by: 宇多田ヒカル (Hikaru Utada)
+genre: J-pop
+feel: R&B ballad
+source: U-FRET chord chart
+tempo: 85
+key: G
+form: A A B C A B D E
+[A]
+G D | Em7 G | Cmaj7 Am7/D | G C |
+G |
+[B]
+Em D | C D | Em Bm7 | Cmaj7 |
+[C]
+G D | Em Gmaj7 | Cmaj7 Am7/D | G |
+D | Em Gmaj7 | Cmaj7 Am7/D | G |
+D C | G Cmaj7 | Am7 |
+[D]
+G D | Em Gmaj7 | Cmaj7 Am7/D | G D |
+Em Gmaj7 | Cmaj7 Am7/D | G Am7/D | B♭m7/E♭ |
+[E]
+A♭ E♭ | Fm A♭ | C♯maj7 B♭m7/E♭ | A♭ |
+E♭ | Fm7 B♭m7 | F♯/A♭ | C♯maj7 B♭m7/E♭ |
+A♭ C♯ | A♭ | A♭ E♭ | Fm A♭ |
+C♯maj7 B♭m7/E♭ | A♭ C♯ | A♭ |`,
+
+`title: Automatic
+by: 宇多田ヒカル (Hikaru Utada)
+genre: J-pop
+feel: R&B
+source: U-FRET chord chart
+tempo: 105
+key: Fm
+form: A B C D E B C D F G H
+[A]
+D♭maj7 Cm7 | B♭m7 B♭m7/E♭ | Fm7 Cm7 | B♭m7 B♭m7/E♭ |
+D♭maj7 Cm7 | B♭m7 B♭m7/E♭ | Fm7 Cm7 | B♭m7 B♭m7/E♭ |
+Fm A♭ | D♭maj7 Cm7 | Fm/B♭ B♭m | Cm7 C7 |
+[B]
+Fm A♭ | D♭maj7 Cm7 | Fm/B♭ B♭m | Cm7 C7 |
+[C]
+D♭maj7 Cm7 | A♭ | D♭maj7 Cm7 | A♭ |
+D♭maj7 Cm7 | A♭ | G♭maj7 A♭ |
+[D]
+D♭maj7 C7 | Fm | Cm7 Fm | Cm7 Fm |
+Cm7 Fm | F | Fm/B♭ C7 | Fm Fm/E♭ |
+Dm7♭5 D♭ |
+[E]
+Csus4 C | Fm | Cm7 Fm | Cm7 Fm |
+Cm7 Fm | F | Fm/B♭ C7 | Fm Dm7♭5 |
+D♭ | C C7 | D♭maj7 | Cm7 B♭m7 |
+Fm7 Cm7 | D♭ |
+[F]
+Csus4 C | Fm | Cm7 Fm | Cm7 Fm |
+Cm7 Fm | F | Fm/B♭ C7 | Fm Dm7♭5 |
+D♭ |
+[G]
+D♭maj7 C7 | Fm | Cm Fm | Cm7 Fm |
+Cm7 Fm | F | Fm/B♭ C7 | Fm Fm/E♭ |
+Dm7♭5 D♭ |
+[H]
+Csus4 C | Fm | Cm7 Fm | Cm7 Fm |
+Cm7 Fm | F | Fm/B♭ C7 | Fm Dm7♭5 |
+D♭ | C C7 | Fm | Cm7 Fm |
+Cm7 Fm | Cm7 Fm | F | Fm/B♭ C7 |
+Fm Fm/E♭ | Dm7♭5 D♭ | Csus4 C | Fm Cm7 |
+Fm Cm7 | Fm Cm7 | Fm F | Fm/B♭ C7 |
+Fm Fm/E♭ | Dm7♭5 D♭ | Csus4 C | Fm Cm7 |
+Fm Cm7 | Fm Cm7 |`,
+
+`title: 花束を君に (Hanataba wo Kimi ni)
+by: 宇多田ヒカル (Hikaru Utada)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 90
+key: E
+form: A B Interlude C D Interlude 2 E D B Outro
+[A]
+E G♯m7 | A | F♯m7 B | E |
+E G♯m7 | A | F♯m7 A | B |
+[B]
+E G♯m7 | A E | A E | A E |
+E G♯m7 | G♯7 C♯m7 | A G♯7 | A G♯7 |
+A E | A E | D B |
+[Interlude]
+E C♯m7 | G♯m7 | E C♯m7 | B |
+[C]
+E G♯m7 | A | F♯m7 B | E G♯m7 |
+A F♯m7 | A B |
+[D]
+E G♯m7 | A E | A E | A E |
+E G♯m7 | G♯7 C♯m | A G♯7 | A G♯7 |
+A E | A E | D B |
+[Interlude 2]
+E G♯m7 | A | F♯m7 B | E |
+[E]
+E | G♯7 C♯m | F♯m7 G♯7 |
+[Outro]
+E C♯m7 | G♯m7 | E C♯m7 | B |
+E C♯m7 | G♯m7 | E C♯m7 | B |`,
+
+`title: One Last Kiss
+by: 宇多田ヒカル (Hikaru Utada)
+genre: J-pop
+feel: Electro pop
+source: U-FRET chord chart
+tempo: 125
+key: G♯m
+form: Intro A B C Interlude A D C Interlude 2 D E Interlude 2 C Outro
+[Intro]
+C♯m7 Emaj7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ Bmaj7 |
+F♯/A♯ |
+[A]
+C♯m7 Emaj7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ D♯m7 |
+[B]
+Emaj7 B/D♯ | C♯m7 G♯m7 | Emaj7 B/D♯ | C♯m7 F♯ |
+D♯7 |
+[C]
+C♯m7 G♯m7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ D♯m7 |
+[Interlude]
+C♯m7 G♯m7 | F♯ D♯m7 |
+[D]
+Emaj7 B/D♯ | C♯m7 G♯m7 | D♯m7 | Emaj7 B/D♯ |
+C♯m7 F♯ | D♯7 |
+[Interlude 2]
+C♯m7 G♯m7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ D♯m7 |
+[E]
+C♯m7 G♯m7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ D♯m7 |
+C♯m7 G♯m7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ D♯m7 |
+[Outro]
+C♯m7 G♯m7 | F♯ D♯m7 | C♯m7 Emaj7 | F♯ D♯m7 |`,
+
+`title: 初恋 (Hatsukoi)
+by: 宇多田ヒカル (Hikaru Utada)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 70
+key: G
+form: A A B C A D E F A
+[A]
+C Em | Am7 G | C Em | Am7 G |
+[B]
+C G/B | C G/B | Em C | G/B C |
+Em D | C D | Em G | C D |
+Em |
+[C]
+D C | Em | Am7 G | C Em |
+Am7 | G |
+[D]
+C G/B | C | G/B Em | C |
+G/B | C Em | D |
+[E]
+C D | Em G | C D | Em |
+C Em | Am7 G | C Em | Am7 G |
+C D | Em | G C | D Em |
+[F]
+C Em | Am7 G | C Em | Am7 G |
+C Em | Am7 G | C Em | Am7 |
+G |`,
+
+`title: きらり (Kirari)
+by: 藤井風 (Fujii Kaze)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 123
+key: D
+form: A B C B D E Interlude F G H Interlude 2 I E
+[A]
+G F♯m | Em D | Em F♯m | G F♯m |
+Em D |
+[B]
+Em F♯m | Gm B♭/C | F | Dm Gm |
+B♭/C F | B♭ Em | F♯ |
+[C]
+G F♯m | B Em | A D | Em F♯m |
+G F♯m | B Em | A D |
+[D]
+G F♯m | B | Em A | D G♯m7♭5 |
+G Gm | F♯m B | Em A | D G♯m7♭5 |
+[E]
+G F♯m | B Em | A D | G♯m7♭5 |
+G F♯m | Em F♯ | B |
+[Interlude]
+G F♯m | Em D | G♯m7♭5 | G F♯m |
+Em D | G♯m7♭5 |
+[F]
+G F♯m | Em D | Em F♯m | G F♯m |
+Em D | G | F♯m B | Em A |
+D G♯m7♭5 | G | F♯m B | Em A |
+D G♯m7♭5 |
+[G]
+G F♯m | B Em | A | D G♯m7♭5 |
+G F♯m | B Em | A | D G♯m7♭5 |
+[H]
+Gm B♭/C | F | Dm Gm | B♭/C F |
+B♭ Em | F♯ |
+[Interlude 2]
+Gm Am | B♭m Cm | C♯ Am7 |
+[I]
+Em F♯m | D Em | A F♯m | Bm C |
+A/C♯ D | G Gm | F♯m B | Em A |
+D G♯m7♭5 |`,
+
+`title: 何なんw (Nan-Nan)
+by: 藤井風 (Fujii Kaze)
+genre: J-pop
+feel: R&B
+source: U-FRET chord chart
+tempo: 96
+key: Bm
+form: Intro Interlude A B C D E C D F G H I Outro
+[Intro]
+Gmaj7 F♯m7 | Fm7 | Gmaj7 F♯7 | Am7 D |
+Gmaj7 F♯m7 | Bm7 | Em7 Gm7 | Am7 G♯m7♭5 |
+[Interlude]
+Gmaj7 F♯m7 | Bm7 | Em7 F♯m7 | Bm7 Am7 |
+D | G♯m7♭5 C | F♯m7 Bm7 | Em7 Am7 |
+D G♯m7♭5 |
+[A]
+Gmaj7 F♯m7 | Bm7 | Gmaj7 F♯m7 | Bm7 A |
+G♯m7♭5 | Gmaj7 C | F♯m7 Bm7 | Em7 F♯m7 |
+Bm7 F♯m7 | Fm7 |
+[B]
+Em7 F♯m7 | Bm7 | Em7 F♯m7 | Bm7 A |
+G♯m7♭5 | Gmaj7 C | F♯m7 Bm7 | Em7 F♯m7 |
+Bm7 |
+[C]
+Gm7 C | F Dm7 | G♯m7 | Gm7 C |
+F B♭ | Em7 F♯7 |
+[D]
+Gmaj7 | F♯m7 Bm7 | Gmaj7 | F♯m7 Am7 |
+D | Gmaj7 | F♯m7 Bm7 | Em7 |
+Am7 D |
+[E]
+G♯m7♭5 C♯7 | F♯m7 Em7 | D | G♯m7♭5 C♯7 |
+F♯m7 Em7 | D |
+[F]
+G♯m7♭5 C♯7 | F♯m7 | Em7 D | G♯m7♭5 C♯7 |
+F♯m7 | Am7 E♭ |
+[G]
+Gm7 C | F Dm7 | Gm7 C | F Dm7 |
+F♯7 |
+[H]
+Gmaj7 | F♯m7 Bm7 | A | Gmaj7 |
+F♯m7 Am7 | D | Gmaj7 F♯m7 | Bm7 |
+Em7 | Am7 D |
+[I]
+Gmaj7 F♯m7 | Bm7 | Gmaj7 F♯m7 | Am7 D |
+Gmaj7 F♯m7 | Bm7 | Em7 Gm7 | Am7 D |
+[Outro]
+Gmaj7 F♯m7 | Bm7 | Gmaj7 F♯m7 | Am7 D |
+Gmaj7 F♯m7 | Fm7 | Em7 Gm7 | Am7 D |
+G♯m7♭5 |`,
+
+`title: 帰ろう (Kaerou)
+by: 藤井風 (Fujii Kaze)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 76
+key: A
+form: Intro A B C D E B F G H
+[Intro]
+Dmaj7 C♯m7 | Bm7 Bm7/E | Dmaj7 C♯m7 | Bm7 Bm7/E |
+F° |
+[A]
+Amaj7 Dmaj7 | C♯m7 F♯m | Em | Dmaj7 C♯m7 |
+Cm7 Bm7 | C♯m7 Dm7 | E |
+[B]
+Amaj7 Dmaj7 | C♯m7 C♯7 | F♯m Em | Dmaj7 C♯m7 |
+Cm7 Bm7 | E |
+[C]
+Fmaj7 Em7 | Am7 Dm7 | G7 Cmaj7 | C7 Fmaj7 |
+Em7 | Am7 Dm7 | Dm7/C Bm7♭5 | E |
+[D]
+Dmaj7 C♯m7 | F♯7 | Bm7 E | Amaj7 D♯m7♭5 |
+Dmaj7 C♯m7 | F♯7 | Bm7 B7 | Em Em/A |
+Dmaj7 C♯m7 | F♯7 | Bm7 E | Amaj7 D♯m7♭5 |
+Dmaj7 C♯m7 | C♯7 F♯m | Bm7 E | D♯9 Dmaj7 |
+C♯m7 Bm7 | Bm7/E | Fmaj7 Em7 | D♯maj7 Dm7 |
+G E |
+[E]
+Amaj7 Dmaj7 | C♯m7 C♯7 | F♯m Em | Dmaj7 C♯m7 |
+Cm7 Bm7 | C♯m7 Dm7 | E |
+[F]
+Fmaj7 Em7 | Am7 Dm7 | G7 Cmaj7 | C7 Fmaj7 |
+Em7 | D♯m7 Dm7 | Dm7/C Bm7♭5 | E |
+[G]
+Dmaj7 C♯m7 | F♯7 | Bm7 E | Amaj7 D♯m7♭5 |
+Dmaj7 C♯m7 | F♯7 | Bm7 B7 | Em Em/A |
+Dmaj7 C♯m7 | F♯7 | Bm7 E | Amaj7 D♯m7♭5 |
+Dmaj7 C♯m7 | C♯7 F♯m | Bm7 Em | Em/A |
+Dmaj7 Dm7/G | C♯m7 C♯7 | F♯m | Bm7 E |
+D♯9 Dmaj7 | Dm6 C♯m7 | C♯7 F♯m |
+[H]
+Bm7 E | D♯9 Dmaj7 | C♯m7 Bm7 | Bm7/E |
+Dmaj7 C♯m7 | Bm7 Bm7/E | F° Amaj7 |`,
+
+`title: まつり (Matsuri)
+by: 藤井風 (Fujii Kaze)
+genre: J-pop
+feel: Groove
+source: U-FRET chord chart
+tempo: 110
+key: E
+form: Intro A A B C D E F G H H I
+[Intro]
+F♯m7 G♯m | G♯m7/C♯ C♯7-9 | F♯m7 G♯7+5 | G♯m/C♯ C♯7-9 |
+F♯m7 B | Emaj7 A♯m7♭5 | A G♯7+5 | G♯m7/C♯ C♯9 |
+[A]
+F♯m7 G♯m | G♯m7/C♯ C♯7-9 | F♯m7 G♯7+5 | G♯m7/C♯ C♯7-9 |
+F♯m7 B | Emaj7 | A♯m7♭5 A | G♯7+5 G♯m7/C♯ |
+C♯7-9 |
+[B]
+F♯m7 G♯7 | G♯7-9 | G♯m7/C♯ | A♯m7♭5 |
+F♯m7 D9 | G♯m7/C♯ C♯7-9 | C♯7-9 |
+[C]
+F♯m7 G♯m | G♯m7/C♯ C♯7-9 | F♯m7 G♯7+5 | G♯m7/C♯ C♯7-9 |
+F♯m7 B | Emaj7 A♯m7♭5 | A G♯m | F♯m7 |
+[D]
+F♯m7 G♯m | G♯m7/C♯ C♯7-9 | F♯m7 G♯7+5 | G♯m7/C♯ C♯7-9 |
+F♯m7 B | Emaj7 A♯m7♭5 | A G♯7+5 | G♯m7/C♯ C♯7-9 |
+[E]
+F♯m7 G♯m7/C♯ | C♯m G♯m7/C♯ | F♯m7 G♯m7/C♯ | C♯m |
+[F]
+F♯m7 G♯m | C♯m | F♯m7 G♯m | C♯m |
+[G]
+F♯m7 G♯7 | G♯7-9 | G♯m7/C♯ | A♯m7♭5 |
+F♯m7 D9 | C♯m C♯7-9 |
+[H]
+F♯m7 G♯m | G♯m7/C♯ C♯7-9 | F♯m7 G♯7+5 | G♯m7/C♯ C♯7-9 |
+F♯m7 B | Emaj7 A♯m7♭5 | A | G♯m F♯m7 |
+[I]
+F♯m7 G♯m7 | C♯m C♯7-9 | F♯m7 G♯7+5 | C♯m C♯7-9 |
+F♯m7 B | Emaj7 A♯m7♭5 | A G♯7+5 | G♯m7/C♯ C♯7-9 |`,
+
+`title: 満ちてゆく (Michite Yuku)
+by: 藤井風 (Fujii Kaze)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 78
+key: A
+form: Intro A B C D Interlude E Interlude 2 A F G H I Interlude 3 J K L Outro
+[Intro]
+A C♯m | Dmaj7 F♯7 | Bm E7 | Amaj7 B♭maj7 |
+A C♯m | Dmaj7 F♯7 | Bm E7 | Amaj7 B♭maj7 |
+[A]
+A | C♯m | Em7 A | Dmaj7 |
+[B]
+E/F♯ A | C♯m | Em7 A | Dmaj7 |
+[C]
+A/C♯ Bm | A/C♯ F♯m | G Em7 | A |
+[D]
+Dmaj7 C♯m7 | Am/C | Bm7 E | A |
+E D♯ | Dmaj7 C♯m7 | C♯ F♯m | Am/C |
+Bm7 E | A C♯m | Dmaj7 F♯7 |
+[Interlude]
+Bm E7 | Amaj7 |
+[E]
+B♭maj7 A | C♯m Dmaj7 | F♯7 |
+[Interlude 2]
+Bm E | Amaj7 B♭maj7 |
+[F]
+A C♯m | Em7 A | Dmaj7 |
+[G]
+Bm | A/C♯ F♯m | G Em7 | A |
+[H]
+Dmaj7 C♯m7 | Am/C | Bm7 E | A |
+E D♯ | Dmaj7 C♯m7 | C♯ F♯m | Am/C |
+Bm7 E7 | Dmaj7 |
+[I]
+Dmmaj7 F♯m7 | Em7 A | Dm7 Cmaj7 |
+[Interlude 3]
+B♭maj7 A |
+[J]
+Dmaj7 C♯m7 | Am/C Bm7 | F° F♯m7 | Em7 A |
+Dmaj7 C♯m7 | F♯m7 Bm7 | E F |
+[K]
+D♯maj7 Dm7 | B♭m/C♯ | Cm7 Fm7 | B♭ |
+Fm E° | D♯maj7 Dm7 | D Gm | D° |
+Cm7 F7 |
+[L]
+B♭ Dm7 | D♯maj7 Gm7 | Cm7 F7 | B♭maj7 Bmaj7 |
+B♭ Dm7 | D♯maj7 Gm7 | Cm7 F7 | B♭maj7 Bmaj7 |
+[Outro]
+B♭ Dm7 | D♯maj7 Gm7 | Cm7 F7 | B♭maj7 Bmaj7 |`,
+
+`title: だから僕は音楽を辞めた (Dakara Boku wa Ongaku wo Yameta)
+by: ヨルシカ (Yorushika)
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 110
+key: C♯m
+form: A Interlude A B C Interlude A D C Interlude E F G Interlude 2 H I
+[A]
+A B | C♯m | A B | C♯m |
+A B | C♯m | A B | C♯m |
+[Interlude]
+A B | C♯m G♯m7 | A B | C♯m |
+A B | C♯m G♯m7 | A B | C♯m |
+[B]
+E/G♯ A | B C♯m | F♯m7 G♯m7 | A G♯7 |
+[C]
+A B | G♯m7 C♯m | F♯m7 B | E C♯m |
+A B | G♯m7 C♯m | A B |
+[D]
+E/G♯ A | B C♯m | F♯m7 | G♯m7 A |
+B G♯7 |
+[E]
+A B | C♯m | A B | C♯m |
+A B | C♯m A | B C♯m |
+[F]
+A B | C♯m | A B | C♯m |
+A B | C♯m | A B | C♯m |
+F♯ E | D♯ C♯ | B A | G♯ |
+D C♯ |
+[G]
+A♯ C | Am7 Dm | Gm7 C | F Dm |
+A♯ C | Am7 Dm | A♯ C | Dm |
+[Interlude 2]
+A♯ C | Dm Am7 | A♯ C | Dm |
+A♯ C | Dm Am7 | A♯ C | Dm |
+[H]
+A♯ C | Dm Am7 | A♯ C | Dm |
+A♯ C | Dm Am7 | A♯ C | Dm |
+[I]
+A♯ C | Dm Am7 | A♯ C | Dm |`,
+
+`title: 晴る (Haru)
+by: ヨルシカ (Yorushika)
+genre: J-pop
+feel: Bright rock
+source: U-FRET chord chart
+tempo: 160
+key: Bm
+form: Intro A Interlude B Interlude 2 C C Interlude 3 A Interlude B Interlude 2 C D Interlude 4 E C C
+[Intro]
+Bm F♯m | G D | Bm F♯m | G D |
+[A]
+Bm F♯m | G | D Bm | F♯m G |
+D Bm | F♯m G | D |
+[Interlude]
+Bm F♯m | G D |
+[B]
+Bm F♯m | G | D Bm | F♯m G |
+D Bm | F♯m G | A |
+[Interlude 2]
+D | F♯m Gm7 | Am7 A/C♯ | A |
+[C]
+G A | F♯m Bm | G A | Bm A/C♯ |
+D G | A F♯7 | Bm G | A Bm |
+[Interlude 3]
+F♯m G | D | Bm F♯m | G D |
+[D]
+G A | F♯m Bm | G A | Bm A/C♯ |
+D G | A F♯7 | Bm G | A G |
+[Interlude 4]
+A Bm | G A | Bm | G A |
+Bm | G A | Bm |
+[E]
+G A | Bm | G A | Bm |
+G A | Bm | G A | Bm |`,
+
+`title: 言って。 (Itte.)
+by: ヨルシカ (Yorushika)
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 145
+key: Am
+[A]
+F G | Em7 Am | F G | Am A♭° |
+C/G F♯m7♭5 |
+[B]
+F G | Em7 | Am A♭° | G |
+[C]
+F G | C | Dm Em | F F♯m7♭5 |
+[D]
+G A♭° | Am Em7 | F F♯m7♭5 | G C |
+[E]
+F G | Em7 A♭° | Am | F G |
+Am Em7 | F G | Em7 A♭° | Am |
+F G | Am C | F G |
+[Interlude]
+F G | Em7 Am | F G | Am A♭° |
+C/G F♯m7♭5 |
+[F]
+F G | Em7 | Am A♭° | G |
+F G | Em7 Am |
+[Interlude 2]
+F G | Am A♭° | C/G F♯m7♭5 | F G |
+Am |
+[H]
+F G | Em7 | Am | F G |
+C Am |
+[I]
+F | G | Em7 Am |
+[J]
+F | G | Am A♭° | C/G F♯m7♭5 |
+A7 |
+[K]
+F G | Em7 A♭° | Am B♭m |
+[L]
+F♯ A♭ | Fm7 A° | B♭m | F♯ A♭ |
+B♭m Fm7 |
+[M]
+F♯ A♭ | Fm7 A° | B♭m | F♯ A♭ |
+[N]
+F♯ A♭ | Fm7 B♭m | F♯ A♭ | B♭m D♭ |
+F♯ A♭ | B♭m D♭ |
+[Z]
+F♯ A♭ | D♭ |`,
+
+`title: 花に亡霊 (Hana ni Bōrei)
+by: ヨルシカ (Yorushika)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 87
+key: E
+form: A A B C Interlude A A B C Interlude B C D A
+[A]
+F♯m7 B | E B/D♯ | F♯m7 G♯m7 | A B |
+E |
+[B]
+F♯m7 G♯m7 | A | F♯m7 G♯m7 | A |
+A B |
+[C]
+C♯m7 A | B E | C♯m7 A | B E |
+C♯m7 A | B E | A B |
+[Interlude]
+C♯m7 A | B E | C♯m7 A | B E |
+C♯m7 A | B E | A Bsus4 |
+[D]
+C♯m7 A | B E | C♯m7 A | B E |
+C♯m7 A | B E | A Bsus4 |`,
+
+`title: 秒針を噛む (Byōshin wo Kamu)
+by: ずっと真夜中でいいのに。(ZUTOMAYO)
+genre: J-pop
+feel: Funk rock
+source: U-FRET chord chart
+tempo: 140
+key: C♯m
+form: Intro Interlude A B C D Interlude E F C D Interlude 2 G Interlude 3 H I J
+[Intro]
+A B | C♯m G♯m7 | A B | C♯m G♯m7 |
+A B | C♯m G♯m7 | A B | C♯m |
+[Interlude]
+A G♯ | C♯m G♯m7 | A G♯ | C♯m G♯m7 |
+A G♯ | C♯m G♯m7 | A G♯ | C♯m |
+[A]
+A C° | C♯m E | A C° | C♯m G♯m7 |
+A C° | C♯m E | G♯ C° | C♯m C♯ |
+[B]
+A C° | C♯m E | A C° | C♯m G♯m7 |
+A C° | C♯m E | G♯ C° | C♯m |
+[C]
+A G♯ | C♯m E | A G♯ | C♯m E |
+A G♯ | C♯m C° | E/B A♯m7♭5 | F♯m7 D♯/G |
+G♯ |
+[D]
+A B | C♯m Bm | E | A G♯ |
+C♯m F♯ | A Am7 | G♯m7 C° | C♯m |
+F♯m7 G♯m7 | A |
+[E]
+A C° | C♯m E | A C° | C♯m G♯m |
+A C° | C♯m E | G♯ C° | C♯m |
+[F]
+A B | G♯ C♯m | C♯ | F♯m7 G♯m7 |
+A A♯m7♭5 | B |
+[Interlude 2]
+C♯m |
+[G]
+A | G♯ | C♯m | Bm |
+A | G♯ | A A♯m7♭5 | B |
+A A♯m7♭5 | B G♯ |
+[Interlude 3]
+A G♯ | C♯m G♯m7 | A G♯ | C♯m G♯m7 |
+A B | G♯ C♯m | F♯m7 G♯m7 | A C° |
+[H]
+A Am7 | G♯m7 C♯m | A Am7 | G♯m C♯m |
+A Am7 | G♯m7 C♯m | F♯m7 G♯m7 | A B |
+[I]
+A B | C♯m Bm | E | A G♯ |
+C♯m F♯ | A Am7 | G♯m7 C° | C♯m |
+F♯m7 G♯m7 | A G♯m7 | F♯m7 G♯m7 | A |
+[J]
+A G♯ | C♯m G♯m7 | A G♯ | C♯m G♯m7 |
+A G♯ | C♯m G♯m7 | A G♯ | C♯m |`,
+
+`title: 残機 (Zanki)
+by: ずっと真夜中でいいのに。(ZUTOMAYO)
+genre: J-pop
+feel: Fast funk
+source: U-FRET chord chart
+tempo: 180
+key: C
+form: Intro A B C D E F G H I C J K L
+[Intro]
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+[A]
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+[B]
+Dm7 Em7 | Am | Dm7 Em7 | G Am |
+Dm7 Em7 | Am | Dm7 Em7 | Am |
+Bm |
+[C]
+Cmaj7 B7 | Em7 Cmaj7 | B7 Em7 | G7 |
+Cmaj7 B7 | Em7 Cmaj7 | B7 Em7 |
+[D]
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 G |
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 G |
+[E]
+Am G | F E | Am G | F E |
+Dm Em | Am |
+[F]
+Dm7 Em7 | Am | Dm7 Em7 | G Am |
+Dm7 Em7 | Am | Dm7 Em7 | Am D |
+E♭ |
+[G]
+E Cmaj7 | B7 | Em7 Cmaj7 | B7 Em7 |
+G7 | Cmaj7 B7 | Em7 Cmaj7 | B7 Em7 |
+[H]
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 G |
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 G |
+Cmaj7 B7 | Em Em7/D | D♭m7♭5 | Cmaj7 B7 |
+Em B7+5 |
+[I]
+Cmaj7 G | Cmaj7 D | G F♯m7♭5 | B7 Em |
+Em7/D | D♭m7♭5 Cmaj7 | B7 Em | Em |
+[J]
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 D♭m7♭5 |
+Cmaj7 B7 | Em7 Cmaj7 | B7 Em7 |
+[K]
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 G |
+Cmaj7 B7 | Em7 | Cmaj7 B7 | Em7 |
+[L]
+G | Em |`,
+
+`title: ドライフラワー (Dry Flower)
+by: 優里 (Yuuri)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 73
+key: G
+form: Intro A B C Interlude A D C Interlude 2 E F Outro
+[Intro]
+C G | Dsus4 Em7 | C G | Dsus4 Em7 |
+[A]
+C G | Dsus4 Em7 | C G | Dsus4 Em7 |
+C G | Dsus4 Em7 | C G | D |
+[B]
+Em7 C | D G | D/F♯ | Em7 C |
+D G | D/F♯ | Em7 C | Bm7 B7 |
+Em7 | Am7 C | B7 |
+[C]
+C G | D B7 | Em7 | C G |
+D E♭° | Em7 | C G | B7 Em7 |
+Am7 Cm | D |
+[Interlude]
+C G | Dsus4 Em7 | C G | Dsus4 Em7 |
+[D]
+Em7 C | D G | D/F♯ | Em7 C |
+D G | B7 | Em7 C | Bm7 B7 |
+Em7 | Am7 C | B7 |
+[Interlude 2]
+Cmaj7 Em7 | Bm7 |
+[E]
+C D | Em7 Bm7 | C D | C D |
+B7 |
+[F]
+C G | D B7 | Em7 | C G |
+B7 Em7 | C G | B7 Em7 | Am7 Cm |
+D |
+[Outro]
+C G | Dsus4 Em7 | C G | Dsus4 Em7 |
+C G | Dsus4 Em7 | C G | D C |`,
+
+`title: ベテルギウス (Betelgeuse)
+by: 優里 (Yuuri)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 84
+key: F
+form: A B C D E F G H I D J
+[A]
+F B♭ | C Dm | F B♭ | C Dm |
+F B♭ | C Dm | F B♭ | C |
+[B]
+B♭ F/A | C Dm7 | B♭ F/A | A/D♭ Dm7 |
+B♭ C | A Dm7 | B♭ C |
+[C]
+B♭ F/A | C | Dm B♭ | F/A A/D♭ |
+Dm | B♭ F/A | A Dm | E♭ C |
+[D]
+B♭ F/A | C Dm | C B♭ | F/A A/D♭ |
+Dm | B♭ F/A | A/D♭ Dm | E♭ C |
+B♭ |
+[E]
+F/A B♭ | C Dm | F/A B♭ | C Dm |
+F/A B♭ | C Dm | F/A B♭ | C |
+[F]
+B♭ F/A | C Dm7 | B♭ F/A | A/D♭ Dm7 |
+B♭ F/A | A Dm7 | B♭ C |
+[G]
+B♭ F/A | C | Dm B♭ | F/A A/D♭ |
+Dm | B♭ F/A | A/D♭ Dm | E♭ C |
+[H]
+B♭ C | Dm F/A | B♭ C | A/D♭ Dm |
+B♭ C | A/D♭ | Dm E♭ | C |
+[I]
+B♭ F | C | Dm B♭ | F A/D♭ |
+Dm | B♭ F | A Dm | B♭ C |
+[J]
+F/A B♭ | C Dm | F/A B♭ |`,
+
+`title: Bling-Bang-Bang-Born
+by: Creepy Nuts
+genre: J-pop
+feel: Jersey club
+source: U-FRET chord chart
+tempo: 160
+key: Am
+form: A Interlude B C D E E F D E E
+[A]
+Am | Am | Am | Am |
+Am | Am | Am | Am |
+[Interlude]
+Am E7 | Am E7 |
+[B]
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 |
+[C]
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 |
+[D]
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am |
+[E]
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am E7 |
+[F]
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am | E7 Am |
+E7 Am | E7 Am | E7 Am | E7 Am |
+E7 | Am E7 | Am E7 | Am E7 |
+Am E7 | Am E7 | Am E7 | Am E7 |
+Am |`,
+
+`title: オトノケ (Otonoke)
+by: Creepy Nuts
+genre: J-pop
+feel: Hip-hop rock
+source: U-FRET chord chart
+tempo: 170
+key: A♭
+form: B C D E F G F G H C D E Interlude F G F G
+[B]
+A♭ | A♭ | A♭ | A♭ |
+A♭ | A♭ | A♭ | A♭ |
+A♭ |
+[C]
+D♭ C7 | Fm G♭ | D♭ C7 | Fm E♭m |
+A♭7 | D♭ C7 | Fm G♭ | B♭m Cm |
+D♭ |
+[D]
+Fm | D♭ | E♭ A♭ | Fm D♭ |
+E♭ A♭ |
+[E]
+Fm | D♭ | E♭ A♭ | Fm D♭ |
+E♭ | A♭ Fm | D♭ | E♭ A♭ |
+Fm D♭ | E♭ A♭ |
+[F]
+Fm | D♭ |
+[G]
+E♭ | A♭ |
+[H]
+A♭ | A♭ | A♭ | A♭ |
+A♭ | A♭ | A♭ | A♭ |
+A♭ | A♭ |
+[Interlude]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |`,
+
+`title: 晩餐歌 (Bansanka)
+by: tuki.
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: A♭
+form: Intro A B C Interlude A B C D E F Interlude 2 Outro
+[Intro]
+A♭/C D♭ | E♭ Fm | A♭/C D♭ | E♭ Fm |
+[A]
+A♭/C D♭ | E♭ Fm | A♭/C D♭ | E♭ Fm |
+A♭/C D♭ | E♭ Fm | A♭/C D♭ | E♭ Fm |
+[B]
+D♭ E♭ | A♭/C Fm | D♭ E° | Fm E♭ |
+D♭ E♭ | A♭/C Fm | B♭m A♭/C | D♭ E° |
+[C]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ E° | Fm D♭ | E♭ A♭ |
+[Interlude]
+A♭/C D♭ | E♭ Fm | A♭/C D♭ | E♭ Fm |
+[D]
+D♭ E♭ | A♭/C Fm | D♭ E♭ | A♭/C Fm |
+D♭ E♭ | E° Fm | G♭ E♭ |
+[E]
+Fm D♭ | E♭ A♭ | Fm D♭ | E♭ A♭ |
+Fm D♭ | E♭ E° | Fm D♭ |
+[F]
+G♭m D | E A | G♭m D | E A |
+G♭m D | E F° | G♭m D | E A |
+[Interlude 2]
+G♭m D | E A | G♭m D | E A |
+G♭m D | E F° | G♭m D | E A |
+[Outro]
+A/D♭ D | E G♭m | A/D♭ D | E G♭m |`,
+
+`title: シンデレラボーイ (Cinderella Boy)
+by: Saucy Dog
+genre: J-pop
+feel: Rock ballad
+source: U-FRET chord chart
+tempo: 73
+key: A
+form: Intro A A B C Interlude A A D Interlude 2 E F C Outro
+[Intro]
+A Bm7 | C♯m7 D | A Bm7 | C♯m7 D |
+[A]
+A Bm7 | C♯m7 D | A Bm7 | C♯m7 D |
+E F♯m7 | Gmaj7 E |
+[B]
+F♯m7 E | D | F♯m7 E | D A |
+[C]
+D E | A | C♯7 F♯m7 | D E |
+A | D E |
+[Interlude]
+A Bm7 | C G | A Bm7 | C G |
+[D]
+F♯m7 E | D | F♯m7 E | G |
+[Interlude 2]
+A7 | A Bm7 | C G |
+[E]
+A Bm7 | C♯m7 D | A Bm7 | C/D G |
+A Bm7 | C♯m7 D | A Bm7 | C/D E |
+[F]
+D E | A | C♯7 F♯m7 | D E |
+A | D E | A |
+[Outro]
+A Bm7 | C♯m7 D | A Bm7 | C♯m7 D |
+A Bm7 | C♯m7 D | A Bm7 | C♯m7 D |
+A |`,
+
+`title: Mela!
+by: 緑黄色社会 (Ryokuoushoku Shakai)
+genre: J-pop
+feel: Bright pop
+source: U-FRET chord chart
+tempo: 160
+key: A♭
+form: A Interlude B C D Interlude E F Interlude 2 G Interlude 3 H Outro
+[A]
+D♭ | D♭m | Cm E° | Fm E+ |
+A♭/E♭ Dm7♭5 | B♭m D♭ | D♭/E♭ A♭ |
+[Interlude]
+B♭m E♭ | A♭ | B♭m E♭ | A♭ Fm |
+[B]
+B♭m E♭ | Fm | B♭m | E♭ Fm |
+C7 |
+[C]
+B♭m E♭ | A♭ C7 | B♭m Cm | D♭ D♭/E♭ |
+[D]
+Dm7♭5 D♭ | D♭m | Cm Fm | D♭ D♭m |
+Gm7♭5 C7 | Fm | A♭ D♭ | D♭m Cm |
+E° Fm | B♭m D♭m | A♭ |
+[E]
+B♭m B♭° | A♭ Cm | B♭m C7 | A♭ C7 |
+[F]
+B♭m E♭ | A♭ C7 | B♭m Cm | D♭ E♭ |
+D♭ E° | Fm |
+[Interlude 2]
+D♭ E° | Fm | D♭ E° | Fm |
+B♭m Cm | D♭m G♭ | G♭7 |
+[G]
+E Em | B♭m7♭5 E♭ | A♭m | D♭m G♭ |
+B G♭m | B Em | A | D E♭m7♭5 |
+Em E | A |
+[Interlude 3]
+E♭sus4 E♭ |
+[H]
+D♭ | D♭m | Cm Fm | D♭ D♭m |
+Gm7♭5 C7 | Fm E+ | A♭/E♭ | Dm7♭5 |
+D♭ D♭m | Gm7♭5 C7 | Fm | B♭m D♭m |
+A♭ | B♭m D♭m | A♭ |
+[Outro]
+B♭m E♭ | A♭ | B♭m E♭ | A♭ Fm |
+B♭m E♭ | Gm7♭5 C7 | Fm | B♭m Cm |
+D♭m E♭ | A♭ |`,
+
+`title: 心予報 (Kokoro Yohō)
+by: Eve
+genre: J-pop
+feel: Pop rock
+source: U-FRET chord chart
+tempo: 140
+key: E♭
+form: Intro A B C D E A F G C H Interlude I J Outro
+[Intro]
+Fm7 B♭ | E♭maj7 Cm7 | Fm7 G | B♭m7 E♭ |
+Fm7 B♭ | E♭maj7 Cm7 | Fm7 G | B♭m7 E♭ |
+[A]
+Fm7 B♭ | E♭maj7 Cm7 | Fm7 B♭ | E♭maj7 Cm7 |
+[B]
+Fm7 | B♭ | E♭maj7 | Cm7 |
+Fm7 | B♭ | E♭maj7 Cm7 |
+[C]
+D♭ G♭ | Bmaj7 Emaj7 | B♭ |
+[D]
+Fm7 B♭ | E♭maj7 Cm7 | Fm7 G | B♭m7 E♭ |
+[E]
+A♭ Gm7 | Fm7 Cm7 | A♭ Am7♭5 | Fm7 Gm7 |
+A♭ B♭ | A♭ Gm7 | Fm7 B♭ |
+[F]
+Fm7 | B♭ | E♭maj7 | Cm7 |
+[G]
+Fm7 | B♭ | E♭maj7 Cm7 |
+[H]
+A♭ Gm7 | Fm7 Cm7 | A♭ Am7♭5 |
+[Interlude]
+Fm7 Gm7 | A♭ B♭ | A♭ B♭ | B |
+[I]
+G♭m7 B | Emaj7 D♭m7 | G♭m7 A♭ | Bm7 E |
+[J]
+A A♭m7 | G♭m7 D♭m7 | A B♭m7♭5 | G♭m7 A♭m7 |
+A B | A A♭m7 | G♭m7 |
+[Outro]
+G♭m7 B | Emaj7 D♭m7 | G♭m7 A♭ | Bm7 E |`,
+
+`title: ドラマツルギー (Dramaturgy)
+by: Eve
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 150
+key: E♭m
+form: Intro A B A B C D E F A G H G C I J K L L M N I J Z Z 2
+[Intro]
+A♭m D° | E♭m A♭m | D° E♭m | A♭m D° |
+E♭m A♭m | D° E♭m | A♭m D° | E♭m A♭m |
+D° E♭m | A♭m D° | E♭m A♭m | D° E♭m |
+[A]
+Bmaj7 | Bmaj7 | E♭7sus4 | E♭7sus4 |
+[B]
+A♭m7 B♭7 | E♭7sus4 E♭m7 |
+[C]
+Emaj7 E♭m7 | Dmaj7 D♭m7 | A♭m7 B♭m7 | E♭sus4 E♭ |
+[D]
+A♭m | D♭ | E♭m | G♭ A♭m |
+[E]
+B♭ E♭m | E♭ |
+[F]
+A♭m | D♭ | E♭m | G♭ A♭m |
+B♭ E♭m | E♭ | Bmaj7 B♭7 | A♭m D° |
+E♭m A♭m | D° E♭m |
+[G]
+A♭m7 B♭7 | E♭m7 |
+[H]
+Bmaj7 | Bmaj7 | E♭7sus4 |
+[I]
+A♭m | D♭ | E♭m | G♭ |
+[J]
+A♭m B♭ | E♭m E♭ |
+[K]
+A♭m | D♭ | E♭m | G♭ |
+A♭m B♭ | E♭m E♭ | B B♭ |
+[L]
+A♭m D° | E♭m | A♭m D° | E♭m |
+A♭m D° | E♭m | A♭m D° |
+[M]
+A♭m D° | E♭m | A♭m D° | E♭m |
+A♭m D° | E♭m | A♭m D° | E♭m |
+[N]
+A♭m B♭m | E♭sus4 E♭ |
+[Z]
+A♭m | D♭ | E♭m | G♭ A♭m |
+B♭ E♭m | E♭ |
+[Z 2]
+Bmaj7 B♭7 |`,
+
+`title: 前前前世 (Zenzenzense)
+by: RADWIMPS
+genre: J-pop
+feel: Fast rock
+source: U-FRET chord chart
+tempo: 190
+key: B
+form: Intro A B C D E Interlude F C D E G Interlude 2 D E Outro
+[Intro]
+B E | B E | B E | B E |
+G♯m7 E | F♯ | G♯m7 E | F♯ |
+G♯m7 E | F♯ | E |
+[A]
+B E | G♯m7 F♯ | E | B E |
+G♯m7 F♯ | E |
+[B]
+G♯m7 F♯ | E |
+[C]
+G♯m7 E | B F♯ | G♯m7 E | B F♯ |
+B/D♯ E | F♯ G♯m7 | C♯/F E | F♯ |
+[D]
+G♯m7 E | B F♯ | G♯m7 E | F♯ |
+[E]
+B G♯m7 | E B | F♯ | G♯m7 E |
+B | G♯m7 F♯/A♯ | B |
+[Interlude]
+G♯m7 E | F♯ | G♯m7 E | F♯ |
+G♯m7 E | F♯ | E B/D♯ | E B/D♯ |
+E F♯ |
+[F]
+B E | G♯m7 F♯ | E | B E |
+G♯m7 F♯ | E | G♯m7 F♯ | E |
+[G]
+G♯m7 F♯/A♯ | B | B/D♯ E | B/D♯ E |
+G♯m7 F♯ | E | G♯m7 F♯/A♯ |
+[Interlude 2]
+E |
+[Outro]
+G♯m7 E | F♯ | G♯m7 E | F♯ |
+G♯m7 E | F♯ | E B/D♯ | F♯ |
+E F♯/A♯ | B |`,
+
+`title: スパークル (Supākuru)
+by: RADWIMPS
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 74
+key: B
+form: Intro A B C D E B A F D G H I J K
+[Intro]
+B | B E | F♯ | B E |
+F♯ |
+[A]
+B E | F♯ G♯m7 | F♯ | B E |
+F♯ B |
+[B]
+B E | F♯ G♯m7 | F♯ | B E |
+F♯ | B E | F♯ | B E |
+F♯ |
+[C]
+B E | F♯ G♯m7 | F♯ | B E |
+F♯ B | B E | F♯ G♯m7 | F♯ |
+B E | F♯ |
+[D]
+F♯ G♯m | E F♯ | F♯ G♯m | E D♯ |
+G♯m E | B F♯ | G♯m E | B F♯ |
+A F♯ |
+[E]
+B E | F♯ D♯ | G♯m F♯ | E B |
+C♯ C♯m7 | F♯ | B E | F♯ D♯ |
+G♯m F♯ | C♯m7 B | E | F♯ B |
+B |
+[F]
+B E | F♯ G♯m7 | F♯ | B E |
+F♯ |
+[G]
+B E | F♯ D♯ | G♯m F♯ | C♯m7 B |
+E F♯ | B |
+[H]
+F♯ G♯m7 | E B |
+[I]
+F♯ G♯m7 | E | F♯ | B |
+F♯ |
+[J]
+B E | F♯ D♯ | G♯m F♯ | E B |
+C♯ C♯m7 | F♯ | B E | F♯ D♯ |
+G♯m F♯ | C♯m7 B | E |
+[K]
+F♯ | B E | F♯ D♯ | G♯m F♯ |
+E B | C♯ F♯ | B E | F♯ D♯ |
+G♯m F♯ | C♯m7 B | E | F♯ |
+B E | F♯ |`,
+
+`title: なんでもないや (Nandemonaiya)
+by: RADWIMPS
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 76
+key: F♯
+form: Interlude Interlude A B A B Interlude 2 C C C D Interlude 3 Outro
+[Interlude]
+B C♯ | D♯m F♯ | B C♯ | D♯m F♯ |
+B C♯ | D♯m F♯ | B C♯ | D♯m F♯ |
+[A]
+F♯/A♯ B | C♯ D♯m | F♯/A♯ B | F♯ |
+[B]
+F♯/A♯ B | C♯ D♯m | G♯m7 A♯m7 | B F♯ |
+[Interlude 2]
+F♯ |
+[C]
+B C♯ | D♯m | B C♯ | F♯ E |
+Cm7♭5 |
+[D]
+B C♯ | D♯m | B C♯ |
+[Interlude 3]
+B C♯ | D♯m C♯/F | F♯ A♯m | B |
+B C♯ | D♯m C♯/F | F♯ A♯m | B |
+[Outro]
+C♯ D♯m | F♯ | B C♯ | D♯m F♯ |
+B C♯ | D♯m F♯ |`,
+
+`title: すずめ (Suzume)
+by: RADWIMPS feat. 十明
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: Dm
+form: Intro Interlude A B C D Interlude 2 E F Interlude 3 C G
+[Intro]
+Dm |
+[Interlude]
+Dm C | B♭ Am | Dm C | Gm Am |
+[A]
+Dm C | B♭ Am | Dm C | Gm Am |
+Dm | Dm C | B♭ Am | Dm C |
+Gm Am | Dm |
+[B]
+Bm7♭5 B♭maj7 | Am Asus4 | A |
+[C]
+Dm B♭ | F C | Dm B♭ | F C |
+Gm Dm | B♭ Asus4 | A |
+[D]
+Dm B♭ | F C | Dm B♭ | F C |
+Gm Dm | B♭ Dm | Gm Am | Bm7♭5 C |
+Dm7 |
+[Interlude 2]
+C B♭maj7 | Dm7 C | B♭maj7 |
+[E]
+Dm C | B♭ F | Am Dm | B♭ C |
+Dm Am | Gm F | Gm Dm | Gm Am |
+Dm |
+[F]
+Dm C | Gm F | Gm Dm | Gm Am |
+Dm |
+[Interlude 3]
+Dm |
+[G]
+Dm B♭ | F C | Dm B♭ | F C |
+Gm Dm | B♭ Dm | Gm Am | Bm7♭5 C |
+Dm |`,
+
+`title: 恋 (Koi)
+by: 星野源 (Gen Hoshino)
+genre: J-pop
+feel: Pop
+source: U-FRET chord chart
+tempo: 170
+key: A
+form: Intro Interlude A B C D Interlude 2 E C D Interlude 3 F G H Interlude 3 Outro
+[Intro]
+D G | F♯m A | D G | F♯m A |
+D G | F♯m A |
+[Interlude]
+Bm7 C♯m7 | D E |
+[A]
+A C♯7 | F♯m B♭m7♭5 | D C♯m7 | Bm7 E |
+A C♯7 | F♯m7 B♭m7♭5 | D C♯m7 | E A |
+D7 |
+[B]
+A C♯7 | F♯m B♭m7♭5 | D C♯m7 | Bm7 E |
+A C♯7 | F♯m B♭m7♭5 | D C♯m7 | E A |
+E7 |
+[C]
+D A/C♯ | F° F♯m | D A/C♯ | F° F♯m |
+D A/C♯ | E F° | F♯m | Bm7 C♯m7 |
+D E |
+[D]
+A C♯m7 | F♯m A/C♯ | D C♯m7 | Bm7 E |
+A C♯m7 | F♯m A | Bm7 E | A C♯m7 |
+F♯m A/C♯ | D C♯m7 | Bm7 E | A C♯m7 |
+F♯m A | Bm7 C♯m7 | Bm7 E | A Bm7 |
+Cm7 C♯m7 |
+[Interlude 2]
+D G | F♯m A | D G | F♯m A |
+D G | F♯m A | Bm7 C♯m7 | D E |
+[E]
+A C♯m7 | F♯m A | D C♯m7 | Bm7 E |
+A C♯7 | F♯m A | D C♯m7 | E A |
+E7 |
+[Interlude 3]
+A C° | D C♯m7 | C° Bm7 | A |
+A C° | D C♯m7 | C° Bm7 | A |
+A C° | D C♯m7 | C° Bm7 | A |
+A C° | D C♯m7 | C° Bm7 | A |
+[F]
+F♯m Em7 | A7 D | C♯7 F♯m | B7 |
+E |
+[G]
+A C♯m7 | F♯m A/C♯ | D C♯m7 | Bm7 E |
+A C♯m7 | F♯m A | Bm7 E | A C♯m7 |
+F♯m A/C♯ | D C♯m7 | Bm7 E | A C♯m7 |
+F♯m A | Bm7 C♯m7 | Bm7 E | A F♯m |
+[H]
+Bm7 E | A F♯m | Bm7 E |
+[Outro]
+A C° | D C♯m7 | C° Bm7 | A |
+A C° | D C♯m7 | C° Bm7 | A |
+A C° | D C♯m7 | C° Bm7 | A |
+A C° | D C♯m7 | C° Bm7 | A |`,
+
+`title: SUN
+by: 星野源 (Gen Hoshino)
+genre: J-pop
+feel: Funk pop
+source: U-FRET chord chart
+tempo: 120
+key: A♭
+form: Interlude Interlude 2 Interlude Interlude 2 B C D E Interlude 3 Interlude 3 Interlude 2 B C F G H I J Interlude 4 Interlude 5 Interlude 4 Outro
+[Interlude]
+D♭maj7 Cm7 | B♭m7 D♭/E♭ | D♭maj7 Cm7 | B♭m7 D♭/E♭ |
+[Interlude 2]
+D♭maj7 Cm7 | B♭m7 D♭/E♭ | G♭7♭5 |
+[B]
+A♭ Gm7♭5 | C7 Fm7 | E♭m7 A♭7 | Cm7 Fm7 |
+B♭m7 E♭ | A♭ Gm7♭5 | C7 Fm7 | E♭m7 A♭7 |
+Cm7 Fm7 | B♭m7 E♭ |
+[C]
+D♭maj7 Cm7 | B♭m7 A♭maj7 | A♭7 D♭maj7 | Cm7 B♭m7 |
+E♭sus4 E♭ |
+[D]
+A♭maj7 D♭maj7 | E♭ E° | Fm7 B♭m7 | Cm7 B♭m7 |
+E♭ | A♭maj7 D♭maj7 | E♭ Fm7 | B♭m7 Cm7 |
+B♭m7 Cm7 | D♭maj7 Cm7 | B♭m7 E♭ | Fm7 |
+[E]
+Fm7 B♭7 | D♭/E♭ A♭ | G♭ | Fm7 B♭7 |
+D♭/E♭ A♭ | G♭ | Fm7 B♭7 | D♭/E♭ A♭ |
+G♭ | Fm7 B♭7 | D♭/E♭ A♭ |
+[Interlude 3]
+D♭maj7 Cm7 | B♭m7 D♭/E♭ |
+[F]
+A♭maj7 D♭maj7 | E♭ E° | Fm7 B♭m7 | Cm7 B♭m7 |
+E♭ | A♭maj7 D♭maj7 | E♭ Fm7 | B♭m7 Cm7 |
+B♭m7 Cm7 | D♭maj7 Cm7 | B♭m7 E♭ |
+[G]
+B♭m7 G° | Fm7 E♭m7 | A♭7 D♭maj7 | B♭m7 Cm7 |
+D♭maj7 Fm7 | Em7 E♭m7 | A♭7 | B♭m7 G° |
+Fm7 E♭m7 | A♭7 D♭maj7 | B♭m7 Cmaj7 | D♭maj7 E♭sus4 |
+Esus4 |
+[H]
+Amaj7 Dmaj7 | E F° | G♭m7 Bm7 | D♭m7 Bm7 |
+E | Amaj7 Dmaj7 | E G♭m7 | Bm7 D♭m7 |
+Dmaj7 D♭m7 | E |
+[I]
+Amaj7 Dmaj7 | E F° | G♭m7 Bm7 | D♭m7 Bm7 |
+E | Amaj7 Dmaj7 | E G♭m7 | Bm7 D♭m7 |
+Bm7 D♭m7 | Dmaj7 D♭m7 | Bm7 E | G♭m7 |
+[J]
+G♭m7 B7 | D/E A | G | G♭m7 B7 |
+D/E A | G | G♭m7 B7 | D/E A |
+G | G♭m7 B7 | D/E A |
+[Interlude 4]
+Dmaj7 D♭m7 | Bm7 D/E | Dmaj7 D♭m7 | Bm7 D/E |
+[Interlude 5]
+Dmaj7 D♭m7 | Bm7 D/E | G7♭5 |
+[Outro]
+Dmaj7 D♭m7 | Bm7 D/E | G7♭5 |`,
+
+`title: アイデア (Idea)
+by: 星野源 (Gen Hoshino)
+genre: J-pop
+feel: Pop
+source: U-FRET chord chart
+tempo: 140
+key: F
+form: Intro A B C D E Interlude A B C F Interlude 2 Interlude 2 G D H E Interlude Outro
+[Intro]
+B♭ Am7 | C D♭° | Dm E♭ | B♭ Am7 |
+Dm C | B♭ Dm | Gm F |
+[A]
+F B♭ | D♭° Dm | B♭ Am7 | B♭ C |
+[B]
+F B♭ | D♭° Dm | B♭ Am7 | B♭ C |
+F |
+[C]
+B♭ Am7 | Gm7 C | D♭° Dm | Cm7 F |
+Gm7 Am7 | B♭ C |
+[D]
+F C/E | Cm7 F | Dm Cm7 | F |
+B♭ Am7 | Gm7 Am7 | B♭ C | D♭° |
+Dm Cm7 | F B♭ | Am7 | Gm7 Am7 |
+B♭ C | F |
+[E]
+B♭ Am7 | C D♭° | Dm | Gm7 Am7 |
+B♭ C |
+[Interlude]
+B♭ Am7 | C D♭° | Dm E♭ | B♭ Am7 |
+Dm C | B♭ A | Dm B♭ | C F |
+[F]
+F C/E | Cm7 F | Dm Cm7 | F |
+B♭ Am7 | Gm7 Am7 | B♭ C | D♭° |
+Dm Cm7 | F B♭ | Am7 | Gm7 Am7 |
+B♭ C |
+[Interlude 2]
+B♭ Am7 | Gm7 | B♭ D♭° | Dm |
+B♭ Am7 | Gm7 | B♭ D♭° | Dm F |
+[G]
+F C/E | Cm7 F | B♭ Am7 | Gm7 Am7 |
+B♭ D♭° | F C/E | Cm7 F | B♭ Am7 |
+D♭° Dm | Cm7 B♭ | Am7 Gm7 | B♭m7 |
+[H]
+C/E Cm7 | F | Dm Cm7 | F |
+B♭ Am7 | Gm7 Am7 | B♭ C | D♭° |
+Dm Cm7 | F B♭ | Am7 | Gm7 Am7 |
+B♭ C | F |
+[Outro]
+B♭ Am7 | C D♭° | Dm E♭ | B♭ Am7 |
+Dm C | B♭ Dm | B♭ C | F |
+B♭ A | Dm B♭ | C F | E♭ |`,
+
+`title: 不思議 (Fushigi)
+by: 星野源 (Gen Hoshino)
+genre: J-pop
+feel: Soul ballad
+source: U-FRET chord chart
+tempo: 76
+key: E♭
+[A]
+E♭add9 E♭7♭5 | A♭maj7 B♭ | E♭maj7 | G7 B° |
+Cm7 B♭sus4 | A♭maj7 B♭/A♭ | Gm7 E♭7 | Fm7 B♭sus4 |
+[B]
+E♭maj7 E♭7♭5 | A♭maj7 B♭ | E♭maj7 | Dm7♭5 G7 |
+Cm7 B♭sus4 | A♭maj7 B♭/A♭ | E♭ E♭7 | Fm7 |
+[Interlude]
+E♭/B♭ B° | Cm7 D♭maj7 | Cm7 B♭ | A♭maj7 B♭ |
+Gm7 B° | E♭/B♭ G7 | Cm7 B♭sus4 | A♭maj7 B♭ |
+[C]
+E♭maj7 B+ | A♭maj7 B♭ | E♭maj7 G7 | B° |
+Cm7 B♭ | A♭maj7 B♭/A♭ | Gm7 E♭7 | Fm7 B♭sus4 |
+B♭ |
+[D]
+Fm7 Gm7 | Fm7 | Cm7 E♭maj7 | B♭m7 |
+A♭m7 D♭ | Fm7 B° | B♭m7 Am7♭5 | A♭maj7 B♭ |
+Am7♭5 | Fm7 Gm7 | Cm7 E♭maj7 | B♭m7 |
+A♭m7 A♭ | B♭ |
+[E]
+E♭ A♭ | D° Gm7 | Cm7 B° | E♭/B♭ A♭ |
+Gm7 | F/E♭ Dm7 | F/A Gm7 | D G♭° |
+E♭7 Gm7 | Am7♭5 E♭/B♭ | A♭maj7 D7 | B♭maj7 |
+E♭maj7 B♭ | A♭ E♭/B♭ | B° |
+[Interlude 2]
+Cm7 D♭maj7 | Cm7 B♭ | A♭maj7 B♭ | Gm7 B° |
+E♭/B♭ G7 | Cm7 B♭sus4 | A♭maj7 B♭ |
+[F]
+E♭maj7 B+ | A♭maj7 B♭ | E♭maj7 G7 | B° |
+Cm7 B♭ | A♭maj7 B♭/A♭ | Gm7 Cm7 | E♭7 Fm7 |
+[G]
+Fm7 Gm7 | Fm7 | Cm7 E♭maj7 | B♭m7 |
+A♭m7 D♭ | Fm7 B° | B♭m7 Am7♭5 | A♭ B♭ |
+Am7♭5 | Fm7 Gm7 | Cm7 E♭maj7 | B♭m7 |
+A♭m7 A♭ | B♭ |
+[H]
+E♭ A♭ | D° Gm7 | Cm7 B° | E♭/B♭ A♭ |
+Gm7 | F/E♭ Dm7 | F/A Gm7 | D G♭° |
+E♭7 Gm7 | Am7♭5 E♭/B♭ | A♭maj7 D7 | B♭maj7 |
+[I]
+B♭maj7 B♭7 | Gm7 Fm7 | Em7 | E♭maj7 F/E♭ |
+[J]
+E♭ A♭ | D° Gm7 | Cm7 B° | E♭/B♭ A♭ |
+Gm7 | F/E♭ Dm7 | F/A Gm7 | D G♭° |
+E♭7 Gm7 | Am7♭5 E♭/B♭ | A♭maj7 D7 | B♭maj7 A♭m7 |
+[K]
+E♭ A♭ | D° Gm7 | Cm7 B° | E♭/B♭ A♭ |
+Gm7 | F/E♭ Dm7 | F/A Gm7 | D G♭° |
+E♭7 Gm7 | Am7♭5 E♭/B♭ | A♭maj7 D7 | B♭maj7 |
+E♭maj7 B♭ | A♭ B♭maj7 |`,
+
+`title: Habit
+by: SEKAI NO OWARI
+genre: J-pop
+feel: Dance pop
+source: U-FRET chord chart
+tempo: 114
+key: B♭m
+form: Intro A B C D D E D D Interlude F G D H D D E D D Interlude 2 D D Outro
+[Intro]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+[A]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+[B]
+B♭m | A♭ G♭ | F | B♭m A♭ |
+G♭ F |
+[C]
+B♭m F | B♭m F |
+[D]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+[E]
+B♭m F | B♭m F | B♭m D♭ | G♭ F |
+B♭m D♭ | G♭ F |
+[Interlude]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+[F]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+B♭m |
+[G]
+A♭ | G♭ F | B♭m A♭ | G♭ |
+[H]
+B♭m | F | B♭m | F |
+[Interlude 2]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+B♭m D♭ | G♭ F | B♭m D♭ |
+[Outro]
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |
+B♭m A♭ | G♭ F | B♭m A♭ | G♭ F |`,
+
+`title: RPG
+by: SEKAI NO OWARI
+genre: J-pop
+feel: Pop
+source: U-FRET chord chart
+tempo: 144
+key: E
+form: A B C D E F G H I A J
+[A]
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |
+[B]
+E B | C♯m A | E B | E G♯7 |
+C♯m F♯ | A B | E |
+[C]
+E B | C♯m A | E B | E G♯ |
+C♯m F♯ | A B | E |
+[D]
+A B | E B | C♯m | A E |
+F♯m G♯m | A B | C D |
+[E]
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |
+E B | C♯m E | A F♯ | Bsus4 B |
+E B | C♯m E | A F♯ | Bsus4 B |
+G♯ C♯m | F♯ B | E A | Bsus4 E |
+E A | Bsus4 E |
+[F]
+E B | C♯m A | E B | E G♯7 |
+C♯m F♯ | A B | E | E B |
+C♯m A | E B | E G♯ | C♯m F♯ |
+A B | E |
+[G]
+A B | E C♯m | A E | F♯m G♯m |
+A B | C D |
+[H]
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |
+A E | F♯m7 F♯6 | F♯7 B |
+[I]
+A B | E B | C♯m | A E |
+F♯m G♯m | A B |
+[J]
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |
+A B | E A | B E | G♯7 |
+C♯m C+ | E A♯m7♭5 | A B | E |`,
+
+`title: Dragon Night
+by: SEKAI NO OWARI
+genre: J-pop
+feel: EDM pop
+source: U-FRET chord chart
+tempo: 89
+key: B♭
+form: A B Interlude B C Interlude 2 B Interlude D C Interlude 3 C Outro
+[A]
+B♭ |
+[B]
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ |
+[Interlude]
+B♭ |
+[C]
+B♭ F | Gm | F E♭ | B♭ E♭ |
+F | B♭ F | Gm | F E♭ |
+B♭ E♭ |
+[Interlude 2]
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ F | Gm F | E♭ B♭ |
+[D]
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ F | Gm F | E♭ B♭ | E♭ |
+[Interlude 3]
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ F | Gm F | E♭ B♭ | B♭ F |
+Gm F | E♭ B♭ | E♭ F | B♭ F |
+Gm F | E♭ |
+[Outro]
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ F | Gm F | E♭ B♭ | E♭ |
+B♭ F | Gm F | E♭ B♭ | E♭ F |
+B♭ F | Gm F | E♭ B♭ | E♭ B♭ |`,
+
+`title: The Beginning
+by: ONE OK ROCK
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 122
+key: C
+form: A B C D E F D G H I J K
+[A]
+Am F | C G | Am | F C |
+G |
+[B]
+Am F | C G | Am F | C G |
+Am F | C G | F G |
+[C]
+Am F | C | G | Am F |
+C | G |
+[D]
+F | G | F Em |
+[E]
+Am | F | C G | Am F |
+C G | E Am | F C | G |
+Am F | C G | Am F | C G |
+F G |
+[F]
+Am F | C | G | Am F |
+C G |
+[G]
+Am F | C G | Am F | C G |
+[H]
+E Am | F | C G | E |
+Am F | C | G | E |
+F Em | Am | G | F Em |
+Am | E |
+[I]
+Am F | C G | Am F | C |
+G |
+[J]
+Am | F | C G | Am F |
+C G |
+[K]
+F♯ F | G | C Am | G |
+F G | Em | F |`,
+
+`title: クリスマス・イブ (Christmas Eve)
+by: 山下達郎 (Tatsuro Yamashita)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 122
+key: A
+form: Intro A B C D E A A F
+[Intro]
+Esus4 E | Esus4 E | Esus4 E | Dadd9 E |
+A E | F♯m7 E | Dmaj7 C♯m7 | Bm7 Bm7/E |
+E7 |
+[A]
+A E | F♯m7 E6 | Dmaj7 C♯m7 | Bm7 D/E |
+E |
+[B]
+A E | F♯m7 E6 | Dmaj7 C♯m7 | Bm7 D/E |
+D♯m7♭5 |
+[C]
+Dmaj7 E/D | Dmaj7 C♯m | F♯m7 | Bm7 D/E |
+E D/E | Bm7/E E |
+[D]
+A E | F♯m7 E6 | Dmaj7 C♯m7 | Bm7 D/E |
+A E | F♯m7 E6 | Dmaj7 C♯m7 | Bm7 D/E |
+E7 | A E | F♯m C♯m | D A |
+D E | A E | F♯m C♯m | D A |
+D E |
+[E]
+Dmaj7 C♯m7 | Dmaj7 C♯m | F♯m7 | Bm7 D/E |
+E D/E | Bm7/E E |
+[F]
+A E | F♯m7 E6 | Dmaj7 C♯m7 | Bm7 D/E |
+E | A E | F♯m7 E | Dmaj7 C♯m7 |
+Bm7 Esus4 | E | A E | F♯m7 E |
+Dmaj7 C♯m7 | Bm7 Esus4 | E | A E |
+F♯m7 E | Dmaj7 C♯m7 | Bm7 Esus4 | E |
+A |`,
+
+`title: SPARKLE
+by: 山下達郎 (Tatsuro Yamashita)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 137
+key: A
+form: Intro A A Interlude B Interlude 2 C C C
+[Intro]
+Amaj7 E | Amaj7 E | Amaj7 E | Amaj7 E |
+[A]
+Amaj7 E | Amaj7 E | F♯/B♭ A° | E/G♯ Am6 |
+E/B B♭m7♭5 | F♯m7 A/B |
+[Interlude]
+Amaj7 E | Amaj7 E | Amaj7 E | Amaj7 E |
+Amaj7 E | Amaj7 E |
+[B]
+F♯/B♭ A° | E/G♯ Am6 | E/B B♭m7♭5 | F♯m7 A/B |
+[Interlude 2]
+F♯m7 |
+[C]
+E/B | F♯m7 | E/B | F♯m7 |`,
+
+`title: RIDE ON TIME
+by: 山下達郎 (Tatsuro Yamashita)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 124
+key: D
+[A]
+Gmaj7 A | Gmaj7 A | Gmaj7 | F♯m7 D |
+Bm Em7 | Asus4 | Gmaj7 A | Gmaj7 A |
+Gmaj7 | F♯m7 D | Bm Em7 | Asus4 |
+Gmaj7 F♯m7 | Dmaj7 | Bm7 Gmaj7 | D G♯m7 |
+G D | Bm | B7 Gmaj7 | F♯m7 Dmaj7 |
+Bm7 Gmaj7 | Asus4 D | D6 |
+[B]
+Bmaj7 A6 | Gmaj7 A6 | Gmaj7 | F♯m7 D |
+Bm Em7 | Asus4 | Gmaj7 A6 | Gmaj7 A6 |
+Gmaj7 | F♯m7 D | Bm Em7 | Asus4 |
+Gmaj7 F♯m7 | Dmaj7 | Bm7 Gmaj7 | D G♯m7 |
+Em D | Bsus4 | B7 Gmaj7 | F♯m7 Dmaj7 |
+Bm7 Gmaj7 | Asus4 D6 | G♯m7 | G6 D |
+Bsus4 B7 | Em7 Asus4 | Em7 Asus4 | Em7 Asus4 |
+[C]
+Em7 Asus4 | D Bm7 | Em7 Asus4 | Gmaj7 F♯m7 |
+Dmaj7 | Bm7 Gmaj7 | D G♯m7 | Em D |
+Bsus4 | B7 Gmaj7 | F♯m7 Dmaj7 | Bm7 Gmaj7 |
+Asus4 D6 | Gmaj7 F♯m7 | Dmaj7 | Bm7 Gmaj7 |
+D G♯m7 | Em D | Bsus4 | B7 Gmaj7 |
+F♯m7 Dmaj7 | Bm7 Gmaj7 | Asus4 D6 | Gmaj7 Asus4 |
+Dmaj7 Bm7 |`,
+
+`title: 駅 (Eki)
+by: 竹内まりや (Mariya Takeuchi)
+genre: J-pop
+feel: City pop ballad
+source: U-FRET chord chart
+tempo: 76
+key: E
+form: A B C B C Interlude C Outro
+[A]
+C♯m7 F♯m7 | G♯7 G♯m7/C♯ |
+[B]
+F♯m7 F♯m7/B | Emaj7 C♯7 | F♯m7 D♯m7♭5 | D♯7 G♯7 |
+C♯m7 | F♯m7 F♯m7/B | Emaj7 C♯7 | F♯m7 D♯m7♭5 |
+G♯7 B/C♯ | C♯m7 C♯7 |
+[C]
+B C♯7 | F♯m7 B7 | Emaj7 Amaj7 | D♯m7 G♯7 |
+B/C♯ C♯m7 | C♯7 | B C♯7 | F♯m7 B7 |
+Emaj7 Amaj7 | D♯m7♭5 G♯7 | B/C♯ C♯m7 |
+[Interlude]
+F♯m7 B7 | Emaj7 Amaj7 | D♯m7♭5 G♯7 | B/C♯ C♯m7 |
+C♯7 |
+[Outro]
+C♯7 B | C♯7 F♯m7 | B7 Emaj7 | Amaj7 |
+D♯m7♭5 G♯7 | B/C♯ C♯m7 | C♯7 B | C♯7 |`,
+
+`title: 元気を出して (Genki wo Dashite)
+by: 竹内まりや (Mariya Takeuchi)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: C
+form: Intro A B C D E F G G H
+[Intro]
+C Fmaj7 | G Am | G | Fmaj7 G7sus4 |
+C G |
+[A]
+C Fmaj7 | G C | G Am7 | D7 G |
+C Fmaj7 | E Am7 | G | Fmaj7 Em7 |
+Dm7 G | E♭maj7 Dm7 | F/G | G7 Cm7 |
+F7 B♭maj7 | Bm7♭5 E7 | Am7 | D F/G |
+G G7sus4 |
+[B]
+C Fmaj7 | G C | G Am7 | D7 G |
+C Fmaj7 | E Am7 | G | F♯m7♭5 Am/G |
+C B♭/C | C |
+[C]
+F G/F | Em7 Am7 | Dm7 G7 | C C7 |
+C | Fm B♭ | E♭ Cm | Dm7 F/G |
+G F/G | G |
+[D]
+C Fmaj7 | G C | G Am7 | D7 G |
+C Fmaj7 | E Am7 | G | Fmaj7 G7sus4 |
+C F/G | G | C Fmaj7 | G Am |
+G | Fmaj7 G7sus4 | C G | C Fmaj7 |
+G C | G | Am7 D7 | G |
+C Fmaj7 | E Am7 | G | F♯m7♭5 F/G |
+C C7 | C |
+[E]
+F G/F | Em7 Am7 | Dm7 G | C C7 |
+C | Fm B♭ | E♭ Cm | Dm7 F/G |
+G F/G | G A♭sus4 |
+[F]
+D♭ F♯maj7 | A♭ D♭ | A♭ | B♭m E♭7 |
+A♭7sus4 A♭ | D♭ F♯maj7 | F B♭m | A♭ Gm7♭5 |
+A♭ D♭ | A♭7sus4 A♭ |
+[G]
+D♭ F♯maj7 | A♭ D♭ | A♭ B♭m | E♭7 A♭7sus4 |
+A♭ | D♭ F♯maj7 | F B♭m | A♭ |
+Gm7♭5 A♭ | D♭ A♭7sus4 | A♭ |
+[H]
+D♭ F♯maj7 | A♭ D♭ | A♭ B♭m | E♭7 A♭7sus4 |
+A♭ | D♭ F♯maj7 | F B♭m | A♭ |
+Gm7♭5 A♭ | D♭ A♭7sus4 | A♭ | D♭ F♯maj7 |
+A♭ D♭ | A♭ B♭m | E♭7 A♭7sus4 | A♭ |
+D♭ F♯maj7 | F B♭m | A♭ Gm7♭5 | A♭ D♭ |
+A♭7sus4 A♭ | D♭ F♯maj7 | A♭ D♭ |`,
+
+`title: 都会 (Tokai)
+by: 大貫妙子 (Taeko Ohnuki)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 110
+key: B♭
+form: A Interlude B C Interlude 2 D Interlude 3 Interlude 3 C Interlude 2 E E E E E
+[A]
+E♭maj7 E♭m7 | A♭m7 A♭m7/D♭ |
+[Interlude]
+E♭maj7 E♭m7 | A♭m7 G7 |
+[B]
+E♭maj7 D7 | Gm7 B♭m7 | E♭7 | A♭maj7 G7 |
+Cm7 Bm7 | B♭7 | E♭maj7 D7 | Gm7 B♭m7 |
+E♭7 | A♭maj7 G7 | Cm7 Bm7 | B♭7 |
+[C]
+D♭7 | C7 | Fm7 | B♭7 E♭maj7 |
+B♭7 Gm7 | G♭m7 |
+[Interlude 2]
+Fm7 B7 | Gm7 G♭m7 | Fm7 B♭7 |
+[D]
+E♭maj7 D7 | Gm7 B♭m7 | E♭7 | A♭maj7 G7 |
+Cm7 Bm7 | E♭maj7 D7 | Gm7 B♭m7 | E♭7 |
+A♭maj7 G7 | Cm7 Bm7 | B♭7 |
+[Interlude 3]
+E♭maj7 D7 | Gm7 B♭m7 | E♭7 A♭maj7 | G7 Cm7 |
+Bm7 B♭7 |
+[E]
+Fmaj7 E7 | Am7 Cm7 | F7 | B♭maj7 A7 |
+Dm7 D♭m7 | C7 |`,
+
+`title: 悲しみがとまらない (Kanashimi ga Tomaranai)
+by: 杏里 (Anri)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 124
+key: F♯m
+form: A Interlude Interlude 2 B Interlude 3 C D E C D F Interlude 4 G
+[A]
+Asus4 A | G♯7sus4 G♯m7 | C♯7 |
+[Interlude]
+F♯7sus4 F♯m7 | D/E |
+[Interlude 2]
+F♯m Bm | F♯m Bm | Dmaj7 C♯m7 | Bm7 Dmaj7/E |
+[B]
+Bm7 E7 | C♯m7 F♯m7 | Bm7 C♯7 | F♯m |
+Bm7 E7 | C♯m7 F♯m7 | Bm7 C♯7 | F♯m E7 |
+[Interlude 3]
+F♯m E7 |
+[C]
+A E7 | C♯m7♭5 F♯7 | Bm7 G | D/E E7 |
+A E7 | F♯m7 E7 | D C♯m7 | Bm7 C♯7 |
+[D]
+F♯m F♯mmaj7 | F♯m7 B7 | D A | Bm7 D/E |
+[E]
+Bm7 E7 | C♯m7 F♯m7 | Bm7 C♯7 | F♯m Bm7/E |
+[F]
+Bm7 E7 | C♯m7 F♯m7 | Bm7 C♯7 | F♯m |
+[Interlude 4]
+Bm7 E7 | C♯m7 F♯m7 | Dmaj7 C♯m7 | Bm7 E7 |
+F7 |
+[G]
+Cm7 F7 | Dm7 Gm7 | Cm7 D7 | Gm F7 |
+Cm7 F7 | Dm7 Gm7 | Cm7 D7 | Gm |
+Cm7 F7 | Dm7 Gm7 | Cm7 D7 | Gm |`,
+
+`title: CAT'S EYE
+by: 杏里 (Anri)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 128
+key: Em
+form: A B C A B C C C
+[A]
+Em D/E | Em B7 | Em D/E | B7 Em |
+D/E Em |
+[B]
+Am G | F B7sus4 | B7 | Am G |
+F B7 |
+[C]
+Em | D | Em B7 | Em |
+D | Em B7 | Em | Em |`,
+
+`title: Last Summer Whisper
+by: 杏里 (Anri)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 106
+key: E
+form: Intro Interlude A B Interlude 2 A C Interlude 3 D E F Interlude 4 Interlude 4 Interlude 4 Outro
+[Intro]
+F♯m B7 | E C♯ |
+[Interlude]
+F♯m Am7 | D C♯7 | Gm |
+[A]
+F♯m B | E C♯ | F♯m B | E C♯ |
+A Am | D C♯m | F♯m B | E C♯ |
+A Am | D C♯m | F♯m B | E C♯ |
+[B]
+F♯m B | E C♯m | F♯m B | E Gm |
+F♯m B | E C♯ | F♯m B | E |
+[Interlude 2]
+F♯m E | D Gm |
+[C]
+F♯m B | E C♯m | F♯m B | E Gm |
+F♯m B | E C♯ | F♯m B | E Gm |
+[Interlude 3]
+F♯m B | E Gm | F♯m B | E E7♭5 |
+[D]
+A Am | D C♯m | F♯m B | E C♯ |
+A Am | D C♯m | F♯m B | E C♯ |
+[E]
+F♯m B | E C♯m | F♯m B | E Gm |
+F♯m B | E C♯ | F♯m B | E C♯ |
+[F]
+F♯m B | E |
+[Interlude 4]
+F♯m B | E C♯ |
+[Outro]
+F♯m B | E C♯ |`,
+
+`title: ドラマティック・レイン (Dramatic Rain)
+by: 稲垣潤一 (Junichi Inagaki)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 120
+key: Am
+form: A Interlude B B C Interlude 2 D E F Outro
+[A]
+Am Fmaj7 |
+[Interlude]
+Am Fmaj7 | Am |
+[B]
+Am Dm7 | E7 Am | Dm7 G7 | Cmaj7 A7 |
+Dm7 Bm7♭5 | E7 |
+[C]
+Am E7 | C A7 | Dm7 | G7 Cmaj7 |
+E7 | Am E7 | C A7 | Dm7 |
+G7 Cmaj7 | E7 Dm7 | C6 B7 | E7 |
+[Interlude 2]
+Am Dm7 | E7 Am |
+[D]
+Dm7 G7 | Cmaj7 A7 | Dm7 Bm7♭5 | E7 |
+[E]
+Am E7 | C A7 | Dm7 | G7 Cmaj7 |
+E7 | Am E7 | C A7 | Dm7 |
+G7 Cmaj7 | E7 Dm7 | C6 | B7 E7 |
+[F]
+Am | Dm7 E7 | Am E7 |
+[Outro]
+Am Dm7 | E7 |`,
+
+`title: やさしさに包まれたなら (Yasashisa ni Tsutsumareta nara)
+by: 荒井由実 (Yumi Arai)
+genre: J-pop
+feel: Pop
+source: U-FRET chord chart
+tempo: 118
+key: F♯
+[A]
+F♯ G♯m7 | F♯ G♯m7 | F♯ G♯ | Fm7 A♯m7 |
+D♯m7 | B G♯m7 | G♯m7/C♯ | F♯ G♯ |
+Fm7 A♯m7 | D♯m7 | B G♯m7 | G♯m7/C♯ A♯m7 |
+A♯7 |
+[B]
+D♯m B | D♯m B | G♯m7 A♯m7 | D♯m |
+B G♯m7 | G♯m7/C♯ C♯sus4 | C♯7 | F♯ G♯m7 |
+F♯ G♯m7 |
+[C]
+F♯ G♯ | Fm7 A♯m7 | D♯m7 | B G♯m7 |
+G♯m7/C♯ | F♯ G♯ | Fm7 A♯m7 | D♯m7 |
+B G♯m7 | G♯m7/C♯ A♯m7 | A♯7 |
+[D]
+D♯m B | D♯m B | G♯m7 A♯m7 | D♯m |
+B G♯m7 | G♯m7/C♯ C♯sus4 |
+[E]
+D♯m B | D♯m B | G♯m7 A♯m7 | D♯m |
+B G♯m7 | G♯m7/C♯ C♯sus4 | F♯ G♯m7 | F♯ G♯m7 |
+F♯ |`,
+
+`title: ルージュの伝言 (Rouge no Dengon)
+by: 荒井由実 (Yumi Arai)
+genre: J-pop
+feel: Oldies pop
+source: U-FRET chord chart
+tempo: 148
+key: E♭
+form: A B C B D
+[A]
+E♭ Cm | E♭ Cm | E♭ Cm | E♭ Cm |
+A♭ B♭ | E♭ E♭/D | Cm | A♭ B♭ |
+E♭ B♭ |
+[B]
+E♭ Cm | E♭ Cm | A♭ B♭ | E♭ E♭/D |
+Cm | A♭ B♭ | E♭ |
+[C]
+E♭ Cm | A♭ B♭ | E♭ Cm | A♭ B♭ |
+E♭ | E♭ Cm | A♭ B♭7 |
+[D]
+E♭ Cm | A♭ B♭ | E♭ Cm | A♭ B♭ |
+E♭ B♭ | Cm | A♭ B♭ | E♭ Cm |
+E♭ Cm | E♭ Cm |`,
+
+`title: 春よ、来い (Haru yo, Koi)
+by: 松任谷由実 (Yumi Matsutoya)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: B♭m
+form: A B C A Interlude B C A D A A A A
+[A]
+G♭6 A♭ | B♭m | G♭6 A♭ | B♭m |
+G♭6 A♭ | B♭m | G♭6 A♭ | B♭m |
+[B]
+B♭m G♭6 | A♭ D♭maj7 | G♭ A♭ | D♭ A♭ |
+Fsus4 F | B♭m G♭6 | A♭ D♭maj7 | A♭ |
+B♭m Fm7 | G♭ A♭ | B♭m |
+[C]
+G♭maj7 A♭/G♭ | G♭maj7 D♭/F | E♭m6 E♭m7/A♭ | D♭maj7 D♭7 |
+[Interlude]
+G♭6 A♭ | B♭m | G♭6 A♭ | B♭m |
+[D]
+G♭6 A♭ | B♭m | G♭6 A♭ | B♭m |
+G♭6 A♭ | B♭m | G♭6 A♭ | B♭m |
+G♭6 A♭ | B♭m | G♭6 A♭ | B♭m |`,
+
+`title: 中央フリーウェイ (Chūō Freeway)
+by: 荒井由実 (Yumi Arai)
+genre: J-pop
+feel: City pop
+source: U-FRET chord chart
+tempo: 125
+key: A♭
+[A]
+B♭/C Fmaj7 | G♭° D7 | Gm7 E° | C7 Fm |
+B♭m7 E♭7 | A♭ Gm7♭5 | B♭/C | Fmaj7 |
+G♭° D7 | Gm7 E° | C7 Fm | B♭m7 E♭7 |
+A♭ | B♭m7 B♭m/E♭ | A♭ Cm7 |
+[B]
+D♭maj7 A♭maj7 | D♭maj7 B♭m7 | E♭7 | B♭/C Fmaj7 |
+G♭° D7 | Gm7 E° | C7 Fm7 | B♭m7 D♭/E♭ |
+A♭ | B♭m7 B♭m/E♭ | A♭ | D♭maj7 A♭maj7 |
+A♭ D♭maj7 | A♭ E♭ |
+[C]
+Fsus4 Fmaj7 | G♭° D7 | Gm7 E° | C7 Fm |
+B♭m7 E♭7 | A♭ | B♭m7 A♭sus4 | A♭ Cm7 |
+[D]
+D♭maj7 A♭maj7 | D♭maj7 B♭m7 | E♭7 | Fsus4 Fmaj7 |
+G♭° D7 | Gm7 E° | C7 Fm7 | B♭m7 A♭sus4 |
+A♭ | B♭m7 A♭sus4 | A♭ |
+[E]
+B♭m7 A♭sus4 | A♭ B♭m7 | A♭sus4 G♭sus4 |`,
+
+`title: ひこうき雲 (Hikōki Gumo)
+by: 荒井由実 (Yumi Arai)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 75
+key: E♭
+form: A B C D E C F
+[A]
+E♭ A♭ | Gm7 A♭maj7 | A♭ | E♭ E♭/D |
+Gm7 A♭ | A♭/G Fm | B♭ B♭/A♭ | Gm7 A♭maj7 |
+B♭7 |
+[B]
+E♭ E♭/D | Gm7 | A♭ A♭/G | Fm |
+B♭ B♭/A♭ | Gm7 A♭maj7 | B♭7 |
+[C]
+E♭ Gm7 | Cm7 | Gm7 B♭m7 | A♭maj7 |
+Gm7 A♭maj7 | B♭7 B♭7sus4 | B♭7 |
+[D]
+E♭ E♭/D | Gm7 A♭ | A♭maj7 Fm7 | B♭ B♭/A♭ |
+Gm7 A♭maj7 | B♭7 |
+[E]
+E♭ E♭/D | Gm7 | A♭ A♭/G | Fm7 B♭ |
+B♭/A♭ Gm7 | A♭maj7 B♭7 |
+[F]
+E♭ Gm7 | Cm7 | Gm7 B♭m7 | A♭maj7 |
+Gm7 A♭maj7 | B♭7 | A♭maj7 B♭m7 |`,
+
+`title: 糸 (Ito)
+by: 中島みゆき (Miyuki Nakajima)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 78
+key: Gm
+form: Intro A B C Interlude A B C Interlude 2 C Outro
+[Intro]
+Gm7 Dm7 | E♭maj7 | Gm7 Dm7 | E♭maj7 |
+Gm7 Dm7 | E♭maj7 | Gm7 Dm7 | E♭maj7 |
+B♭ E♭ | B♭ E♭ |
+[A]
+B♭ E♭maj7 | B♭ | F/A Gm | Dm7 Cm |
+Cm7/F F | B♭ E♭maj7 | B♭ | F/A Gm |
+Dm7 Cm | F |
+[B]
+G♭° Gm | Dm E♭ | B♭ | F/A Gm |
+Dm Cm | Cm7/F F |
+[C]
+B♭ F/A | Gm Gm7/F | E♭ Dm | Cm F |
+G♭° Gm | Gmmaj7 Gm7 | Em7♭5 | Cm7 F |
+B♭ |
+[Interlude]
+E♭ B♭ | E♭ |
+[Interlude 2]
+F7sus4 F7 |
+[Outro]
+F/A Gm | Gm7/F E♭ | Dm Csus4 | C |
+B♭ F/A | Gm Gm7/F | E♭ Dm | Csus4 C |
+B♭ F/A | Gm Gm7/F | E♭ Dm | Csus4 C |
+B♭ F/A | Gm Gm7/F | E♭ Dm | Csus4 C |
+B♭ F/A | Gm Gm7/F | E♭ Dm | Csus4 C |
+B♭ F/A | Gm Gm7/F | E♭ Dm | Csus4 C |
+B♭ F/A | Gm Gm7/F | E♭ Dm | Csus4 C |`,
+
+`title: 時代 (Jidai)
+by: 中島みゆき (Miyuki Nakajima)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 72
+key: B
+form: A Interlude Interlude B C D Interlude 2 B E D F Interlude Interlude B E D F Interlude 3 G
+[A]
+B F♯ | G♯m E | C♯m F♯sus4 | F♯7 |
+B F♯ | G♯m E | E/F♯ B |
+[Interlude]
+B Bmaj7 | C♯m/B E |
+[B]
+B F♯ | G♯m B | E C♯m | F♯sus4 F♯ |
+B F♯ | G♯m B | E E/F♯ | B |
+[C]
+G B | G♯m G | Em Em/F♯ | F♯7 E/F♯ |
+F♯7 |
+[D]
+B F♯ | G♯m B | E E/F♯ | B |
+[Interlude 2]
+Bmaj7 C♯m/B | E |
+[E]
+G Em | B G♯m | G Em | Em/F♯ F♯7 |
+E/F♯ F♯7 |
+[F]
+E D♯m | C♯m B | E D♯m | F♯ B |
+E D♯m | C♯m B | E D♯m | F♯ G♯m |
+[Interlude 3]
+G Em |
+[G]
+F Em | Dm C | F Em | G C |
+F Em | Dm C | F Em | G C |`,
+
+`title: 真夏の果実 (Manatsu no Kajitsu)
+by: サザンオールスターズ (Southern All Stars)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 74
+key: D
+form: A B C D E B C F G H
+[A]
+D A | Bm7 F♯m7 | Gadd9 D | Em7 A7 |
+[B]
+D A | Bm7 F♯m7 | Gadd9 D | Em7 A7 |
+D A | Bm7 F♯m7 | Gadd9 D | Em7 A7 |
+D D/E | D |
+[C]
+G A7 | F♯m7 B7 | Em Emmaj7 | Em7 Gmmaj7/A |
+A7 |
+[D]
+D Dmaj7 | Bm7 D7 | Gmaj7 F♯7 | Bm7 |
+Em7 Gm | A7 |
+[E]
+D Dmaj7 | Bm7 D7 | Gmaj7 F♯7 | Bm7 |
+Em7 Gm6 | A7 D | A Bm7 | F♯m7 Gadd9 |
+D Em7 | A7 |
+[F]
+D Dmaj7 | Bm7 D7 | Gmaj7 F♯7 | Bm7 |
+Em7 Gm6 | A7 |
+[G]
+D Dmaj7 | Bm7 D7 | Gmaj7 F♯7 | Bm7 |
+Em7 Gm6 | A7 Bm7 | A7 |
+[H]
+D Dmaj7 | Bm7 D7 | Gmaj7 F♯7 | Bm7 |
+Em7 Gm6 | A7 D | A Bm7 | F♯m7 Gadd9 |
+Gm D |`,
+
+`title: いとしのエリー (Itoshi no Ellie)
+by: サザンオールスターズ (Southern All Stars)
+genre: J-pop
+feel: Soul ballad
+source: U-FRET chord chart
+tempo: 70
+key: D
+form: A B C D C E F
+[A]
+D E9 | G | D Em7/A | A7 |
+[B]
+D F♯m | D7 G | Em A7 | D E9 |
+G A7 | D |
+[C]
+D F♯m | D7 G | Em A7 | D E9 |
+G A7 | D B7 |
+[D]
+Em9 A7 | F♯m7 Bm | Em9 A7 | F♯m7 Bm |
+G A | A7 F♯m7 | B7 | Gmaj7 A7 |
+D E9 | Gmaj7 A7 | D | D E9 |
+G D | Em7 | D E9 | G D |
+Em7/A |
+[E]
+Em9 A7 | F♯m7 Bm | Em9 A7 | F♯m7 Bm |
+G A | A7 F♯m7 | B7 | Gmaj7 A7 |
+D E9 | Gmaj7 A7 | D B7 |
+[F]
+Em9 A7 | F♯m7 Bm | Em9 A7 | F♯m7 Bm |
+G A | A7 F♯m7 | B7 | Gmaj7 A7 |
+D E9 | Gmaj7 A7 | D E9 | Gmaj7 A7 |
+D | E9 G | D Em7 | Em7/A |`,
+
+`title: TSUNAMI
+by: サザンオールスターズ (Southern All Stars)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: D
+form: A B C D E F D G D H I J
+[A]
+D A | Bm7 | D G | A F♯m |
+F♯m7 Bm7 | G A | F♯m F♯m7 | Bm7 Em7 |
+G A | G G/A |
+[B]
+D A | Bm7 | D G | A F♯m |
+F♯m7 Bm7 | G A | F♯m F♯m7 | Bm7 Em7 |
+A7 D |
+[C]
+Gm7 C7 | Fmaj7 Dm | Gm7 A7 | D Dsus4 |
+D | A Bm7 | G D | E E7 |
+A7 |
+[D]
+Dsus4 D | F♯ F♯7 | Bm7 D7 | G A |
+F♯7 Bm7 | E7 A7 |
+[E]
+Dsus4 D | F♯ F♯7 | Bm7 D7 | G A |
+F♯7 Bm7 | Gmaj7 F♯m7 | Em7 Em7/A | D A |
+Bm7 D | G D | A G | G/A |
+[F]
+D A | Bm7 | D G | A F♯m |
+F♯m7 Bm7 | G A | F♯m F♯m7 | Bm7 Em7 |
+A7 D | Dsus4 D | Gm7 C7 | Fmaj7 Dm |
+Gm7 A7 | D Dsus4 | D | A Bm7 |
+G D | E E7 | A7 |
+[G]
+Dsus4 D | F♯ F♯7 | Bm7 D7 | G A |
+F♯7 Bm7 | Gmaj7 F♯m7 | Em7 Em7/A | D |
+F G | D F | G D | A |
+Bm7 G | Bm7 E7 | A |
+[H]
+Dsus4 D | F♯ F♯7 | Bm7 D7 | G A |
+F♯7 Bm7 | Gmaj7 F♯m7 | Em7 Em7/A | D |
+[I]
+Gmaj7 F♯m7 | Em7 Em7/A | D |
+[J]
+Gmaj7 F♯m7 | Em7 Em7/A | D A | Bm7 D |
+G D | Em7 G/A | D |`,
+
+`title: LA・LA・LA LOVE SONG
+by: 久保田利伸 (Toshinobu Kubota)
+genre: J-pop
+feel: R&B
+source: U-FRET chord chart
+tempo: 98
+key: G♯m
+form: A B B C D E F G H I J
+[A]
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯ G♯ |
+Emaj7 F♯ | D♯m7 | G♯m Emaj7 | F♯ G♯ |
+C♯m7 F♯ | G♯ C♯m7 | F♯ |
+[B]
+C♯m7 G♯m/F♯ | D♯m7 G♯m | Emaj7 Em6 | C♯m7 F♯ |
+[C]
+Gmaj7 A6 | Badd9 G♯m | Gmaj7 A6 | Badd9 G♯ |
+[D]
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯m7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯m7 | G♯ |
+C♯m7 F♯ | G♯ C♯m7 | F♯ |
+[E]
+C♯m7 D♯m7 | G♯m | Emaj7 Em6 | C♯m7 F♯ |
+[F]
+Gmaj7 A6 | Badd9 | G♯m Gmaj7 | A6 Badd9 |
+G♯ |
+[G]
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯7 G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯m7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯m7 | G♯ E |
+[H]
+C♯m7 D♯m7 | E G♯ |
+[I]
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯m7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯7 | G♯ |
+Emaj7 F♯ | D♯m7 G♯m | C♯m7 D♯m7 | G♯ |
+[J]
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯7 G♯ |
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯m7 G♯ |
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯7 G♯ |
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯m7 G♯ |
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯7 G♯ |
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯m7 G♯ |
+Emaj7 F♯ | D♯m7 | G♯m C♯m7 | D♯m7 G♯ |
+Emaj7 F♯ |`,
+
+`title: 愛をこめて花束を (Ai wo Komete Hanataba wo)
+by: Superfly
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 72
+key: G
+form: A B C D B C E F G H I
+[A]
+G Dm7 | C Cm | Am7/D | G Dm7 |
+C Cm | Am7/D | G D | Em7 Bm7 |
+C Am7 | F Am7/D | D | G D |
+Em7 Bm7 | C Cm | G Am7/D |
+[B]
+G D | Em7 Bm7 | C Am7 | F Am7/D |
+D | G D | Em7 Bm7 | C Cm |
+G |
+[C]
+Cmaj7 D/C | Bm7 B7 | Em7 E | Am7 Bm7 |
+C Bm7 | Am7 A7 | Am7/D D |
+[D]
+G D | Em7 Bm7 | C | G Am7 |
+Am7/D | G D | Em7 Dm7 | G7 |
+C Cm | G Dm7 | C Cm | G Dm7 |
+C Cm | Am7/D |
+[E]
+G D | Em7 Bm7 | C | G Am7 |
+Am7/D | G D | Em7 Dm7 | G7 |
+C Cm | G7 |
+[F]
+C7 | G7 | C7 | Am7/D E♭ |
+F |
+[G]
+G D | Em7 Bm7 | C | G Am7 |
+Am7/D | G D | Em7 | Dm7 G7 |
+C Am7/D |
+[H]
+A E | F♯m7 C♯m7 | D | A Bm7 |
+Bm7/E E7 | A D | E C♯7 | D E |
+A B |
+[I]
+Bm7/E | A Em7 | D Dm | A Em7 |
+D Dm | A Em7 | D Dm | A Em7 |
+D Dm | A |`,
+
+`title: 丸の内サディスティック (Marunouchi Sadistic)
+by: 椎名林檎 (Ringo Sheena)
+genre: J-pop
+feel: Jazzy rock
+source: U-FRET chord chart
+tempo: 92
+key: E♭
+form: Intro A B C Interlude D B C Interlude 2 E C F Outro
+[Intro]
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 E♭7 |
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 |
+[A]
+E♭ E♭7 | A♭maj7 G7 | Cm7 | E♭ E♭7 |
+A♭maj7 G7 | Cm7 |
+[B]
+E♭6 E♭maj7 | A♭maj7 B♭ | E♭maj7 | Gm A♭maj7 |
+B♭ E♭maj7 | G |
+[C]
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 E♭7 |
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 E♭7 |
+[Interlude]
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 E♭7 |
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 |
+[D]
+E♭7 A♭maj7 | G7 Cm7 | E♭ E♭7 | A♭maj7 G7 |
+Cm7 |
+[Interlude 2]
+Cm7 Cm7/B♭ | Gm A♭maj7 | Cm7 Cm7/B♭ | Gm A♭maj7 |
+[E]
+Fm7 G | A♭maj7 B♭ | E♭maj7 | Gm A♭maj7 |
+B♭ E♭maj7 | G7 |
+[F]
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 E♭7 |
+A♭maj7 G7 | Cm7 E♭7 | A♭maj7 G7 | Cm7 |
+E♭7 A♭maj7 | G7 Cm7 | E♭7 |
+[Outro]
+A♭maj7 G7 | Cm7 E♭7 |`,
+
+`title: 本能 (Honnō)
+by: 椎名林檎 (Ringo Sheena)
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 135
+key: Dm
+form: A B C D B E F G
+[A]
+Dm Gm7 | B♭maj7 C | D♭° | Dm Gm7 |
+B♭maj7 C | D♭° | Dm Gm7 | B♭maj7 C |
+D♭° | Dm Gm7 | B♭maj7 C | D♭° |
+Dm7 |
+[B]
+Gm7 B♭maj7 | Gm7/C D♭° | Dm7 Gm7 | B♭maj7 Gm7/C |
+D♭° |
+[C]
+Gm7 C | Fmaj7 F6 | Gm7 C | Dm Am |
+Gm7 Csus4 | Fmaj7 F6 | Gm7 Csus4 | Dm C |
+A7/F A7-9 |
+[D]
+Dm Gm | B♭ C | D♭° | Dm Gm |
+B♭ C | D♭° | Dm Gm7 | B♭maj7 C |
+D♭° | Dm Gm7 | B♭maj7 Dm7 |
+[E]
+Gm7 C | Fmaj7 | Gm7 C | Dm Am |
+Csus4 Gm7 | Fmaj7 F6 | Gm7 Csus4 | Dm C |
+A7/F A7-9 |
+[F]
+Dm Gm | B♭ C | D♭° | Dm Gm |
+B♭ C | D♭° Em |
+[G]
+Am7 | Cmaj7 D | E♭° | Em Am7 |
+Cmaj7 D | E♭° | Em Am7 | Cmaj7 D |
+E♭° | Em Am7 | Cmaj7 D | E♭° |
+Em Am7 | Cmaj7 D | E♭° | Em Am7 |
+Cmaj7 D | E♭° | Em |`,
+
+`title: 群青日和 (Gunjō Biyori)
+by: 東京事変 (Tokyo Jihen)
+genre: J-pop
+feel: Rock
+source: U-FRET chord chart
+tempo: 160
+key: E♭
+[A]
+E♭ G | A♭ G7 | Cm | F Fm |
+B♭ | E♭ Gm | A♭ G7 | Cm |
+F7 Fm7 | B♭ | E♭ |
+[B]
+E♭ A♭ | E♭ A♭m | E♭ Gm | Cm E♭ |
+F Fm7/B♭ | B♭ | E♭ A♭ | E♭ A♭m |
+E♭ Gm | Cm E♭ | F A♭/B♭ | B♭ |
+Cm Gm | A♭ B♭ | Cm Gm | A♭ E♭ |
+F B♭ |
+[C]
+E♭ Gm | A♭ | G7 Cm | F7 |
+Fm B♭ | E♭ Gm | A♭ | G7 Cm |
+F7 | Fm7 B♭ | Emaj7 | E♭ G7 |
+A♭ D♭ | Cm F/A | A♭ D♭ |
+[D]
+A♭ A♭m | Gm7 G | Cm | F Fm7 |
+B♭ B7sus4 |
+[E]
+E A♭ | A A♭ | D♭m | G♭7 G♭m |
+G♭m7 B7 | E A♭m | A A♭7 | D♭m G♭7 |
+G♭m7 B7 | E |
+[Outro]
+E A♭m | D♭m Bm | E | A A♭7 |
+D♭m G♭m | B | E A♭m | D♭m Bm |
+E | A A♭7 | D♭m G♭m | B |`,
+
+`title: ひまわりの約束 (Himawari no Yakusoku)
+by: 秦基博 (Motohiro Hata)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 87
+key: B♭
+form: Intro A B C Interlude D B E Interlude 2 C Outro
+[Intro]
+B♭ F/A | E♭ B♭ | F/A | Gm Dm |
+E♭ |
+[A]
+B♭ F/A | E♭ B♭ | F/A Gm | Dm Cm7 |
+F | B♭ F/A | E♭ B♭ | F/A Gm |
+Dm E♭ | F B♭ |
+[B]
+F/E♭ Dm | Gm | C7 C7/E | Fsus4 F |
+[C]
+B♭ E♭ | F G♭° | Gm Gm7 | Fm7 B♭7 |
+E♭maj7 Em7♭5 | F G♭° | Gm Em7♭5 | Fsus4 F |
+B♭ E♭ | F G♭° | Gm | Gm7 Fm7 |
+B♭7 | E♭ D7 | Gm Em7♭5 | E♭maj7 E♭m |
+F |
+[Interlude]
+B♭ F/A | E♭ B♭ | F/A | Gm Dm |
+E♭ |
+[D]
+B♭ F/A | E♭ B♭ | F/A Gm | Dm E♭ |
+F | B♭ F/A | E♭ B♭ | F/A Gm |
+Dm E♭ | F B♭ |
+[E]
+B♭ E♭ | F G♭° | Gm | Gm7 Fm7 |
+B♭7 | E♭maj7 Em7♭5 | F G♭° | Gm Em7♭5 |
+Fsus4 F | B♭ E♭ | F G♭° | Gm |
+Gm7 Fm7 | B♭7 | E♭ D7 | Gm Em7♭5 |
+E♭maj7 E♭m | F |
+[Interlude 2]
+Gm F/A | E♭ B♭ | F/A | Gm Dm |
+E♭ Fsus4 | F |
+[Outro]
+B♭ F/A | E♭ B♭ | F/A | Gm Dm |
+E♭ B♭/D | Cm7 | B♭ |`,
+
+`title: ありがとう (Arigatō)
+by: いきものがかり (Ikimonogakari)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 80
+key: C
+form: Intro A Interlude B C D E F Interlude C D G Interlude 2 E H Outro
+[Intro]
+Bm7♭5 E7 | Am G | F♯m7♭5 | Em7 Am |
+Dm7 G7 |
+[A]
+C E7 | Am7 Gm7 | C7 | Bm7♭5 E7 |
+Am7 D7 | Dm7 Fm | F/G |
+[Interlude]
+C G7 |
+[B]
+C G/B | Am7 Gm7 | C Fmaj7 | E7 Am7 |
+D7 | Dm7 F/G | G7 |
+[C]
+C G/B | Am7 Gm7 | C Fmaj7 | E7 Am7 |
+D7 | Dm7 F/G | C |
+[D]
+F Fmmaj7 | C/E A7sus4 | A7 | Dm7 Fm |
+Gsus4 | Gsus4 G | Am7 G/B | C G/D |
+[E]
+G7 C | E7 | Am7 Gm7 | C7 |
+Bm7♭5 E7 | Am7 D7 | Dm7 Fm | F/G |
+[F]
+C E7 | Am7 Gm7 | C7 | Bm7♭5 E7 |
+Am7 D7 | Dm7 Fm6 | F/G |
+[G]
+F/G C | E7 | Am7 Gm7 | C7 |
+Bm7♭5 E7 | Am7 D7 | Dm7 Fm6 | F/G |
+[Interlude 2]
+A♭maj7 D♭maj7 | A♭maj7 D♭maj7 | C Fmaj7 | Gsus4 |
+G Am7 | G/B C | G/D |
+[H]
+C E7 | Am7 Gm7 | C7 | Bm7♭5 E7 |
+Am7 D7 | Dm7 Fm | F/G C |
+[Outro]
+Bm7♭5 E7 | Am G | F♯m7♭5 | Em7 Am |
+Dm7 G7 | C |`,
+
+`title: YELL
+by: いきものがかり (Ikimonogakari)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 82
+key: Dm
+form: A B C D Interlude E F G Interlude 2 H I D Outro
+[A]
+Dm C6 | B♭ F/A | Gm7 B♭ | Asus4 A7 |
+Dm C6 | B♭ F/A | Gm7 B♭ | Asus4 A7 |
+[B]
+Dm C6 | B♭ F/A | Gm7 F | Gm7 A7 |
+Dm C6 | B♭ F/A | Gm7 F | Gm7 A |
+Dm |
+[C]
+B♭maj7 F/A | Gm7 A | Dm Dm7 | B♭maj7 F/A |
+Gm7 Am7 | B♭ Asus4 | A7 |
+[D]
+Dm Gm7 | C F | C/E | Dm Gm7 |
+C Asus4 | A7 | Dm B♭ | C F |
+C/E | Dm Gm7 | C A/D♭ | Dm C6 |
+[Interlude]
+B♭ F/A | Gm7 B♭ | Asus4 A7 |
+[E]
+Dm7 C6 | B♭maj7 F/A | Gm7 F | Gm7 A |
+Dm7 C6 | B♭maj7 F/A | Gm7 F | Gm7 A |
+Dm7 |
+[F]
+B♭maj7 F/A | Gm7 A | Dm | B♭maj7 F/A |
+Gm7 Am7 | B♭maj7 Asus4 | A7 |
+[G]
+Dm Gm7 | C F | C/E | Dm Gm7 |
+C Asus4 | A7 | Dm B♭ | C F |
+C/E | Dm Gm7 | C A/D♭ | Dm7 C6 |
+[Interlude 2]
+B♭maj7 Am7 | B♭maj7 Am7 | Dsus4 D |
+[H]
+B♭add9 | B♭add9 | F | B♭add9 |
+B♭add9 | F | C Dm7 | B♭maj7 |
+C | B♭ A7 |
+[I]
+Dm Gm7 | C F | C/E | Dm Gm7 |
+C Asus4 | A7 | Dm B♭maj7 | C F |
+C/E | Dm Gm7 | C A7 |
+[Outro]
+B♭ F/A | Gm7 B♭ | A7 | Dm C6 |
+B♭ F/A | Gm7 B♭ | Asus4 A7 | Dm |`,
+
+`title: 瞳をとじて (Hitomi wo Tojite)
+by: 平井堅 (Ken Hirai)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 68
+key: E♭
+form: A B C D Interlude E C D Interlude 2 F Outro
+[A]
+E♭ A♭/E♭ | Dm7♭5 G7/B | Cm7 Cm7/B♭ | A♭maj7 A♭/B♭ |
+B♭7 |
+[B]
+E♭ B♭ | Cm7 E♭ | A♭ Gm7 | Fm7 A♭/B♭ |
+B♭7 | E♭ B♭ | B♭m | C7 Fm7 |
+A♭/B♭ B♭7 | E♭ A♭/B♭ | E♭ B♭ | Cm7 E♭ |
+A♭ Gm7 | Fm7 A♭/B♭ | B♭7 | E♭ B♭ |
+B♭m C7 | Fm7 A♭/B♭ | B♭7 E♭ |
+[C]
+E♭7 A♭maj7 | B♭/A♭ Gm7 | Cm7 | A♭maj7 Fm7 |
+B♭7 E♭ | E♭7 | A♭maj7 B♭/A♭ | G7 Cm7 |
+Fm7 F7 | A♭/B♭ B♭7 | G7 |
+[D]
+A♭maj7 B♭/A♭ | Gm7 Cm7 | Fm7 G7sus4 | G7 Cm7 |
+B♭m7/E♭ E♭7 | A♭maj7 B♭/A♭ | G7sus4 G7 | Cm7 |
+Fm7 A♭/B♭ | E♭ |
+[Interlude]
+E♭ A♭/E♭ | Dm7♭5 G7/B | Cm7 Cm7/B♭ | A♭maj7 A♭/B♭ |
+B♭7 |
+[E]
+E♭ B♭ | Cm7 E♭ | A♭ Gm7 | Fm7 A♭/B♭ |
+B♭7 | E♭ B♭ | B♭m C7 | Fm7 A♭/B♭ |
+B♭7 E♭ |
+[Interlude 2]
+C G/B | Am7 C/G | F Em7 | Dm7 G7 |
+C G/B | B♭ A7 | Dm7 Dm7/G | G7 Fm7 |
+A♭/B♭ |
+[F]
+G7sus4 G7 | A♭maj7 B♭/A♭ | Gm7 Cm7 | Fm7 G7sus4 |
+G7 Cm7 | B♭m7/E♭ E♭7 | A♭maj7 B♭/A♭ | G7sus4 G7 |
+Cm7 | Fm7 B♭/A♭ | E♭ B♭m7 | A7 |
+A♭maj7 B♭/A♭ | Gm7 Cm7 | Fm7 G7sus4 | G7 Cm7 |
+B♭m7/E♭ E♭7 | A♭maj7 B♭/A♭ | G7sus4 G7 | Cm7 |
+Fm7 A♭/B♭ | E♭ F7 | Fm7 A♭/B♭ |
+[Outro]
+E♭ A♭/E♭ | Dm7♭5 G7/B | Cm7 Cm7/B♭ | A♭maj7 A♭/B♭ |
+B♭7 | E♭ |`,
+
+`title: 未来予想図II (Mirai Yosōzu II)
+by: DREAMS COME TRUE
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 76
+key: F♯
+[A]
+D E | F♯ D | E F♯ | G♯m A♯m |
+G♯m A♯m | G♯m7/C♯ | F♯ G♯m/F♯ | G♯m7/C♯ F♯ |
+B A♯m7 | G♯m7 C♯7 | F♯ G♯m/F♯ | G♯m7/C♯ F♯ |
+B A♯m7 | G♯m7 G♯m7/C♯ | F♯ G♯7 |
+[B]
+Bmaj7 C♯/B | B C♯/B | A♯m7 D♯7 | G♯m7 C♯7 |
+A♯m7 D♯m7 | B | G♯7 G♯m7/C♯ |
+[C]
+F♯ Fm7♭5 | A♯7 | D♯m D♯m7 | B G♯m7/C♯ |
+F♯ Fm7♭5 | A♯7 D♯m | D♯mmaj7 D♯m7 | Cm7♭5 |
+B C♯/B | A♯m7 D♯7 | G♯m7 G♯m7/C♯ | A♯m7 |
+D♯7 Bmaj7 | A♯m7 D♯m7 | G♯m7 C♯7 | D E |
+F♯ D | E F♯ |
+[D]
+G♯m/F♯ G♯m7/C♯ | F♯ | B A♯m7 | G♯m7 C♯7 |
+F♯ G♯m/F♯ | G♯m7/C♯ F♯ | B A♯m7 | G♯m7 G♯m7/C♯ |
+F♯ G♯7 |
+[E]
+B C♯/B | B C♯/B | A♯m7 D♯7 | G♯m7 C♯7 |
+A♯m7 D♯m7 | B | G♯7 G♯m7/C♯ |
+[F]
+F♯ Fm7♭5 | A♯7 | D♯m D♯m7 | B G♯m7/C♯ |
+F♯ Fm7♭5 | A♯7 D♯m | D♯mmaj7 D♯m7 | Cm7♭5 |
+B C♯/B | A♯m7 D♯7 | G♯m7 G♯m7/C♯ | A♯m7 |
+D♯7 Bmaj7 | A♯m7 D♯m7 | G♯m7 G♯m7/C♯ | F♯ |
+[G]
+Bmaj7 A♯m7 | D♯m7 | G♯m7 G♯m7/C♯ | B G♯m7 |
+D C♯ | D E | F♯ D | E F♯ |`,
+
+`title: LOVE LOVE LOVE
+by: DREAMS COME TRUE
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 70
+key: D♭
+form: A B B C D E F G
+[A]
+G♭ A♭ | D♭ A♭ | D♭ A♭ | D♭ |
+G♭ A♭ | D♭ A♭ | D♭ E♭m7 |
+[B]
+D♭ Fm | D♭/B B♭7 | E♭m D+ | G♭ C° |
+B♭m A+ | B♭m E♭ | G♭ A♭ | D♭ Fm |
+B♭m A♭ |
+[C]
+D♭ Fm | D♭/B B♭7 | E♭m D+ | G♭ C° |
+B♭m A+ | B♭m E♭ | G♭ A♭ | D♭sus4 D♭ |
+G♭ |
+[D]
+G♭ Fm | A E♭m7/A♭ | A♭ D♭ | Fm |
+[E]
+D♭/B B♭ | E♭m D+ | G♭ C° | B♭m A+ |
+B♭m E♭ | G♭ A♭ | B♭m B♭mmaj7 | B♭m7 E♭7 |
+[F]
+G♭ E♭m | E♭m7/A♭ D♭ |
+[G]
+D♭ D♭add9 | D♭ D♭add9 | D♭ A♭/D♭ | D♭ D♭add9 |
+D♭ D♭add9 | D♭ D♭add9 | D♭ A♭/D♭ | D♭ D♭add9 |
+D♭ D♭add9 | D♭ D♭add9 | D♭ A♭/D♭ | D♭ D♭add9 |
+D♭ D♭add9 | D♭ D♭add9 | D♭ A♭/D♭ | D♭ |`,
+
+`title: 世界に一つだけの花 (Sekai ni Hitotsu Dake no Hana)
+by: SMAP (槇原敬之)
+genre: J-pop
+feel: Pop
+source: U-FRET chord chart
+tempo: 96
+key: A
+form: Intro A B C A B D E F
+[Intro]
+A D | E F♯m | A D | E F♯m |
+A D | E F♯m | A D | E F♯m |
+A D | E Dadd9 |
+[A]
+A D | E C♯ | F♯m7 D | B E |
+E/D | A D | E C♯ | F♯m7 D |
+E7 A | A D | E C♯ | F♯m7 D |
+B E | E/D | A D | E C♯ |
+F♯m7 D | E7 A |
+[B]
+G D | G D | E E/D | A B |
+E7sus4 |
+[C]
+Bm7/E C♯m7 | D/E | A D | E C♯ |
+F♯m B7 | E7sus4 | A D | E C♯ |
+F♯m B7 | Bm7/E E7 | E/D A | A D |
+E F♯m | A D | E F♯m | A D |
+E F♯m | A D | E Dadd9 |
+[D]
+Bm7/E C♯m7 | D/E | A D | E C♯ |
+F♯m B7 | E7sus4 | A D | E C♯ |
+F♯m B7 | Bm7/E E7 | E/D A |
+[E]
+A E | C♯ F♯m | B E7sus4 | A D |
+E C♯ | F♯m B7 | Bm7/E E7 | E/D A |
+A D | E F♯m |
+[F]
+A D | E F♯m | A D | E F♯m |
+A D | E F♯m | A D | E |
+Asus4 |`,
+
+`title: もう恋なんてしない (Mō Koi Nante Shinai)
+by: 槇原敬之 (Noriyuki Makihara)
+genre: J-pop
+feel: Pop ballad
+source: U-FRET chord chart
+tempo: 96
+key: E
+form: Intro A B C D Interlude A B C E F Outro
+[Intro]
+E F♯m7 | G♯m G♯7 | C♯m7 | F♯m7 B |
+Esus4 E | E F♯m7 | G♯m G♯7 | C♯m7 |
+F♯m7 B | E Esus4 | E | E F♯m7 |
+G♯m G♯7 | C♯m7 | F♯m7 B | Esus4 E |
+B/D♯ |
+[A]
+C♯m7 G♯m7 | F♯m7 F♯m7/B | E | Amaj7 G♯7 |
+C♯m7 | F♯m7 E | A F♯m7/B |
+[B]
+C♯m7 G♯m7 | F♯m7 F♯m7/B | E | Amaj7 G♯7 |
+C♯m7 | F♯m7 F♯m7/B | A E | B/D♯ |
+[C]
+C♯m7 F♯7 | B | E D♯m7♭5 | G♯7 C♯m7 |
+G♯m7 C♯m7 | F♯7 B | E D♯m7♭5 | G♯7 |
+[D]
+Amaj7 B/A | G♯m7 C♯m7 | F♯m7 B7 | E E7 |
+Amaj7 G♯7 | C♯m7 C♯m/B | F♯m7 F♯m7/B | A♯7 |
+Amaj7 B/A | G♯m7 C♯m7 | F♯m7 B7 | E E7 |
+Amaj7 G♯7 | C♯m7 A♯m7♭5 | F♯m7 F♯m7/B | Esus4 E |
+[Interlude]
+E F♯m7 | G♯m G♯7 | C♯m7 | F♯m7 B |
+E Esus4 | E | E F♯m7 | G♯m G♯7 |
+C♯m7 | F♯m7 B | Esus4 E | B/D♯ |
+[E]
+Amaj7 B/A | G♯m7 C♯m7 | F♯m7 B7 | E E7 |
+Amaj7 G♯7 | C♯m7 C♯m | F♯m7 F♯m7/B | A♯7 |
+Amaj7 B/A | G♯m7 C♯m7 | F♯m7 B7 | E E7 |
+Amaj7 G♯7 | C♯m7 A♯m7♭5 | F♯m7 F♯m7/B | Esus4 E |
+[F]
+Amaj7 B/A | G♯m7 C♯m7 | F♯m7 B7 | Emaj7 E7 |
+Amaj7 G♯7 | C♯m7 A♯m7♭5 | F♯m7 F♯m7/B |
+[Outro]
+E F♯m7 | G♯m G♯7 | C♯m7 | F♯m7 B |
+E Esus4 | E | E F♯m7 | G♯m G♯7 |
+C♯m7 | F♯m7 B | Esus4 E |`,
+
+`title: 残酷な天使のテーゼ (A Cruel Angel's Thesis)
+by: 高橋洋子 (Yoko Takahashi)
+genre: J-pop
+feel: Anime pop
+source: U-FRET chord chart
+tempo: 128
+key: Cm
+form: A B C D B C E C F
+[A]
+Cm Fm | B♭ E♭ | Cm Fm | Gm7 A♭maj7 |
+Cm Fm | B♭ E♭ | Cm Fm | B♭ Cm |
+[B]
+E♭ B♭ | Cm B♭ | A♭maj7 | B♭sus4 B♭ |
+E♭sus4 Cm7 | Dm7 Gsus4 | G | E♭ B♭ |
+Cm B♭ | A♭maj7 | B♭sus4 B♭ | E♭sus4 Cm7 |
+Dm7 Gsus4 | G Gsus4 | G |
+[C]
+A♭maj7 Gm7 | Cm Fm7 | B♭7 B♭m7 | E♭7 |
+A♭maj7 Gm7 | Cm Dm7 | G Gsus4 | G |
+[D]
+Cm Fm | B♭ E♭ | Cm Fm | B♭ E♭ |
+Cm Fm | B♭ E♭ | Cm Fm | B♭ Cm |
+Fm B♭ | E♭ Cm | Fm | B♭ Gm |
+B♭ Cm | Cm A♭ | Cm A♭ | Fm7 Gm7 |
+A♭maj7 Gm7 | Fm7 Gm7 | A♭maj7 B♭ | G |
+Cm Fm | B♭ E♭ | Cm Fm | B♭ Cm |
+Cm Fm | B♭ E♭ | Cm Fm | B♭ Cm |
+[E]
+Cm Fm | B♭ E♭ | Cm Fm | B♭ E♭ |
+Cm Fm | B♭ E♭ | Cm Fm | B♭ Cm |
+Fm B♭ | E♭ Cm | Fm7 Fm | Gm A♭ |
+B♭ |
+[F]
+Cm Fm | B♭ E♭ | Cm Fm | B♭ E♭ |
+Cm Fm | B♭ E♭ | Cm Fm | B♭ Cm |
+Fm B♭ | E♭ Cm | Fm | B♭ Gm |
+B♭ Cm |`,
+
+`title: 君の知らない物語 (Kimi no Shiranai Monogatari)
+by: supercell
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 164
+key: A
+[A]
+Aadd9 D6 | Esus4 F♯m7 | Aadd9 D6 | E D/E |
+E Dmaj7 | E F♯m7 | A Dmaj7 | E C♯ |
+F♯m B | A Dm | A D | A E/A |
+A Dm | A |
+[B]
+A Esus4 | Dmaj7 A | E | F♯m7 B7 |
+Dadd9 E | A E | F° | F♯m F♯m7 |
+B | Dadd9 A | Dadd9 E | Asus4 A |
+E |
+[C]
+F♯m7 Bm7 | E A | D E | F♯m7 E |
+A |
+[D]
+A E | Dmaj7 | F♯m E | A Dm6 |
+E7sus4 E | A | Dadd9 E | F° F♯m |
+E Dmaj7 | A Bm7 | C♯m7 Dadd9 | E F |
+G A | D A | E/A A | Dm A |
+[E]
+A E | Dmaj7 A | E | F♯m7 B |
+D E | A E | F° | F♯m F♯m7 |
+B | D A | D E | Asus4 A |
+E |
+[F]
+F♯m7 Bm7 | E A | D E | F♯m7 A |
+E A |
+[G]
+A E | Dmaj7 | F♯m E | A Dm6 |
+E7sus4 E | A | Dadd9 E | F° F♯m |
+E Dmaj7 | A Bm7 | C♯m7 Dadd9 | E F |
+G A | F G/A | F G/A | E F♯m7 |
+E A | D E | B |
+[H]
+E | D F♯m7 | E D | C♯m7 D |
+E F♯m7 | C♯m7 Dadd9 | Esus4 E | Dmaj7 E |
+F♯m7 Dadd9 | E F♯m7 | E/F♯ F♯m7 | A D |
+E F♯m7 | A Dadd9 | Esus4 E | Esus4 E |
+[I]
+Aadd9 D6 | Esus4 F♯m7 | Aadd9 D6 | Esus4 F♯m7 |
+Aadd9 D6 | Esus4 F♯m7 | Aadd9 E |
+[J]
+F♯m7 E | D | E F♯m7 | A E |
+A |
+[K]
+A E | Dmaj7 | F♯m E | A Dm6 |
+E A | A E | F♯m7 | F♯m7 E |
+D | D A | D | D E |
+E7 E6 | A D | E | F° F♯m |
+E Dmaj7 | A Bm7 | C♯m7 Dadd9 | E A |
+D A | E/A A | D A | E/A A |
+Dm A | E/A | F♯m7 E | A |`,
+
+`title: only my railgun
+by: fripSide
+genre: J-pop
+feel: Anime trance
+source: U-FRET chord chart
+tempo: 150
+key: G♯m
+form: Intro A B C D E B C F E Interlude Interlude 2 G H F E
+[Intro]
+G♯m |
+[A]
+G♯m E | F♯7 B | G♯m F♯ | E D♯m |
+C♯m | D♯m E | F♯ G♯sus4 | G♯ |
+[B]
+Fm7 D♯ | C♯ D♯ | G♯ D♯ | Fm7 C♯ |
+D♯ Cm7 | A♯m7 Cm7 | Cm7/F |
+[C]
+C♯ D♯ | Cm Fm | E F♯ | C♯ D♯ |
+[D]
+G♯m E | F♯7 B | G♯m G♯m/F♯ | E E/D♯ |
+C♯m7 | D♯m7 |
+[E]
+G♯m E | F♯7 B | G♯m G♯m/F♯ | E E/D♯ |
+C♯m7 | D♯m7 E | F♯ G♯sus4 | G♯ |
+[F]
+G♯m7 E | F♯7 B | G♯m G♯m/F♯ | E E/D♯ |
+C♯m7 | D♯m7 |
+[Interlude]
+G♯m |
+[Interlude 2]
+E F♯ | D♯m G♯m | E F♯ | C♯ D♯7 |
+[G]
+Gm D♯ | F A♯ | F/A Gm | D♯ Cm |
+Dm |
+[H]
+Gm7 D♯add9 | F7 A♯ | F/A Gm7 | D♯add9 Cm7 |
+Dm7 |`,
+
+`title: God knows...
+by: 涼宮ハルヒ (平野綾)
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 170
+key: C♯m
+form: Intro A B C A B D E F
+[Intro]
+Amaj7 B | G♯m C♯m | Amaj7 B | C♯m |
+Amaj7 B | G♯m C♯m | Amaj7 B | C♯sus4 C♯ |
+[A]
+C♯m B | A B | E D♯m7 | G♯7 |
+C♯m B | A B | E |
+[B]
+Amaj7 G♯m | F♯m A | G♯sus4 G♯ |
+[C]
+Amaj7 | B G♯m | C♯m | F♯m G♯m |
+C♯m Bm7 | E7 Amaj7 | B G♯m | C♯m |
+F♯m G♯m | A B | C♯sus4 C♯ | Amaj7 B |
+G♯m C♯m | Amaj7 B | C♯m | Amaj7 B |
+G♯m C♯m | Amaj7 B | C♯sus4 C♯ |
+[D]
+Amaj7 B | G♯m C♯m | F♯m | G♯m C♯m |
+Bm7 | E7 Amaj7 | B G♯m | C♯m |
+F♯m G♯m | A | B C♯sus4 | C♯ |
+[E]
+Amaj7 G♯m | F♯m G♯m | C♯m B | Amaj7 G♯m |
+F♯m | A G♯sus4 | G♯ |
+[F]
+A♯ Bmaj7 | C♯ A♯m | D♯m | G♯m A♯m |
+D♯m C♯m7 | F♯7 Bmaj7 | C♯ A♯m | D♯m |
+G♯m A♯m | B C♯ | D♯sus4 D♯ | Bmaj7 C♯ |
+A♯m D♯m | Bmaj7 C♯ | D♯sus4 D♯ | Bmaj7 C♯ |
+A♯m D♯m | Bmaj7 C♯ | D♯sus4 D♯ |`,
+
+`title: シルエット (Silhouette)
+by: KANA-BOON
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 180
+key: Bm
+form: A B C D B E F G H I
+[A]
+Bm A | G A | Bm A | G A |
+Bm A | G A | Bm A | G A |
+D G6 | A B♭° | Bm7 F♯m7 | G A |
+[B]
+D G | A B♭° | Bm7 F♯m7 | G A |
+D G | A B♭° | Bm7 Cadd9 | G A |
+[C]
+Bm B♭° | D Eadd9 | G A |
+[D]
+D Gmaj7 | A B♭° | Bm7 | F♯m7 Gmaj7 |
+A | D Gmaj7 | A B♭° | Bm7 |
+F♯m7 Gmaj7 | A | F♯m7 Gmaj7 | A7 Bm7 |
+[E]
+Bm B♭° | D Eadd9 | G A6 | A7 Amaj7 |
+A |
+[F]
+D Gmaj7 | A B♭° | Bm7 | F♯m7 Gmaj7 |
+A | D Gmaj7 | A B♭° | Bm7 |
+F♯m7 Gmaj7 | A | Bm A | G A |
+Bm A | G A | Bm A | G A |
+Bm A | G A |
+[G]
+G B♭° | Bsus4 Dadd9 | D | Em F♯m |
+G A |
+[H]
+Gmaj7 A | B♭° Bm7 | F♯m7 Gmaj7 | A |
+D Gmaj7 | A B♭° | Bm7 | F♯m7 Gmaj7 |
+A | D Gmaj7 | A B♭° | Bm7 |
+F♯m7 Gmaj7 | A | D Gmaj7 | A B♭° |
+Bm7 | F♯m7 Gmaj7 | A |
+[I]
+G B♭° | Bsus4 Dsus4 | D | G A |
+D | G A | B♭° Bm7 | F♯m7 G |
+A | D G | A B♭° | Bm7 F♯m7 |
+G A | Bm A | G A | Bm A |
+G A | Bm A | G A | Bm A |
+G A |`,
+
+`title: unravel
+by: TK from 凛として時雨
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 135
+key: Gm
+[A]
+E♭maj7 Cm7 | F Gm7 | E♭maj7 Gm7 | F Gm7 |
+E♭maj7 Cm7 | F Gm7 | Gm F | E♭ Dm |
+Gm F | E♭ Dm | Gm |
+[B]
+Gm E♭maj7 | F B♭ | Gm E♭maj7 | F B♭ |
+Gm7 | Gm7 |
+[C]
+E♭ F | Gm Dm | E♭ Fsus4 | F Gm |
+B♭ | E♭ F | Gm Dm | E♭ Fsus4 |
+F |
+[D]
+E♭maj7 Gm | F Gm | E♭maj7 Gm | F Gm |
+[E]
+E♭maj7 Gm7 | F Gm7 | E♭maj7 Gm7 | F |
+E♭maj7 |
+[Interlude]
+E♭maj7 F | Gm7 B♭ | E♭maj7 F | Gm |
+E♭maj7 F | Gm7 B♭ | E♭maj7 F | Gm B♭ |
+[F]
+Gm E♭maj7 | F Gm | E♭maj7 | F Gm |
+[G]
+E♭ F | Gm Dm | E♭ Fsus4 | F Gm |
+Dm | E♭ F | Gm Dm | E♭ Fsus4 |
+F E♭maj7 | F Gm | Dm |
+[H]
+E♭ F | Gm Dm |
+[I]
+E♭ F | Gm Dm | E♭ Fsus4 | F |
+[Interlude 2]
+E♭maj7 Gm | F Gm |
+[J]
+E♭maj7 Gm | F Gm | E♭maj7 Gm |`,
+
+`title: Butter-Fly
+by: 和田光司 (Kōji Wada)
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 150
+key: E
+form: Intro A B C Interlude A B D E F
+[Intro]
+E | E D/E | E/A | E D/E |
+E/A | E D/E | E/A | E D |
+A/C♯ A |
+[A]
+E G♯m | A C | D E | E G♯m |
+A C | D E |
+[B]
+C♯m G♯m | A E | C♯m G♯m | A B |
+C D | Bsus4 B |
+[C]
+E B | C♯m G♯m | A | E C♯m |
+A B | E B | G♯ C♯m | G♯m A |
+G♯m C♯m | C D | E |
+[Interlude]
+E D/E | E/A | E D/E | E/A |
+E D/E | E/A | E D | A/C♯ A |
+[D]
+E B | C♯m G♯m | A | E C♯m |
+A B | E B | G♯ C♯m | G♯m A |
+G♯m C♯m | C D | E | E |
+C D | E | C D | E |
+F♯m G♯m | A F♯ | B |
+[E]
+E B | C♯m G♯m | A | E C♯m |
+A B | E B | G♯ C♯m | G♯m A |
+G♯m C♯m | C D |
+[F]
+E B | C♯m G♯m | A | E C♯m |
+A B | E B | G♯ C♯m | G♯m A |
+G♯m C♯m | C D | E | E D/E |
+E/A | E D/E | E/A | E D/E |
+E/A | E D | A/C♯ A | G♯ A |
+B E |`,
+
+`title: ブルーバード (Blue Bird)
+by: いきものがかり (Ikimonogakari)
+genre: J-pop
+feel: Anime rock
+source: U-FRET chord chart
+tempo: 184
+key: F♯m
+form: A Interlude B C D E Interlude 2 B C D F Interlude 3 G D E Outro
+[A]
+Dmaj7 C♯m7 | F♯m | Bm7 Bm7/E | A |
+Dmaj7 C♯7 | F♯m | Bm7 Bm7/E | F♯m7 |
+[Interlude]
+Dmaj7 E/D | C♯m7 F♯m | Bm7 G♯m7♭5 | C♯7 |
+Dmaj7 E/D | C♯m7 F♯m | Bm7 Dmaj7 | C♯7 |
+[B]
+F♯m7 E | Dmaj7 A/C♯ | Bm7 A | G♯m7♭5 C♯7 |
+F♯m7 E | Dmaj7 A/C♯ | Bm7 Bm7/E | F♯m7 |
+[C]
+Dmaj7 E/D | C♯m7 F♯m7 | Bm7 C♯7 |
+[D]
+Dmaj7 C♯m7 | F♯m7 | Bm7 Bm7/E | A |
+Dmaj7 C♯7 | F♯m7 | Bm7 Bm7/E | F♯m7 |
+[E]
+Dmaj7 C♯7 | F♯m7 | Bm7 Bm7/E | A |
+Dmaj7 C♯7 | F♯m7 | Bm7 E | F♯m7 |
+Bm7 E | F♯m7 | Bm7 C♯7 | F♯m7 |
+[Interlude 2]
+Dmaj7 E/D | C♯m7 F♯m | Bm7 C♯7 |
+[F]
+Dmaj7 C♯7 | F♯m7 | Bm7 Bm7/E | A |
+Dmaj7 C♯7 | F♯m7 | Bm7 C♯7 | F♯m7 |
+[Interlude 3]
+D♯m7♭5 Dmaj7 | C♯m7 Cmaj7 | Bm7 E |
+[G]
+Dmaj7 C♯m7 | Bm7 C♯m7 | Dmaj7 C♯7 |
+[Outro]
+Dmaj7 E/D | C♯m7 F♯m | Bm7 C♯7 | E F♯m |`,
+
+`title: アイノカタチ (Ai no Katachi)
+by: MISIA feat. HIDE
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 76
+key: F♯
+[Intro]
+B C♯ | D♯m A♯m | G♯m7 A♯m7 | Bm7 C♯ |
+[A]
+F♯ C♯/F | E | D♯7 |
+[B]
+G♯m7 G+ | F♯ | C♯ A♯7 |
+[C]
+D♯m G♯m7 | C♯ B | F♯/A♯ | D♯m G♯m7 |
+B C♯ | A♯7 D♯m | G♯m7 | C♯ B |
+F♯/A♯ | G♯m7 C♯ | D E |
+[D]
+F♯ B | C♯ F♯ | C♯/F | D♯m A♯m7 |
+B C♯ |
+[Interlude]
+B C♯ | D♯m A♯m | G♯m7 A♯m7 | Bm7 C♯ |
+[E]
+F♯ C♯/F | E | D♯7 | G♯m7 G+ |
+B C♯ | A♯7 |
+[F]
+D♯m G♯m7 | C♯ B | F♯/A♯ | G♯m7 |
+C♯ D | E |
+[G]
+F♯ B | C♯ F♯ | C♯/F | D♯m A♯m7 |
+B | C♯ |
+[Interlude 2]
+B C♯/B | B C♯/B | A♯m7 D♯m | A♯m7 D♯m |
+B C♯/B | B C♯/B | D C♯ |
+[H]
+F♯ B | C♯ F♯ | C♯/F | D♯m A♯m7 |
+B | C♯ D |
+[I]
+G C | D G | D/F♯ | Em B7 |
+C C♯m7♭5 | D |
+[J]
+G/B C | D | D♯° Em | D/F♯ |
+Em Bm7 | C | D |
+[K]
+C D | Em Bm7 |
+[L]
+C D | G B7 | C D | Em Bm7 |
+Am7 Bm7 | C |`,
+
+`title: Everything
+by: MISIA
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 72
+key: D♭
+form: Intro A B C D Interlude B C E F Interlude 2 Interlude 3 G H
+[Intro]
+D♭maj7 C7 | Fm7 B♭7 | E♭m7 G♭maj7 | B A |
+A♭sus4 A♭ |
+[A]
+D♭ G♭maj7 | E7 | B♭m7/E♭ E♭7 | A♭7 G♭° |
+Fm7 Fm7/B♭ | A♭° | Gm7♭5 G♭m6 | Fm7 B♭7 |
+B♭m7/E♭ E♭7 | Amaj7 E♭m7/A♭ |
+[B]
+D♭ G♭maj7 | E7 | B♭m7/E♭ E♭7 | A♭7 G♭° |
+Fm7 Fm7/B♭ | A♭° | Gm7♭5 G♭m6 | Fm7 B♭7 |
+B♭m7/E♭ E♭7 | G♭m7 G♭m7/B | B7 D♭ | B♭m7 Amaj7 |
+[C]
+E♭m7/A♭ G♭° | Fm7 B♭m7 | E♭m7 E♭m7/A♭ | G♭° Fm7 |
+B♭m7 | Cm7♭5 F7 | B♭m7 E♭7 | E♭m7 D♭ |
+G♭maj7 Gm7♭5 | E♭m7/A♭ A+ |
+[D]
+D♭ A♭ | B♭m7 A♭m6 | D♭7 G♭maj7 | A♭/G♭ Fm7 |
+E7/B♭ B♭7 | E♭m7 A° | A♭7 Fm7 | B♭m7 |
+E♭m7 E♭m7♭5 | A♭7 |
+[Interlude]
+D♭ E♭m7/A♭ | A° | B♭m7 E♭7 | E♭m7/A♭ |
+[E]
+D♭ A♭ | B♭m7 A♭m6 | D♭7 G♭maj7 | A♭/G♭ Fm7 |
+E7/B♭ B♭7 | E♭m7 E♭m7/A♭ | G♭° Fm7 | Fm7/B♭ A♭° |
+Gm7♭5 G♭maj7 | E♭m7♭5 E♭m7/A♭ |
+[F]
+D♭ A♭ | B♭m7 A♭m6 | D♭7 G♭maj7 | A♭/G♭ Fm7 |
+E7/B♭ B♭7 | E♭m7 A° | Fm7 B♭7 | E♭m7 E♭m7♭5 |
+[Interlude 2]
+D♭ E♭7 | E♭m7/A♭ D♭ | B♭m7 E♭7 | A♭ A° |
+B♭m7 E♭7 | A♭m7 A♭m7/D♭ | G♭maj7 B7 |
+[Interlude 3]
+D♭/A♭ E♭m7/A♭ | Fm7/B♭ | G♭m7/B E♭m7/A♭ | Em7/A |
+[G]
+D A | Bm7 Am6 | D7 Gmaj7 | A7 G♭m7 |
+F/B B7 | Em7 Em7/A | G° G♭m7 | G♭m7/B A° |
+A♭m7♭5 Gmaj7 | Gm/B♭ Em7/A |
+[H]
+D A | G♭7 Bm7 | B♭m7 Am7 | D7 A♭m7♭5 |
+A7 G♭m7 | F/B B7 | Em7 B♭° | A7 G♭m7 |
+B7 | Em7 Gm | Em7♭5/A D | B7 |
+Em7♭5 | Gm Em7♭5/A | D A/B | B♭+ Gm |
+A7 | Dadd9 |`,
+
+`title: ハナミズキ (Hanamizuki)
+by: 一青窈 (Yo Hitoto)
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 84
+key: E
+[A]
+E B | C♯m E | A E | F♯m7 B |
+E | E B | C♯m7 E | A E |
+F♯m7 F♯m7/B | B | E B | C♯m E |
+A E | F♯m7 B | E A | E |
+Eadd9 Eadd9/A | B C° | C♯m C♯m/B | Eadd9 Eadd9/A |
+B A | B E | F♯m7/B |
+[B]
+E D♯m7♭5 | G♯7 C♯m7 | Bm7 E7 | Aadd9 E |
+F♯m7 F♯m7/B | B E | D♯m7♭5 G♯7 | C♯m7 |
+Bm7 E7 | Aadd9 E | F♯m7 F♯m7/B | E |
+[C]
+E B | C♯m7 E | A E | F♯m7 F♯m7/B |
+B | E B | C♯m7 E | A E |
+F♯m7 B | E A | E | Eadd9 Eadd9/A |
+B C° | C♯m C♯m7 | Eadd9 Eadd9/A | B A |
+B E | F♯m7/B |
+[D]
+E D♯m7♭5 | G♯7 C♯m7 | Bm7 E7 | Amaj7 E |
+F♯m7 F♯m7/B | B E | D♯m7♭5 G♯7 | C♯m7 |
+Bm7 E7 | Amaj7 E | F♯m7 F♯m7/B | B Aadd9 |
+E F♯m7 | F♯m7/B | E B | C♯m7 E |
+Aadd9 E | F♯m7 F♯m7/B | B | E B |
+C♯m7 E | Aadd9 E | F♯m7 B | E A |
+E |
+[E]
+E B | C♯m E | A E | F♯m7 F♯m7/B |
+B | E B | C♯m7 E | A E |
+F♯m7 B | E A | E | Eadd9 Eadd9/A |
+B C° | C♯m B | Eadd9 Eadd9/A | B E/C♯ |
+B E | F♯m7/B |
+[F]
+E D♯m7♭5 | G♯7 C♯m7 | Bm7 E7 | Amaj7 E |
+F♯m7 F♯m7/B | B E | D♯m7♭5 G♯7 | C♯m7 |
+Bm7 E7 | Amaj7 E | F♯m7 F♯m7/B | B E |
+[G]
+D♯m7♭5 G♯7 | C♯m7 Bm7 | E7 Amaj7 | E |
+F♯m7 F♯m7/B | B E | D♯m7♭5 G♯7 | C♯m7 |
+Bm7 E7 | Amaj7 E | F♯m7 F♯m7/B | B E |
+D♯m7♭5 G♯7 | C♯m |
+[H]
+Bm7 E7 | Aadd9 E | F♯m7 F♯m7/B | E B |
+C♯m E | A E | F♯m7 B | Eadd9 |`,
+
+`title: 366日 (366 Nichi)
+by: HY
+genre: J-pop
+feel: Ballad
+source: U-FRET chord chart
+tempo: 76
+key: A♭
+[A]
+A♭ D♭ | E♭sus4 Fm7 | A♭ D♭ | E♭sus4 Fm7 |
+A♭add9 D♭add9 | E♭sus4 Fm7 | A♭add9 D♭add9 | E♭sus4 Fm7 |
+A♭add9 D♭add9 | E♭sus4 Fm7 | A♭add9 D♭add9 | E♭sus4 Fm7 |
+A♭add9 D♭ | E♭ A♭ | Fm7 B♭ | B♭m7 B♭m7/E♭ |
+E♭ | A♭add9 D♭ | E♭m7 A♭7 | D♭ A♭ |
+B♭m7 B♭m7/E♭ | E♭ |
+[B]
+A♭ D♭ | E♭ A♭ | A♭/G | Fm7 B♭ |
+B♭m7 B♭m7/E♭ | E♭ | A♭add9 D♭ | E♭m7 A♭7 |
+D♭ A♭ | B♭m7 B♭m7/E♭ | E♭ |
+[C]
+B♭m7 Fm7 | Cm7 D♭ | B♭m7 E♭m7 | D♭ Fm7 |
+E♭ | B♭m7 Fm7 | Cm7 D♭ | B♭m7 B♭m7/E♭ |
+E♭ | A♭ D♭ | E♭sus4 Fm7 | A♭ D♭ |
+E♭sus4 Fm7 |
+[D]
+A♭add9 D♭ | E♭ A♭ | A♭/G | Fm7 B♭ |
+B♭m7 B♭m7/E♭ | E♭ | A♭ D♭ | E♭m7 A♭7 |
+D♭ A♭ | B♭m7 B♭m7/E♭ | E♭ |
+[E]
+B♭m7 Fm7 | Cm7 D♭ | B♭m7 E♭m7 | D♭ Fm7 |
+E♭ | B♭m7 Fm7 | Cm7 D♭ | B♭m7 B♭m7/E♭ |
+E♭ |
+[F]
+A♭ E♭ | Fm7 Cm7 | B♭m7 A♭add9 | D♭ B♭m7/E♭ |
+E♭ | A♭ E♭ | Fm7 Cm7 | E♭m7 E♭m7/A♭ |
+D♭ A♭add9 | B♭m7 A♭ | D♭ E♭ | A♭ |
+[G]
+B♭ D♭ | A♭ Fm7 | E♭m7 A♭ | D♭ A♭add9 |
+B♭m7 Cm7 | C D♭ | A♭add9 B♭m7 | A♭ |
+D♭ A♭add9 | B♭m7 A♭ | D♭ A♭add9 | B♭m7 A♭ |
+D♭ A♭add9 | B♭m7 A♭add9 | D♭ E♭ | D♭/E♭ |
+[H]
+A♭ E♭ | Fm7 Cm7 | B♭m7 A♭add9 | D♭ B♭m7/E♭ |
+E♭ | A♭ E♭ | Fm7 Cm7 | E♭m7 E♭m7/A♭ |
+D♭ A♭ | B♭m7 A♭add9 | D♭ E♭ |
+[I]
+A♭ E♭ | Fm7 Cm7 | B♭m7 A♭add9 | D♭ B♭m7/E♭ |
+E♭ | A♭ E♭ | Fm7 Cm7 | E♭m7 E♭m7/A♭ |
+D♭ A♭add9 | B♭m7 A♭ | D♭ E♭ | B♭m7 |
+A♭add9 D♭ | D♭/E♭ A♭add9 | D♭ E♭ | Fm7 A♭add9 |
+D♭ E♭sus4 | E♭ Fm7 | A♭ D♭ | E♭sus4 Fm7 |
+A♭ D♭ | E♭sus4 A♭add9 |`,
+
 `title: Perfect
 by: Ed Sheeran
 genre: Pop
@@ -2015,7 +8024,7 @@ D7 Dm7 | C | D7 Dm7 | C G/B |
 Am C | Dm | G G7 | C Em/B |
 Am C | Dm | G C |
 [Pre]
-Em/B Am | Em | A♯ C/G |
+Em/B Am | Em | B♭ C/G |
 [Chorus]
 G F | G C | F G | C |
 F G | Am | D7 F | Fm C |
@@ -2048,8 +8057,8 @@ G7 | Dm | G7 | Dm |
 G7 | Dm | G7 |
 [Pre]
 Dm | Dm | Dm | Dm |
-D5 D♯5 | E5 F5 | F♯5 G5 | G♯5 A5 |
-A♯5 B5 | C5 C♯5 | Dm |
+D5 E♭5 | E5 F5 | F♯5 G5 | A♭5 A5 |
+B♭5 B5 | C5 D♭5 | Dm |
 [Chorus]
 Dm G7 | Dm G7 | Dm G7 | Dm G7 |
 Dm | Dm | Dm | G7 |
@@ -2072,7 +8081,7 @@ genre: Pop
 feel: R&B
 source: Ultimate Guitar chord chart
 tempo: 134
-key: D♭
+key: B♭m
 form: Intro Verse Verse 2 Pre Chorus Verse 3 Verse 4 Pre Chorus Bridge Chorus 2
 [Intro]
 E♭m9 |
@@ -2110,7 +8119,7 @@ genre: Pop
 feel: Reggae-rock
 source: Ultimate Guitar chord chart
 tempo: 144
-key: Dm
+key: F
 form: Intro Verse Pre Chorus Interlude Verse Pre Chorus Bridge Chorus Outro
 [Intro]
 C Dm | C B♭ | F Gm |
@@ -2139,19 +8148,19 @@ genre: Pop
 feel: 70s soul
 source: Ultimate Guitar chord chart
 tempo: 74
-key: C
+key: Am
 form: Verse Intro Verse 2 Verse 2 Pre Chorus Verse 3 Pre Chorus Bridge Chorus 2 Outro
 [Verse]
-Fmaj7 G/F | Em7 Am7 | E7 | D♯maj7 G♯add9 |
-G♯maj7 Gm7 | Fm7 G7sus4 | Cmaj7 A7 | F♯add9 F7sus4 |
-F♯ G♯ | G♯7sus4 | F♯maj7 G♯7 | Fm7 A♯m7 |
-C♯maj7 A♯7 | A |
+Fmaj7 G/F | Em7 Am7 | E7 | E♭maj7 A♭add9 |
+A♭maj7 Gm7 | Fm7 G7sus4 | Cmaj7 A7 | F♯add9 F7sus4 |
+F♯ A♭ | A♭7sus4 | F♯maj7 A♭7 | Fm7 B♭m7 |
+D♭maj7 B♭7 | A |
 [Intro]
 Fmaj7 G/F | Em7 Am7 |
 [Verse 2]
 Fmaj7 | G/F | Em7 | Am7 |
 [Pre]
-D♯maj7 | G♯add9 | G♯maj7 Gm7 | Fm7 G7sus4 |
+E♭maj7 | A♭add9 | A♭maj7 Gm7 | Fm7 G7sus4 |
 [Chorus]
 Fmaj7 | G/F | Em7 | Am7 |
 Fmaj7 | G7sus4 | Cmaj7 A7 |
@@ -2159,14 +8168,14 @@ Fmaj7 | G7sus4 | Cmaj7 A7 |
 Fmaj7 | G/F | Em7 | Am7 |
 Fmaj7 | G/F | Em7 E7 | Am7 |
 [Bridge]
-G♯add9 G7sus4 | G♯add9 G7sus4 | F♯add9 F7sus4 | F♯ G♯ |
-G♯7sus4 G♯ |
+A♭add9 G7sus4 | A♭add9 G7sus4 | F♯add9 F7sus4 | F♯ A♭ |
+A♭7sus4 A♭ |
 [Chorus 2]
-G♯ F♯maj7 | G♯/F♯ | Fm7 A♯m7 | F♯maj7 |
-G♯7sus4 | C♯maj7 A♯7 |
+A♭ F♯maj7 | A♭/F♯ | Fm7 B♭m7 | F♯maj7 |
+A♭7sus4 | D♭maj7 B♭7 |
 [Outro]
-A G♯ | C♯maj7 A♯7 | A G♯ | C♯maj7 |
-A♯7 | A G♯ | C♯maj7 | A♯7 |
+A A♭ | D♭maj7 B♭7 | A A♭ | D♭maj7 |
+B♭7 | A A♭ | D♭maj7 | B♭7 |
 A |`,
 
 `title: Grenade
@@ -2243,7 +8252,7 @@ genre: Pop
 feel: Ballad
 source: Ultimate Guitar chord chart
 tempo: 79
-key: Fm
+key: A♭
 form: Verse Intro Verse 2 Verse 3 Pre Chorus Verse 3 Pre Chorus 2 Bridge Chorus 3
 [Verse]
 Fm A♭ | E♭ D♭ | Cm |
@@ -2483,7 +8492,7 @@ genre: Pop
 feel: Pop
 source: Ultimate Guitar chord chart
 tempo: 97
-key: C♯m
+key: E
 form: Verse Pre Chorus Interlude Verse 2 Pre 2 Chorus Interlude Bridge Chorus Outro
 [Verse]
 A E | B C♯m | A E | B C♯m |
@@ -2932,7 +8941,7 @@ genre: Pop
 feel: R&B
 source: Ultimate Guitar chord chart
 tempo: 134
-key: E
+key: C♯m
 form: Verse Intro Verse 2 Pre Chorus Verse 2 Pre 2 Chorus Bridge Chorus 2
 [Verse]
 A G♯m | C♯m F♯m |
@@ -3002,7 +9011,7 @@ genre: Pop
 feel: Nu-disco
 source: Ultimate Guitar chord chart
 tempo: 124
-key: Bm
+key: D
 form: Verse Intro Verse 2 Pre Chorus Verse 3 Pre Chorus Bridge Pre 2 Chorus 2 Outro
 [Verse]
 Bm D | Gmaj7 Em | D Gmaj7 | A |
@@ -3119,7 +9128,7 @@ genre: Pop
 feel: Pop
 source: Ultimate Guitar chord chart
 tempo: 99
-key: Cm
+key: E♭
 form: Verse Intro Verse 2 Pre Chorus Verse 3 Pre Chorus Bridge Chorus 2 Outro
 [Verse]
 Cm7 E♭ | A♭maj7 B♭ |
@@ -3241,7 +9250,7 @@ genre: Pop
 feel: Piano ballad
 source: Ultimate Guitar chord chart
 tempo: 120
-key: Fm
+key: A♭
 form: Intro Verse Pre Chorus Verse 2 Pre Chorus 2 Pre 2 Chorus Outro
 [Intro]
 Fm D♭ | A♭ E♭ |
@@ -3284,15 +9293,15 @@ Am7 F | C | Am7 F | C |
 Am7 F | C | Am7 Gsus | C |
 [Chorus]
 Am F | C | Am F | C |
-G Am | F C | G♯° Am | F C |
+G Am | F C | A♭° Am | F C |
 [Bridge]
 Am F | C | Am F | C |
-G Am | F C | G♯° Am | F C |
+G Am | F C | A♭° Am | F C |
 [Chorus 2]
 Am F | C | Am F | C |
-G Am | F C | G♯° Am | F C |
+G Am | F C | A♭° Am | F C |
 Am F | C | Am F | C |
-G Am | F C | G♯° Am | F C |`,
+G Am | F C | A♭° Am | F C |`,
 
 `title: I'm Not The Only One
 by: Sam Smith
@@ -3332,7 +9341,7 @@ genre: Pop
 feel: Pop rock
 source: Ultimate Guitar chord chart
 tempo: 82
-key: D♭
+key: B♭m
 form: Intro Verse Chorus Verse 2 Chorus Interlude Bridge Chorus Outro
 [Intro]
 B♭m A♭ | G♭ |
@@ -3449,7 +9458,7 @@ genre: Pop
 feel: Tropical pop
 source: Ultimate Guitar chord chart
 tempo: 100
-key: E
+key: C♯m
 form: Chorus Verse Pre Chorus 2 Verse Pre 2 Chorus 2 Chorus 3 Bridge Chorus 2 Interlude
 [Chorus]
 A | B | C♯m | G♯m |
@@ -3575,7 +9584,7 @@ genre: Pop
 feel: EDM pop
 source: Ultimate Guitar chord chart
 tempo: 103
-key: D
+key: Bm
 form: Verse Intro Verse 2 Pre Chorus Verse 2 Pre Chorus Pre 2 Interlude Outro
 [Verse]
 G | A | D/F♯ |
@@ -3659,7 +9668,7 @@ genre: Pop
 feel: Pop rock
 source: Ultimate Guitar chord chart
 tempo: 122
-key: C♯m
+key: E
 form: Verse Intro Interlude Verse 2 Pre Chorus Interlude Verse 2 Pre 2 Chorus Bridge Chorus Outro
 [Verse]
 C♯m E | B | A | C♯m E |
@@ -3878,6 +9887,37 @@ Gm7 Dm7 |
 Am7 B♭maj7 | Gm7 | Dm7 | Am7 B♭maj7 |
 Gm7 | Dm7 Am7 |`,
 
+`title: Shallow
+by: Lady Gaga, Bradley Cooper
+genre: Pop
+feel: Ballad
+source: Ultimate Guitar chord chart
+tempo: 96
+key: G
+form: Verse Verse 2 Verse 3 Verse 2 Verse 4 Chorus Chorus Bridge Chorus Post
+[Verse]
+Em7 D/F♯ | G C | Cadd9 D | Am Em |
+Bm A | Em7 D/F♯ | G C | Cadd9 G |
+D | Em7 D/F♯ | G |
+[Verse 2]
+Em7 D/F♯ | G | C G | D |
+Em7 D/F♯ | G | C G | D |
+[Verse 3]
+Em7 D/F♯ | G | C G | D Em7 |
+D/F♯ G | C G | D Em7 | D/F♯ G |
+Em7 D/F♯ | G |
+[Verse 4]
+Em7 D/F♯ | G | C G | D Em7 |
+D/F♯ G | C G | D |
+[Chorus]
+Am D/F♯ | G D | Em | Am D/F♯ |
+G D | Em |
+[Bridge]
+Bm D | A Em | Bm D | A |
+[Post]
+Am D/F♯ | G D | Em | Am D/F♯ |
+G D | Em |`,
+
 `title: Flowers
 by: Miley Cyrus
 genre: Pop
@@ -4023,7 +10063,7 @@ genre: Pop
 feel: Gospel rock
 source: Ultimate Guitar chord chart
 tempo: 129
-key: Em
+key: G
 form: Verse Verse 2 Chorus Verse 3 Chorus Bridge Chorus 2
 [Verse]
 A5 | G5 | F♯5 | F5 |
@@ -4061,7 +10101,7 @@ genre: Pop
 feel: Blues rock
 source: Ultimate Guitar chord chart
 tempo: 117
-key: Gm
+key: B♭
 form: Intro Verse Pre Chorus Verse 2 Pre Chorus 2 Chorus 3
 [Intro]
 Gm F/A | B♭ Cm | E♭/D | E♭ F |
@@ -4228,7 +10268,7 @@ genre: Pop
 feel: Pop
 source: Ultimate Guitar chord chart
 tempo: 108
-key: D♭
+key: B♭m
 form: Verse Verse 2 Pre Chorus Verse 3 Chorus 2 Bridge Chorus 2
 [Verse]
 G♭maj7 B♭m7 | A♭6add11 |
@@ -4257,7 +10297,7 @@ genre: Pop
 feel: Pop punk
 source: Ultimate Guitar chord chart
 tempo: 149
-key: E♭
+key: Cm
 form: Verse Pre Chorus Verse 2 Pre Chorus 2 Bridge Pre 2 Chorus 3
 [Verse]
 Cm | B♭ | Cm | Cm |
@@ -4418,7 +10458,7 @@ genre: Pop
 feel: Folk
 source: Ultimate Guitar chord chart
 tempo: 75
-key: G
+key: Em
 form: Verse Chorus Interlude Verse 2 Chorus Verse 3 Chorus Bridge Interlude 2 Chorus 2
 [Verse]
 D Cmaj7 | D6 Em | D6 | Cmaj7 D6 |
@@ -4514,29 +10554,29 @@ source: Ultimate Guitar chord chart
 tempo: 75
 key: G
 [Intro]
-Dmaj7 Am7 | Gmaj7 A♯maj7 |
+Dmaj7 Am7 | Gmaj7 B♭maj7 |
 [Verse]
-Dmaj7 | Am7 | Gmaj7 | A♯maj7 |
-Dmaj7 | Am7 | Gmaj7 A♯maj7 |
+Dmaj7 | Am7 | Gmaj7 | B♭maj7 |
+Dmaj7 | Am7 | Gmaj7 B♭maj7 |
 [Pre]
-Dmaj7 | Am7 | Gmaj7 | A♯maj7 |
+Dmaj7 | Am7 | Gmaj7 | B♭maj7 |
 [Chorus]
-Dmaj7 | Am7 Gmaj7 | A♯maj7 | Dmaj7 |
-Am7 | Gmaj7 | A♯maj7 | Dmaj7 Am7 |
-Gmaj7 A♯maj7 | Dmaj7 |
+Dmaj7 | Am7 Gmaj7 | B♭maj7 | Dmaj7 |
+Am7 | Gmaj7 | B♭maj7 | Dmaj7 Am7 |
+Gmaj7 B♭maj7 | Dmaj7 |
 [Verse 2]
-Dmaj7 | Am7 | Gmaj7 A♯maj7 | Dmaj7 |
-Am7 | Gmaj7 A♯maj7 |
+Dmaj7 | Am7 | Gmaj7 B♭maj7 | Dmaj7 |
+Am7 | Gmaj7 B♭maj7 |
 [Pre 2]
-Dmaj7 | Am7 | Gmaj7 A♯maj7 |
+Dmaj7 | Am7 | Gmaj7 B♭maj7 |
 [Chorus 2]
-Dmaj7 Am7 | Gmaj7 | A♯maj7 | Dmaj7 |
-Am7 | Gmaj7 | A♯maj7 | Dmaj7 Am7 |
-Gmaj7 A♯maj7 | Dmaj7 |
+Dmaj7 Am7 | Gmaj7 | B♭maj7 | Dmaj7 |
+Am7 | Gmaj7 | B♭maj7 | Dmaj7 Am7 |
+Gmaj7 B♭maj7 | Dmaj7 |
 [Outro]
-Dmaj7 | Am7 | Gmaj7 | A♯maj7 |
-Dmaj7 | Am7 | Gmaj7 | A♯maj7 |
-Dmaj7 | Am7 | Gmaj7 | A♯maj7 |`,
+Dmaj7 | Am7 | Gmaj7 | B♭maj7 |
+Dmaj7 | Am7 | Gmaj7 | B♭maj7 |
+Dmaj7 | Am7 | Gmaj7 | B♭maj7 |`,
 
 `title: Thinkin Bout You
 by: Frank Ocean
@@ -4549,7 +10589,7 @@ form: Intro Verse Pre Chorus Verse 2 Pre Chorus Bridge Chorus
 [Intro]
 Fmaj7 Dm7 | Em7 Am |
 [Verse]
-Fmaj7 Dm7 | Em7 Am | Fmaj7 Em7 | A♯ Am |
+Fmaj7 Dm7 | Em7 Am | Fmaj7 Em7 | B♭ Am |
 [Pre]
 Fmaj7 | Dm7 | Em7 | A7 |
 Fmaj7 | Em7 Gm | F |
@@ -4558,11 +10598,43 @@ Fmaj7 C | G Am | Fmaj7 C | G Am |
 Fmaj7 C | G Am | Fmaj7 C | G Am |
 [Verse 2]
 Fmaj7 Dm7 | Em7 Am | Fmaj7 | Em7 |
-A♯ Am |
+B♭ Am |
 [Bridge]
 Dm7 C | G Am | Dm7 C | G Am |
 Dm7 | C G | Am | Dm7 |
 C G | Am |`,
+
+`title: Halo
+by: Beyoncé
+genre: Pop
+feel: Power ballad
+source: Ultimate Guitar chord chart
+tempo: 80
+key: A
+form: Intro Verse Pre Chorus Verse 2 Pre Chorus 2 Pre Chorus 3
+[Intro]
+A Bm | F♯m D | A Bm | F♯m D |
+[Verse]
+A Bm | F♯m | D | A |
+Bm | F♯m | D | A |
+Bm | F♯m | D | A |
+[Pre]
+A Bm | F♯m | D | A |
+Bm | F♯m | D | A |
+[Chorus]
+Bm | F♯m | D | A |
+A |
+[Verse 2]
+Bm | F♯m | D | A |
+Bm | F♯m | D | A |
+Bm | F♯m | D | A |
+[Chorus 2]
+Bm | F♯m | D | A |
+Bm | F♯m | D | A |
+Bm | F♯m D | A |
+[Chorus 3]
+Bm | F♯m | D | A |
+Bm | F♯m | D | A |`,
 
 `title: Stay
 by: Rihanna ft. Mikky Ekko
@@ -4570,7 +10642,7 @@ genre: Pop
 feel: Piano ballad
 source: Ultimate Guitar chord chart
 tempo: 112
-key: C
+key: Am
 form: Intro Verse Pre Chorus Verse 2 Pre Chorus Bridge Chorus 2
 [Intro]
 C Dm | Am Am7/G | Am Am7/G | Am Am7/G |
@@ -4816,6 +10888,427 @@ D Eadd9 | E7 |
 Bm D | G D | G D | E7 |
 [Outro]
 Bm D | G D | G D | Eadd9 E7 |`,
+
+`title: Don't Look Back in Anger
+by: Oasis
+genre: Pop
+feel: Britpop
+source: Ultimate Guitar chord chart
+tempo: 82
+key: C
+form: Intro Verse Pre Chorus Verse 2 Pre Chorus 2 Interlude Chorus 3
+[Intro]
+C F | C F |
+[Verse]
+C G | Am | E7 F | G |
+C Am | G | C G | Am |
+E7 F | G | C Am | G |
+[Pre]
+F Fm6 | C | F Fm6 | C |
+F Fm6 | C | G | E7/A♭ |
+Am G | F G |
+[Chorus]
+C G | Am E7 | F | G C |
+Am G | C G | Am E7 | F G |
+C G | Am E7 | F G | C Am |
+G |
+[Verse 2]
+C G | Am | E7 F | G C |
+Am G | C G | Am | E7 F |
+G C | Am G |
+[Chorus 2]
+C G | Am E7 | F | G C |
+Am G | C G | Am E7 | F G |
+C Am | G |
+[Interlude]
+F Fm6 | C | G E7/A♭ | Am G |
+F G |
+[Chorus 3]
+C G | Am E7 | F | G C |
+Am G | C G | Am E7 | F G |
+C Am | G | C G | Am E7 |
+F | G C | Am G | C G |
+Am | F | Fm6 | C G |
+Am E7 | F Fm6 | C |`,
+
+`title: Mr. Brightside
+by: The Killers
+genre: Pop
+feel: Rock
+source: Ultimate Guitar chord chart
+tempo: 148
+key: D♭
+form: Intro Verse Pre Chorus Interlude Verse Pre Chorus Interlude Outro
+[Intro]
+D♭ D♭/C | G♭ |
+[Verse]
+D♭ D♭/C | G♭ | D♭ D♭/C | G♭ |
+D♭ D♭/C | G♭ | D♭ D♭/C | G♭ |
+[Pre]
+B♭m | A♭ | G♭ | B♭m |
+A♭ | G♭ |
+[Chorus]
+D♭ | G♭ B♭m | A♭ D♭ | G♭ B♭m |
+A♭ D♭ | G♭ B♭m | A♭ D♭ | G♭maj7 |
+B♭m A♭ |
+[Interlude]
+D♭ G♭add9 | B♭m A♭ | D♭ G♭add9 | B♭m A♭ |
+[Outro]
+D♭ G♭ | B♭m A♭ | D♭ G♭ | B♭m A♭ |
+D♭ G♭ | B♭m A♭ | D♭ G♭ | B♭m A♭ |`,
+
+`title: Dreams
+by: Fleetwood Mac
+genre: Pop
+feel: Soft rock
+source: Ultimate Guitar chord chart
+tempo: 120
+key: Am
+form: Verse Intro Verse 2 Chorus Interlude Verse 2 Chorus 2
+[Verse]
+Fmaj7 | F | G | G6 |
+[Intro]
+F G | F G |
+[Verse 2]
+F G | F G | F G | F G |
+F G | F G | F G | F |
+G F | G | F G | F G |
+F G | F G | F G |
+[Chorus]
+Fmaj7 G6 | Fmaj7 G | Fmaj7 G6 | Fmaj7 G |
+Fmaj7 G6 | Fmaj7 G | Fmaj7 G6 | Fmaj7 G |
+Fmaj7 |
+[Interlude]
+Fmaj7 G | F | Am G | F |
+[Chorus 2]
+Fmaj7 G6 | Fmaj7 G | Fmaj7 G6 | Fmaj7 G |
+Fmaj7 G6 | Fmaj7 G | Fmaj7 G6 | Fmaj7 G |
+Fmaj7 G6 | Fmaj7 G | Fmaj7 G6 | Fmaj7 G |
+Fmaj7 G6 | Fmaj7 G | Fmaj7 G6 | Fmaj7 G |
+Fmaj7 G | Fmaj7 | G Fmaj7 |`,
+
+`title: Bohemian Rhapsody
+by: Queen
+genre: Pop
+feel: Rock opera
+source: Ultimate Guitar chord chart
+tempo: 72
+key: E♭
+[Intro]
+Gm7 | C7 | F7 Cm7 | F7 |
+B♭ | Gm | B♭7 E♭ | Cm F7 |
+B B♭ | A B♭ | B B♭ | A B♭ |
+E♭ B♭/D | D♭°7 F7/C | B♭ |
+[Verse]
+B♭ Gm | Cm | Cm F | B♭ Gm |
+Cm Cm/B | Cm/B♭ Cm/A | Cm/A♭ Cm/G | E♭ B♭ |
+Cm | Fm | B♭ E♭ | B♭ Cm |
+A♭m E♭ | B♭ |
+[Verse 2]
+B♭ Gm | Cm | Cm F | B♭ Gm |
+Cm Cm/B | Cm/B♭ Cm/A | Cm/A♭ Cm/G | E♭ B♭ |
+Cm | Fm | B♭ E♭ |
+[Interlude]
+E♭ B♭ | Cm Fm | B♭ | E♭ B♭ |
+Cm Fm | D♭ C | B B♭ | A |
+[Interlude 2]
+D A | A♭ A | D A | A♭ |
+A D | A D | A A♭ | A D |
+A | D♭ A♭ | C E | A |
+B B♭ | A B♭ | B B♭ | A B♭ |
+A♭ E♭ | E♭° E♭ | A♭ E♭ | E♭° E♭ |
+A♭ E♭/G | F B♭ | A♭ E♭/G | G♭° Fm7 |
+B B♭ | A B♭ | B B♭ | A B♭ |
+E♭ B♭ | E♭ B♭ | E♭ B♭ | B♭ E♭ |
+B♭ | B♭ G♭7 | Bm A | D D♭ |
+G♭ B♭ | E♭ | E♭ B♭ | E♭ A♭ |
+D Gm | B♭ |
+[Interlude 3]
+E♭ F |
+[Interlude 4]
+B♭ E♭ | B♭ D♭ | B♭ E♭ | A♭ |
+Fm B♭ | Fm B♭ | Fm B♭ | Fm B♭ |
+E♭ |
+[Interlude 5]
+E♭ F | B A♭ | B♭ | E♭ B♭ |
+Cm G | Cm G | Cm B♭ | E♭ D |
+Gm A♭ | E♭ |
+[Outro]
+Cm Gm | Cm Gm | Cm A♭m | A♭/B♭ E♭ |
+[Interlude 6]
+E♭ A♭/E♭ | E♭ E♭° | B♭/D B♭m/D♭ | C D♭° |
+C C7 | F |
+[Outro 2]
+B♭ F/A | F°/A♭ Gm7 | F |`,
+
+`title: I Will Always Love You
+by: Whitney Houston
+genre: Pop
+feel: Ballad
+source: Ultimate Guitar chord chart
+tempo: 67
+key: E
+[Verse]
+A Asus4 | A | A/G♯ F♯m | E |
+D E | A Asus4 | A | A/G♯ F♯m |
+E | D E |
+[Chorus]
+A F♯m | D E | A F♯m | D E |
+A |
+[Bridge]
+D C♯m | Bm7 A |
+[Verse 2]
+A Asus4 | A | A/G♯ F♯m | E |
+D E | A E/A | A | A/G♯ F♯m |
+E | D E |
+[Chorus 2]
+A F♯m | D E | A F♯m | D E |
+A D/A | A E |
+[Interlude]
+A A4 | A A/G♯ | F♯m E | D E |
+A E/A | A C♯m | F♯m E | D E |
+[Verse 3]
+A Asus4 | A | A/G♯ F♯m | E |
+D E | A E/A | A | C♯m7 F♯m |
+E D | E |
+[Chorus 3]
+B G♯m | E F♯ | B G♯m | C♯m F♯ |
+B | G♯m C♯m | F♯ B | G♯m C♯m |
+F♯ B | G♯m E | F♯ B | G♯m E |
+F♯ |
+[Outro]
+E D♯m | E F♯ | B |`,
+
+`title: Golden Hour
+by: JVKE
+genre: Pop
+feel: Piano pop
+source: Ultimate Guitar chord chart
+tempo: 94
+key: E
+form: Intro Verse Pre Chorus Verse 2 Pre Chorus 2
+[Intro]
+A E | F♯m E |
+[Verse]
+Amaj7 | E/G♯ | F♯m | F♯m |
+Emaj7 | Emaj7 |
+[Pre]
+Amaj7 | G♯m | G♯m/G F♯m | G♯ |
+[Chorus]
+Amaj7 | Amaj7 Am | Emaj7 | Amaj7 |
+Am Emaj7 | E7 |
+[Verse 2]
+Amaj7 | E/G♯ | F♯m | F♯m |
+Emaj7 | Emaj7 | Amaj7 | G♯m |
+F♯m | Emaj7 |
+[Chorus 2]
+Amaj7 | Amaj7 Am | Emaj7 | Amaj7 |
+Am Emaj7 | E7 | Amaj7 Am | Emaj7 |
+Amaj7 Am | Emaj7 E7 | Amaj7 G♯m7 | G Bm |
+Am F♯7 |`,
+
+`title: Until I Found You
+by: Stephen Sanchez
+genre: Pop
+feel: 50s ballad 6/8
+source: Ultimate Guitar chord chart
+tempo: 101
+key: B♭
+form: Intro Verse Chorus Verse Chorus Interlude Chorus 2
+[Intro]
+B♭ Dm | E♭ E♭m |
+[Verse]
+B♭ Dm | E♭ E♭m | B♭ Dm | E♭ |
+E♭m B♭ | Dm E♭ | E♭m B♭ | F F7 |
+[Chorus]
+E♭ F | B♭ Dm | E♭ F | B♭ B♭7 |
+E♭ F | B♭ Dm | E♭ E♭m |
+[Interlude]
+B♭ Dm | E♭ E♭m |
+[Chorus 2]
+E♭ F | B♭ Dm | E♭ F | B♭ B♭7 |
+E♭ F | B♭ Dm | E♭ E♭m | B♭ |`,
+
+`title: Glimpse of Us
+by: Joji
+genre: Pop
+feel: Piano ballad
+source: Ultimate Guitar chord chart
+tempo: 145
+key: A♭
+form: Intro Verse Pre Chorus Verse 2 Pre Chorus 2 Bridge Chorus 3 Outro
+[Intro]
+B♭m7 E♭7 | A♭ Fm |
+[Verse]
+Fm | B♭m7 | E♭7 | A♭ |
+Fm | B♭m7 | E♭7 | A♭ Cm |
+[Pre]
+B♭m7 E♭7 |
+[Chorus]
+B♭m7 E♭7 | A♭ E♭/G | Fm | B♭m7 E♭7 |
+A♭ E♭/G | Fm | B♭m7 E♭7 | A♭ E♭/G |
+Fm | B♭m7 E♭7 | Fm7 |
+[Verse 2]
+Fm | B♭m7 | E♭7 | A♭ |
+Fm | B♭m7 | E♭7 A♭ | E♭7 A♭ |
+[Chorus 2]
+B♭m7 E♭7 | A♭ E♭/G | Fm | B♭m7 E♭7 |
+A♭ E♭/G | Fm | B♭m7 E♭7 | A♭ E♭/G |
+Fm | B♭m7 E♭7 | B♭m7 |
+[Bridge]
+B♭m7 E♭7 | A♭ Fm | B♭m7 E♭7 | A♭ E♭/G |
+F7 |
+[Chorus 3]
+B♭m7 E♭7 | A♭ E♭/G | Fm | B♭m7 E♭7 |
+A♭ E♭/G | Fm | B♭m7 E♭7 | A♭ E♭/G |
+Fm | B♭m7 E♭7 | A♭ |
+[Outro]
+B♭m7 E♭7 | A♭ E♭/G | Fm | B♭m7 E♭7 |`,
+
+`title: Snowman
+by: Sia
+genre: Pop
+feel: Christmas pop
+source: Ultimate Guitar chord chart
+tempo: 105
+key: D♭
+form: Verse Chorus Chorus 2 Verse 2 Chorus Chorus 2
+[Verse]
+D♭ E♭m | A♭ | D♭ | B♭m |
+E♭m | A♭ | D♭ | B♭m |
+[Chorus]
+F7 B♭m | A♭ D♭ | F7 B♭m | G♭ A♭ |
+D♭ F7 | B♭m G♭ | D♭ F7 | B♭m G♭ |
+[Chorus 2]
+D♭ F7 | B♭m G♭ | D♭ F7 | B♭m G♭ |
+D♭ |
+[Verse 2]
+E♭m | A♭ | D♭ | B♭m |
+E♭m | A♭ | D♭ | B♭m |`,
+
+`title: Chandelier
+by: Sia
+genre: Pop
+feel: Power pop
+source: Ultimate Guitar chord chart
+tempo: 117
+key: D♭
+form: Verse Pre Chorus Bridge Verse 2 Pre Chorus Bridge 2
+[Verse]
+B♭m | G♭ | A♭ Fm | B♭m |
+G♭ | A♭ Fm |
+[Pre]
+G♭ | B♭m | A♭ | A♭ |
+[Chorus]
+G♭ A♭ | D♭/F G♭ | G♭ A♭ | D♭/F G♭ |
+G♭ A♭ | D♭/F G♭ | G♭ A♭ | D♭/F G♭ |
+[Bridge]
+G♭ A♭ | D♭ G♭ | G♭ A♭ | D♭ G♭ |
+G♭ |
+[Verse 2]
+B♭m | G♭ | A♭ Fm |
+[Bridge 2]
+G♭ A♭ | D♭ G♭ | G♭ A♭ | D♭ G♭ |
+G♭ A♭ | D♭/F G♭ | G♭ A♭ | D♭/F G♭ |`,
+
+`title: Perfect Night
+by: LE SSERAFIM
+genre: Pop
+feel: K-pop
+source: Ultimate Guitar chord chart
+tempo: 105
+key: G
+form: Verse Verse 2 Pre Chorus Post Verse 3 Pre Chorus Post Interlude Pre Chorus Post 2
+[Verse]
+B♭M7 | Am7 | Gm7 | D7sus2 |
+D7sus4 | D7 |
+[Verse 2]
+B♭M7 Am7 | Gm7 | Am7 D7sus2 | D7 |
+B♭m7 Am7 | Gm7 | Am7 D7sus4 | D7 |
+[Pre]
+B♭M7 Am7 | Gm7 | Am7 D7sus2 | D7 |
+[Chorus]
+B♭M7 Am7 | Gm7 | Am7 D7sus2 | D7 |
+B♭M7 Am7 | Gm7 | Am7 D7sus4 | D7 |
+[Post]
+B♭M7 Am7 | Gm7 | Am7 | D7sus2 D7 |
+B♭M7 Am7 | Gm7 Am7 | D7sus4 D7 | B♭M7 |
+[Verse 3]
+Am7 Gm7 | Am7 D7sus2 | D7 | B♭M7 |
+Am7 Gm7 | Am7 D7sus4 | D7 |
+[Interlude]
+Am7 Gm7 | Am7 D7sus2 | D7 |
+[Post 2]
+B♭M7 Am7 | Gm7 | Am7 | D7sus2 D7 |
+B♭M7 Am7 | Gm7 Am7 | D7sus4 D7 |`,
+
+`title: Dynamite
+by: BTS
+genre: Pop
+feel: Disco pop
+source: Ultimate Guitar chord chart
+tempo: 114
+key: E
+form: Intro Verse Verse 2 Chorus Verse 3 Verse 2 Chorus Post Bridge Chorus 2 Post 2
+[Intro]
+C♯m F♯m | B E | C♯m F♯m | B E |
+[Verse]
+C♯m | F♯m | B | E |
+C♯m | F♯m | B | E |
+[Verse 2]
+C♯m | F♯m | B | E |
+C♯m F♯m | B | E |
+[Chorus]
+C♯m F♯m | B E | C♯m F♯m | B E |
+C♯m F♯m | B E | C♯m F♯m | B E |
+[Verse 3]
+C♯m F♯m | B E | C♯m F♯m | B E |
+[Post]
+C♯m F♯m | B E | C♯m F♯m | B E |
+C♯m F♯m | B E | C♯m F♯m | B E |
+[Bridge]
+C♯m F♯m | B E | C♯m F♯m | B E |
+C♯m F♯m | B E | C♯m F♯m | B E |
+[Chorus 2]
+C♯m F♯m | B E | C♯m F♯m | B E |
+C♯m F♯m | B E | C♯m F♯m | B E |
+D♯m G♯m | C♯ F♯ | D♯m G♯m | C♯ F♯ |
+D♯m G♯m | C♯ F♯ | D♯m G♯m | C♯ F♯ |
+[Post 2]
+D♯m G♯m | C♯ F♯ | D♯m G♯m | C♯ F♯ |
+D♯m G♯m | C♯ F♯ | D♯m G♯m | C♯ F♯ |`,
+
+`title: Spring Day
+by: BTS
+genre: Pop
+feel: Ballad
+source: Ultimate Guitar chord chart
+tempo: 107
+key: Cm
+form: Intro Intro 2 Intro 3 Pre Chorus Chorus Interlude Interlude 2 Interlude 2 Pre 2 Chorus Chorus Bridge Chorus Chorus Interlude
+[Intro]
+E♭ Gm | Cm A♭ |
+[Intro 2]
+E♭ | Gm | Cm | A♭ |
+E♭ | Gm | Cm | A♭ |
+[Intro 3]
+E♭ | Gm | Cm | A♭ |
+E♭ | Gm | Cm | A♭ |
+A♭ |
+[Pre]
+E♭ | Gm | Cm A♭ | E♭ Gm |
+Cm | A♭ |
+[Chorus]
+E♭ Gm | Cm A♭ | Cm Gm | A♭ A♭m |
+[Interlude]
+E♭ Gm | Cm A♭ | Cm Gm | A♭ A♭m |
+A♭m |
+[Interlude 2]
+E♭ | Gm | Cm | A♭ |
+[Pre 2]
+E♭ Gm | Cm A♭ | E♭ Gm | Cm A♭ |
+[Bridge]
+A♭ B♭ | Gm Cm | A♭ B♭ | Gm B♭ |`,
 
 `title: Across the Universe
 by: The Beatles
@@ -17381,30 +23874,6 @@ Fmaj7 | Bm7♭5 B♭7 | Am7 | D7♭9 |
 Gm7 | B♭m7 E♭7 | Dm7 | G7 G♯°7 |
 Am7 D7 | Gm7 D♭7 C7 | B7 B♭7 A7 | A♭7 D♭ C7♯5 |
 F7♯11 |`,
-
-`title: Butterfly
-by: Herbie Hancock
-genre: Jazz
-feel: Funk
-source: iReal Pro community chart
-tempo: 110
-key: Fm
-form: Intro Intro A A B
-[Intro]
-Fm7 | Am7 | Fm7 | Am7 |
-[A]
-Fm11 | Am11 | Fm11 | Dm11 |
-[B]
-N.C. B♭7 | N.C. | N.C. | N.C. A7♯9♯5 |
-A♭maj7/B♭ | A♭maj7♯5/B♭ | A♭maj7/B♭ | B♭13 |
-E♭13sus | % | E♭7♯9♯5 | % |
-A♭13sus | A♭13sus/C C7/E | N.C. Fm7 | Am7 |
-Fm7 | Am7 | Fm7 | Am7 |
-Fm11 | % | % | % |
-Fm11 | % | % | % |
-B♭13 | % | % | % |
-B♭13 | % | % | % |
-Amaj7♯11 |`,
 
 `title: Eye of the Hurricane
 by: Herbie Hancock

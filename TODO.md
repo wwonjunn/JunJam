@@ -85,4 +85,6 @@ sound each one makes. Rhythm is never graded.
 - [ ] Maybe: count only the minutes you actually played (notes coming in), and suggest a routine from what's weakest.
 
 ## Gig
+- [x] 98 charts to 1,153 (iReal Pro community playlists, U-FRET, Ultimate Guitar; chords only, converted by script).
+- [ ] Script-converted chord-site charts: bar lengths are approximate (two chords a bar, a line at a time) and U-FRET sections are lettered; fix the ones you play most with Edit a copy.
 - [ ] Backing track quality (parked until the AI music tools are better).
