@@ -211,7 +211,7 @@ function tick(now){
     const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc'); srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),'fail');
     if(e.t.life){ G.cool=Math.max(0.4,60/G.bpm); updateHud(); G.raf=requestAnimationFrame(tick); return; }   // a life chord that gets away costs nothing
-    G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
+    G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm); if(G.lives===1&&G.tier.lives>1) eggChordsLast();
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
     if(G.lives<=0){ gameOver(); return; }
@@ -273,12 +273,13 @@ function fx(e,res){
   const lane=$('lane'), r=e.el.getBoundingClientRect(), lr=lane.getBoundingClientRect();
   const cx=r.left-lr.left+r.width/2, cy=r.top-lr.top+r.height/2;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!reduce){
+  const g=eggChordsKill(e,lane,cx,cy,lr);   // very rarely, a joke instead of the usual shot (eggs.js)
+  if(!reduce&&(!g||g.shot)){
     const shot=document.createElement('div'); shot.className='shot';
     shot.style.left=cx+'px'; shot.style.height=Math.max(10,lr.height-cy)+'px';
     lane.appendChild(shot); requestAnimationFrame(()=>{shot.style.opacity='0';}); setTimeout(()=>shot.remove(),320);
   }
-  e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380);
+  setTimeout(()=>{ e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380); },g&&g.wait||0);
   const pop=document.createElement('div'); pop.className='pop';
   pop.style.left=Math.min(Math.max(cx,70),lane.clientWidth-70)+'px'; pop.style.top=Math.max(STRIP+4,cy-10)+'px';
   const shown=res.tags.filter(t=>t.p>0 && t.t!=='Quick').slice(0,2).map(t=>t.t).join(', ');
@@ -368,6 +369,7 @@ function gameOver(){ clearDraft();
   if(!G.practice&&G.fireCleared) weak+=(weak?' ':'')+`🔥 chords cleared: ${G.fireCleared}.`;
   if(!G.practice&&starsOf(stageN)<STAR_MAX) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;
+  if(!G.practice&&!newBest&&G.lives<=0) eggTitle($('overTitle'),EGG_CHORDS_OVER,1/30);
   $('overOv').hidden=false; $('againBtn').focus();
   renderMenu();
 }

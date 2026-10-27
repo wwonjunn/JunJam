@@ -291,6 +291,7 @@ function linesFinish(quit){
   $('lAgain').onclick=()=>linesStart(L.lick.id,rand); $('lBack').onclick=linesToMenu; $('lAgain').focus();
   if(rand){ $('lAgain').insertAdjacentHTML('beforebegin',`<button class="go" id="lRand">🎲 Another ${LDIFF[rand]}</button>`); $('lAgain').className='ghost'; $('lRand').onclick=next; $('lRand').focus(); $('lResults').querySelector('.fine:last-of-type').textContent=`Play any chord for another ${LDIFF[rand]} one.`; }
   L.after=rand?next:()=>linesStart(L.lick.id);
+  if(!quit&&stars===3) eggTitle($('lResults').querySelector('h2'),EGG_LINES_WIN,1/30);
 }
 function linesToMenu(){
   LINES.active=false; LINES.after=null; killBus(LINES.bus); clearTimeout(LINES.advance);

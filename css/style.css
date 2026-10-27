@@ -812,3 +812,18 @@ body.gigmode header .modetag{display:none}
 .pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 6px 0 2px;vertical-align:1px;background:var(--muted);flex:none}
 .pdot.m-hands{background:var(--chord)} .pdot.m-voicings{background:var(--tension)} .pdot.m-lines{background:var(--brass)} .pdot.m-ears{background:var(--good)} .pdot.m-reharm{background:var(--wrong)} .pdot.m-gig{background:var(--ink)} .pdot.m-free{background:var(--muted)}
 .pchk .pbi,.pecard .pbi,.ppitem .pbi{display:flex;justify-content:center} .prm{font-size:13px;color:var(--muted)}
+/* easter eggs (eggs.js): rare, quiet nods */
+.eggpiano{position:absolute;top:0;font-size:46px;line-height:1;transform:translate(-50%,-60px) rotate(14deg);pointer-events:none;z-index:6;animation:eggfall .45s cubic-bezier(.55,0,1,.45) forwards,eggland .45s .45s ease-out forwards}
+@keyframes eggfall{to{transform:translate(-50%,var(--fall)) rotate(0)}}
+@keyframes eggland{from{transform:translate(-50%,var(--fall)) scale(1.15,.8)}to{transform:translate(-50%,var(--fall)) scale(1);opacity:0}}
+.eggbeam{position:absolute;bottom:0;width:30px;transform:translateX(-50%) scaleY(0);transform-origin:bottom;border-radius:16px 16px 4px 4px;pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,rgba(80,190,255,.15),#7fd8ff 30%,#fff 50%,#7fd8ff 70%,rgba(80,190,255,.15));box-shadow:0 0 24px 8px rgba(110,210,255,.7);animation:eggbeam .7s ease-out forwards}
+@keyframes eggbeam{0%{transform:translateX(-50%) scaleY(0)}25%{transform:translateX(-50%) scaleY(1)}70%{opacity:1}100%{transform:translateX(-50%) scaleY(1) scaleX(.2);opacity:0}}
+.eggsay{position:absolute;transform:translateX(-50%);white-space:nowrap;font:700 15px "Hiragino Mincho ProN","Yu Mincho",serif;color:var(--ink);text-shadow:0 0 6px var(--lane);pointer-events:none;z-index:6;animation:eggfade 1.1s ease-out forwards}
+@keyframes eggfade{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.pop.egg-small{font-size:14px;color:#bfefff}
+.pop.egg-nani{font-size:26px;color:#e23b3b;font-style:italic}
+.eggbox{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:10px 16px;background:#fff;color:#222;border:3px solid #3a3a3a;border-radius:8px;
+  font:600 15px "Courier New",monospace;white-space:nowrap;pointer-events:none;z-index:7;animation:eggfade 1.9s ease-out forwards}
+.eggbox.egg-ut{background:#000;color:#fff;border-color:#fff;border-radius:0;animation-duration:3.6s;white-space:normal}
+h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-weight:400;letter-spacing:.18em;text-shadow:0 0 18px rgba(163,32,27,.35)}

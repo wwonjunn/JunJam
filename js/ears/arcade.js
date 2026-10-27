@@ -273,7 +273,7 @@ function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
   if(R.mon&&R.mon.life){ arcFxMiss(); R.mon=null; arcRender(); $('arcMsg').textContent=`💚 It got away: no harm done. It was ${(q.options.find(o=>o.id===q.answer)||{}).label}.`; $('arcMsg').className='lmsg';   // a missed fairy costs nothing
     killBus(R.bus); const b2=R.bus=newBus(); const e2=b2?q.compare(null,b2,now()+0.15):now()+1; R.timer=setTimeout(arcCall,Math.max(1200,(e2-now())*1000+400)); return; }
-  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  R.lives--; if(R.lives===1&&R.maxLives>1) eggEarsLast(); R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
   if(R.mon&&R.mon.boss){ arcFxWallHit(); R.mon.x=Math.max(R.mon.x,0.55); }   // a boss hits the wall, backs off, and stays
   else { if(R.mon) R.kills++; arcFxMiss(); R.mon=null; }   // it got through (one fewer in a wave), winding up and charging the wall
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
@@ -304,6 +304,7 @@ function arcOver(quit){
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  if(!quit&&R.lives<=0&&!(R.score>prevBest&&R.score)) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);   // eggs.js
 }
 const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='final'?'final':ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
 function arcFinalOver(quit){
@@ -317,6 +318,7 @@ function arcFinalOver(quit){
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart('final'); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  if(!quit&&!R.won) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);
 }
 function arcDevilOver(quit){
   const R=ARC, w=R.world, rank=ARC_DEVIL.filter(k=>R.kills>=k).length, prev=ARCDATA.devil[w]||{rank:0,best:0};
@@ -348,6 +350,7 @@ function arcWaveOver(quit){
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(R.kind); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  if(!quit&&!done) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);
 }
 function arcToMenu(){ arcStop(); arcFxStop(); ARC.active=false; clearDraft(); $('arcStage').hidden=true; document.body.classList.remove('earsmode');
   side='ears'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu(); }

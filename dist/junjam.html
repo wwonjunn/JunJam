@@ -822,6 +822,21 @@ body.gigmode header .modetag{display:none}
 .pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 6px 0 2px;vertical-align:1px;background:var(--muted);flex:none}
 .pdot.m-hands{background:var(--chord)} .pdot.m-voicings{background:var(--tension)} .pdot.m-lines{background:var(--brass)} .pdot.m-ears{background:var(--good)} .pdot.m-reharm{background:var(--wrong)} .pdot.m-gig{background:var(--ink)} .pdot.m-free{background:var(--muted)}
 .pchk .pbi,.pecard .pbi,.ppitem .pbi{display:flex;justify-content:center} .prm{font-size:13px;color:var(--muted)}
+/* easter eggs (eggs.js): rare, quiet nods */
+.eggpiano{position:absolute;top:0;font-size:46px;line-height:1;transform:translate(-50%,-60px) rotate(14deg);pointer-events:none;z-index:6;animation:eggfall .45s cubic-bezier(.55,0,1,.45) forwards,eggland .45s .45s ease-out forwards}
+@keyframes eggfall{to{transform:translate(-50%,var(--fall)) rotate(0)}}
+@keyframes eggland{from{transform:translate(-50%,var(--fall)) scale(1.15,.8)}to{transform:translate(-50%,var(--fall)) scale(1);opacity:0}}
+.eggbeam{position:absolute;bottom:0;width:30px;transform:translateX(-50%) scaleY(0);transform-origin:bottom;border-radius:16px 16px 4px 4px;pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,rgba(80,190,255,.15),#7fd8ff 30%,#fff 50%,#7fd8ff 70%,rgba(80,190,255,.15));box-shadow:0 0 24px 8px rgba(110,210,255,.7);animation:eggbeam .7s ease-out forwards}
+@keyframes eggbeam{0%{transform:translateX(-50%) scaleY(0)}25%{transform:translateX(-50%) scaleY(1)}70%{opacity:1}100%{transform:translateX(-50%) scaleY(1) scaleX(.2);opacity:0}}
+.eggsay{position:absolute;transform:translateX(-50%);white-space:nowrap;font:700 15px "Hiragino Mincho ProN","Yu Mincho",serif;color:var(--ink);text-shadow:0 0 6px var(--lane);pointer-events:none;z-index:6;animation:eggfade 1.1s ease-out forwards}
+@keyframes eggfade{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.pop.egg-small{font-size:14px;color:#bfefff}
+.pop.egg-nani{font-size:26px;color:#e23b3b;font-style:italic}
+.eggbox{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:10px 16px;background:#fff;color:#222;border:3px solid #3a3a3a;border-radius:8px;
+  font:600 15px "Courier New",monospace;white-space:nowrap;pointer-events:none;z-index:7;animation:eggfade 1.9s ease-out forwards}
+.eggbox.egg-ut{background:#000;color:#fff;border-color:#fff;border-radius:0;animation-duration:3.6s;white-space:normal}
+h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-weight:400;letter-spacing:.18em;text-shadow:0 0 18px rgba(163,32,27,.35)}
 </style>
 <style>
 /* ==================================================================================================
@@ -2626,7 +2641,7 @@ function tick(now){
     const e=G.enemies.shift(); e.el.remove(); renderAhead(); clearDraft(); if(e.t.req==='byear') stopByEar();
     const key=symText({root:e.t.root,q:e.t.q}); G.escaped[key]=(G.escaped[key]||0)+1; recordStat(e.t,'esc'); srsResult(G.srs,statKey(e.t.q.id,e.t.root.pc),'fail');
     if(e.t.life){ G.cool=Math.max(0.4,60/G.bpm); updateHud(); G.raf=requestAnimationFrame(tick); return; }   // a life chord that gets away costs nothing
-    G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm);
+    G.lives--; G.escapes++; G.combo=0; G.prev=null; G.cool=Math.max(0.4,60/G.bpm); if(G.lives===1&&G.tier.lives>1) eggChordsLast();
     const lane=$('lane'); lane.classList.remove('hurt'); void lane.offsetWidth; lane.classList.add('hurt');
     updateHud();
     if(G.lives<=0){ gameOver(); return; }
@@ -2688,12 +2703,13 @@ function fx(e,res){
   const lane=$('lane'), r=e.el.getBoundingClientRect(), lr=lane.getBoundingClientRect();
   const cx=r.left-lr.left+r.width/2, cy=r.top-lr.top+r.height/2;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!reduce){
+  const g=eggChordsKill(e,lane,cx,cy,lr);   // very rarely, a joke instead of the usual shot (eggs.js)
+  if(!reduce&&(!g||g.shot)){
     const shot=document.createElement('div'); shot.className='shot';
     shot.style.left=cx+'px'; shot.style.height=Math.max(10,lr.height-cy)+'px';
     lane.appendChild(shot); requestAnimationFrame(()=>{shot.style.opacity='0';}); setTimeout(()=>shot.remove(),320);
   }
-  e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380);
+  setTimeout(()=>{ e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380); },g&&g.wait||0);
   const pop=document.createElement('div'); pop.className='pop';
   pop.style.left=Math.min(Math.max(cx,70),lane.clientWidth-70)+'px'; pop.style.top=Math.max(STRIP+4,cy-10)+'px';
   const shown=res.tags.filter(t=>t.p>0 && t.t!=='Quick').slice(0,2).map(t=>t.t).join(', ');
@@ -2783,6 +2799,7 @@ function gameOver(){ clearDraft();
   if(!G.practice&&G.fireCleared) weak+=(weak?' ':'')+`🔥 chords cleared: ${G.fireCleared}.`;
   if(!G.practice&&starsOf(stageN)<STAR_MAX) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;
+  if(!G.practice&&!newBest&&G.lives<=0) eggTitle($('overTitle'),EGG_CHORDS_OVER,1/30);
   $('overOv').hidden=false; $('againBtn').focus();
   renderMenu();
 }
@@ -3571,7 +3588,7 @@ function arcMiss(pick){
   const R=ARC, q=R.q; R.done=true; clearInterval(R.tick);
   if(R.mon&&R.mon.life){ arcFxMiss(); R.mon=null; arcRender(); $('arcMsg').textContent=`💚 It got away: no harm done. It was ${(q.options.find(o=>o.id===q.answer)||{}).label}.`; $('arcMsg').className='lmsg';   // a missed fairy costs nothing
     killBus(R.bus); const b2=R.bus=newBus(); const e2=b2?q.compare(null,b2,now()+0.15):now()+1; R.timer=setTimeout(arcCall,Math.max(1200,(e2-now())*1000+400)); return; }
-  R.lives--; R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
+  R.lives--; if(R.lives===1&&R.maxLives>1) eggEarsLast(); R.combo=0; R.spell=0; R.misses++; R.missed[q.lv.id]=(R.missed[q.lv.id]||0)+1;
   if(R.mon&&R.mon.boss){ arcFxWallHit(); R.mon.x=Math.max(R.mon.x,0.55); }   // a boss hits the wall, backs off, and stays
   else { if(R.mon) R.kills++; arcFxMiss(); R.mon=null; }   // it got through (one fewer in a wave), winding up and charging the wall
   earRecord(q.item,false,null); if(q.keyPc!=null) keyRecord(q.keyPc,false,null);
@@ -3602,6 +3619,7 @@ function arcOver(quit){
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  if(!quit&&R.lives<=0&&!(R.score>prevBest&&R.score)) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);   // eggs.js
 }
 const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='final'?'final':ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
 function arcFinalOver(quit){
@@ -3615,6 +3633,7 @@ function arcFinalOver(quit){
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart('final'); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  if(!quit&&!R.won) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);
 }
 function arcDevilOver(quit){
   const R=ARC, w=R.world, rank=ARC_DEVIL.filter(k=>R.kills>=k).length, prev=ARCDATA.devil[w]||{rank:0,best:0};
@@ -3646,6 +3665,7 @@ function arcWaveOver(quit){
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(R.kind); $('arcMenu').onclick=arcToMenu;
   $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  if(!quit&&!done) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);
 }
 function arcToMenu(){ arcStop(); arcFxStop(); ARC.active=false; clearDraft(); $('arcStage').hidden=true; document.body.classList.remove('earsmode');
   side='ears'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu(); }
@@ -3671,7 +3691,7 @@ const ARC_THEMES=[
 ];
 const ARC_RM=matchMedia('(prefers-reduced-motion: reduce)'), arcReduce=()=>ARC_RM.matches;   // read once, checked every frame
 function arcFxStart(cv){
-  arcFxStop(); const F=arcFx; F.cv=cv; F.ctx=cv.getContext('2d'); F.parts=[]; F.shots=[]; F.dying=[]; F.mon=null; F.banner=null; F.shake=0; F.flash=0; F.wallHit=0;
+  arcFxStop(); const F=arcFx; F.cv=cv; F.ctx=cv.getContext('2d'); F.parts=[]; F.shots=[]; F.dying=[]; F.mon=null; F.banner=null; F.shake=0; F.flash=0; F.wallHit=0; F.over=[];
   arcFxSize(); F.last=performance.now(); const loop=ts=>{ F.raf=requestAnimationFrame(loop); arcFxFrame(ts); }; F.raf=requestAnimationFrame(loop);
 }
 function arcFxStop(){ cancelAnimationFrame(arcFx.raf); arcFx.raf=0; }
@@ -3706,6 +3726,7 @@ function arcFxHit(o){ // o: {notes, kill, fire, brute, pts, quick}
       for(let i=0;i<5;i++) F.parts.push({kind:'chunk',x:tx,y:ty,vx:(Math.random()-.5)*260,vy:-120-Math.random()*160,life:0.9,max:0.9,face:M.face,size:12+Math.random()*8,rot:Math.random()*6,vr:(Math.random()-.5)*14,grav:520}); }
     else { M.kb=F.t; for(let i=0;i<6;i++) F.parts.push({kind:'spark',x:tx,y:ty-14,vx:(Math.random()-.5)*200,vy:-80-Math.random()*120,life:0.7,max:0.7,col:'#c9d3e6',size:4,grav:500,sq:1}); }   // armour flies off
     F.flash=o.fire?0.35:0.12; F.flashCol=o.fire?'255,140,40':'255,255,255'; };
+  if(!o.fire){ const g=egg(o.kill?EGG_EARS_KILL:EGG_EARS_HIT,1/400); if(g){ g.go({tx,ty,land,M,o}); return; } }   // very rarely, a joke instead of the bolt (eggs.js)
   if(o.fire){ F.shots.push({kind:'fire',x0:arcWallX()+10,y0:arcGround()-60,x1:tx,y1:ty,t0:F.t,dur:0.42,land}); return; }
   from.slice(0,4).forEach((m,i)=>F.shots.push({kind:'bolt',x0:arcKeyX(m),y0:F.H+4,x1:tx,y1:ty,t0:F.t+i*0.03,dur:0.17,land:i===0?land:null,combo:o.combo||0}));
 }
@@ -3728,7 +3749,7 @@ function arcFxFrame(ts){
   const frozen=F.t<F.freeze, step=frozen?0:dt;
   const R=ARC, th=ARC_THEMES[F.theme]; F.themeF=Math.min(1,F.themeF+dt*1.5);
   // the monster the game has right now: a new one steps out of the portal
-  if(R.mon&&R.mon!==F.mon&&now()>=R.walk.t0-0.02){ F.mon=R.mon; F.disp=R.mon.x; F.born=F.t; }
+  if(R.mon&&R.mon!==F.mon&&now()>=R.walk.t0-0.02){ F.mon=R.mon; F.disp=R.mon.x; F.born=F.t; eggSpawn(F.mon); }
   if(F.mon&&R.mon===F.mon&&!R.done){ const W=R.walk, tt=now(); if(tt>=W.t0) F.mon.x=Math.max(0,W.x0*(W.t1-tt)/(W.t1-W.t0)); }
   if(F.mon&&!frozen) F.disp+=(F.mon.x-F.disp)*Math.min(1,dt*14);
   c.setTransform(F.dpr,0,0,F.dpr,0,0);
@@ -3744,6 +3765,7 @@ function arcFxFrame(ts){
   c.restore();
   if(F.flash>0){ c.fillStyle=`rgba(${F.flashCol},${Math.min(0.55,F.flash)})`; c.fillRect(0,0,F.W,F.H); F.flash=Math.max(0,F.flash-dt*1.6); }
   if(F.banner) arcFxBannerDraw(c);
+  F.over=F.over.filter(fn=>fn(c));
 }
 function arcFxScene(c,th){
   const F=arcFx, W=F.W, H=F.H, g=arcGround();
@@ -3799,10 +3821,12 @@ function arcFxMonster(c,M){
     c.font='700 11px Barlow Condensed, sans-serif'; c.textAlign='center'; c.fillStyle='#fff'; c.fillText(`${M.hp}/${M.max}`,x,by-4); }
   else if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
     c.moveTo(px,py-6); c.lineTo(px+6,py); c.lineTo(px,py+6); c.lineTo(px-6,py); c.closePath(); c.fill(); c.stroke(); } }   // armour pips
+  if(M.egg) M.egg(c,x,g-size,age,size);
 }
 function arcFxDying(c){
   const F=arcFx, g=arcGround();
   F.dying=F.dying.filter(d=>{ const a=F.t-d.t0;
+    if(d.draw) return d.draw(c,a);
     if(d.kind==='pop'){ if(a>0.35) return false; const k=a/0.35; c.save(); c.globalAlpha=1-k; c.translate(d.x,d.y+12); c.scale(1+k*0.9,1+k*0.9); c.font=`${d.size}px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText('💥',0,0); c.restore(); return true; }
     // a miss: wind up (lean back), charge at the wall, bounce off it and fade
     const wind=0.16, run=0.24, x1=arcWallX()+30;
@@ -3816,7 +3840,8 @@ function arcFxShots(c,dt){
   const F=arcFx;
   F.shots=F.shots.filter(s=>{ const a=F.t-s.t0; if(a<0) return true; const k=Math.min(1,a/s.dur);
     let x,y;
-    if(s.kind==='fire'){ x=s.x0+(s.x1-s.x0)*k; y=s.y0+(s.y1-s.y0)*k-Math.sin(k*Math.PI)*70;
+    if(s.draw) s.draw(c,k);
+    else if(s.kind==='fire'){ x=s.x0+(s.x1-s.x0)*k; y=s.y0+(s.y1-s.y0)*k-Math.sin(k*Math.PI)*70;
       for(let i=0;i<3;i++) F.parts.push({kind:'spark',x,y,vx:(Math.random()-.5)*60,vy:(Math.random()-.5)*60,life:0.3,max:0.3,col:['#ffd23f','#ff6b2b','#ff3d00'][i],size:5});
       c.save(); c.font=`30px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='middle'; c.translate(x,y); c.rotate(k*8); c.fillText('🔥',0,0); c.restore(); }
     else { const e=1-Math.pow(1-k,2); x=s.x0+(s.x1-s.x0)*e; y=s.y0+(s.y1-s.y0)*e;
@@ -5367,6 +5392,7 @@ function linesFinish(quit){
   $('lAgain').onclick=()=>linesStart(L.lick.id,rand); $('lBack').onclick=linesToMenu; $('lAgain').focus();
   if(rand){ $('lAgain').insertAdjacentHTML('beforebegin',`<button class="go" id="lRand">🎲 Another ${LDIFF[rand]}</button>`); $('lAgain').className='ghost'; $('lRand').onclick=next; $('lRand').focus(); $('lResults').querySelector('.fine:last-of-type').textContent=`Play any chord for another ${LDIFF[rand]} one.`; }
   L.after=rand?next:()=>linesStart(L.lick.id);
+  if(!quit&&stars===3) eggTitle($('lResults').querySelector('h2'),EGG_LINES_WIN,1/30);
 }
 function linesToMenu(){
   LINES.active=false; LINES.after=null; killBus(LINES.bus); clearTimeout(LINES.advance);
@@ -6540,6 +6566,7 @@ function chOver(finished,quit){
     <div class="erow"><button class="go" id="chAgain">Again</button><button class="ghost" id="chMenu">Back to Voicings</button></div>`;
   $('chAgain').onclick=()=>chStart(R.random?'random':R.song.id); $('chMenu').onclick=chToMenu;
   kbMarks={}; paintKeys();
+  if(finished&&!R.D.devil&&stars===3) eggTitle($('vcBody').querySelector('h2'),EGG_COMP_WIN,1/25); else if(!finished&&!quit) eggTitle($('vcBody').querySelector('h2'),EGG_COMP_LOSE,1/25);
 }
 function chToMenu(){ chStop(); CH.active=false; clearDraft(); $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
   side='voicings'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu(); }
@@ -37355,6 +37382,87 @@ function gigAnHTML(an){ if(!an) return '';
   const p=an.pat?GA_PAT[an.pat]:null;
   return `<span class="gan">${an.move?`<i class="gmv" data-gmv="${an.move}">${an.move==='3rd!'?'3rd ✦':an.move}</i>`:''}${p&&an.role?`<b class="grole gp-${an.pat}">${gigAccHTML(an.role)}</b>`:''}${p&&an.first?`<span class="gpat gp-${an.pat}" data-gpat="${an.pat}">${p.name}</span>`:''}</span>`;
 }
+</script>
+<script>
+/* Easter eggs: very rarely, a hit, a boss, a last life or a results screen gets a quiet nod to an anime, a game or a
+   show instead of the usual effect. Rare on purpose: a small chance each time (a kill is about 1 in 400), and after one
+   shows up, none for the next ten minutes, in any mode. No pictures, only shapes, emoji and a few words.
+   To see one now, from the console: EGG.force='kame' (any id below), then trigger the event. */
+const EGG={force:null};
+const EGG_GAP=10*60*1000;
+function egg(list,p){
+  if(EGG.force){ const f=list.find(x=>x.id===EGG.force); if(f) EGG.force=null; return f||null; }
+  if(Math.random()>=p||Date.now()-store.get('eggAt',0)<EGG_GAP) return null;
+  store.set('eggAt',Date.now()); return list[Math.floor(Math.random()*list.length)];
+}
+const eggReduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------------- Ears: drawn on the lane's canvas (arcfx.js) ---------------- */
+// the castle tower, where the big moves come from
+const eggTower=()=>({x:arcWallX()+14,y:arcGround()-58});
+const EGG_EARS_HIT=[
+  // a grand piano falls out of the sky onto it
+  {id:'piano',go:({tx,ty,land})=>{ const F=arcFx;
+    F.shots.push({t0:F.t,dur:.55,x1:tx,y1:ty,land:()=>{ land(); arcPop(tx+28,ty-6,'*plonk*','#ffffff',13); },
+      draw:(c,k)=>{ const y=-50+(ty+10)*k*k; c.save(); c.translate(tx,y); c.rotate(.25-k*.25); c.font=`44px ${ARC_FONT}`; c.textAlign='center'; c.textBaseline='bottom'; c.fillStyle='#000'; c.fillText('🎹',0,0); c.restore(); }}); }},
+  // Kamehameha: a ball of light charges on the tower, then a beam
+  {id:'kame',go:({tx,ty,land})=>{ const F=arcFx, T=eggTower(), ch=.6;
+    F.shots.push({t0:F.t,dur:.9,x1:tx,y1:ty,land:()=>{ land(); arcPop(T.x+30,T.y-26,'HA!','#bfefff',15); },
+      draw:(c,k)=>{ const a=k*.9, r=a<ch?4+12*(a/ch):16; c.save(); c.shadowColor='#6fd8ff'; c.shadowBlur=22;
+        if(a>=ch){ const f=Math.min(1,(a-ch)/(.9-ch)), ex=T.x+(tx-T.x)*f, ey=T.y+(ty-T.y)*f;
+          c.lineCap='round'; c.strokeStyle='rgba(90,200,255,.9)'; c.lineWidth=18; c.beginPath(); c.moveTo(T.x,T.y); c.lineTo(ex,ey); c.stroke();
+          c.strokeStyle='#fff'; c.lineWidth=6; c.beginPath(); c.moveTo(T.x,T.y); c.lineTo(ex,ey); c.stroke(); }
+        const g=c.createRadialGradient(T.x,T.y,1,T.x,T.y,r); g.addColorStop(0,'#fff'); g.addColorStop(.5,'#9fe6ff'); g.addColorStop(1,'rgba(60,170,255,0)');
+        c.fillStyle=g; c.beginPath(); c.arc(T.x,T.y,r*(1+.08*Math.sin(F.t*60)),0,7); c.fill(); c.restore(); }}); }},
+  // Rasengan: a spinning ball, carried straight in
+  {id:'rasengan',go:({tx,ty,land})=>{ const F=arcFx, T=eggTower();
+    F.shots.push({t0:F.t,dur:.5,x1:tx,y1:ty,land,
+      draw:(c,k)=>{ const x=T.x+(tx-T.x)*k, y=T.y+(ty-T.y)*k, r=13; c.save(); c.shadowColor='#7fc8ff'; c.shadowBlur=18;
+        const g=c.createRadialGradient(x,y,1,x,y,r); g.addColorStop(0,'#fff'); g.addColorStop(.6,'#8fd0ff'); g.addColorStop(1,'rgba(70,150,255,.25)');
+        c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,7); c.fill(); c.strokeStyle='rgba(255,255,255,.9)'; c.lineWidth=1.6;
+        for(let i=0;i<3;i++){ const s=F.t*26+i*2.1; c.beginPath(); c.ellipse(x,y,r*.85,r*.35,s,0,4.2); c.stroke(); } c.restore(); }}); }},
+];
+// a kill can also go like Team Rocket: off into the sky, and a twinkle
+const EGG_EARS_KILL=[...EGG_EARS_HIT,
+  {id:'blastoff',go:({tx,ty,land,M,o})=>{ const F=arcFx;
+    F.shots.push({kind:'bolt',x0:arcKeyX((o.notes||[60])[0]),y0:F.H+4,x1:tx,y1:ty,t0:F.t,dur:.17,combo:o.combo||0,land:()=>{ land(); F.parts=F.parts.filter(p=>p.kind!=='chunk');   // it flies off whole
+      const d=F.dying[F.dying.length-1]; if(d&&d.kind==='pop'){ d.kind='egg'; d.draw=(c,a)=>{ const k=Math.min(1,a/1.1), x=d.x+(F.W*.85-d.x)*k, y=d.y-(d.y-18)*k;
+        if(k<.9){ c.save(); c.translate(x,y); c.rotate(k*14); c.scale(1-k*.85,1-k*.85); c.font=`${d.size}px ${ARC_FONT}`; c.textAlign='center'; c.textBaseline='middle'; c.fillStyle='#000'; c.fillText(M.face,0,0); c.restore(); }
+        else { c.save(); c.globalAlpha=Math.max(0,1-(a-1.1)/.5); c.font=`${14+10*Math.abs(Math.sin(a*12))}px ${ARC_FONT}`; c.textAlign='center'; c.textBaseline='middle'; c.fillStyle='#000'; c.fillText('✨',x,y); c.restore(); }
+        return a<1.6; }; } }}); }},
+];
+// a boss steps out with JoJo's menacing ゴゴゴ around it; any monster, Metal Gear's "!"
+const EGG_EARS_BOSS=[{id:'gogo',draw:(c,x,top,a,size)=>{ c.save(); c.font='900 20px "Hiragino Mincho ProN","Yu Mincho",serif'; c.textAlign='center'; c.lineWidth=3; c.strokeStyle='rgba(30,0,40,.8)'; c.fillStyle='#b26bff';
+  const w=size*.55+16; [[-w,.3],[-w+6,.75],[w,.2],[w+6,.65]].forEach(([dx,fy],i)=>{ const y=top+fy*size, b=Math.sin(a*5+i)*3, al=.55+.45*Math.abs(Math.sin(a*2+i)); c.globalAlpha=al; c.strokeText('ゴ',x+dx,y+b); c.fillText('ゴ',x+dx,y+b); }); c.restore(); }}];
+const EGG_EARS_SPAWN=[{id:'alert',draw:(c,x,y,a)=>{ if(a>1) return; y-=10; const s=a<.12?a/.12*1.3:a<.2?1.3-(a-.12)/.08*.3:1; c.save(); c.translate(x,y-8); c.scale(s,s); c.font='900 30px "Barlow Condensed",sans-serif'; c.textAlign='center'; c.lineWidth=4; c.strokeStyle='#5a0000'; c.fillStyle='#ff3b30'; c.strokeText('!',0,0); c.fillText('!',0,0); c.restore(); }}];
+function eggSpawn(M){ const g=M.boss?egg(EGG_EARS_BOSS,1/12):egg(EGG_EARS_SPAWN,1/400); if(g) M.egg=g.draw; }
+// down to the last life: Sans has a word
+const EGG_LAST=[{id:'sans',text:'* you feel like you\'re going to have a bad time.'}];
+function eggEarsLast(){ const g=egg(EGG_LAST,1/15); if(!g) return; const F=arcFx, t0=F.t;
+  F.over.push(c=>{ const a=F.t-t0; if(a>3.4) return false; const n=Math.min(g.text.length,Math.floor(a*28));
+    c.save(); c.font='13px "Courier New",monospace'; const w=Math.min(F.W-20,c.measureText(g.text).width+26), x=(F.W-w)/2, y=12; c.globalAlpha=a>3?1-(a-3)/.4:1; c.fillStyle='#000'; c.fillRect(x,y,w,34); c.strokeStyle='#fff'; c.lineWidth=3; c.strokeRect(x,y,w,34);
+    c.fillStyle='#fff'; c.textBaseline='middle'; c.fillText(g.text.slice(0,n),x+12,y+17); c.restore(); return true; }); }
+// out of lives
+const EGG_EARS_OVER=[{id:'died',go:el=>{ el.textContent='YOU DIED'; el.classList.add('egg-died'); }}];
+
+/* ---------------- Chords: on the falling lane (hands.js) ---------------- */
+function eggEl(lane,cls,html,x,y,ms){ const d=document.createElement('div'); d.className=cls; d.innerHTML=html; if(x!=null) d.style.left=x+'px'; if(y!=null) d.style.top=y+'px'; lane.appendChild(d); setTimeout(()=>d.remove(),ms); return d; }
+const EGG_CHORDS_KILL=[
+  {id:'piano',go:(lane,el,cx,cy)=>{ const d=eggEl(lane,'eggpiano','🎹',cx,cy,900); d.style.setProperty('--fall',(cy+40)+'px'); setTimeout(()=>eggEl(lane,'pop egg-small','*plonk*',cx+34,cy-6,1300),430); return {wait:430}; }},
+  {id:'kame',go:(lane,el,cx,cy,lr)=>{ const d=eggEl(lane,'eggbeam','',cx,null,700); d.style.height=Math.max(10,lr.height-cy)+'px'; eggEl(lane,'pop egg-small','HA!',cx+30,lr.height-40,1300); return {wait:150}; }},
+  // Fist of the North Star: it's already dead, it just doesn't know yet
+  {id:'omae',go:(lane,el,cx,cy)=>{ eggEl(lane,'eggsay','お前はもう死んでいる',cx,cy-46,1100); setTimeout(()=>eggEl(lane,'pop egg-nani','NANI?!',cx,cy-10,1300),900); return {wait:1000,shot:true}; }},
+];
+const EGG_CHORDS_FIRE=[{id:'super',go:lane=>{ eggEl(lane,'eggbox','It\'s super effective!',null,null,1900); return {shot:true}; }}];
+function eggChordsKill(e,lane,cx,cy,lr){ if(eggReduce()) return null; const g=egg(e.t.fire?EGG_CHORDS_FIRE:EGG_CHORDS_KILL,e.t.fire?1/40:1/400); return g?g.go(lane,e.el,cx,cy,lr)||{}:null; }
+function eggChordsLast(){ const g=egg(EGG_LAST,1/15); if(g) eggEl($('lane'),'eggbox egg-ut',g.text,null,null,3600); }
+const EGG_CHORDS_OVER=[{id:'krillin',go:el=>{ el.textContent='Run over (Krillin moment)'; }}];
+
+/* ---------------- results screens ---------------- */
+const EGG_COMP_WIN=[{id:'saymyname',go:el=>{ el.textContent='Say my name.'; }}];
+const EGG_COMP_LOSE=[{id:'ramen',go:el=>{ el.textContent='The band walked off (to Ichiraku Ramen)'; }}];
+const EGG_LINES_WIN=[{id:'omedetou',go:el=>{ el.innerHTML='Congratulations. <span class="fine">(clap clap clap)</span>'; }},{id:'plusultra',go:el=>{ el.textContent='Plus Ultra'; }}];
+function eggTitle(el,list,p){ if(!el) return; const g=egg(list,p); if(g) g.go(el); }
 </script>
 <script>
 /* The recommended order in every mode. Nothing is locked: a card ahead of the path is dimmed, and picking it says what's

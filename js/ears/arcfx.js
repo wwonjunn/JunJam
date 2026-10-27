@@ -13,7 +13,7 @@ const ARC_THEMES=[
 ];
 const ARC_RM=matchMedia('(prefers-reduced-motion: reduce)'), arcReduce=()=>ARC_RM.matches;   // read once, checked every frame
 function arcFxStart(cv){
-  arcFxStop(); const F=arcFx; F.cv=cv; F.ctx=cv.getContext('2d'); F.parts=[]; F.shots=[]; F.dying=[]; F.mon=null; F.banner=null; F.shake=0; F.flash=0; F.wallHit=0;
+  arcFxStop(); const F=arcFx; F.cv=cv; F.ctx=cv.getContext('2d'); F.parts=[]; F.shots=[]; F.dying=[]; F.mon=null; F.banner=null; F.shake=0; F.flash=0; F.wallHit=0; F.over=[];
   arcFxSize(); F.last=performance.now(); const loop=ts=>{ F.raf=requestAnimationFrame(loop); arcFxFrame(ts); }; F.raf=requestAnimationFrame(loop);
 }
 function arcFxStop(){ cancelAnimationFrame(arcFx.raf); arcFx.raf=0; }
@@ -48,6 +48,7 @@ function arcFxHit(o){ // o: {notes, kill, fire, brute, pts, quick}
       for(let i=0;i<5;i++) F.parts.push({kind:'chunk',x:tx,y:ty,vx:(Math.random()-.5)*260,vy:-120-Math.random()*160,life:0.9,max:0.9,face:M.face,size:12+Math.random()*8,rot:Math.random()*6,vr:(Math.random()-.5)*14,grav:520}); }
     else { M.kb=F.t; for(let i=0;i<6;i++) F.parts.push({kind:'spark',x:tx,y:ty-14,vx:(Math.random()-.5)*200,vy:-80-Math.random()*120,life:0.7,max:0.7,col:'#c9d3e6',size:4,grav:500,sq:1}); }   // armour flies off
     F.flash=o.fire?0.35:0.12; F.flashCol=o.fire?'255,140,40':'255,255,255'; };
+  if(!o.fire){ const g=egg(o.kill?EGG_EARS_KILL:EGG_EARS_HIT,1/400); if(g){ g.go({tx,ty,land,M,o}); return; } }   // very rarely, a joke instead of the bolt (eggs.js)
   if(o.fire){ F.shots.push({kind:'fire',x0:arcWallX()+10,y0:arcGround()-60,x1:tx,y1:ty,t0:F.t,dur:0.42,land}); return; }
   from.slice(0,4).forEach((m,i)=>F.shots.push({kind:'bolt',x0:arcKeyX(m),y0:F.H+4,x1:tx,y1:ty,t0:F.t+i*0.03,dur:0.17,land:i===0?land:null,combo:o.combo||0}));
 }
@@ -70,7 +71,7 @@ function arcFxFrame(ts){
   const frozen=F.t<F.freeze, step=frozen?0:dt;
   const R=ARC, th=ARC_THEMES[F.theme]; F.themeF=Math.min(1,F.themeF+dt*1.5);
   // the monster the game has right now: a new one steps out of the portal
-  if(R.mon&&R.mon!==F.mon&&now()>=R.walk.t0-0.02){ F.mon=R.mon; F.disp=R.mon.x; F.born=F.t; }
+  if(R.mon&&R.mon!==F.mon&&now()>=R.walk.t0-0.02){ F.mon=R.mon; F.disp=R.mon.x; F.born=F.t; eggSpawn(F.mon); }
   if(F.mon&&R.mon===F.mon&&!R.done){ const W=R.walk, tt=now(); if(tt>=W.t0) F.mon.x=Math.max(0,W.x0*(W.t1-tt)/(W.t1-W.t0)); }
   if(F.mon&&!frozen) F.disp+=(F.mon.x-F.disp)*Math.min(1,dt*14);
   c.setTransform(F.dpr,0,0,F.dpr,0,0);
@@ -86,6 +87,7 @@ function arcFxFrame(ts){
   c.restore();
   if(F.flash>0){ c.fillStyle=`rgba(${F.flashCol},${Math.min(0.55,F.flash)})`; c.fillRect(0,0,F.W,F.H); F.flash=Math.max(0,F.flash-dt*1.6); }
   if(F.banner) arcFxBannerDraw(c);
+  F.over=F.over.filter(fn=>fn(c));
 }
 function arcFxScene(c,th){
   const F=arcFx, W=F.W, H=F.H, g=arcGround();
@@ -141,10 +143,12 @@ function arcFxMonster(c,M){
     c.font='700 11px Barlow Condensed, sans-serif'; c.textAlign='center'; c.fillStyle='#fff'; c.fillText(`${M.hp}/${M.max}`,x,by-4); }
   else if(M.max>1){ for(let i=0;i<M.max;i++){ const on=i<M.hp; c.fillStyle=on?'#6fa8ff':'rgba(255,255,255,.35)'; c.strokeStyle='#1d2b4f'; c.lineWidth=1.5; c.beginPath(); const px=x-8+i*16, py=g-size-14;
     c.moveTo(px,py-6); c.lineTo(px+6,py); c.lineTo(px,py+6); c.lineTo(px-6,py); c.closePath(); c.fill(); c.stroke(); } }   // armour pips
+  if(M.egg) M.egg(c,x,g-size,age,size);
 }
 function arcFxDying(c){
   const F=arcFx, g=arcGround();
   F.dying=F.dying.filter(d=>{ const a=F.t-d.t0;
+    if(d.draw) return d.draw(c,a);
     if(d.kind==='pop'){ if(a>0.35) return false; const k=a/0.35; c.save(); c.globalAlpha=1-k; c.translate(d.x,d.y+12); c.scale(1+k*0.9,1+k*0.9); c.font=`${d.size}px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText('💥',0,0); c.restore(); return true; }
     // a miss: wind up (lean back), charge at the wall, bounce off it and fade
     const wind=0.16, run=0.24, x1=arcWallX()+30;
@@ -158,7 +162,8 @@ function arcFxShots(c,dt){
   const F=arcFx;
   F.shots=F.shots.filter(s=>{ const a=F.t-s.t0; if(a<0) return true; const k=Math.min(1,a/s.dur);
     let x,y;
-    if(s.kind==='fire'){ x=s.x0+(s.x1-s.x0)*k; y=s.y0+(s.y1-s.y0)*k-Math.sin(k*Math.PI)*70;
+    if(s.draw) s.draw(c,k);
+    else if(s.kind==='fire'){ x=s.x0+(s.x1-s.x0)*k; y=s.y0+(s.y1-s.y0)*k-Math.sin(k*Math.PI)*70;
       for(let i=0;i<3;i++) F.parts.push({kind:'spark',x,y,vx:(Math.random()-.5)*60,vy:(Math.random()-.5)*60,life:0.3,max:0.3,col:['#ffd23f','#ff6b2b','#ff3d00'][i],size:5});
       c.save(); c.font=`30px ${ARC_FONT}`; c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='middle'; c.translate(x,y); c.rotate(k*8); c.fillText('🔥',0,0); c.restore(); }
     else { const e=1-Math.pow(1-k,2); x=s.x0+(s.x1-s.x0)*e; y=s.y0+(s.y1-s.y0)*e;

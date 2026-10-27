@@ -163,6 +163,7 @@ js/lines/session.js   Lines drill (learn, then transfer to new keys), import you
 js/lines/practice.js  Lines practice: the line of the week, today's session, spaced review
 js/plan.js            Practice: your routines, Explore, the editor, the block timer chip, the session log
 js/path.js            the recommended order in every mode (soft: dimmed cards and a note, never locked)
+js/eggs.js            very rare easter eggs (anime, game and TV nods) on hits, bosses, last lives and results
 js/reharm/moves.js    reharm moves as data (edit here to add moves), with sources
 js/reharm/session.js  Reharm cards, drill and ear quiz
 js/voicings/library.js  the voicing library (both hands, written in C) and the extra chord types it names

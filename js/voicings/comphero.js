@@ -197,6 +197,7 @@ function chOver(finished,quit){
     <div class="erow"><button class="go" id="chAgain">Again</button><button class="ghost" id="chMenu">Back to Voicings</button></div>`;
   $('chAgain').onclick=()=>chStart(R.random?'random':R.song.id); $('chMenu').onclick=chToMenu;
   kbMarks={}; paintKeys();
+  if(finished&&!R.D.devil&&stars===3) eggTitle($('vcBody').querySelector('h2'),EGG_COMP_WIN,1/25); else if(!finished&&!quit) eggTitle($('vcBody').querySelector('h2'),EGG_COMP_LOSE,1/25);
 }
 function chToMenu(){ chStop(); CH.active=false; clearDraft(); $('voiceStage').hidden=true; document.body.classList.remove('vcmode');
   side='voicings'; $('startOv').hidden=false; document.body.classList.add('menu'); kbMarks={}; paintKeys(); renderMenu(); }
