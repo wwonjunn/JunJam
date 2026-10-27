@@ -809,3 +809,6 @@ body.gigmode header .modetag{display:none}
 .plog{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px} .plog li{border-bottom:1px solid var(--line);padding-bottom:6px}
 .pdanger{color:var(--wrong)!important;opacity:.8!important}
 .prules{display:flex;flex-wrap:wrap;gap:5px;padding:0;margin:0 0 10px;list-style:none;counter-reset:pr} .prules li{counter-increment:pr;font-size:13px;border:1.5px solid var(--line-strong);border-radius:999px;padding:2px 10px 2px 4px} .prules li::before{content:counter(pr);display:inline-grid;place-items:center;width:18px;height:18px;border-radius:9px;background:var(--brass);color:var(--lane);font-size:11px;margin-right:6px}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 6px 0 2px;vertical-align:1px;background:var(--muted);flex:none}
+.pdot.m-hands{background:var(--chord)} .pdot.m-voicings{background:var(--tension)} .pdot.m-lines{background:var(--brass)} .pdot.m-ears{background:var(--good)} .pdot.m-reharm{background:var(--wrong)} .pdot.m-gig{background:var(--ink)} .pdot.m-free{background:var(--muted)}
+.pchk .pbi,.pecard .pbi,.ppitem .pbi{display:flex;justify-content:center} .prm{font-size:13px;color:var(--muted)}

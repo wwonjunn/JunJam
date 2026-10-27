@@ -134,17 +134,20 @@ function gigList(){
     <div class="giglibbar"><input type="search" id="gigQ" placeholder="Search tunes, composers, feels…" value="${trEsc(GIG.q||'')}" aria-label="Search">
       <button class="go" id="gigRandom" title="A random chart from what's listed">🎲 Random</button><button class="ghost" id="gigAdd">+ Add a chart</button></div>
     <div class="chipsrow">${GIG_GENRES.map(([v,t])=>`<button class="chip" data-genre="${v}" aria-pressed="${GDATA.genre===v}">${t} <span class="fine">${count(v)}</span></button>`).join('')}</div>
-    <div class="licks giglist">${list.map(s=>`<button class="lick" data-song="${s.id}"><span class="ln">${trEsc(s.genre||'Chart')} · ${keyName(s.key.pc,s.key.minor)} · ♩ ${s.tempo}${s.mine?' · Yours':''}</span>
+    <p class="fine" style="margin:-4px 0 8px">${list.length} chart${list.length===1?'':'s'}</p>
+    <div class="licks giglist">${list.slice(0,GIG.show||60).map(s=>`<button class="lick" data-song="${s.id}"><span class="ln">${trEsc(s.genre||'Chart')} · ${keyName(s.key.pc,s.key.minor)} · ♩ ${s.tempo}${s.mine?' · Yours':''}</span>
       <span class="lt">${trEsc(s.title)}</span><span class="lst">${trEsc(s.by)}</span>${s.feel?`<span class="lst">${trEsc(s.feel)}</span>`:''}
       <span class="fav${GDATA.fav[s.id]?' on':''}" data-fav="${s.id}" title="Favourite">${GDATA.fav[s.id]?'♥':'♡'}</span></button>`).join('')||'<p class="fine">Nothing matches. Try another search, or add the chart yourself.</p>'}</div>
+    ${list.length>(GIG.show||60)?`<button class="ghost lmore" id="gigMore">Show ${Math.min(60,list.length-(GIG.show||60))} more (${list.length-(GIG.show||60)} left)</button>`:''}
     <p class="fine">Found a chart online (a chord site, a fake book page)? <b>+ Add a chart</b> and paste it in: Jun Jam reads the chords and keeps it under Yours.</p>
     <div class="erow"><button class="ghost" id="gigHome">Back</button></div>`;
-  const q=$('gigQ'); q.oninput=()=>{ GIG.q=q.value; const pos=q.selectionStart; gigList(); const n=$('gigQ'); n.focus(); n.setSelectionRange(pos,pos); };
+  if($('gigMore')) $('gigMore').onclick=()=>{ GIG.show=(GIG.show||60)+60; const y=$('gigBody').scrollTop; gigList(); $('gigBody').scrollTop=y; };   // 60 at a time
+  const q=$('gigQ'); q.oninput=()=>{ GIG.q=q.value; GIG.show=60; const pos=q.selectionStart; gigList(); const n=$('gigQ'); n.focus(); n.setSelectionRange(pos,pos); };
   $('gigRandom').onclick=()=>{ const pool=list.filter(s=>s.id!==GIG.lastId); const s=(pool.length?pool:list)[Math.floor(Math.random()*(pool.length||list.length))]; if(s) gigShow(s.id); };
   $('gigAdd').onclick=()=>gigEdit(null); $('gigHome').onclick=gigToMenu;
   $('gigBody').onclick=e=>{ const f=e.target.closest('[data-fav]'), g=e.target.closest('[data-genre]'), s=e.target.closest('[data-song]');
     if(f){ e.stopPropagation(); if(GDATA.fav[f.dataset.fav]) delete GDATA.fav[f.dataset.fav]; else GDATA.fav[f.dataset.fav]=1; saveGig(); gigList(); return; }
-    if(g){ GDATA.genre=g.dataset.genre; saveGig(); gigList(); return; }
+    if(g){ GDATA.genre=g.dataset.genre; GIG.show=60; saveGig(); gigList(); return; }
     if(s) gigShow(s.dataset.song); };
 }
 const gigSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,tip])=>`<button data-${attr}="${v}" aria-pressed="${String(cur)===String(v)}"${tip?` title="${tip}"`:''}>${t}</button>`).join('')}</div>`;

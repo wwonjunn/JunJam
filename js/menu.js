@@ -8,7 +8,7 @@ const MODES=[
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
   {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
-  {id:'plan',name:'Practice',blurb:'Your own routines: blocks of each mode on a timer, a log and notes',stat:()=>{ if(typeof PLAN==='undefined') return ''; if(PLAN.run) return 'A session is running'; const w=Object.values(planWeek()).reduce((a,b)=>a+b,0), st=planStreak(); return `${Math.round(w)} min this week${st?` · 🔥 ${st}-day streak`:''}`; }},
+  {id:'plan',name:'Practice',blurb:'Your own routines: blocks of each mode on a timer, a log and notes',stat:()=>{ if(typeof PLAN==='undefined') return ''; if(PLAN.run) return 'A session is running'; const w=Object.values(planWeek()).reduce((a,b)=>a+b,0), st=planStreak(); return `${Math.round(w)} min this week${st?` · ${st}-day streak`:''}`; }},
 ];
 function renderHome(){
   $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}</button>`; }).join('');

@@ -7,7 +7,8 @@
    go (pause, skip; it runs on the clock, so it survives a reload), chimes when time's up and takes you to the next block. */
 let PLAN=store.get('plan',null);
 const PLAN_MODES={hands:'Chords',voicings:'Voicings',lines:'Lines',ears:'Ears',reharm:'Reharm',gig:'Gig',free:'Your own'};
-const PLAN_ICON={hands:'🎹',voicings:'🖐️',lines:'🎷',ears:'👂',reharm:'🔀',gig:'🎤',free:'✏️'};
+// each mode's colour: a small dot, no icons
+const PLAN_ICON=Object.fromEntries(Object.keys(PLAN_MODES).map(m=>[m,`<i class="pdot m-${m}" aria-hidden="true"></i>`]));
 const planBlock=(mode,min,target='',note='')=>({mode,min,target,note});
 if(!PLAN||!Array.isArray(PLAN.routines)) PLAN={routines:[],log:[],run:null};
 PLAN.tab=PLAN.tab||'mine'; PLAN.edit=null; PLAN.pick=null;
@@ -51,9 +52,9 @@ const planExplore=id=>PLAN_EXPLORE.flatMap(g=>g.items).find(x=>x.id===id);
 const planCopyOf=(r,name)=>({id:'r'+Date.now()+Math.floor(Math.random()*1000),name:name||r.name,why:r.why||'',blocks:JSON.parse(JSON.stringify(r.blocks))});
 // what a block can point at, per mode: [value, label]
 function planTargets(mode){
-  if(mode==='hands') return [['next','Next step on your path'],['','Where you left off'],...STAGES.map(s=>[String(s.n),s.boss?`👹 ${s.t}`:s.chapter?`👑 ${s.t}`:`Stage ${s.n}: ${s.t}`]),...PROGS.map(p=>['p:'+p.id,p.short])];
+  if(mode==='hands') return [['next','Next step on your path'],['','Where you left off'],...STAGES.map(s=>[String(s.n),s.boss?s.t:s.chapter?s.t:`Stage ${s.n}: ${s.t}`]),...PROGS.map(p=>['p:'+p.id,p.short])];
   if(mode==='voicings') return [['next','Next chord on the path'],['rush','Rush (chords you’ve learned)'],['comp','Comp Hero'],['','The page'],...VCHAPTERS.map((c,i)=>[c.id,`Chapter ${i+1}: ${c.name}`])];
-  if(mode==='lines') return [['daily',"Today's practice"],['week','Line of the week'],['rand1','🎲 Easy'],['rand2','🎲 Medium'],['rand3','🎲 Hard'],['','The page']];
+  if(mode==='lines') return [['daily',"Today's practice"],['week','Line of the week'],['rand1','Random Easy lick'],['rand2','Random Medium lick'],['rand3','Random Hard lick'],['','The page']];
   if(mode==='ears') return [['daily','Daily wave'],['next','Next world on the path'],...ARC_PATH.map(w=>[w,arcWorld(w).name]),['','The page']];
   return [['','']];
 }
@@ -61,7 +62,7 @@ const PLAN_MODE_BLURB={hands:'Chords against the clock',voicings:'Two-hand voici
 const planTargetName=b=>{ const t=planTargets(b.mode).find(x=>x[0]===b.target); return t&&t[0]?t[1]:''; };
 const planMins=r=>r.blocks.reduce((a,b)=>a+(+b.min||0),0);
 const fmtClock=s=>`${Math.floor(Math.max(0,s)/60)}:${String(Math.floor(Math.max(0,s)%60)).padStart(2,'0')}`;
-const planModesLine=r=>[...new Set(r.blocks.map(b=>PLAN_ICON[b.mode]))].join(' ');
+const planModesLine=r=>[...new Set(r.blocks.map(b=>b.mode))].map(m=>`${PLAN_ICON[m]}${PLAN_MODES[m]}`).join(' ');
 
 /* ---------------- running a routine ---------------- */
 // seconds spent in the current block (the clock keeps going between modes; pausing holds it)
@@ -107,7 +108,7 @@ function planChip(){
   const b=r.blocks[run.i], left=b.min*60-planElapsed(), nx=r.blocks[run.i+1];
   if(left<=0&&!run.chimed){ run.chimed=true; savePlan(); planChime(); }
   c.hidden=false; c.classList.toggle('due',left<=0); c.classList.toggle('paused',run.held!=null);
-  c.innerHTML=`<span class="pcw" data-pc="page" title="Open Practice">${PLAN_ICON[b.mode]} ${run.i+1}/${r.blocks.length} ${PLAN_MODES[b.mode]}${planTargetName(b)?` · ${planTargetName(b)}`:''}</span>
+  c.innerHTML=`<span class="pcw" data-pc="page" title="Open Practice">${PLAN_ICON[b.mode]}${run.i+1}/${r.blocks.length} ${PLAN_MODES[b.mode]}${planTargetName(b)?` · ${planTargetName(b)}`:''}</span>
     <b>${left>0?fmtClock(left):`+${fmtClock(-left)}`}</b>
     <button data-pc="pause" title="${run.held!=null?'Resume':'Pause'}">${run.held!=null?'▶':'⏸'}</button>
     <button data-pc="next" title="${nx?`Next: ${PLAN_MODES[nx.mode]}`:'Finish'}">${left<=0?(nx?`Next: ${PLAN_MODES[nx.mode]} ⏭`:'Finish ✓'):'⏭'}</button>`;
@@ -121,7 +122,7 @@ $('planChip').addEventListener('click',e=>{ const b=e.target.closest('[data-pc]'
 function planWeek(){ const d=new Date(), day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); const from=arcDay(d), by={};
   PLAN.log.filter(s=>s.d>=from).forEach(s=>s.blocks.forEach(b=>by[b.mode]=(by[b.mode]||0)+b.secs/60)); return by; }
 function planStreak(){ const days=new Set(PLAN.log.map(s=>s.d)); let n=0; const d=new Date(); if(!days.has(arcDay(d))) d.setDate(d.getDate()-1); while(days.has(arcDay(d))){ n++; d.setDate(d.getDate()-1); } return n; }
-const planBlockLine=b=>`<span class="pbi">${PLAN_ICON[b.mode]}</span><span class="pbt"><b>${PLAN_MODES[b.mode]}</b>${planTargetName(b)?` · ${gigAccHTML(planTargetName(b))}`:''}${b.note?`<em>${gigAccHTML(b.note)}</em>`:''}</span><span class="pbm">${b.min} min</span>`;
+const planBlockLine=b=>`<span class="pbi">${PLAN_ICON[b.mode]}</span><span class="pbt"><span><b>${PLAN_MODES[b.mode]}</b>${planTargetName(b)?` · ${gigAccHTML(planTargetName(b))}`:''}</span>${b.note?`<em>${gigAccHTML(b.note)}</em>`:''}</span><span class="pbm">${b.min} min</span>`;
 // the running session: a checklist, the current block with its clock
 function planRunHTML(){
   const run=PLAN.run, r=planRoutine(); if(!run||!r) return '';
@@ -140,7 +141,7 @@ function renderPlanPane(){
   const tab=PLAN.tab, st=planStreak();
   let h=`<button class="back" data-home>← All modes</button><h2>Practice</h2>${planRunHTML()}`;
   if(PLAN.fresh&&PLAN.log[0]){ const s=PLAN.log[0];
-    h+=`<div class="prun pdone"><div class="prunh"><b>Done: ${gigAccHTML(s.name)}</b><span>${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} minutes${st>1?` · 🔥 ${st}-day streak`:''}</span></div>
+    h+=`<div class="prun pdone"><div class="prunh"><b>Done: ${gigAccHTML(s.name)}</b><span>${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} minutes${st>1?` · ${st}-day streak`:''}</span></div>
       <textarea id="plNote" rows="2" placeholder="A note for next time: what felt shaky, what clicked, what to do tomorrow">${gigAccHTML(s.note||'')}</textarea>
       <div class="erow"><button class="go" data-pl="savenote">Save note</button><button class="ghost" data-pl="skipnote">Skip</button></div></div>`; }
   h+=`<div class="ptabs" role="tablist">${[['mine','My routines'],['explore','Explore'],['history','History']].map(([k,n])=>`<button role="tab" data-ptab="${k}" aria-selected="${tab===k}">${n}</button>`).join('')}</div>`;
@@ -162,10 +163,10 @@ function planDetailHTML(){
 function planHistoryHTML(){
   const week=planWeek(), wk=Object.values(week).reduce((a,b)=>a+b,0), top=Math.max(1,...Object.values(week)), st=planStreak(), days=new Set(PLAN.log.map(s=>s.d));
   const cal=[...Array(14)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-13+i); const on=days.has(arcDay(d)); return `<i class="${on?'on':''}${i===13?' today':''}" title="${arcDay(d)}">${on?'✓':''}</i>`; }).join('');
-  return `<div class="sec">This week: ${Math.round(wk)} minutes${st?` · 🔥 ${st}-day streak`:''}</div>
-    <div class="pweek">${Object.keys(PLAN_MODES).filter(m=>week[m]).map(m=>`<div class="pbar"><span>${PLAN_ICON[m]} ${PLAN_MODES[m]}</span><i style="width:${Math.round(week[m]/top*100)}%"></i><b>${Math.round(week[m])}′</b></div>`).join('')||'<p class="fine">Nothing yet this week.</p>'}</div>
+  return `<div class="sec">This week: ${Math.round(wk)} minutes${st?` · ${st}-day streak`:''}</div>
+    <div class="pweek">${Object.keys(PLAN_MODES).filter(m=>week[m]).map(m=>`<div class="pbar"><span>${PLAN_ICON[m]}${PLAN_MODES[m]}</span><i style="width:${Math.round(week[m]/top*100)}%"></i><b>${Math.round(week[m])}′</b></div>`).join('')||'<p class="fine">Nothing yet this week.</p>'}</div>
     <div class="arccal">${cal}</div>
-    <div class="sec">Sessions</div>${PLAN.log.length?`<ul class="plog">${PLAN.log.slice(0,30).map((s,i)=>`<li><b>${s.d}</b> ${gigAccHTML(s.name)}, ${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} min${s.planned?` of ${s.planned}`:''} <span class="fine">${[...new Set(s.blocks.map(b=>PLAN_ICON[b.mode]))].join(' ')}</span>${s.note?`<br><span class="pnote">${gigAccHTML(s.note)}</span>`:''} <button class="linkish" data-pl="delog" data-i="${i}" title="Remove from the log">×</button></li>`).join('')}</ul>`:'<p class="fine">Finished sessions show up here, with your notes.</p>'}`;
+    <div class="sec">Sessions</div>${PLAN.log.length?`<ul class="plog">${PLAN.log.slice(0,30).map((s,i)=>`<li><b>${s.d}</b> ${gigAccHTML(s.name)}, ${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} min${s.planned?` of ${s.planned}`:''} <span class="fine">${[...new Set(s.blocks.map(b=>PLAN_MODES[b.mode]))].join(', ')}</span>${s.note?`<br><span class="pnote">${gigAccHTML(s.note)}</span>`:''} <button class="linkish" data-pl="delog" data-i="${i}" title="Remove from the log">×</button></li>`).join('')}</ul>`:'<p class="fine">Finished sessions show up here, with your notes.</p>'}`;
 }
 
 /* ---------------- the editor: block cards, steppers, drag to reorder, the Add-blocks picker ---------------- */
@@ -190,7 +191,7 @@ function planChoices(){ return Object.keys(PLAN_MODES).flatMap(m=>planTargets(m)
 function planPickerHTML(){
   const P=PLAN.pick, q=(P.q||'').toLowerCase(), list=planChoices().filter(c=>(!P.mode||c.mode===P.mode)&&(!q||(PLAN_MODES[c.mode]+' '+c.label).toLowerCase().includes(q)));
   return `<div class="ppick"><div class="ppickh"><b>Add blocks</b><input id="ppSearch" type="search" placeholder="Search: rush, ii–V, melodies…" value="${gigAccHTML(P.q||'')}"><button class="ghost" data-pe="pickclose">Close</button></div>
-    <div class="chipsrow">${[['','All'],...Object.entries(PLAN_MODES)].map(([k,n])=>`<button class="chip" data-pm="${k}" aria-pressed="${(P.mode||'')===k}">${k?PLAN_ICON[k]+' ':''}${n}</button>`).join('')}</div>
+    <div class="chipsrow">${[['','All'],...Object.entries(PLAN_MODES)].map(([k,n])=>`<button class="chip" data-pm="${k}" aria-pressed="${(P.mode||'')===k}">${k?PLAN_ICON[k]:''}${n}</button>`).join('')}</div>
     <div class="ppl" id="ppList">${planPickListHTML(list)}</div>
     <div class="erow"><button class="go" data-pe="pickadd"${P.sel.length?'':' disabled'}>Add ${P.sel.length||''} block${P.sel.length===1?'':'s'}</button></div></div>`;
 }
