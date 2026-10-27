@@ -124,7 +124,7 @@ function linesRound(){
   const step=LINES.plan?LINES.plan[LINES.round]:null; if(step) LINES.lick=lickById(step.id);   // a practice session: each step names its lick and key
   const ref=step?step.key:LINES.keys[LINES.round];
   const inst=lickInstance(LINES.lick,ref);
-  if(LDATA.lh&&Math.min(...inst.notes.map(n=>n.midi))<LH_SPLIT) inst.notes.forEach(n=>{ n.midi+=12; n.spell={...n.spell,midi:n.midi,oct:n.spell.oct+1,di:n.spell.di+7}; });
+  while(LDATA.lh&&Math.min(...inst.notes.map(n=>n.midi))<LH_SPLIT) inst.notes.forEach(n=>{ n.midi+=12; n.spell={...n.spell,midi:n.midi,oct:n.spell.oct+1,di:n.spell.di+7}; });   // the whole lick above middle C
   Object.assign(LINES,{inst,idx:0,offset:null,mistakes:0,revealed:linesLearnStep(),done:false});
   $('lMsg').textContent=''; $('lMsg').className='lmsg';
   kbMarks={}; linesRender(); setTimeout(linesPlay,250);
@@ -239,8 +239,8 @@ function linesNote(m){
   if(LINES.rec){ LINES.rec.notes.push({m,t:performance.now()}); const c=$('iCount'); if(c) c.textContent=`${LINES.rec.notes.length} notes`; return; }
   if(LINES.after){ if(held.size>=3){ const f=LINES.after; LINES.after=null; f(); } return; }   // the results: any chord carries on
   const L=LINES; if(!L.active||L.done) return;
+  if(LDATA.lh&&m<LH_SPLIT) return;   // left hand below middle C is your comping: never counted, right or wrong
   const want=L.inst.notes[L.idx].midi, ok=mod12(m-want)===0;   // any octave, for every note: jump up or down mid-line if you like
-  if(!ok&&LDATA.lh&&m<LH_SPLIT) return;   // left-hand comping below middle C, unless it's the note the lick wants
   if(!ok&&L.idx>0&&mod12(m-L.inst.notes[L.idx-1].midi)===0) return;   // the note you just played, again: a slip, not a wrong note
   if(ok){
     L.idx++; kbMarks={}; kbMarks[m]='k-chord';
