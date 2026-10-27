@@ -13,7 +13,7 @@ const QNAME=(id,suf)=>({maj:'major',min:'minor',dim:'diminished',aug:'augmented'
 const MAJOR=[0,2,4,5,7,9,11], MINOR=[0,2,3,5,7,8,10];
 const pcName=(m,minor)=>rootName(defaultRoot(mod12(m),minor));
 
-function timbreFor(p){ return p.timbre==='random'?pickOne(TIMBRES):'epiano'; }
+function timbreFor(p,chords=false){ return p.timbre==='random'?pickOne(chords?TIMBRES.filter(t=>t!=='mellow'):TIMBRES):'epiano'; }   // the pad blurs a stack of 4 or 5 notes into one hum: single notes and intervals only
 // A key (pitch class) for the question, leaning on the keys you're shakiest in.
 // Squared, because unlike Hands there's no per chord-in-key weight stacked on top.
 function pickKeyPc(){ return weightedPick([...Array(12).keys()].map(pc=>({pc,w:keyWeight(pc,'ears')**2}))).pc; }
@@ -129,7 +129,7 @@ const GEN={
   },
   inversion(p,ctx,force){
     const ans=force&&force.answer!==undefined?String(force.answer):String(rint(0,2));
-    const minor=Math.random()<0.5, third=minor?3:4, r=48+mod12(pickKeyPc()-48), tb=timbreFor(p);
+    const minor=Math.random()<0.5, third=minor?3:4, r=48+mod12(pickKeyPc()-48), tb=timbreFor(p,true);
     const shapes={0:[0,third,7],1:[third,7,12],2:[7,12,12+third]};
     const v=inv=>shapes[inv].map(x=>r+x);
     const q=Q[minor?'min':'maj'];
@@ -140,7 +140,7 @@ const GEN={
       reveal:{notes:v(+ans),target:{root:defaultRoot(r%12,minor),q},text:['Root position','First inversion, 3rd in the bass','Second inversion, 5th in the bass'][+ans]+'.'}};
   },
   chord(p,ctx,force){
-    const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
+    const set=force&&force.options?force.options:p.set, tb=timbreFor(p,true);
     const ans=answerFrom(set,'chord:',force,ctx);
     const pc=pickKeyPc(), style=p.style==='mixed'?pickOne(['close','open','rootless']):(p.style||'close');
     const v=id=>voiceChord(Q[id],pc,style);
@@ -154,7 +154,7 @@ const GEN={
       reveal:{notes,target:{root:defaultRoot(pc,q.minor),q},text:`${symText({root:defaultRoot(pc,q.minor),q,suf:sufs[ans]})}, ${styleName} voicing.`}};
   },
   prog(p,ctx,force){
-    const set=force&&force.options?force.options:p.set, tb=timbreFor(p);
+    const set=force&&force.options?force.options:p.set, tb=timbreFor(p,true);
     const ans=answerFrom(set,'prog:',force,ctx), P=PROG[ans], kpc=pickKeyPc();
     const chords=progChords(P,kpc), voiced=voiceProg(chords);
     const key=keyName(kpc,!!P.minor), last=chords[chords.length-1];
