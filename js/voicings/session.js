@@ -41,7 +41,7 @@ const vcNextType=()=>VPATH.find(q=>!vtStars(q))||VPATH.find(q=>vtStars(q)<3)||VP
 // the Chords stage that drills a chord type (the extra types the library names sit with their nearest stage)
 const VC_XSTAGE={maj13:4,min13:4,sus9:4,sus13:4,min69:3,susb9:5,d13b9:5,d13s11:5,d7s5:5};
 const vcStageOf=qid=>Q[qid]?Q[qid].stage:VC_XSTAGE[qid]||null;
-const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives</span></button>`;
+const vcBossCard=b=>`<button class="lick vcboss ${b.kind}" data-vboss="${b.id}"><span class="ln">${b.kind==='final'?'😈 Final boss':b.kind==='chapter'?'👑 Chapter boss':'👹 Boss'}${VCDATA.boss[b.id]?' · beaten 👑':''}</span><span class="lt">${gigAccHTML(b.name.replace(/^(Chapter |Final )?[Bb]oss: /,''))}</span><span class="lst">${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings once each to beat it, then faster laps till you're out of lives${(VCDATA.bossBest||{})[b.id]?`. Best ${VCDATA.bossBest[b.id].toLocaleString()}`:''}</span></button>`;
 
 /* ---------------- menu pane ---------------- */
 const vcStarTotal=()=>VPATH.reduce((a,q)=>a+vtStars(q),0);
@@ -59,7 +59,7 @@ function vcPool(){
 const vcDots=d=>'●'.repeat(d)+'○'.repeat(3-d);
 function renderVoicingsPane(){
   // the path: a column per chapter, each chord type a step, its bosses after it
-  const bossStep=b=>({id:'vb:'+b.id,t:b.kind==='chapter'?'Chapter boss':'Boss',sub:b.kind==='chapter'?'every chord in it':b.types.map(vcTypeName).join(', '),st:VCDATA.boss[b.id]?1:0,ns:1,tip:`${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives`});
+  const bossStep=b=>({id:'vb:'+b.id,t:b.kind==='chapter'?'Chapter boss':'Boss',sub:b.kind==='chapter'?'every chord in it':b.types.map(vcTypeName).join(', '),st:VCDATA.boss[b.id]?1:0,ns:1,tip:`${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings once each to beat it, then endless faster laps${(VCDATA.bossBest||{})[b.id]?`. Best ${VCDATA.bossBest[b.id].toLocaleString()}`:''}`});
   const nx=vcNextType(), path=pathChapsHTML(VCHAPTERS.map(c=>[c.name,c.types.flatMap(q=>[{id:'vt:'+q,t:vcTypeName(q),st:vtStars(q),tip:`${vcWays(q).length} way${vcWays(q).length>1?'s':''}`},...VBOSSES.filter(x=>x.after===q&&x.kind!=='final').map(bossStep)]),{tip:c.blurb}]),'vt:'+nx,null,3);
   const best=VCDATA.best[VCDATA.pool], learned=VPATH.filter(q=>vtStars(q)).length;
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
@@ -270,11 +270,14 @@ function vcFinish(quit){ clearDraft();
    Chains: one chord in one key, asked for in up to three different voicings in a row, then a new chord. The bar
    gives a few seconds per note, shrinking as your streak grows. A wrong try costs time and your combo; running out of
    time costs a life, shows the shape, and you play it before moving on. That voicing then comes back three to five
-   chords later in another key, and again if you miss it again. A voicing you haven't learned is shown the first time. */
+   chords later in another key, and again if you miss it again. A voicing you haven't learned is shown the first time.
+   A boss is endless: every voicing in it once, shape hidden, beats it; then it reshuffles and goes round again, each lap
+   with less time, until the lives run out. Lap 1 starts slower than Rush. */
+const vcLapFloor=lap=>Math.max(0.4,0.8-0.12*(lap-1));   // how far the time can shrink on each lap
 function vcBossStart(id){ const b=VBOSSES.find(x=>x.id===id); if(!b) return; vcRushStart(b); }
 function vcRushStart(boss=null){
   vcStop(); const pool=boss?VOICINGS.filter(v=>boss.types.includes(v.qid)):vcPool();
-  Object.assign(VC,{active:true,mode:'rush',boss,deck:boss?shuffled(pool):null,won:false,pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
+  Object.assign(VC,{active:true,mode:'rush',boss,deck:boss?shuffled(pool):null,won:false,lap:1,lapNote:0,pool,lives:VC_LIVES,score:0,combo:0,n:0,cleared:0,speed:boss?1.3:1,chain:[],again:[],missed:{},seen:new Set(),recent:[],xp:0});
   vcShow(); vcRushNext();
 }
 function vcRushChain(){
@@ -287,15 +290,17 @@ function vcRushChain(){
 function vcRushNext(){
   const R=VC; vcStop(); clearDraft(); if(R.lives<=0) return vcRushOver();
   let due=R.again.findIndex(a=>a.at<=R.n);
-  if(R.boss&&!R.deck.length&&due<0&&R.again.length) due=0;   // a boss: the misses still owed come back before it's done
-  if(R.boss&&!R.deck.length&&due<0){ R.won=true; return vcRushOver(); }   // every voicing played: the boss is beaten
+  if(R.boss&&R.lap===1&&!R.deck.length&&due<0&&R.again.length) due=0;   // a boss: the misses still owed come back before it counts as beaten
+  if(R.boss&&!R.deck.length&&due<0){   // every voicing played: beaten on the first lap, then round again, faster
+    if(!R.won){ R.won=true; VCDATA.boss[R.boss.id]=true; saveVc(); }
+    R.lap++; R.lapNote=2; R.deck=shuffled(R.pool); R.speed=Math.max(vcLapFloor(R.lap),R.speed*0.85); }
   let item;
   if(R.n>=4&&due<0&&Math.random()<1/VC_LIFE_EVERY){ const hard=VOICINGS.filter(v=>v.diff===3); item={v:hard[Math.floor(Math.random()*hard.length)],pc:pickKeyPc(),of:1,i:0,life:true}; }
   else if(R.boss&&due<0) item={v:R.deck.pop(),pc:pickKeyPc(),of:1,i:0};
   else if(due>=0&&(R.boss||!R.chain.length)){ const a=R.again.splice(due,1)[0]; item={v:a.v,pc:mod12(a.pc+[5,7,2,10][Math.floor(Math.random()*4)]),of:1,i:0,review:true}; }
   else { if(!R.chain.length) R.chain=vcRushChain(); item=R.chain.shift(); }
   const t=vcIn(item.v,item.pc), fresh=!item.life&&!R.boss&&!VCDATA.stars[item.v.id]&&!R.seen.has(item.v.id);   // a boss never shows the shape (the formula's there)
-  R.seen.add(item.v.id);
+  R.seen.add(item.v.id); if(R.lapNote) R.lapNote--;
   const secs=(3+1.15*t.notes.length)*R.speed*(fresh?1.6:1);
   Object.assign(R,{item,t,fresh,secs,left:secs,lost:false,solved:false,tried:false,wrong:0,t0:performance.now()}); R.n++;
   vcRushRender();
@@ -307,9 +312,9 @@ function vcRushNext(){
 }
 function vcRushRender(){
   const R=VC, it=R.item, t=R.t;
-  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.boss?`${R.boss.kind==='final'?'😈':R.boss.kind==='chapter'?'👑':'👹'} ${gigAccHTML(R.boss.name)} · ${R.cleared} of ${R.pool.length}`:'Rush'}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.boss?`${R.boss.kind==='final'?'😈':R.boss.kind==='chapter'?'👑':'👹'} ${gigAccHTML(R.boss.name)} · ${R.lap===1?`${R.pool.length-R.deck.length} of ${R.pool.length}`:`lap ${R.lap}, ${R.cleared} cleared`}`:'Rush'}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span class="lives">${[...Array(VC_LIVES)].map((_,k)=>`<i${k<R.lives?'':' class="gone"'}></i>`).join('')}</span></div>
     <div class="ebar vcbar"><i id="vcBar" style="width:${R.lost?0:Math.max(0,100*R.left/R.secs)}%"${R.lost?' class="boss"':''}></i></div>
-    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${it.life?'<em class="vclife">💚 +1 life</em>':vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}</div>
+    <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(it.v.name)}</span>${it.life?'<em class="vclife">💚 +1 life</em>':vcCue(it.v)}${it.of>1?`<em>${it.i+1} of ${it.of} ways</em>`:''}${it.review?'<em>Back again</em>':''}${R.boss&&R.lapNote?`<em class="vclap">${R.lap===2?'Beaten! ':''}Lap ${R.lap}: faster</em>`:''}</div>
     ${vcDiagram(t,R.fresh||R.lost)}
     <div class="lmsg" id="vcMsg">${R.lost?'Time. Play it to go on.':''}</div>
     <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button><button class="ghost" id="vcEnd">End</button></div>`;
@@ -331,7 +336,7 @@ function vcRushNotes(notes){
     clearInterval(R.tick); R.solved=true;
     if(R.lost){ $('vcMsg').textContent='That\'s it. It\'ll come back.'; $('vcMsg').className='lmsg ok'; R.timer=setTimeout(vcRushNext,900); return; }
     const frac=Math.max(0,R.left/R.secs), mult=1+Math.min(2,R.combo*0.1), pts=Math.round((100+150*frac)*mult*(R.item.v.diff>1?1+0.25*(R.item.v.diff-1):1));
-    R.score+=pts; R.combo++; if(!R.item.life) R.cleared++; R.xp+=4; R.speed=Math.max(0.55,R.speed*0.97);
+    R.score+=pts; R.combo++; if(!R.item.life) R.cleared++; R.xp+=4; R.speed=Math.max(R.boss?vcLapFloor(R.lap):0.55,R.speed*0.97);
     let life=''; if(R.item.life){ if(R.lives<VC_LIVES){ R.lives++; life='  💚 +1 life!'; } else { R.score+=600; life='  💚 Full on lives: +600'; } }
     $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}${life}`; $('vcMsg').className='lmsg ok';
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.item.v.name}.`;
@@ -356,14 +361,17 @@ function vcRushOver(){
 }
 
 function vcBossOver(){
-  const R=VC, b=R.boss, n=R.pool.length; if(R.won) VCDATA.boss[b.id]=true; addXP(R.xp+(R.won?(b.kind==='final'?400:b.kind==='chapter'?150:60):0)); saveVc();
+  const R=VC, b=R.boss, n=R.pool.length, bb=VCDATA.bossBest=VCDATA.bossBest||{}, prev=bb[b.id]||0, rec=R.score>prev; if(rec) bb[b.id]=R.score;
+  addXP(R.xp+(R.won?(b.kind==='final'?400:b.kind==='chapter'?150:60):0)+Math.round(R.score/200)); saveVc();
   const weak=Object.entries(R.missed).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>VOICE[id]);
-  $('vcBody').innerHTML=`<h2>${R.won?`👑 ${gigAccHTML(b.name)}: beaten`:`${gigAccHTML(b.name)}: not this time`}</h2>
-    <div class="results"><div><b>${R.cleared} of ${n}</b>voicings</div><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.lives}</b>lives left</div></div>
+  $('vcBody').innerHTML=`<h2>${R.won?`👑 ${gigAccHTML(b.name)}: beaten${R.lap>2?`, lap ${R.lap}`:''}`:`${gigAccHTML(b.name)}: not this time`}</h2>
+    <div class="results"><div><b>${R.won?R.cleared:`${n-R.deck.length} of ${n}`}</b>voicings</div><div><b>${R.score.toLocaleString()}</b>${rec&&R.score?'new best':'score'}</div><div><b>${prev?Math.max(prev,R.score).toLocaleString():'–'}</b>best</div></div>
+    ${R.won?'':`<p class="fine">Play every voicing once, shape hidden, to beat it. After that it keeps going, faster each lap.</p>`}
     ${weak.length?`<div class="sec">The ones that got you</div><div class="vcsib">${weak.map(v=>`<button class="ghost" data-vc="${v.id}">${gigAccHTML(vcSym(vcIn(v,0)))}: ${gigAccHTML(v.name)}</button>`).join('')}</div>`:''}
+    <p class="fine">Play any chord to go again.</p>
     <div class="erow"><button class="go" id="vcAgain">Again</button><button class="ghost" id="vcMenu">All voicings</button></div>`;
   $('vcBody').querySelectorAll('[data-vc]').forEach(x=>x.onclick=()=>vcOpen(x.dataset.vc));
-  $('vcAgain').onclick=()=>vcBossStart(b.id); $('vcMenu').onclick=vcToMenu;
+  $('vcAgain').onclick=()=>vcBossStart(b.id); $('vcMenu').onclick=vcToMenu; R.after=()=>vcBossStart(b.id);
 }
 function vcToMenu(){ clearDraft();
   vcStop(); VC.active=false; VC.after=null; $('voiceStage').hidden=true; document.body.classList.remove('vcmode');

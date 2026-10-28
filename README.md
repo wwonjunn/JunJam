@@ -43,8 +43,8 @@ A jazz piano trainer with two sides:
   chapter, and a final boss of everything. Chords: bosses after stages 1–3 and 4–6 and after every four progressions,
   Everything and "every progression" as chapter bosses, and a final boss of single chords and progressions mixed. Ears
   game: a 5-hit 👹 mid-run after every three levels, an 8-hit 🐲 at the top of each ladder, and a 20-hit 😈 final boss
-  across every world (once each has ★★). Voicings: gauntlets of every voicing of 3–4 chord types once each, a chapter
-  boss per family, and all 86 as the final boss. No stage goes past 200 bpm (Cherokee 180, Donna Lee and Devil 200).
+  across every world (once each has ★★). Voicings: endless gauntlets (every voicing of 3–4 chord types once each beats it,
+  then it reshuffles, faster each lap, till you're out of lives; best score kept), a chapter boss per family, and all 86 as the final boss. No stage goes past 200 bpm (Cherokee 180, Donna Lee and Devil 200).
 - **😈 Devil modes** (the post-game, with their own 💀 ranks; normal stars are untouched):
   - Chords, per stage at ★★★★★: 200 bpm, one life, every chord on fire (3rd, 5th or 7th in the bass), odd spellings,
     no hints. 💀 16 chords, 💀💀 32, 💀💀💀 48.
