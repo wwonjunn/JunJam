@@ -5683,18 +5683,22 @@ const RH_KEYS=5, RH_BAR=1.25; // keys after the first, seconds per chord in play
 
 /* ---------------- menu pane ---------------- */
 const rhStarTotal=()=>REHARM_MOVES.reduce((a,m)=>a+(RHDATA.stars[m.id]||0),0);
+// the first move without a star, tier by tier
+const rhNextMove=()=>([...REHARM_MOVES].sort((a,b)=>a.tier-b.tier).find(m=>!RHDATA.stars[m.id])||{}).id;
 function renderReharmPane(){
   const tier=(t,title)=>`<div class="sec" style="margin-top:12px">${t}. ${title}${reharmPathNote(t)?` <span class="fine pathnote">${reharmPathNote(t)}</span>`:''}</div><div class="licks${reharmPathNote(t)?' laterset':''}">${REHARM_MOVES.filter(m=>m.tier===t).map(m=>
     `<button class="lick" data-move="${m.id}"><span class="ln">${rhChords(m.after,0,m.minor).map(c=>c.rn).join(' ')}</span><span class="lt">${m.name}</span><span class="lst"><b>${starStr(RHDATA.stars[m.id]||0)}</b></span><span class="rwhat">${m.what}</span></button>`).join('')}</div>`;
   $('reharmPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Reharm</h2>
     <p>Every chord type you've drilled has a job. Reharm teaches the jobs: swap or add chords so a progression pulls harder, slides smoother or changes colour, while still going where it was going. ${rhStarTotal()} of ${REHARM_MOVES.length*3} stars.</p>
     <div class="drill"><button class="ghost" id="rhEarBtn" style="margin-left:0">Ear quiz: name the move</button><span>Hear a progression plain, then reharmonised, and say what changed.</span></div>
+    <div class="sec" style="margin-top:12px">Your path <span class="fine">down each column, then the next: tap a move to open it</span></div>
+    <div class="pathstrip" id="rhPath">${pathChapsHTML([1,2,3].map(t=>[RH_TIER[t],REHARM_MOVES.filter(m=>m.tier===t).map(m=>({id:m.id,t:m.name,st:RHDATA.stars[m.id]||0}))]),rhNextMove(),null,3)}</div>
     ${tier(1,'Everyday moves')}${tier(2,'Colour and motion')}${tier(3,'The modern sound')}
     <p class="fine" style="margin-top:12px">Moves marked exact want that exact chord type; the others take any chord of the right family (A7, A7♭9 and A13 all count as a dominant). ★ learn the move. ★★ four of five new keys right first time, no hints. ★★★ all five. Explanations follow the sources linked on each card.</p>`;
 }
 function bindReharmPane(){
   $('reharmPane').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
-    if(b.dataset.move) rhOpen(b.dataset.move); else if(b.id==='rhEarBtn') rhEarStart(); };
+    if(b.dataset.move||b.dataset.step) rhOpen(b.dataset.move||b.dataset.step); else if(b.id==='rhEarBtn') rhEarStart(); };
 }
 
 /* ---------------- shared stage helpers ---------------- */
@@ -37504,6 +37508,14 @@ function linesPathNote(d){ if(d<2) return ''; const n=linesStarred(d-1); return 
 // Reharm tiers
 const RH_TIER=['','Everyday moves','Colour and motion','The modern sound'];
 function reharmPathNote(t){ if(t<2) return ''; const n=REHARM_MOVES.filter(m=>m.tier===t-1&&RHDATA.stars[m.id]).length; return n>=RH_GATE?'':`Recommended after ★ on ${RH_TIER[t-1].toLowerCase()} (${n} of ${RH_GATE}).`; }
+// the path as chapter columns, read top to bottom, then the next column: chapters [[name,[{id,t,sub,st}]]], numbered on through
+function pathChapsHTML(chaps,nx,sel,max=STAR_MAX){ let i=0;
+  const all=chaps.flatMap(c=>c[1]), done=all.filter(x=>x.st).length, n=all.find(x=>x.id===nx);
+  return `<div class="phead">${done} of ${all.length} steps have a star${n?`. Next up: <b>${gigAccHTML(n.t)}</b>${n.sub?` <span class="fine">(${gigAccHTML(n.sub)})</span>`:''}`:''}</div><div class="pchaps">`
+    +chaps.map(([name,steps])=>{ const k=steps.filter(x=>x.st).length;
+      return `<div class="pchap"><div class="pct"><span>${name}</span><span class="fine">${k}/${steps.length}</span></div><div class="pcbar"><i style="width:${k/steps.length*100}%"></i></div>`
+        +steps.map(x=>`<button class="pnode${x.st?' got':''}${x.id===nx?' now':''}${x.id===sel?' sel':''}${x.sub?' boss':''}" data-step="${x.id}" title="${starStr(x.st,max)}"><span class="pd">${++i}</span><span class="pl">${gigAccHTML(x.t)}${x.sub?`<small>${gigAccHTML(x.sub)}</small>`:''}</span>${x.st?`<b>${'★'.repeat(x.st)}</b>`:''}</button>`).join('')+'</div>'; }).join('')+'</div>';
+}
 // the home cards: what's next in each mode
 function modeNextText(id){
   if(id==='hands'){ const n=nextUp(); return n?`Next: ${pathName(n)}`:''; }
@@ -37580,18 +37592,13 @@ function renderMenu(){
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);
   $('pathNote').textContent=chordsPathNote(stageN);
-  // the path as chapters, read top to bottom, then the next column: a dot per step, filled once it has a star
   const lab=id=>{ id=String(id); const b=PBOSS.find(x=>'p:'+x.id===id), st=STAGE[+id];
     if(b) return ['Boss',PROGS.slice(b.from,b.to).map(x=>x.short).join(', ')];
     if(st&&st.boss) return ['Boss',`stages ${st.boss[0]} to ${st.boss[st.boss.length-1]}`];
     if(id==='p:mix') return ['Every progression','final boss']; if(st&&st.chapter) return ['Everything','every chord stage'];
     return [pathName(id),'']; };
-  let at=0; const done=NEXT_ORDER.filter(id=>starsOf(id)).length;
-  $('pathStrip').innerHTML=`<div class="phead">${done} of ${NEXT_ORDER.length} steps have a star${nx?`. Next up: <b>${gigAccHTML(lab(nx)[0])}</b>${lab(nx)[1]?` <span class="fine">(${gigAccHTML(lab(nx)[1])})</span>`:''}`:''}</div><div class="pchaps">`
-    +PATH_CHAPTERS.map(([name,n])=>{ const ids=NEXT_ORDER.slice(at,at+n), k=ids.filter(id=>starsOf(id)).length; at+=n;
-      return `<div class="pchap${k===n?' full':''}"><div class="pct"><span>${name}</span><span class="fine">${k}/${n}</span></div><div class="pcbar"><i style="width:${k/n*100}%"></i></div>`
-        +ids.map(id=>{ const st=starsOf(id), [t,sub]=lab(id), i=NEXT_ORDER.indexOf(id)+1;
-          return `<button class="pnode${st?' got':''}${id===nx?' now':''}${String(stageN)===id?' sel':''}${sub?' boss':''}" data-step="${id}" title="${starStr(st,STAR_MAX)}"><span class="pd">${i}</span><span class="pl">${gigAccHTML(t)}${sub?`<small>${gigAccHTML(sub)}</small>`:''}</span>${st?`<b>${'★'.repeat(st)}</b>`:''}</button>`; }).join('')+'</div>'; }).join('')+'</div>';
+  let at=0;
+  $('pathStrip').innerHTML=pathChapsHTML(PATH_CHAPTERS.map(([name,n])=>[name,NEXT_ORDER.slice(at,at+=n).map(id=>{ const [t,sub]=lab(id); return {id,t,sub,st:starsOf(id)}; })]),nx,String(stageN));
   updateHud();
 }
 $('pathStrip').addEventListener('click',e=>{ const b=e.target.closest('[data-step]'); if(!b) return; const id=b.dataset.step; briefOpen(/^\d+$/.test(id)?+id:id); });

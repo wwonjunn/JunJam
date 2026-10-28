@@ -7,18 +7,22 @@ const RH_KEYS=5, RH_BAR=1.25; // keys after the first, seconds per chord in play
 
 /* ---------------- menu pane ---------------- */
 const rhStarTotal=()=>REHARM_MOVES.reduce((a,m)=>a+(RHDATA.stars[m.id]||0),0);
+// the first move without a star, tier by tier
+const rhNextMove=()=>([...REHARM_MOVES].sort((a,b)=>a.tier-b.tier).find(m=>!RHDATA.stars[m.id])||{}).id;
 function renderReharmPane(){
   const tier=(t,title)=>`<div class="sec" style="margin-top:12px">${t}. ${title}${reharmPathNote(t)?` <span class="fine pathnote">${reharmPathNote(t)}</span>`:''}</div><div class="licks${reharmPathNote(t)?' laterset':''}">${REHARM_MOVES.filter(m=>m.tier===t).map(m=>
     `<button class="lick" data-move="${m.id}"><span class="ln">${rhChords(m.after,0,m.minor).map(c=>c.rn).join(' ')}</span><span class="lt">${m.name}</span><span class="lst"><b>${starStr(RHDATA.stars[m.id]||0)}</b></span><span class="rwhat">${m.what}</span></button>`).join('')}</div>`;
   $('reharmPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Reharm</h2>
     <p>Every chord type you've drilled has a job. Reharm teaches the jobs: swap or add chords so a progression pulls harder, slides smoother or changes colour, while still going where it was going. ${rhStarTotal()} of ${REHARM_MOVES.length*3} stars.</p>
     <div class="drill"><button class="ghost" id="rhEarBtn" style="margin-left:0">Ear quiz: name the move</button><span>Hear a progression plain, then reharmonised, and say what changed.</span></div>
+    <div class="sec" style="margin-top:12px">Your path <span class="fine">down each column, then the next: tap a move to open it</span></div>
+    <div class="pathstrip" id="rhPath">${pathChapsHTML([1,2,3].map(t=>[RH_TIER[t],REHARM_MOVES.filter(m=>m.tier===t).map(m=>({id:m.id,t:m.name,st:RHDATA.stars[m.id]||0}))]),rhNextMove(),null,3)}</div>
     ${tier(1,'Everyday moves')}${tier(2,'Colour and motion')}${tier(3,'The modern sound')}
     <p class="fine" style="margin-top:12px">Moves marked exact want that exact chord type; the others take any chord of the right family (A7, A7♭9 and A13 all count as a dominant). ★ learn the move. ★★ four of five new keys right first time, no hints. ★★★ all five. Explanations follow the sources linked on each card.</p>`;
 }
 function bindReharmPane(){
   $('reharmPane').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
-    if(b.dataset.move) rhOpen(b.dataset.move); else if(b.id==='rhEarBtn') rhEarStart(); };
+    if(b.dataset.move||b.dataset.step) rhOpen(b.dataset.move||b.dataset.step); else if(b.id==='rhEarBtn') rhEarStart(); };
 }
 
 /* ---------------- shared stage helpers ---------------- */

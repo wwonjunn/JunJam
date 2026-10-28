@@ -23,6 +23,14 @@ function linesPathNote(d){ if(d<2) return ''; const n=linesStarred(d-1); return 
 // Reharm tiers
 const RH_TIER=['','Everyday moves','Colour and motion','The modern sound'];
 function reharmPathNote(t){ if(t<2) return ''; const n=REHARM_MOVES.filter(m=>m.tier===t-1&&RHDATA.stars[m.id]).length; return n>=RH_GATE?'':`Recommended after ★ on ${RH_TIER[t-1].toLowerCase()} (${n} of ${RH_GATE}).`; }
+// the path as chapter columns, read top to bottom, then the next column: chapters [[name,[{id,t,sub,st}]]], numbered on through
+function pathChapsHTML(chaps,nx,sel,max=STAR_MAX){ let i=0;
+  const all=chaps.flatMap(c=>c[1]), done=all.filter(x=>x.st).length, n=all.find(x=>x.id===nx);
+  return `<div class="phead">${done} of ${all.length} steps have a star${n?`. Next up: <b>${gigAccHTML(n.t)}</b>${n.sub?` <span class="fine">(${gigAccHTML(n.sub)})</span>`:''}`:''}</div><div class="pchaps">`
+    +chaps.map(([name,steps])=>{ const k=steps.filter(x=>x.st).length;
+      return `<div class="pchap"><div class="pct"><span>${name}</span><span class="fine">${k}/${steps.length}</span></div><div class="pcbar"><i style="width:${k/steps.length*100}%"></i></div>`
+        +steps.map(x=>`<button class="pnode${x.st?' got':''}${x.id===nx?' now':''}${x.id===sel?' sel':''}${x.sub?' boss':''}" data-step="${x.id}" title="${starStr(x.st,max)}"><span class="pd">${++i}</span><span class="pl">${gigAccHTML(x.t)}${x.sub?`<small>${gigAccHTML(x.sub)}</small>`:''}</span>${x.st?`<b>${'★'.repeat(x.st)}</b>`:''}</button>`).join('')+'</div>'; }).join('')+'</div>';
+}
 // the home cards: what's next in each mode
 function modeNextText(id){
   if(id==='hands'){ const n=nextUp(); return n?`Next: ${pathName(n)}`:''; }
