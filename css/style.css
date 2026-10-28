@@ -744,7 +744,7 @@ body.gigmode header .modetag{display:none}
 .vcsteps{display:flex;gap:4px;margin:2px 0 8px} .vcsteps i{width:18px;height:6px;border-radius:3px;background:var(--line-strong)}
 .vcsteps i.learn{opacity:.7} .vcsteps i.cur{background:var(--brass)} .vcsteps i.on{background:var(--good)} .vcsteps i.meh{background:var(--tension)}
 .vcclassic{margin-top:16px} .vcclassic summary{cursor:pointer;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--muted)}
-.vctcard.flash{animation:vcflash 1.6s ease-out}
+.vctcard.flash,.pnode.flash{animation:vcflash 1.6s ease-out}
 .vctcard.later{opacity:.62} .vctcard.later:hover,.vctcard.later:focus-visible{opacity:1}
 /* the recommended path: step numbers, the next one, cards ahead dimmed (still open) */
 .step{display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 3px;margin-right:6px;border-radius:8px;border:1px solid var(--line-strong);font-size:11px;line-height:1;vertical-align:1px;color:var(--muted)}
@@ -769,6 +769,10 @@ body.gigmode header .modetag{display:none}
 .pnode.got{color:var(--ink)} .pnode.got .pd{background:var(--good);border-color:var(--good);color:var(--lane)}
 .pnode.now{color:var(--ink);background:color-mix(in srgb,var(--brass) 14%,transparent)} .pnode.now .pd{border-color:var(--brass);background:var(--brass);color:var(--lane);box-shadow:0 0 0 3px color-mix(in srgb,var(--brass) 30%,transparent)}
 .pnode.sel{outline:1.5px solid var(--chord);outline-offset:-1px}
+.pnode:disabled{opacity:.45;cursor:default} .pnode:disabled:hover{background:none}
+.pcsub{font-size:11.5px;color:var(--brass);padding:1px 4px 0}
+.pmix{font:inherit;font-size:12px;color:var(--muted);background:none;border:1px dashed var(--line-strong);border-radius:6px;padding:4px 8px;margin:6px 4px 2px;width:calc(100% - 8px);cursor:pointer;text-align:left}
+.pmix:not(:disabled):hover{color:var(--ink);border-color:var(--muted)} .pmix:disabled{opacity:.5;cursor:default}
 /* Practice: tabs, routine cards, the detail view, the running checklist, the editor and its picker */
 .ptabs{display:flex;gap:4px;border-bottom:1.5px solid var(--line-strong);margin:4px 0 14px}
 .ptabs button{font:inherit;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--muted);background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;padding:6px 14px;cursor:pointer}

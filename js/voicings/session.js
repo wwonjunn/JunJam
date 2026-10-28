@@ -35,8 +35,6 @@ const VBOSSES=[...VCHAPTERS.flatMap(ch=>[...(ch.mid?[{id:`${ch.id}1`,name:`Boss:
   {id:'final',name:'Final boss: every voicing',types:VTYPES,kind:'final'}];
 const vcChapterTypes=id=>id==='all'?VPATH:(VCHAPTERS.find(c=>c.id===id)||{types:VPATH}).types;
 const vcChapterOf=q=>VCHAPTERS.find(c=>c.types.includes(q));
-// the chapter you're on: the first with a chord type not yet starred
-const vcCurChapter=()=>(VCHAPTERS.find(c=>c.types.some(q=>!vtStars(q)))||VCHAPTERS[VCHAPTERS.length-1]).id;
 // recommended first: the chord type before this one on the path, if it has no star yet (and this one has none either)
 function vcPrereq(q){ const i=VPATH.indexOf(q); if(i<=0||vtStars(q)) return null; const p=VPATH[i-1]; return vtStars(p)?null:p; }
 const vcNextType=()=>VPATH.find(q=>!vtStars(q))||VPATH.find(q=>vtStars(q)<3)||VPATH[0];
@@ -59,19 +57,11 @@ function vcPool(){
   return learned.length>=4?learned:VOICINGS.filter(v=>v.diff===1);
 }
 const vcDots=d=>'●'.repeat(d)+'○'.repeat(3-d);
-function vcTypeCard(q,n){
-  const ways=vcWays(q), st=vtStars(q), next=q===vcNextType(), ahead=!st&&VPATH.indexOf(q)>VPATH.indexOf(vcNextType());   // ahead of the path: dimmed, still open
-  return `<button class="lick vctcard${next?' vcnext':''}${st?' done':''}${ahead?' later':''}" data-vt="${q}"><span class="ln">${n}${next?' · <b>Next up</b>':''}</span><span class="lt">${gigAccHTML(vcTypeName(q))}</span>
-    <span class="lst"><b>${starStr(st)}</b> ${ways.length} way${ways.length>1?'s':''}: ${ways.map(v=>vcDots(v.diff).replace(/○/g,'')).join(' ')}</span>
-    <span class="ltags">${[...new Set(ways.map(v=>VFAM[v.fam]))].slice(0,3).map(f=>`<i>${f}</i>`).join('')}</span></button>`;
-}
 function renderVoicingsPane(){
-  const open=VCDATA.open||(VCDATA.open={}), cur=vcCurChapter(); let n=0;
-  const chapters=VCHAPTERS.map((c,ci)=>{ const got=c.types.filter(q=>vtStars(q)).length, stars=c.types.reduce((a,q)=>a+vtStars(q),0), isOpen=open[c.id]??(c.id===cur);
-    const prevDone=ci===0||VCHAPTERS[ci-1].types.every(q=>vtStars(q)), cards=c.types.map(q=>{ n++; const b=VBOSSES.filter(x=>x.after===q&&x.kind!=='final'); return vcTypeCard(q,n)+b.map(vcBossCard).join(''); }).join('');
-    return `<div class="vcchap${isOpen?' open':''}${c.id===cur?' cur':''}" data-qid-chap="${c.id}"><button class="vcchead" data-vchap="${c.id}" aria-expanded="${isOpen}"><span class="vccn">${ci+1}</span><span class="vcct"><b>${c.name}</b><span>${c.blurb}</span></span><span class="vccs">${got} of ${c.types.length} chords · ${stars} of ${c.types.length*3} ★${!prevDone&&!got&&isOpen?`<em>Recommended after chapter ${ci}</em>`:''}</span><span class="vccar">${isOpen?'▾':'▸'}</span></button>
-      ${isOpen?`<div class="licks vcpath">${cards}</div>`:''}</div>`; }).join('');
-  const best=VCDATA.best[VCDATA.pool], learned=VPATH.filter(q=>vtStars(q)).length, nx=vcNextType();
+  // the path: a column per chapter, each chord type a step, its bosses after it
+  const bossStep=b=>({id:'vb:'+b.id,t:b.kind==='chapter'?'Chapter boss':'Boss',sub:b.kind==='chapter'?'every chord in it':b.types.map(vcTypeName).join(', '),st:VCDATA.boss[b.id]?1:0,ns:1,tip:`${VOICINGS.filter(v=>b.types.includes(v.qid)).length} voicings, once each, three lives`});
+  const nx=vcNextType(), path=pathChapsHTML(VCHAPTERS.map(c=>[c.name,c.types.flatMap(q=>[{id:'vt:'+q,t:vcTypeName(q),st:vtStars(q),tip:`${vcWays(q).length} way${vcWays(q).length>1?'s':''}`},...VBOSSES.filter(x=>x.after===q&&x.kind!=='final').map(bossStep)]),{tip:c.blurb}]),'vt:'+nx,null,3);
+  const best=VCDATA.best[VCDATA.pool], learned=VPATH.filter(q=>vtStars(q)).length;
   $('voicingsPane').innerHTML=`<button class="back" data-home>← All modes</button><h2>Voicings</h2>
     <p>The same chord, many ways: ${VPATH.length} chords, ${VOICINGS.length} named two-hand voicings, in six chapters from the easiest to the richest. Each chord is one lesson: learn every way to play it in C, then a mixed round from memory in new keys. ${vcStarTotal()} of ${VPATH.length*3} stars.</p>
     <div class="sec">Games</div>
@@ -79,9 +69,9 @@ function renderVoicingsPane(){
     <div class="vcrush"><div><b>Rush <span class="fine">classic</span></b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
       <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm}${k==='learned'?`: ${learned}${learned<2?', so the starter set for now':''}`:''}</option>`).join('')}${VCHAPTERS.map((c,i)=>`<option value="${c.id}"${VCDATA.pool===c.id?' selected':''}>Chapter ${i+1}: ${c.name}</option>`).join('')}${Object.entries(VFAM).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
-    <div class="sec" style="margin-top:16px">Flash cards: one lesson per chord</div>
-    <div class="erow vcnextrow"><button class="go" data-vt="${nx}">Next up: ${gigAccHTML(vcTypeName(nx))} (${vcWays(nx).length} way${vcWays(nx).length>1?'s':''})</button></div>
-    <div class="vcchaps">${chapters}<div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div></div>
+    <div class="sec" style="margin-top:16px">Flash cards: one lesson per chord <span class="fine">down each column, then the next: tap a chord to open its lesson</span></div>
+    <div class="pathstrip" id="vcPath">${path}</div>
+    <div class="licks vcbosses">${vcBossCard(VBOSSES[VBOSSES.length-1])}</div>
     <p class="fine" style="margin-top:8px">★ finish the lesson. ★★ 80% of the mixed round clean (right first try, shape hidden). ★★★ all of it clean. ● to ●●● is how hard each shape is. A MIDI keyboard is needed: these are two-hand chords.</p>
     <details class="vcclassic"${VCDATA.dict?' open':''}><summary>Classic: every voicing, one card each</summary>${vcDictHTML()}</details>`;
   chBindPane($('voicingsPane'));
@@ -98,17 +88,18 @@ function vcDictHTML(){
 function bindVoicingsPane(){
   $('voicingsPane').onclick=e=>{ if(e.target.closest('summary')){ setTimeout(()=>{ VCDATA.dict=e.target.closest('details').open; saveVc(); }); return; }
     const b=e.target.closest('button'); if(!b||b.dataset.chd||b.id==='chGo') return;
-    if(b.dataset.vchap){ const id=b.dataset.vchap, o=VCDATA.open=VCDATA.open||{}; o[id]=!(o[id]??(id===vcCurChapter())); saveVc(); renderVoicingsPane(); return; }
-    if(b.dataset.vt) vcTypeOpen(b.dataset.vt);
+    const st=b.dataset.step||'';
+    if(st.startsWith('vt:')) vcTypeOpen(st.slice(3)); else if(st.startsWith('vb:')) vcBossStart(st.slice(3));
+    else if(b.dataset.vt) vcTypeOpen(b.dataset.vt);
     else if(b.dataset.vboss) vcBossStart(b.dataset.vboss);
     else if(b.dataset.vc) vcOpen(b.dataset.vc);
     else if(b.dataset.fam){ VCDATA.fam=b.dataset.fam; VCDATA.dict=true; saveVc(); renderVoicingsPane(); }
     else if(b.id==='vcRushBtn') vcRushStart(); };
   $('voicingsPane').onchange=e=>{ if(e.target.id==='chSong') return; if(e.target.id==='vcPool'){ VCDATA.pool=e.target.value; saveVc(); renderVoicingsPane(); } };
 }
-// open a chapter in the list and scroll to a chord type (from a briefing or a practice block)
-function vcShowType(q,flash=true){ const c=vcChapterOf(q); if(c){ (VCDATA.open=VCDATA.open||{})[c.id]=true; }
-  side='voicings'; renderMenu(); const el=document.querySelector(`#voicingsPane [data-vt="${q}"].vctcard`);
+// scroll to a chord type on the path (from a briefing or a practice block)
+function vcShowType(q,flash=true){
+  side='voicings'; renderMenu(); const el=document.querySelector(`#vcPath [data-step="vt:${q}"]`);
   if(el){ el.scrollIntoView({block:'center'}); if(flash){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1700); } } }
 
 /* ---------------- drawing a voicing ---------------- */

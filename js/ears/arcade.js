@@ -107,14 +107,17 @@ function arcPaneHTML(){
   const todayRow=`<div class="arctoday">
     <button class="arcw arcday" data-arcd="daily"><span class="lt">Daily wave ${today?ARC_MEDAL[today.medal]:''}</span><span class="lst">${today?`Done today: ${today.score.toLocaleString()}. Play again for practice.`:`${ARC_DAILY} monsters from every world, plus today's stretch level. Your first try counts.`}</span><span class="fine">${streak?`🔥 ${streak}-day streak`:'Start a streak'}</span><span class="arccal">${cal}</span></button>
     <button class="arcw arcweek" data-arcd="weekly"><span class="lt">Weekly boss ${wk&&wk.beaten?'🏆':'👹'}</span><span class="lst">${wk?`${wk.beaten?'Beaten':'Best'}: ${wk.best.toLocaleString()} (${wk.kills} of ${ARC_WEEKLY})`:`${ARC_WEEKLY} armoured brutes, faster, from your top levels and one above each. Same wave all week.`}</span><span class="fine">Resets Monday</span></button></div>`;
-  return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="arcworlds">${ARC_PATH.map((id,i)=>{
-    const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id], nx=earsNextWorld(), pre=earsPrereq(id), ahead=!arcStars(id)&&i>ARC_PATH.indexOf(nx);
-    return `<button class="arcw${id===nx?' arcnext':''}${ahead?' later':''}" data-arc="${id}"${pre?` title="Recommended first: ★ in ${arcWorld(pre).name}"`:''}><span class="lt"><span class="step">${i+1}</span>${w.name}${id===nx?' <span class="nx">Next up</span>':''}</span>${pre&&pre===nx?`<span class="fine pathnote">Recommended first: ★ in ${arcWorld(pre).name}</span>`:''}<span class="lst"><b>${starStr(arcStars(id))}</b>${r?`Reached ${arcRungs(id)[Math.min(r,arcRungs(id).length)-1].name}`:'Not played yet'}</span><span class="fine">${b?`Best ${b.toLocaleString()}`:w.blurb}</span></button>`; }).join('')}</div>
+  return `<div class="arcwrap">${todayRow}<div class="sec">Call &amp; Response <span class="fine">the game: monsters march at your wall, and the right answer on your keyboard blasts them</span></div><div class="pathstrip" id="arcPath">${arcPathHTML()}</div>
     ${arcDevilHTML()}${arcFinalHTML()}
     <p class="fine">★ reach level 2 of the ladder in one run. ★★ reach the last level. ★★★ clear it. Answer on your keyboard: there's nothing to click once it starts.</p></div>
     <div class="sec arcclassic">Classic levels <span class="fine">the original quiz, level by level</span></div>`;
 }
 
+// the path: a column per world, each ladder level a step, done once you've climbed past it; tap any to play that world
+function arcPathHTML(){ const nw=earsNextWorld(), nr=Math.max(0,(ARCDATA.reach[nw]||0)-1);
+  return pathChapsHTML(ARC_PATH.map(id=>{ const w=arcWorld(id), r=ARCDATA.reach[id]||0, b=ARCDATA.best[id];
+    return [w.name,arcRungs(id).map((l,i)=>({id:`arc:${id}:${i}`,t:l.boss?'Boss':l.name,sub:l.boss?l.name.replace(/^Boss:?\s*/,''):'',st:r>i+1?1:0,ns:1,tip:w.blurb})),{sub:`${starStr(arcStars(id))}${b?` · best ${b.toLocaleString()}`:''}`,tip:w.blurb}]; }),
+    arcStars(nw)>=3?null:`arc:${nw}:${nr}`); }
 function arcFinalHTML(){ const F=ARCDATA.final, open=arcFinalOpen();
   return `<button class="arcw arcfinal" data-arc="final"${open?'':' disabled'}><span class="lt">😈 Final boss ${F.beaten?'🏆':''}</span><span class="lst">${open?(F.best?`Best ${F.best.toLocaleString()}`:'20 hits, questions from every world'):'Earn ★★ on every world to face it'}</span><span class="fine">Three lives. A boss every three levels and a chapter boss at the top of each ladder come before it.</span></button>`; }
 function arcDevilHTML(){

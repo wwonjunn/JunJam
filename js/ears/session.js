@@ -202,20 +202,14 @@ function renderEarsPane(){
     <div class="drill"><button class="ghost" id="drillBtn" style="margin-left:0">Weakness drill</button><span id="earsNote">${conf.length?`Your biggest mix-ups: ${conf.map(confLabel).join(', ')}.`:'The drill builds itself from your mix-ups once you have some.'}</span></div>`;
   const pushed=pushedKeys();
   if(pushed) h+=`<p class="fine" style="margin:-6px 0 14px">Scale degrees and chords lean on your shakiest keys, from Hands and Ears together. Right now: ${pushed}.</p>`;
-  WORLDS.forEach(w=>{
-    const got=w.levels.reduce((a,l)=>a+(EARDATA.stars[l.id]||0),0);
-    h+=`<div class="world"><div class="wh"><span class="wn">${w.name}</span><span class="wb">${w.blurb}</span><span class="ws">${got} of ${w.levels.length*3} stars</span></div><div class="lvls">`;
-    w.levels.forEach(l=>{
-      const L=LEVELS[l.id], open=levelUnlocked(L), st=EARDATA.stars[l.id]||0;
-      h+=`<button class="lvl${l.boss?' boss':''}" data-lv="${l.id}" ${open?'':'disabled'} title="${open?'':'Pass the level before this one first'}"><span class="ln">${l.boss?'Boss':L.index+1}</span><span class="lt">${l.name}</span><span class="lst">${open?starStr(st):'Locked'}</span></button>`;
-    });
-    const n=mixPool(w).length;
-    h+=`<button class="lvl mix" data-lv="mix:${w.id}" ${n>=2?'':'disabled'} title="${n>=2?'Random questions from your unlocked levels. Practice only, no stars.':'Unlock a second level to mix'}"><span class="ln">Practice</span><span class="lt">Mixed</span><span class="lst">${n>=2?`${n} level${n>1?'s':''}`:'Locked'}</span></button>`;
-    h+='</div></div>';
-  });
+  const firstOpen=WORLDS.flatMap(w=>w.levels).find(l=>levelUnlocked(LEVELS[l.id])&&!EARDATA.stars[l.id]);
+  h+=`<div class="pathstrip" id="earsPath">${pathChapsHTML(WORLDS.map(w=>{ const n=mixPool(w).length;
+    return [w.name,w.levels.map(l=>{ const open=levelUnlocked(LEVELS[l.id]); return {id:'lv:'+l.id,t:l.boss?'Boss':l.name,sub:l.boss?'15 questions, 3 lives':'',st:EARDATA.stars[l.id]||0,off:!open,tip:open?'':'Pass the level before this one first'}; }),
+      {tip:w.blurb,foot:`<button class="pmix" data-lv="mix:${w.id}" ${n>=2?'':'disabled'}>${n>=2?`Mixed practice: ${n} levels`:'Mixed practice opens with a second level'}</button>`}]; }),firstOpen?'lv:'+firstOpen.id:null,null,3)}</div>`;
   $('earsPane').innerHTML=h;
   $('drillBtn').onclick=()=>earsStart('drill');
-  $('earsPane').querySelectorAll('.lvl').forEach(b=>b.onclick=()=>earsStart(b.dataset.lv));
+  $('earsPane').querySelectorAll('.pmix').forEach(b=>b.onclick=()=>earsStart(b.dataset.lv));
+  $('earsPane').querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{ const id=b.dataset.step; if(id.startsWith('lv:')) earsStart(id.slice(3)); else if(id.startsWith('arc:')) arcStart(id.split(':')[1]); });
   $('earsPane').querySelectorAll('[data-arc]').forEach(b=>b.onclick=()=>arcStart(b.dataset.arc));
   $('earsPane').querySelectorAll('[data-arcd]').forEach(b=>b.onclick=()=>arcStart(b.dataset.arcd));
 }

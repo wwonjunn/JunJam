@@ -77,7 +77,7 @@ function planOpenBlock(){
   if(b.mode==='free'){ side='plan'; renderMenu(); return; }
   if(b.mode==='gig'){ gigOpen(); return; }
   if(b.mode==='hands'&&t){ const id=t==='next'?nextUp():t; if(id){ stageN=/^\d+$/.test(id)?+id:id; store.set('stage',stageN); } }
-  if(b.mode==='voicings'&&t){ if(t==='next'){ vcTypeOpen(vcNextType()); return; } if(t==='rush'){ VCDATA.pool='learned'; vcRushStart(); return; } if(t==='comp'){ side='voicings'; renderMenu(); const c=document.querySelector('#voicingsPane .chcard'); if(c) c.scrollIntoView({block:'center'}); return; } (VCDATA.open=VCDATA.open||{})[t]=true; side='voicings'; renderMenu(); const el=document.querySelector(`#voicingsPane [data-vchap="${t}"]`); if(el) el.scrollIntoView({block:'start'}); return; }
+  if(b.mode==='voicings'&&t){ if(t==='next'){ vcTypeOpen(vcNextType()); return; } if(t==='rush'){ VCDATA.pool='learned'; vcRushStart(); return; } if(t==='comp'){ side='voicings'; renderMenu(); const c=document.querySelector('#voicingsPane .chcard'); if(c) c.scrollIntoView({block:'center'}); return; } const ch=VCHAPTERS.find(c=>c.id===t); if(ch){ vcShowType(ch.types.find(q=>!vtStars(q))||ch.types[0]); return; } side='voicings'; renderMenu(); return; }
   if(b.mode==='lines'){ LINES.over=null; if(t==='daily'||t==='week'){ lpStart(t); return; } if(t.startsWith('rand')){ linesRandom(+t.slice(4)); return; } }
   if(b.mode==='ears'&&t){ arcStart(t==='next'?earsNextWorld():t); return; }
   side=b.mode; renderMenu(); $('startOv').scrollTop=0;
