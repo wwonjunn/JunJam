@@ -65,6 +65,8 @@ function starToast(n,devil){
 }
 // "Next up" on the menu: the first thing in a J-pop band keys order that still has stars to earn
 const NEXT_ORDER=['1','2','p:royal','p:axis','p:komuro','6','p:canon','p:marusa','p:passdim','p:minorIV','p:turnI','p:turnIII','3','11','4','p:iiVI','p:backdoor','p:cliche','p:iiVIm','5','12','7','p:boss1','p:boss2','p:boss3','p:mix'];
+// the path's chapters, as runs of NEXT_ORDER
+const PATH_CHAPTERS=[['Foundations',2],['J-pop progressions',6],['Colour and motion',6],['Jazz',7],['Bosses',5]];
 function nextUp(){ for(let need=1;need<=STAR_MAX;need++){ const id=NEXT_ORDER.find(x=>starsOf(x)<need); if(id) return id; } return null; }
 function nextChords(){
   const st=stageN;

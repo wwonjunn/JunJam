@@ -752,12 +752,23 @@ body.gigmode header .modetag{display:none}
 .arcw.arcnext{border-color:var(--brass)} .arcw .nx{display:inline-block;margin-left:6px;padding:0 5px;border-radius:3px;background:var(--brass);color:var(--lane);font-size:11px;line-height:16px}
 .pathnote{color:var(--brass)!important} p.pathnote{margin:4px 0}
 .mode .mnext{display:block;font-size:12px;color:var(--brass);margin-top:2px}
-.pathstrip{display:flex;flex-wrap:wrap;align-items:center;gap:4px 2px;margin:0 0 14px}
-.pstep{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1.5px solid var(--line-strong);border-radius:999px;padding:2px 10px 2px 3px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
-.pstep i{font-style:normal;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:inline-grid;place-items:center;background:color-mix(in srgb,var(--ink) 10%,transparent)}
-.pstep b{color:var(--brass);font-weight:400;font-size:11px} .pstep.got{border-color:color-mix(in srgb,var(--good) 50%,var(--line-strong))} .pstep.got i{background:var(--good);color:var(--lane)}
-.pstep.now{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset} .pstep.now i{background:var(--brass);color:var(--lane)} .pstep.sel{outline:2px solid var(--chord);outline-offset:1px}
-.parr{color:var(--muted);font-size:13px}
+.pathstrip{margin:0 0 16px}
+.phead{font-size:14px;color:var(--muted);margin:0 0 8px} .phead b{color:var(--ink);font-weight:600}
+.pchaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+.pchap{background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;padding:9px 8px 6px}
+.pct{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--cond);font-weight:600;font-size:15px;padding:0 4px}
+.pcbar{height:3px;border-radius:2px;background:var(--line-strong);margin:5px 4px 6px;overflow:hidden} .pcbar i{display:block;height:100%;background:var(--good)}
+.pnode{position:relative;width:100%;display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;font:inherit;font-size:13.5px;color:var(--muted);background:none;border:0;border-radius:6px;padding:4px;text-align:left;cursor:pointer}
+.pnode:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.pnode:not(:last-child)::after{content:"";position:absolute;left:14.5px;top:24px;height:calc(100% - 16px);width:1.5px;background:var(--line-strong)}
+.pnode.got:not(:last-child)::after{background:color-mix(in srgb,var(--good) 55%,transparent)}
+.pd{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;border:1.5px solid var(--line-strong);background:var(--panel);position:relative;z-index:1}
+.pl{line-height:1.2} .pl small{display:block;font-size:11px;color:var(--muted);opacity:.85}
+.pnode.boss .pl{font-weight:600}
+.pnode b{color:var(--brass);font-weight:400;font-size:11px;letter-spacing:-1px}
+.pnode.got{color:var(--ink)} .pnode.got .pd{background:var(--good);border-color:var(--good);color:var(--lane)}
+.pnode.now{color:var(--ink);background:color-mix(in srgb,var(--brass) 14%,transparent)} .pnode.now .pd{border-color:var(--brass);background:var(--brass);color:var(--lane);box-shadow:0 0 0 3px color-mix(in srgb,var(--brass) 30%,transparent)}
+.pnode.sel{outline:1.5px solid var(--chord);outline-offset:-1px}
 /* Practice: tabs, routine cards, the detail view, the running checklist, the editor and its picker */
 .ptabs{display:flex;gap:4px;border-bottom:1.5px solid var(--line-strong);margin:4px 0 14px}
 .ptabs button{font:inherit;font-family:var(--cond);font-weight:600;font-size:16px;color:var(--muted);background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;padding:6px 14px;cursor:pointer}

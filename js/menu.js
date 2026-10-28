@@ -63,8 +63,18 @@ function renderMenu(){
   $('startBtn').textContent=mode==='practice'?'Start practice':tierUnlocked(t)?`Start ${t.name} at ♩ = ${t.bpm}`:'Locked';
   $('startBtn').disabled=mode==='game'&&!tierUnlocked(t);
   $('pathNote').textContent=chordsPathNote(stageN);
-  const short=id=>{ const s=pathName(id); return s.replace(/^the boss of /,'👹 ').replace(/^the chapter boss$/,String(id)==='p:mix'?'👑 Every progression':'👑 Everything'); };
-  $('pathStrip').innerHTML=NEXT_ORDER.map((id,i)=>{ const st=starsOf(id); return `<button class="pstep${st?' got':''}${id===nx?' now':''}${String(stageN)===id?' sel':''}" data-step="${id}" title="${starStr(st,STAR_MAX)}"><i>${i+1}</i>${gigAccHTML(short(id))}${st?` <b>${'★'.repeat(st)}</b>`:''}</button>`; }).join('<span class="parr">›</span>');
+  // the path as chapters, read top to bottom, then the next column: a dot per step, filled once it has a star
+  const lab=id=>{ id=String(id); const b=PBOSS.find(x=>'p:'+x.id===id), st=STAGE[+id];
+    if(b) return ['Boss',PROGS.slice(b.from,b.to).map(x=>x.short).join(', ')];
+    if(st&&st.boss) return ['Boss',`stages ${st.boss[0]} to ${st.boss[st.boss.length-1]}`];
+    if(id==='p:mix') return ['Every progression','final boss']; if(st&&st.chapter) return ['Everything','every chord stage'];
+    return [pathName(id),'']; };
+  let at=0; const done=NEXT_ORDER.filter(id=>starsOf(id)).length;
+  $('pathStrip').innerHTML=`<div class="phead">${done} of ${NEXT_ORDER.length} steps have a star${nx?`. Next up: <b>${gigAccHTML(lab(nx)[0])}</b>${lab(nx)[1]?` <span class="fine">(${gigAccHTML(lab(nx)[1])})</span>`:''}`:''}</div><div class="pchaps">`
+    +PATH_CHAPTERS.map(([name,n])=>{ const ids=NEXT_ORDER.slice(at,at+n), k=ids.filter(id=>starsOf(id)).length; at+=n;
+      return `<div class="pchap${k===n?' full':''}"><div class="pct"><span>${name}</span><span class="fine">${k}/${n}</span></div><div class="pcbar"><i style="width:${k/n*100}%"></i></div>`
+        +ids.map(id=>{ const st=starsOf(id), [t,sub]=lab(id), i=NEXT_ORDER.indexOf(id)+1;
+          return `<button class="pnode${st?' got':''}${id===nx?' now':''}${String(stageN)===id?' sel':''}${sub?' boss':''}" data-step="${id}" title="${starStr(st,STAR_MAX)}"><span class="pd">${i}</span><span class="pl">${gigAccHTML(t)}${sub?`<small>${gigAccHTML(sub)}</small>`:''}</span>${st?`<b>${'★'.repeat(st)}</b>`:''}</button>`; }).join('')+'</div>'; }).join('')+'</div>';
   updateHud();
 }
 $('pathStrip').addEventListener('click',e=>{ const b=e.target.closest('[data-step]'); if(!b) return; const id=b.dataset.step; briefOpen(/^\d+$/.test(id)?+id:id); });
