@@ -203,11 +203,15 @@ function vcLessonStart(q){
   mix=shuffled(mix); for(let i=1;i<mix.length;i++) if(ways.length>1&&mix[i]===mix[i-1]){ const j=mix.findIndex((x,k)=>k>i&&x!==mix[i]&&x!==mix[k-1]); if(j>0) [mix[i],mix[j]]=[mix[j],mix[i]]; }
   vcRun({type:q,rounds:[...ways.map(v=>({v,pc:0,learn:true})),...mix.map((v,i)=>({v,pc:keys[i],learn:false}))]});
 }
+const VC_SHOW_AFTER=t=>10+2*t.notes.length;   // seconds before a from-memory shape shows itself: about 20 for a five-note voicing
 function vcRun(o){ Object.assign(VC,{active:true,mode:'drill',...o,round:0,results:[],clean:0,xp:0}); vcShow(); vcRound(); }
 function vcRound(){
   vcStop(); clearDraft(); const R=VC;
   const rd=R.rounds[R.round]; R.v=rd.v;
   Object.assign(R,{t:vcIn(rd.v,rd.pc),mistakes:0,shown:rd.learn,done:false,tried:false});
+  // from memory: a slow bar runs down, and when it's empty the shape shows itself, the same as pressing S
+  R.secs=R.left=VC_SHOW_AFTER(R.t); if(!R.shown){ let last=performance.now(); R.tick=setInterval(()=>{ const n=performance.now(); R.left-=(n-last)/1000; last=n;
+    const bar=$('vcBar'); if(bar) bar.style.width=Math.max(0,100*R.left/R.secs)+'%'; if(R.left<=0) vcReveal(); },100); }
   vcRender(); if(R.shown){ vcHintKeys(R.t); vcStaff(R.t); } else { kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); }
   $('verdict').className='verdict'; $('verdict').textContent=R.rounds[R.round].learn?'Copy the shape.':`${vcSym(R.t)}, ${R.v.name}. From memory.`; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
 }
@@ -216,6 +220,7 @@ function vcRender(){
   $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${R.type?gigAccHTML(vcTypeName(R.type))+': ':''}${gigAccHTML(R.v.name)}</span><span>${learn?(R.type?`Learn way ${R.round+1} of ${nl}, in C`:'Learn it, in C'):`${R.type?'Mixed, from memory':'New key'} ${k} of ${nk}`}</span></div>
     ${R.type?`<div class="vcsteps">${R.rounds.map((r,i)=>`<i class="${i<R.round||i===R.round&&R.done?(R.results[i]&&R.results[i].clean?'on':'meh'):i===R.round?'cur':''}${r.learn?' learn':''}"></i>`).join('')}</div>`:''}
     <div class="vcask"><b>${gigAccHTML(vcSym(t))}</b><span>${gigAccHTML(R.v.name)}</span>${vcCue(R.v)}</div>
+    ${!R.shown&&!R.done?`<div class="ebar vcbar vcslow" title="The shape shows itself when this runs out"><i id="vcBar" style="width:${Math.max(0,100*R.left/R.secs)}%"></i></div>`:''}
     ${vcDiagram(t,R.shown||R.done)}
     <div class="lmsg" id="vcMsg"></div>
     <div class="erow"><button class="ghost" id="vcHear">Hear it (R)</button>${!R.shown&&!R.done?'<button class="ghost" id="vcShowB">Show the shape (S)</button>':''}${R.done?'<button class="go" id="vcNext">Next (Enter)</button>':''}<button class="ghost" id="vcEnd">End</button></div>`;
@@ -224,7 +229,7 @@ function vcRender(){
   if($('vcNext')) $('vcNext').onclick=vcNext;
   $('vcEnd').onclick=()=>R.results.length?vcFinish(true):vcToMenu();
 }
-function vcReveal(){ const R=VC; if(R.mode==='drill'&&!R.shown&&!R.done){ R.shown=true; vcRender(); vcHintKeys(R.t); vcStaff(R.t); } }
+function vcReveal(){ const R=VC; if(R.mode==='drill'&&!R.shown&&!R.done){ clearInterval(R.tick); R.shown=true; vcRender(); vcHintKeys(R.t); vcStaff(R.t); } }
 function vcNotes(notes){
   const R=VC; if(!R.active) return;
   if(R.mode==='rush') return vcRushNotes(notes);
@@ -234,7 +239,7 @@ function vcNotes(notes){
   const res=vcGrade(R.t,notes); vcMark(R.t,res);
   if(res.ok){
     const rd=R.rounds[R.round], clean=R.mistakes===0&&(rd.learn||!R.shown);
-    R.done=true; R.results.push({v:rd.v,key:rd.pc,learn:rd.learn,clean,mistakes:R.mistakes,shown:!rd.learn&&R.shown});
+    clearInterval(R.tick); R.done=true; R.results.push({v:rd.v,key:rd.pc,learn:rd.learn,clean,mistakes:R.mistakes,shown:!rd.learn&&R.shown});
     if(!rd.learn&&clean) R.clean++; R.xp+=10+(clean?10:0);
     vcRender(); $('vcMsg').textContent=(clean?'Clean.':`Got it${R.mistakes?`, after ${R.mistakes} wrong tr${R.mistakes>1?'ies':'y'}`:''}.`)+(res.note?' '+res.note:''); $('vcMsg').className='lmsg ok';
     vcStaff(R.t,R.t.notes.map(m=>{ const iv=mod12(m-R.t.root.pc); return iv===0?'root':R.t.q.ct.includes(iv)?'chord':'tension'; }));
@@ -244,7 +249,7 @@ function vcNotes(notes){
   if(res.part){ $('vcMsg').textContent='Keep going…'; $('vcMsg').className='lmsg'; return; }
   if(!R.tried){ R.mistakes++; R.tried=true; }
   $('vcMsg').textContent=res.why; $('vcMsg').className='lmsg no';
-  if(R.mistakes>=3&&!R.shown) $('why').textContent='Stuck? Press S to show the shape.';
+  if(R.mistakes>=3&&!R.shown) $('why').textContent='Stuck? Press S to show the shape, or wait for the bar.';
 }
 function vcNext(){ const R=VC; if(!R.active||R.mode!=='drill'||!R.done) return; clearTimeout(R.timer); R.round++; if(R.round>=R.rounds.length) return vcFinish(false); vcRound(); }
 function vcFinish(quit){ clearDraft();
