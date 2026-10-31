@@ -37897,21 +37897,27 @@ function planNext(){
   if(run.i>=r.blocks.length) return planFinish();
   savePlan(); planOpenBlock();
 }
-function planPause(){ const r=PLAN.run; if(!r) return; if(r.held==null) r.held=Date.now()-r.t0; else { r.t0=Date.now()-r.held; r.held=null; } savePlan(); planChip(); if(side==='plan') renderPlanPane(); }
-// the session goes into the log (blocks you finished, and the one you were in), and you're asked for a note
-function planFinish(){
+function planPause(){ const r=PLAN.run; if(!r) return; if(r.held==null){ r.held=Date.now()-r.t0; r.pausedAt=Date.now(); } else { r.t0=Date.now()-r.held; r.held=null; r.pausedAt=null; } savePlan(); planChip(); if(side==='plan') renderPlanPane(); }
+// the session goes into the log (blocks you finished, and the one you were in), and you're asked for a note.
+// discard: ended with nothing logged. left: it was left running, so the block you were in counts up to its planned length.
+function planFinish(discard=false,left=false){
   const run=PLAN.run, r=planRoutine(); if(!run) return;
-  if(r&&run.i<r.blocks.length&&planElapsed()>=30) run.done.push({mode:r.blocks[run.i].mode,secs:Math.round(planElapsed()),i:run.i});
-  const secs=run.done.reduce((a,d)=>a+d.secs,0);
-  if(secs>=60) PLAN.log.unshift({d:arcDay(),t:Date.now(),name:r?r.name:'Practice',blocks:run.done.map(({mode,secs})=>({mode,secs})),note:'',planned:r?planMins(r):0});
+  if(!discard&&r&&run.i<r.blocks.length&&planElapsed()>=30) run.done.push({mode:r.blocks[run.i].mode,secs:Math.round(left?Math.min(planElapsed(),r.blocks[run.i].min*60):planElapsed()),i:run.i});
+  const secs=discard?0:run.done.reduce((a,d)=>a+d.secs,0);
+  if(secs>=60) PLAN.log.unshift({d:arcDay(new Date(run.t0)),t:Date.now(),name:r?r.name:'Practice',blocks:run.done.map(({mode,secs})=>({mode,secs})),note:'',planned:r?planMins(r):0,...(left?{left:1}:{})});
   PLAN.run=null; PLAN.fresh=secs>=60; savePlan(); planChip();
+  if(left) return;   // found hanging: just stop it, wherever you are; the Practice page says so
   if(!atHome()) goHome(); side='plan'; renderMenu(); $('startOv').scrollTop=0;
 }
+// left hanging: 20 minutes past the end of its block, or paused for three hours
+function planStale(){ const run=PLAN.run, r=planRoutine(); if(!run||!r) return false; const b=r.blocks[run.i]; if(!b) return true;
+  return run.held!=null?(run.pausedAt&&Date.now()-run.pausedAt>3*3600e3):planElapsed()>b.min*60+20*60; }
 // the chip: the block and the time left, wherever you are; when it's up, a chime and "next"
 let planTick=null;
 function planChip(){
   const c=$('planChip'), run=PLAN.run, r=planRoutine();
   clearInterval(planTick); planTick=null;
+  if(run&&planStale()) return planFinish(false,true);
   if(!run||!r){ c.hidden=true; return; }
   const b=r.blocks[run.i], left=b.min*60-planElapsed(), nx=r.blocks[run.i+1];
   if(left<=0&&!run.chimed){ run.chimed=true; savePlan(); planChime(); }
@@ -37919,11 +37925,13 @@ function planChip(){
   c.innerHTML=`<span class="pcw" data-pc="page" title="Open Practice">${PLAN_ICON[b.mode]}${run.i+1}/${r.blocks.length} ${PLAN_MODES[b.mode]}${planTargetName(b)?` · ${planTargetName(b)}`:''}</span>
     <b>${left>0?fmtClock(left):`+${fmtClock(-left)}`}</b>
     <button data-pc="pause" title="${run.held!=null?'Resume':'Pause'}">${run.held!=null?'▶':'⏸'}</button>
-    <button data-pc="next" title="${nx?`Next: ${PLAN_MODES[nx.mode]}`:'Finish'}">${left<=0?(nx?`Next: ${PLAN_MODES[nx.mode]} ⏭`:'Finish ✓'):'⏭'}</button>`;
+    <button data-pc="next" title="${nx?`Next: ${PLAN_MODES[nx.mode]}`:'Finish'}">${left<=0?(nx?`Next: ${PLAN_MODES[nx.mode]} ⏭`:'Finish ✓'):'⏭'}</button>
+    <button data-pc="end" title="End the session">✕</button>`;
   if(run.held==null) planTick=setInterval(()=>{ planChip(); if(side==='plan'&&!$('startOv').hidden&&!PLAN.edit) planRunTick(); },1000);
 }
 function planChime(){ synth.init(); const bus=newBus(); if(!bus) return; const t=now()+.05; tone(79,t,1.4,46,'mellow',bus); tone(84,t+.18,1.8,42,'mellow',bus); }
 $('planChip').addEventListener('click',e=>{ const b=e.target.closest('[data-pc]'); if(!b) return;
+  if(b.dataset.pc==='end'){ if(confirm('End this session? The time so far is logged.')) planFinish(); return; }
   if(b.dataset.pc==='next') planNext(); else if(b.dataset.pc==='pause') planPause(); else { if(!atHome()) goHome(); side='plan'; renderMenu(); $('startOv').scrollTop=0; } });
 
 /* ---------------- the page ---------------- */
@@ -37937,7 +37945,7 @@ function planRunHTML(){
   const left=r.blocks[run.i].min*60-planElapsed();
   return `<div class="prun"><div class="prunh"><b>${gigAccHTML(r.name)}</b><span>block ${run.i+1} of ${r.blocks.length}</span><span class="prclock" id="plClock">${left>0?`${fmtClock(left)} left`:`${fmtClock(-left)} over`}</span></div>
     <ol class="pchk">${r.blocks.map((b,i)=>{ const d=run.done.find(x=>x.i===i); return `<li class="${d?'done':i===run.i?'now':''}">${d?'<i>✓</i>':`<i>${i+1}</i>`}${planBlockLine(b)}${d?`<span class="pbm">${Math.round(d.secs/60)} min</span>`:''}</li>`; }).join('')}</ol>
-    <div class="erow"><button class="go" data-pl="open">Go there</button><button class="ghost" data-pl="pause">${run.held!=null?'Resume':'Pause'}</button><button class="ghost" data-pl="next">${r.blocks[run.i+1]?`Next: ${PLAN_MODES[r.blocks[run.i+1].mode]}`:'Finish'}</button><button class="ghost" data-pl="end">End session</button></div></div>`;
+    <div class="erow"><button class="go" data-pl="open">Go there</button><button class="ghost" data-pl="pause">${run.held!=null?'Resume':'Pause'}</button><button class="ghost" data-pl="next">${r.blocks[run.i+1]?`Next: ${PLAN_MODES[r.blocks[run.i+1].mode]}`:'Finish'}</button><button class="ghost" data-pl="end">End session</button><button class="ghost" data-pl="discard">Discard</button></div></div>`;
 }
 function planRunTick(){ const el=$('plClock'), run=PLAN.run, r=planRoutine(); if(!el||!run||!r) return; const left=r.blocks[run.i].min*60-planElapsed(); el.textContent=left>0?`${fmtClock(left)} left`:`${fmtClock(-left)} over`; }
 function planRoutineCard(r,kind){
@@ -37949,7 +37957,7 @@ function renderPlanPane(){
   const tab=PLAN.tab, st=planStreak();
   let h=`<button class="back" data-home>← All modes</button><h2>Practice</h2>${planRunHTML()}`;
   if(PLAN.fresh&&PLAN.log[0]){ const s=PLAN.log[0];
-    h+=`<div class="prun pdone"><div class="prunh"><b>Done: ${gigAccHTML(s.name)}</b><span>${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} minutes${st>1?` · ${st}-day streak`:''}</span></div>
+    h+=`<div class="prun pdone">${s.left?'<p class="fine" style="margin:0 0 6px">This was left running, so it was ended for you. The block you were in counts up to its planned time.</p>':''}<div class="prunh"><b>Done: ${gigAccHTML(s.name)}</b><span>${Math.round(s.blocks.reduce((a,b)=>a+b.secs,0)/60)} minutes${st>1?` · ${st}-day streak`:''}</span></div>
       <textarea id="plNote" rows="2" placeholder="A note for next time: what felt shaky, what clicked, what to do tomorrow">${gigAccHTML(s.note||'')}</textarea>
       <div class="erow"><button class="go" data-pl="savenote">Save note</button><button class="ghost" data-pl="skipnote">Skip</button></div></div>`; }
   h+=`<div class="ptabs" role="tablist">${[['mine','My routines'],['explore','Explore'],['history','History']].map(([k,n])=>`<button role="tab" data-ptab="${k}" aria-selected="${tab===k}">${n}</button>`).join('')}</div>`;
@@ -38029,6 +38037,7 @@ $('planPane').addEventListener('click',e=>{
     else if(a==='open') { planOpenBlock(); return; }
     else if(a==='pause') { planPause(); return; }
     else if(a==='next') { planNext(); return; }
+    else if(a==='discard'){ if(confirm('Discard this session? Nothing from it is logged.')) planFinish(true); return; }
     else if(a==='end'){ if(confirm('End this session? The time so far is logged.')) planFinish(); return; }
     else if(a==='savenote'){ PLAN.log[0].note=$('plNote').value.trim(); PLAN.fresh=false; savePlan(); }
     else if(a==='skipnote'){ PLAN.fresh=false; savePlan(); }
