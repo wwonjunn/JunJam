@@ -367,6 +367,8 @@ body.linesmode header .modetag{display:none}
 .rhc.slot{border-style:dashed;border-color:var(--brass)}
 .rhc.slot b{color:var(--brass)}
 .rhc.solved{border-color:var(--good);background:color-mix(in srgb, var(--good) 14%, transparent)}
+.rhc.just{animation:rhjust .36s cubic-bezier(.2,.9,.3,1.3)} @keyframes rhjust{from{transform:scale(.88);opacity:.4}}
+@media (prefers-reduced-motion: reduce){ .rhc.just{animation:none} }
 .rhc.cur{box-shadow:0 0 0 2px var(--brass)}
 .lick .rwhat{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.3}
 body.nohud:not(.earsmode) header .modetag{display:none}
@@ -5750,8 +5752,8 @@ function rhPlay(voiced,from,to,t0,mel=null){ // play chords [from,to) of a voice
 }
 function rhStop(){ killBus(REHARM.bus); REHARM.bus=null; clearTimeout(REHARM.timer); }
 const rhMel=(m,key)=>m.melody==null?null:76+mod12(key+m.melody-4); // the held melody note, around E5
-const chordRow=(chords,hide=new Set(),solved=new Set(),cur=-1)=>`<div class="rhrow">${chords.map((c,i)=>
-  `<div class="rhc${hide.has(i)&&!solved.has(i)?' slot':''}${solved.has(i)?' solved':''}${i===cur?' cur':''}"><b>${hide.has(i)&&!solved.has(i)?'?':symText(c)}</b><span>${hide.has(i)&&!solved.has(i)?'':c.rn}</span></div>`).join('')}</div>`;
+const chordRow=(chords,hide=new Set(),solved=new Set(),cur=-1,just=-1)=>`<div class="rhrow">${chords.map((c,i)=>   // just: the slot solved this moment, which settles in
+  `<div class="rhc${hide.has(i)&&!solved.has(i)?' slot':''}${solved.has(i)?' solved':''}${solved.has(i)&&i===just?' just':''}${i===cur?' cur':''}"><b>${hide.has(i)&&!solved.has(i)?'?':symText(c)}</b><span>${hide.has(i)&&!solved.has(i)?'':c.rn}</span></div>`).join('')}</div>`;
 
 /* ---------------- learn: the card ---------------- */
 function rhOpen(id){
@@ -5788,7 +5790,7 @@ function rhRender(){
   $('rhBody').innerHTML=`<div class="etop"><span class="etitle">${m.name}</span><span>${learn?'Learn it, in C':`New key ${R.round} of ${RH_KEYS}`}</span></div>
     <p class="rhwhat">${R.done?'Done.':m.ask+(R.hinted&&slot!==undefined?`: play <b>${rhTargets(m,slot,R.keys[R.round]).slice(0,3).map(c=>symText(c)).join('</b> or <b>')}</b>`:'.')}</p>
     <div class="sec">Original in ${keyName(R.keys[R.round],m.minor)}${R.mel!==null?`, melody note ${plainSpell(R.mel).name} held on top`:''}</div>${chordRow(R.before)}
-    <div class="sec">Reharmonised</div>${chordRow(R.after,new Set(m.slots),R.solved,R.done?-1:slot)}
+    <div class="sec">Reharmonised</div>${chordRow(R.after,new Set(m.slots),R.solved,R.done?-1:slot,R.just??-1)}
     <div class="lmsg" id="rhMsg"></div>
     <div class="erow"><button class="ghost" id="rhHear">Hear it (R)</button>${!R.hinted&&!R.done?'<button class="ghost" id="rhHint">Show the chord</button>':''}${R.done?'<button class="go" id="rhNext">Next (Enter)</button>':''}<button class="ghost" id="rhEnd">End</button></div>`;
   $('rhHear').onclick=()=>rhPlayToSlot();
@@ -5813,7 +5815,7 @@ function rhNotes(notes){
   if(hit){
     showAnalysis(hit.ev,{root:hit.t.root,q:hit.q,rn:hit.t.rn},null);
     if(hit.t!==want){ R.after[slot]=hit.t; R.voiced=voiceProg(R.after); } // melody reharm: keep the chord you chose
-    R.solved.add(slot); R.slotPos++;
+    R.solved.add(slot); R.slotPos++; R.just=slot; setTimeout(()=>{ if(R.just===slot) R.just=null; },400);
     const next=R.move.slots[R.slotPos];
     rhStop(); const t=rhPlay(R.voiced,slot+1,next===undefined?R.after.length:next,now()+RH_BAR*.9,R.mel);
     if(next===undefined) return rhRoundDone(t);
