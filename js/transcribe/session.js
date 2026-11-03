@@ -113,12 +113,15 @@ async function trCheck(){
 /* ---------------- record from a tab: Chrome's tab sharing, audio only ---------------- */
 async function trTabRecord(){
   let stream;
-  try{ stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true,preferCurrentTab:false,selfBrowserSurface:'exclude',surfaceSwitching:'include'}); }
+  try{ stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:2,sampleRate:48000,suppressLocalAudioPlayback:false},preferCurrentTab:false,selfBrowserSurface:'exclude',surfaceSwitching:'include'}); }
   catch(e){ $('trStatus').textContent='Recording cancelled.'; return; }
   const audio=stream.getAudioTracks();
   if(!audio.length){ stream.getTracks().forEach(t=>t.stop()); $('trStatus').textContent='No sound came through. Choose a Chrome tab and tick “Also share tab audio”.'; $('trStatus').className='trno'; return; }
   stream.getVideoTracks().forEach(t=>t.enabled=false); // only the sound is used
-  const rec=new MediaRecorder(new MediaStream(audio),{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm'}), chunks=[];
+  // music, not a call: no echo cancelling, noise suppression or auto volume (asked for above, and again here in case the
+  // browser ignored it there), stereo, and a high bitrate so the top end isn't dulled
+  audio.forEach(t=>t.applyConstraints({echoCancellation:false,noiseSuppression:false,autoGainControl:false}).catch(()=>{}));
+  const rec=new MediaRecorder(new MediaStream(audio),{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm',audioBitsPerSecond:320000}), chunks=[];
   const t0=performance.now(), MAX=6*60*1000;
   rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const finish=()=>{ if(rec.state!=='inactive') rec.stop(); };
