@@ -142,6 +142,10 @@ body.menu .panel{display:none}
 /* overlay */
 .overlay{position:absolute;inset:0;z-index:6;display:flex;align-items:flex-start;justify-content:center;background:color-mix(in srgb, var(--lane) 88%, transparent);overflow:auto;padding:16px}
 .overlay[hidden]{display:none}
+/* shown, not re-rendered: an overlay fades in, its card settles; a mode's stage fades in */
+.overlay{animation:ovin .18s ease-out} .overlay>.card{animation:cardin .24s cubic-bezier(.2,.8,.3,1)} .ears{animation:ovin .2s ease-out}
+@keyframes ovin{from{opacity:0}} @keyframes cardin{from{opacity:0;transform:translateY(8px) scale(.985)}}
+@media (prefers-reduced-motion: reduce){ .overlay,.overlay>.card,.ears{animation:none} }
 .card{max-width:560px;width:100%;margin:auto}
 .card h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05;margin:0 0 6px}
 .card h2{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.1;margin:0 0 8px}
@@ -212,7 +216,13 @@ body.menu .panel{display:none}
   .panel{grid-template-columns:120px 1fr}
   .card h1{font-size:34px}
 }
+/* feel: hovers ease rather than snap, a press gives a little, a new page eases in */
+button,.mode,.stage,.lick,.pnode,.arcw,.lvl,.proutine{transition:border-color .15s,background-color .15s,color .15s,opacity .15s,box-shadow .15s}
+.stage:hover:not(.locked){border-color:var(--brass)}
+button:not(:disabled):active,.mode:active,.proutine:active{transform:translateY(1px)}
+.panein{animation:panein .22s ease-out} @keyframes panein{from{opacity:0;transform:translateY(6px)}}
 @media (prefers-reduced-motion: reduce){
+  .panein{animation:none} button:not(:disabled):active,.mode:active,.proutine:active{transform:none}
   .enemy.shake,.lane.hurt,.pop{animation:none}
   .enemy.dead{transition:none}
 }
@@ -663,6 +673,8 @@ body.gigmode header .modetag{display:none}
 .arcspell.ready{color:var(--wrong)} .arcspell.ready i{background:var(--wrong)}
 .arctoday{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin:6px 0 14px}
 .arcday{border-color:var(--wrong)} .arcday .fine{color:var(--wrong);font-weight:600} .arcweek{border-color:var(--tension)}
+button.arcday,button.arcweek{position:relative} button.arcday::after,button.arcweek::after{content:"Play ›";position:absolute;top:10px;right:12px;font-family:var(--cond);font-weight:600;font-size:14px;color:var(--muted);transition:color .15s,transform .15s}
+button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transform:translateX(2px)}
 .arccal{display:flex;gap:3px;margin-top:4px} .arccal i{width:18px;height:18px;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--line-strong);font-style:normal;font-size:11px;line-height:18px;text-align:center;display:block}
 .arccal i.on{background:color-mix(in srgb, var(--brass) 18%, transparent);box-shadow:none} .arccal i.today{box-shadow:inset 0 0 0 1.5px var(--wrong)}
 .arccount{font-family:var(--cond);font-size:15px;color:var(--ink)}
@@ -37541,7 +37553,7 @@ let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' 
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; }},
   {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); const st=arcStreak(); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars${st?` · 🔥 ${st}-day streak`:ARCDATA.daily[arcDay()]?'':' · daily wave ready'}`; }},
-  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VOICINGS.length*3} stars`},
+  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VPATH.length*3} stars`},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
   {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
@@ -37556,9 +37568,11 @@ function devilLockText(){
   const open=STAR_IDS().filter(id=>starsOf(id)>=STAR_MAX).map(name);
   return `Unlocks per stage at ★★★★★. ${name(stageN)} has ${starStr(starsOf(stageN),STAR_MAX)}.${open.length?` Open on: ${open.join(', ')}.`:''}`;
 }
+let shownSide=null;
 function renderMenu(){
   $('rankLine').textContent=rankLine();
   ['home','hands','ears','lines','reharm','voicings','plan','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  if(side!==shownSide){ const p=$(side+'Pane'); p.classList.remove('panein'); void p.offsetWidth; p.classList.add('panein'); shownSide=side; }   // a new page eases in; a re-render of the same one doesn't
   document.querySelector('.homehead').hidden=side==='settings';
   if(side==='home'){ renderHome(); renderProfileChip(); }
   if(side==='settings') renderSettingsPane();
@@ -37614,7 +37628,7 @@ $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
 $('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); if(b.dataset.mode==='lines') LINES.over=null; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
-$('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
+$('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); $('startOv').scrollTop=0; } });
 $('lHear').onclick=()=>linesPlay();
 $('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
 $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender(); } };

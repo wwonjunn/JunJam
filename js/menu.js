@@ -4,7 +4,7 @@ let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' 
 const MODES=[
   {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; }},
   {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); const st=arcStreak(); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars${st?` · 🔥 ${st}-day streak`:ARCDATA.daily[arcDay()]?'':' · daily wave ready'}`; }},
-  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VOICINGS.length*3} stars`},
+  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VPATH.length*3} stars`},
   {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
   {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
   {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
@@ -19,9 +19,11 @@ function devilLockText(){
   const open=STAR_IDS().filter(id=>starsOf(id)>=STAR_MAX).map(name);
   return `Unlocks per stage at ★★★★★. ${name(stageN)} has ${starStr(starsOf(stageN),STAR_MAX)}.${open.length?` Open on: ${open.join(', ')}.`:''}`;
 }
+let shownSide=null;
 function renderMenu(){
   $('rankLine').textContent=rankLine();
   ['home','hands','ears','lines','reharm','voicings','plan','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
+  if(side!==shownSide){ const p=$(side+'Pane'); p.classList.remove('panein'); void p.offsetWidth; p.classList.add('panein'); shownSide=side; }   // a new page eases in; a re-render of the same one doesn't
   document.querySelector('.homehead').hidden=side==='settings';
   if(side==='home'){ renderHome(); renderProfileChip(); }
   if(side==='settings') renderSettingsPane();
@@ -77,7 +79,7 @@ $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
 $('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); if(b.dataset.mode==='lines') LINES.over=null; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
-$('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); } });
+$('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); $('startOv').scrollTop=0; } });
 $('lHear').onclick=()=>linesPlay();
 $('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
 $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender(); } };
