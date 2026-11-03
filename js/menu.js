@@ -2,16 +2,16 @@
 /* Home: one card per mode. Modes that aren't built yet show as Coming soon. */
 let side='home'; // 'home' | 'hands' | 'ears' | 'lines' | 'reharm' | 'voicings' | 'plan' | 'settings'
 const MODES=[
-  {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; }},
-  {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); const st=arcStreak(); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars${st?` · 🔥 ${st}-day streak`:ARCDATA.daily[arcDay()]?'':' · daily wave ready'}`; }},
-  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VPATH.length*3} stars`},
-  {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`},
-  {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`},
+  {id:'hands',name:'Chords',blurb:'Any chord or progression, in every key',stat:()=>{ const ids=STAR_IDS(); return `${ids.reduce((a,id)=>a+starsOf(id),0)} of ${ids.length*STAR_MAX} stars`; },frac:()=>{ const ids=STAR_IDS(); return ids.reduce((a,id)=>a+starsOf(id),0)/(ids.length*STAR_MAX); }},
+  {id:'ears',name:'Ears',blurb:'Hear scale degrees, intervals, chords and progressions',stat:()=>{ const ids=Object.keys(LEVELS); const st=arcStreak(); return `${ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)} of ${ids.length*3} stars${st?` · 🔥 ${st}-day streak`:ARCDATA.daily[arcDay()]?'':' · daily wave ready'}`; },frac:()=>{ const ids=Object.keys(LEVELS); return ids.reduce((a,id)=>a+(EARDATA.stars[id]||0),0)/(ids.length*3); }},
+  {id:'voicings',name:'Voicings',blurb:'One chord, many ways: named two-hand voicings that fill the keyboard',stat:()=>`${vcStarTotal()} of ${VPATH.length*3} stars`,frac:()=>vcStarTotal()/(VPATH.length*3)},
+  {id:'lines',name:'Lines',blurb:'Short licks you can drop anywhere, in all 12 keys',stat:()=>`${linesStarTotal()} of ${allLicks().length*3} stars`,frac:()=>linesStarTotal()/(allLicks().length*3)},
+  {id:'reharm',name:'Reharm',blurb:'Swap in substitutions and hear why they work',stat:()=>`${rhStarTotal()} of ${REHARM_MOVES.length*3} stars`,frac:()=>rhStarTotal()/(REHARM_MOVES.length*3)},
   {id:'gig',name:'Gig',blurb:'Lead sheets to play from; a band behind you comes later',stat:()=>`${GIG_BUILTIN.length+GDATA.mine.length} charts`},
   {id:'plan',name:'Practice',blurb:'Your own routines: blocks of each mode on a timer, a log and notes',stat:()=>{ if(typeof PLAN==='undefined') return ''; if(PLAN.run) return 'A session is running'; const w=Object.values(planWeek()).reduce((a,b)=>a+b,0), st=planStreak(); return `${Math.round(w)} min this week${st?` · ${st}-day streak`:''}`; }},
 ];
 function renderHome(){
-  $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}</button>`; }).join('')
+  $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}${m.frac?`<span class="mbar">${m.frac()>0?`<i style="width:${Math.min(100,m.frac()*100).toFixed(1)}%"></i>`:''}</span>`:''}</button>`; }).join('')
     // Transcribe isn't a practice mode, so no number: a tool card that fills out the grid
     +`<button class="mode tool" data-mode="transcribe"><span class="mn">Tool</span><span class="mt">Transcribe</span><span class="mb">An mp3 into editable sheet music with chords: a solo note for note, or a lead sheet</span><span class="ms">${typeof TRDATA!=='undefined'&&TRDATA.list.length?`${TRDATA.list.length} saved`:'One-time helper install'}</span></button>`;
 }
