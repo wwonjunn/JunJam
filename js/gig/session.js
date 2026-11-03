@@ -126,11 +126,14 @@ const gigOrder=s=>{ const i=GIG_GENRES.findIndex(g=>g[0]===s.genre); return s.mi
 function gigMatches(s){ const g=GDATA.genre, q=(GIG.q||'').toLowerCase();
   if(g==='mine'&&!s.mine) return false; if(g==='fav'&&!GDATA.fav[s.id]) return false; if(!['all','mine','fav'].includes(g)&&s.genre!==g) return false;
   return !q||[s.title,s.by,s.genre,s.feel,s.tags,keyName(s.key.pc,s.key.minor)].join(' ').toLowerCase().includes(q); }
+// the list remembers where you were in it; a chart (or the editor) opens at its top
+const gigLeaveList=()=>{ if(GIG.view==='list') GIG.listY=$('gigStage').scrollTop; };
 function gigList(){
+  const back=GIG.view&&GIG.view!=='list';
   gigStop(); GIG.view='list'; GIG.song=null; kbMarks={}; paintKeys();
   const all=gigAll(), list=all.filter(gigMatches).sort((a,b)=>gigOrder(a)-gigOrder(b)||a.title.localeCompare(b.title));
   const count=g=>g==='all'?all.length:g==='mine'?all.filter(s=>s.mine).length:g==='fav'?all.filter(s=>GDATA.fav[s.id]).length:all.filter(s=>s.genre===g).length;
-  $('gigBody').innerHTML=`<div class="etop"><span class="etitle">Gig</span><span class="fine">Lead sheets to play from: chord changes, no melodies or lyrics</span></div>
+  $('gigBody').innerHTML=`<button class="back" id="gigBack">← All modes</button><div class="etop"><span class="etitle">Gig</span><span class="fine">Lead sheets to play from: chord changes, no melodies or lyrics</span></div>
     <div class="giglibbar"><input type="search" id="gigQ" placeholder="Search tunes, composers, feels…" value="${trEsc(GIG.q||'')}" aria-label="Search">
       <button class="go" id="gigRandom" title="A random chart from what's listed">🎲 Random</button><button class="ghost" id="gigAdd">+ Add a chart</button></div>
     <div class="chipsrow">${GIG_GENRES.map(([v,t])=>`<button class="chip" data-genre="${v}" aria-pressed="${GDATA.genre===v}">${t} <span class="fine">${count(v)}</span></button>`).join('')}</div>
@@ -144,7 +147,8 @@ function gigList(){
   if($('gigMore')) $('gigMore').onclick=()=>{ GIG.show=(GIG.show||60)+60; const y=$('gigBody').scrollTop; gigList(); $('gigBody').scrollTop=y; };   // 60 at a time
   const q=$('gigQ'); q.oninput=()=>{ GIG.q=q.value; GIG.show=60; const pos=q.selectionStart; gigList(); const n=$('gigQ'); n.focus(); n.setSelectionRange(pos,pos); };
   $('gigRandom').onclick=()=>{ const pool=list.filter(s=>s.id!==GIG.lastId); const s=(pool.length?pool:list)[Math.floor(Math.random()*(pool.length||list.length))]; if(s) gigShow(s.id); };
-  $('gigAdd').onclick=()=>gigEdit(null); $('gigHome').onclick=gigToMenu;
+  $('gigAdd').onclick=()=>gigEdit(null); $('gigHome').onclick=gigToMenu; $('gigBack').onclick=gigToMenu;
+  if(back) $('gigStage').scrollTop=GIG.listY||0;
   $('gigBody').onclick=e=>{ const f=e.target.closest('[data-fav]'), g=e.target.closest('[data-genre]'), s=e.target.closest('[data-song]');
     if(f){ e.stopPropagation(); if(GDATA.fav[f.dataset.fav]) delete GDATA.fav[f.dataset.fav]; else GDATA.fav[f.dataset.fav]=1; saveGig(); gigList(); return; }
     if(g){ GDATA.genre=g.dataset.genre; GIG.show=60; saveGig(); gigList(); return; }
@@ -155,6 +159,7 @@ const gigSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,
 document.addEventListener('pointerdown',e=>{ const m=$('gigMix'); if(m&&!m.hidden&&!e.target.closest('.trmenu')) m.hidden=true; });
 function gigShow(id){
   gigStop(); const s=gigById(id); if(!s) return gigList();
+  const fresh=GIG.view!=='sheet'||!GIG.song||GIG.song.id!==id; gigLeaveList(); if(fresh) $('gigStage').scrollTop=0;
   Object.assign(GIG,{view:'sheet',song:s,lastId:id,tl:gigTimeline(s),pos:0}); GDATA.last=id; saveGig();
   const k=gigKeyNow(s), sh=gigShift(s), tempo=GDATA.tempo[id]||s.tempo;
   const occ={}; s.form.forEach(n=>occ[n]=(occ[n]||0)+1);
@@ -274,7 +279,7 @@ const GIG_FORMAT_HELP=`<ul class="fine gighelp"><li><b>Settings</b> on their own
   <li><b>Sections</b>: <code>[Verse]</code>, <code>[Chorus]</code>, <code>[A]</code>… <b>Bars</b> go between <code>|</code>. Two chords in a bar split it; <code>C / / G</code> gives three beats then one. <code>%</code> repeats the bar before.</li>
   <li><b>Pasted from a chord site?</b> Lines of chords without <code>|</code> become one bar per chord, lyric lines are skipped, and <code>[Am]</code> chords inside lyrics are picked out. Tidy the bars up after if it matters.</li></ul>`;
 function gigEdit(song){
-  gigStop(); GIG.view='edit'; kbMarks={}; paintKeys();
+  gigStop(); gigLeaveList(); GIG.view='edit'; $('gigStage').scrollTop=0; kbMarks={}; paintKeys();
   const mine=song&&song.mine, text=song?(mine?song.text:song.text.replace(/^title:\s*(.*)$/m,'title: $1 (my version)').replace(/^check:.*\n?/m,'')):GIG_TEMPLATE;
   $('gigBody').innerHTML=`<div class="trtop"><button class="ghost" id="gigEBack">← Back</button><span class="etitle">${mine?'Edit your chart':song?'Your copy of '+trEsc(song.title):'Add a chart'}</span></div>
     ${GIG_FORMAT_HELP}

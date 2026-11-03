@@ -70,6 +70,7 @@ body.menu .panel{display:none}
 
 .enemy .req{display:block;font-family:var(--cond);font-weight:700;font-size:17px;line-height:1.2;color:var(--lane);background:var(--brass);border-radius:4px;padding:2px 8px;margin-top:6px;width:max-content}
 .card.wide{max-width:1120px}
+#startOv>.card{margin:0 auto auto}   /* the menu sits at the top on every page, short or long, so the header never jumps */
 .gridwrap{overflow-x:auto}
 .grid{border-collapse:separate;border-spacing:3px;font-family:var(--cond);font-weight:600;font-size:13px}
 .grid th{color:var(--muted);font-weight:600;text-align:right;padding-right:6px;white-space:nowrap}

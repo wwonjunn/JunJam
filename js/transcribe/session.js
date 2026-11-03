@@ -41,14 +41,14 @@ function trInstallGuide(){
 async function trOpen(){
   trStopAll(); Object.assign(TR,{active:true,step:'start'});
   synth.init(); hideOv(); document.body.classList.add('nohud','trmode'); document.body.classList.remove('menu'); $('transStage').hidden=false;
-  $('trBody').innerHTML=`<div class="etop"><span class="etitle">Transcribe a recording</span><span id="trStatus">Checking the helper…</span></div>
+  $('trBody').innerHTML=`<button class="back" id="trBack">← All modes</button><div class="etop"><span class="etitle">Transcribe a recording</span><span id="trStatus">Checking the helper…</span></div>
     <div id="trLib"></div>${TRDATA.list.length||TRDATA.folders.length?'<div class="sec" style="margin-top:16px">New transcription</div>':''}
     <p>Drop in an mp3 (or any audio file you own). Choose what you want to see, select the part of the song, and it comes back as sheet music with chords that you can fix and save.</p>
     <div id="trGuide"></div>
     <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*" hidden><b>Choose an audio file</b><span>or drop it here</span></label>
     <div class="trhome"><button class="ghost" id="trRec" style="margin-left:0">Record from a tab</button><span>Playing it on YouTube or anywhere else in Chrome? Capture that tab's sound while you play the part you want.</span></div>
     <div class="erow" style="margin-top:14px"><button class="ghost" id="trHome">Back</button></div>`;
-  $('trHome').onclick=trToMenu;
+  $('trHome').onclick=trToMenu; $('trBack').onclick=trToMenu;
   const f=$('trFile'), drop=$('trDrop');
   f.onchange=()=>f.files[0]&&trLoad(f.files[0]);
   drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); }; drop.ondragleave=()=>drop.classList.remove('over');
