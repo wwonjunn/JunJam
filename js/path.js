@@ -27,7 +27,7 @@ function reharmPathNote(t){ if(t<2) return ''; const n=REHARM_MOVES.filter(m=>m.
 // st: its stars (any truthy = done), ns: done without stars to show, off: locked. Steps are numbered on through the columns.
 function pathChapsHTML(chaps,nx,sel,max=STAR_MAX){ let i=0;
   const all=chaps.flatMap(c=>c[1]), done=all.filter(x=>x.st).length, n=all.find(x=>x.id===nx);
-  return `<div class="phead">${done} of ${all.length} done${n?`. Next up: <button class="pnext" data-step="${n.id}"${n.off?' disabled':''}>${gigAccHTML(n.t)}${n.sub?` <span class="fine">(${gigAccHTML(n.sub)})</span>`:''} ›</button>`:''}</div><div class="pchaps">`
+  return `<div class="phead">${done} of ${all.length} done${n?`. Next up: <button class="pnext" data-step="${n.id}"${n.off?' disabled':''}>${gigAccHTML(n.t)}${n.sub?` <span class="fine">(${gigAccHTML(n.sub)})</span>`:''} ›</button>`:''}</div><div class="pchaps" style="--n:${chaps.length}">`
     +chaps.map(([name,steps,o={}])=>{ const k=steps.filter(x=>x.st).length;
       return `<div class="pchap"><div class="pct"${o.tip?` title="${o.tip}"`:''}><span>${gigAccHTML(name)}</span><span class="fine">${k}/${steps.length}</span></div>${o.sub?`<div class="pcsub">${o.sub}</div>`:''}<div class="pcbar"><i style="width:${k/steps.length*100}%"></i></div>`
         +steps.map(x=>`<button class="pnode${x.st?' got':''}${x.id===nx?' now':''}${x.id===sel?' sel':''}${x.sub?' boss':''}" data-step="${x.id}"${x.off?' disabled':''} title="${x.tip||(x.ns?'':starStr(x.st||0,max))}"><span class="pd">${++i}</span><span class="pl">${gigAccHTML(x.t)}${x.sub?`<small>${gigAccHTML(x.sub)}</small>`:''}</span>${x.st&&!x.ns?`<b>${'★'.repeat(x.st)}</b>`:''}</button>`).join('')+(o.foot||'')+'</div>'; }).join('')+'</div>';

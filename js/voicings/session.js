@@ -67,7 +67,7 @@ function renderVoicingsPane(){
     <div class="sec">Games</div>
     ${chPaneHTML()}
     <div class="vcrush"><div><b>Rush <span class="fine">classic</span></b><span>A chord and a voicing name; play it before the bar runs out. Often the same chord two or three ways in a row. Miss one and it shows you, you play it, and it comes back a few chords later. Three lives.</span></div>
-      <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm}${k==='learned'?`: ${learned}${learned<2?', so the starter set for now':''}`:''}</option>`).join('')}${VCHAPTERS.map((c,i)=>`<option value="${c.id}"${VCDATA.pool===c.id?' selected':''}>Chapter ${i+1}: ${c.name}</option>`).join('')}${Object.entries(VFAM).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm} only</option>`).join('')}</select>
+      <div class="vcrushgo"><select id="vcPool">${Object.entries(VC_POOLS).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm}${k==='learned'?` (${learned})${learned<2?' · the starter set for now':''}`:''}</option>`).join('')}${VCHAPTERS.map((c,i)=>`<option value="${c.id}"${VCDATA.pool===c.id?' selected':''}>Chapter ${i+1}: ${c.name}</option>`).join('')}${Object.entries(VFAM).map(([k,nm])=>`<option value="${k}"${VCDATA.pool===k?' selected':''}>${nm} only</option>`).join('')}</select>
       <button class="go" id="vcRushBtn">Start Rush</button>${best?`<span class="fine">Best ${best.toLocaleString()}</span>`:''}</div></div>
     <div class="sec" style="margin-top:16px">Flash cards: one lesson per chord <span class="fine">down each column, then the next: tap a chord to open its lesson</span></div>
     <div class="pathstrip" id="vcPath">${path}</div>

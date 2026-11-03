@@ -11,7 +11,9 @@ const MODES=[
   {id:'plan',name:'Practice',blurb:'Your own routines: blocks of each mode on a timer, a log and notes',stat:()=>{ if(typeof PLAN==='undefined') return ''; if(PLAN.run) return 'A session is running'; const w=Object.values(planWeek()).reduce((a,b)=>a+b,0), st=planStreak(); return `${Math.round(w)} min this week${st?` · ${st}-day streak`:''}`; }},
 ];
 function renderHome(){
-  $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}</button>`; }).join('');
+  $('modes').innerHTML=MODES.map((m,i)=>{ const nx=typeof modeNextText==='function'?modeNextText(m.id):''; return `<button class="mode${m.soon?' soon':''}" data-mode="${m.id}" ${m.soon?'aria-disabled="true"':''}><span class="mn">${i+1}</span><span class="mt">${m.name}</span><span class="mb">${m.blurb}</span><span class="ms">${m.soon?'Coming soon':m.stat()}</span>${nx?`<span class="mnext">${gigAccHTML(nx)}</span>`:''}</button>`; }).join('')
+    // Transcribe isn't a practice mode, so no number: a tool card that fills out the grid
+    +`<button class="mode tool" data-mode="transcribe"><span class="mn">Tool</span><span class="mt">Transcribe</span><span class="mb">An mp3 into editable sheet music with chords: a solo note for note, or a lead sheet</span><span class="ms">${typeof TRDATA!=='undefined'&&TRDATA.list.length?`${TRDATA.list.length} saved`:'One-time helper install'}</span></button>`;
 }
 // Devil unlocks stage by stage: say which stage is selected, how far it is, and where Devil is already open
 function devilLockText(){
@@ -44,7 +46,11 @@ function renderMenu(){
     return `<button class="stage${open?'':' locked'}" data-tier="${t.id}" aria-pressed="${t.id===tierId}" ${open?'':'aria-disabled="true"'}><span class="n">♩ = ${t.bpm}</span><span class="t">${t.name}</span><span class="best">${sub}${open&&bestAny?`. Best ${bestAny.toLocaleString()}`:''}</span></button>`;
   }).join('');
   const nx=nextUp(), total=STAR_IDS().reduce((a,id)=>a+starsOf(id),0);
-  $('starLine').innerHTML=`<b>${total} of ${STAR_IDS().length*STAR_MAX} stars.</b> Earned in Game mode: ★ clear 16 chords in a run, ★★ with 90% right first try. From then on 🔥 chords say which chord tone your left hand has to put at the bottom (you work out the note): ★★★ the 3rd, ★★★★ the 3rd or 5th, ★★★★★ any of them (7th too) at Cherokee tempo without losing a life. Everything stays open either way.`;
+  // the star ladder: what each star asks, with the selected stage's earned ones ticked off
+  const stSel=starsOf(stageN), LAD=['Clear 16 chords in a run','…with 90% right first try','🔥 chords: the 3rd in the bass','🔥 the 3rd or the 5th in the bass','Any inversion at Cherokee tempo, no lives lost'];
+  $('starLine').innerHTML=`<div class="starhead"><b>${total} of ${STAR_IDS().length*STAR_MAX} stars</b><span>earned in Game mode · ${gigAccHTML(pathName(stageN))} has ${starStr(stSel,STAR_MAX)}</span></div>
+    <ol class="starlad">${LAD.map((t,i)=>`<li class="${i<stSel?'got':''}${i===stSel?' next':''}"><b>${'★'.repeat(i+1)}</b>${t}</li>`).join('')}</ol>
+    <div class="fine">🔥 chords name a chord tone your left hand puts at the bottom; you work out the note. Everything stays open either way.</div>`;
   const stars=id=>`<span class="st">${starStr(starsOf(id),STAR_MAX)}${devilOf(id)?` <span class="devil">${'💀'.repeat(devilOf(id))}</span>`:''}</span>`, tag=id=>(chordsStep(id)?`<span class="step">${chordsStep(id)}</span>`:'')+(id===nx?'<span class="nx">Next up</span>':'');
   const later=id=>chordsAhead(id)?' later':'';
   $('stages').innerHTML=STAGES.map(s=>{
@@ -78,7 +84,7 @@ $('pathStrip').addEventListener('click',e=>{ const b=e.target.closest('[data-ste
 $('stages').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b||b.disabled) return; stageN=+b.dataset.n; renderMenu();});
 $('progs').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; stageN=b.dataset.p; renderMenu();});
 $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!b) return; tierId=b.dataset.tier; renderMenu();});
-$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); if(b.dataset.mode==='lines') LINES.over=null; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); if(b.dataset.mode==='transcribe') return trOpen(); if(b.dataset.mode==='lines') LINES.over=null; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
 $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); $('startOv').scrollTop=0; } });
 $('lHear').onclick=()=>linesPlay();
 $('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
@@ -87,7 +93,6 @@ $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
 bindLinesPane(); bindReharmPane(); bindVoicingsPane();
-$('trOpenBtn').onclick=trOpen;
 /* ---------- getting home: the logo, and the browser's Back button ----------
    Leaving the home screen adds one history step, so Back brings you home instead of off the page. */
 const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active)&&!GIG.active;
