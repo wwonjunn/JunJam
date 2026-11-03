@@ -2645,7 +2645,7 @@ function newGame(){
   fillQueue(); renderAhead(); updateHud();
 }
 // the lane emptied: chords left over from the last run don't hang behind the menu or the next run
-function clearLane(){ if(typeof G!=='undefined'&&G&&G.enemies) G.enemies=[]; $('lane').querySelectorAll('.enemy').forEach(x=>x.remove()); }
+function clearLane(){ if(typeof G!=='undefined'&&G&&G.enemies) G.enemies=[]; $('lane').querySelectorAll('.enemy').forEach(x=>x.remove()); $('ahead').innerHTML=''; }
 function start(){
   document.body.classList.remove('earsmode','nohud');
   const tier=tierOf(tierId);
