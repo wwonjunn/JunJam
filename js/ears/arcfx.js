@@ -18,7 +18,7 @@ function arcFxStart(cv){
 }
 function arcFxStop(){ cancelAnimationFrame(arcFx.raf); arcFx.raf=0; }
 function arcFxSize(){ const F=arcFx; if(!F.cv) return; const r=F.cv.getBoundingClientRect(); F.dpr=Math.min(2,devicePixelRatio||1);
-  F.cw=r.width; F.W=Math.max(200,r.width); F.H=Math.max(120,r.height); F.cv.width=Math.round(F.W*F.dpr); F.cv.height=Math.round(F.H*F.dpr); }
+  F.cw=r.width; F.ch=r.height; F.W=Math.max(200,r.width); F.H=Math.max(120,r.height); F.cv.width=Math.round(F.W*F.dpr); F.cv.height=Math.round(F.H*F.dpr); }
 // lane geometry: the wall on the left, the portal on the right, the path along the bottom
 const arcGround=()=>arcFx.H-26, arcWallX=()=>62, arcPortalX=()=>arcFx.W-56;
 const arcMonX=x=>arcWallX()+46+x*(arcPortalX()-arcWallX()-46);
@@ -66,7 +66,7 @@ function arcFxWallHit(){ const F=arcFx; F.wallHit=F.t; F.shake=arcReduce()?4:16;
 
 /* ---------------- drawing ---------------- */
 function arcFxFrame(ts){
-  const F=arcFx, c=F.ctx; if(!c) return; if(Math.abs(F.cv.clientWidth-F.cw)>1) arcFxSize();   // the window changed size (a resize event isn't always sent)
+  const F=arcFx, c=F.ctx; if(!c) return; if(Math.abs(F.cv.clientWidth-F.cw)>1||Math.abs(F.cv.clientHeight-F.ch)>1) arcFxSize();   // the window changed size (a resize event isn't always sent)
   const dt=Math.min(0.05,(ts-F.last)/1000)*(F.slow||1); F.last=ts; F.t+=dt;   // F.slow: slow motion, for checking the animation
   const frozen=F.t<F.freeze, step=frozen?0:dt;
   const R=ARC, th=ARC_THEMES[F.theme]; F.themeF=Math.min(1,F.themeF+dt*1.5);
