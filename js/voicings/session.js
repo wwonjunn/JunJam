@@ -159,9 +159,10 @@ function vcTypeOpen(q){
   vcShow(); kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]);
   $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(vcTypeName(q))}</span><span>${c?`Chapter ${VCHAPTERS.indexOf(c)+1}: ${c.name} · `:''}${starStr(st)}</span></div>
     <p>${ways.length===1?'One way to play it':`${ways.length} ways to play it`}, easiest first. The lesson: each one in C with the shape shown, then ${Math.max(5,ways.length+2)} from memory in new keys, mixed.${pre?` <b class="vcprew">Recommended first: ★ on ${gigAccHTML(vcTypeName(pre))}.</b>`:''}</p>
+    <div class="erow vctop"><button class="go" id="vcLesson">Start the lesson (Enter)</button><button class="ghost" id="vcBack">Back</button></div>
     <div class="vcways">${ways.map((v,i)=>{ const t=vcIn(v,0); return `<div class="vcway"><div class="vwh"><b>${i+1}. ${gigAccHTML(v.name)}</b><span>${VFAM[v.fam]} · ${vcDots(v.diff)}</span></div>${vcDiagram(t)}<div class="vwf">${vcHands(v)}</div><p class="fine">${gigAccHTML(v.tip)}</p><div class="erow"><button class="ghost" data-vh="${i}">Hear</button><button class="ghost" data-vc="${v.id}">Card</button></div></div>`; }).join('')}</div>
     ${vcStageOf(q)?`<p class="fine vcback">Drill ${gigAccHTML(vcSym(t0))} chords against the clock: <button class="ghost" id="vcToChords">Chords: ${STAGE[vcStageOf(q)].t}</button></p>`:''}
-    <div class="erow"><button class="go" id="vcLesson">Start the lesson (Enter)</button><button class="ghost" id="vcBack">Back</button></div>`;
+`;
   $('vcBody').querySelectorAll('[data-vh]').forEach(b=>b.onclick=()=>vcPlay(vcIn(ways[+b.dataset.vh],0)));
   $('vcBody').querySelectorAll('.vcway [data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
   if($('vcToChords')) $('vcToChords').onclick=()=>{ vcToMenu(); side='hands'; renderMenu(); briefOpen(vcStageOf(q)); };

@@ -180,7 +180,7 @@ body.menu .panel{display:none}
 .bestv .sym{font-family:var(--hand);font-weight:700;font-size:26px}
 
 /* analysis panel */
-.panel{display:grid;grid-template-columns:210px 1fr;gap:4px 18px;margin:0 18px;padding:6px 14px 6px 6px;background:var(--panel);min-height:130px}
+.panel{display:grid;grid-template-columns:210px minmax(0,700px);justify-content:center;gap:4px 18px;margin:0 18px;padding:6px 14px 6px 6px;background:var(--panel);min-height:130px}
 .staff svg{width:100%;height:auto;max-height:190px;display:block}
 .staff .ln{stroke:var(--ink);stroke-width:1;opacity:.55}
 .staff .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
@@ -279,6 +279,7 @@ body.earsmode .ahead{display:none}
 .etimer i{display:block;height:100%;background:var(--wrong);width:100%}
 .erow{display:flex;gap:8px;flex-wrap:wrap}
 .erow .go,.erow .ghost{margin-left:0}
+.erow.vctop{margin:2px 0 14px}
 .eresults{margin:auto;max-width:560px}
 .eresults .stars{font-size:30px;color:var(--brass);letter-spacing:3px;margin:-4px 0 10px}
 .eresults p{color:var(--muted)}
@@ -688,7 +689,7 @@ button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transfor
 .arccv{display:block;width:100%;height:170px;border-radius:10px;margin:10px 0 8px;box-shadow:inset 0 0 0 1.5px var(--line-strong)}
 /* Voicings: Comp Hero */
 .chcard{border-color:var(--chord)} .chcard .seg{margin:0}
-.chcv{display:block;width:100%;height:190px;border-radius:10px;margin:8px 0}
+.chcv{display:block;width:100%;height:190px;border-radius:var(--radius-lg);margin:8px 0;box-shadow:inset 0 0 0 1px var(--line-strong)}
 .chmeter{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--muted)}
 .chmeter i{display:block;height:8px;border-radius:4px;background:var(--chord);flex:0 0 auto;max-width:60%;min-width:2px;transition:width .3s} .chmeter i.low{background:var(--wrong)} .chmeter i.high{background:var(--brass)}
 .lick .ln .vcw{color:var(--chord);font-weight:700}
@@ -715,7 +716,7 @@ button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transfor
 .enemy.fire.life::before{display:none} .enemy .lifelab{color:#9dffc4;background:rgba(0,0,0,.25)}
 @keyframes lifeglow{from{box-shadow:inset 0 0 0 2px #46e08a,0 0 14px rgba(70,224,138,.45)}to{box-shadow:inset 0 0 0 2px #8dffbb,0 0 28px rgba(70,224,138,.8)}}
 @media (prefers-reduced-motion: reduce){ .enemy.life{animation:none} }
-.vcslow i{background:var(--muted);transition:width .1s linear}
+.ebar.vcslow{height:3px;margin:4px 0 14px;background:var(--line)} .vcslow i{background:color-mix(in srgb,var(--muted) 55%,transparent);transition:width .1s linear}   /* a quiet timer, not a divider */
 .vcask em.vclap{color:var(--brass);border-color:var(--brass);font-weight:700}
 .vcask em.vclife{color:#1f9d55;border-color:#46e08a;font-weight:700;background:color-mix(in srgb, #46e08a 12%, transparent)}
 /* Chords briefing */
@@ -6212,9 +6213,10 @@ function vcTypeOpen(q){
   vcShow(); kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]);
   $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(vcTypeName(q))}</span><span>${c?`Chapter ${VCHAPTERS.indexOf(c)+1}: ${c.name} · `:''}${starStr(st)}</span></div>
     <p>${ways.length===1?'One way to play it':`${ways.length} ways to play it`}, easiest first. The lesson: each one in C with the shape shown, then ${Math.max(5,ways.length+2)} from memory in new keys, mixed.${pre?` <b class="vcprew">Recommended first: ★ on ${gigAccHTML(vcTypeName(pre))}.</b>`:''}</p>
+    <div class="erow vctop"><button class="go" id="vcLesson">Start the lesson (Enter)</button><button class="ghost" id="vcBack">Back</button></div>
     <div class="vcways">${ways.map((v,i)=>{ const t=vcIn(v,0); return `<div class="vcway"><div class="vwh"><b>${i+1}. ${gigAccHTML(v.name)}</b><span>${VFAM[v.fam]} · ${vcDots(v.diff)}</span></div>${vcDiagram(t)}<div class="vwf">${vcHands(v)}</div><p class="fine">${gigAccHTML(v.tip)}</p><div class="erow"><button class="ghost" data-vh="${i}">Hear</button><button class="ghost" data-vc="${v.id}">Card</button></div></div>`; }).join('')}</div>
     ${vcStageOf(q)?`<p class="fine vcback">Drill ${gigAccHTML(vcSym(t0))} chords against the clock: <button class="ghost" id="vcToChords">Chords: ${STAGE[vcStageOf(q)].t}</button></p>`:''}
-    <div class="erow"><button class="go" id="vcLesson">Start the lesson (Enter)</button><button class="ghost" id="vcBack">Back</button></div>`;
+`;
   $('vcBody').querySelectorAll('[data-vh]').forEach(b=>b.onclick=()=>vcPlay(vcIn(ways[+b.dataset.vh],0)));
   $('vcBody').querySelectorAll('.vcway [data-vc]').forEach(b=>b.onclick=()=>vcOpen(b.dataset.vc));
   if($('vcToChords')) $('vcToChords').onclick=()=>{ vcToMenu(); side='hands'; renderMenu(); briefOpen(vcStageOf(q)); };
@@ -6524,7 +6526,20 @@ function chBand(){
       bar++; } };
   sched(); R.bandT=setInterval(sched,50);
 }
-function chSize(){ const R=CH; if(!R.cv) return; const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.cw=r.width; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
+/* The highway's colours. Dark themes: the original night stage. Light themes (Manuscript, Studio…): the same layout drawn
+   in the theme's own ink, accent and font on its paper, so it doesn't sit there as a navy block. */
+const chRGB=s=>{ s=(s||'').trim(); if(s[0]==='#'){ if(s.length===4) s='#'+[...s.slice(1)].map(x=>x+x).join(''); const n=parseInt(s.slice(1,7),16); return [n>>16&255,n>>8&255,n&255]; } const m=s.match(/[\d.]+/g); return m?m.slice(0,3).map(Number):[0,0,0]; };
+function chPal(){
+  const cs=getComputedStyle(document.documentElement), v=k=>cs.getPropertyValue(k).trim(), lane=chRGB(v('--lane'));
+  if(0.299*lane[0]+0.587*lane[1]+0.114*lane[2]<140) return {dark:true,bg:['#141a36','#232c5c'],beat:['rgba(255,255,255,.16)','rgba(255,255,255,.06)'],fill:'rgba(255,255,255,.10)',edge:'rgba(255,255,255,.35)',ink:'#e9ecff',dim:'rgba(233,236,255,.45)',any:'rgba(233,236,255,.6)',
+    gold:'#f5c542',goldA:a=>`rgba(245,197,66,${a})`,good:'#46e08a',goodA:a=>`rgba(70,224,138,${a})`,blue:'#7fd3ff',blueA:a=>`rgba(127,211,255,${a})`,bad:a=>`rgba(220,60,60,${a})`,perfect:'#ffd23f',
+    burst:[['#ffd23f','#fff3b0','#ffb347'],['#7fd3ff','#b8f2e6','#ffffff']],pop:'#ffd23f',life:'#7dffb0',popEdge:'rgba(10,12,30,.7)',count:'rgba(255,255,255,.9)',font:"'Barlow Condensed', sans-serif",w:700,r:8};
+  const A=(c,a)=>`rgba(${chRGB(c).join(',')},${a})`, ink=v('--ink'), brass=v('--brass'), good=v('--good'), chord=v('--chord'), wrong=v('--wrong'), font=v('--cond')||"'Barlow Condensed', sans-serif";
+  return {dark:false,bg:[v('--lane'),v('--panel')],beat:[A(ink,.2),A(ink,.07)],fill:A(ink,.04),edge:A(ink,.32),ink,dim:A(ink,.4),any:A(ink,.55),
+    gold:brass,goldA:a=>A(brass,a*.75),good,goodA:a=>A(good,a*.7),blue:chord,blueA:a=>A(chord,a*.6),bad:a=>A(wrong,a*.8),perfect:brass,
+    burst:[[brass,good,chord],[chord,good,ink]],pop:brass,life:good,popEdge:A(v('--lane'),.9),count:A(ink,.85),font,w:/Fell/.test(font)?400:700,r:Math.max(2,parseFloat(v('--radius'))||8)};
+}
+function chSize(){ const R=CH; if(!R.cv) return; R.pal=chPal(); const r=R.cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); R.dpr=d; R.cw=r.width; R.W=Math.max(300,r.width); R.H=Math.max(140,r.height); R.cv.width=R.W*d; R.cv.height=R.H*d; }
 function chHead(){ const R=CH, h=$('chHead'); if(!h) return; const n=R.cards.length, done=R.cards.filter(c=>c.state!=='up'&&c.state!=='on').length;
   h.innerHTML=`<div class="etop"><span class="etitle">${trEsc(R.song.title)}</span><span>${R.D.name} · ♩ = ${R.bpm}</span><span>Score <b>${R.score.toLocaleString()}</b></span><span>Combo <b>${R.combo}</b></span><span>${done} of ${n}</span></div>
     ${R.D.devil?`<div class="chmeter"><span>Strikes</span><b class="chstrikes">${'✖'.repeat(R.strikes)}${'○'.repeat(3-R.strikes)}</b></div>`:`<div class="chmeter"><span>Band</span><i style="width:${Math.round(R.meter*100)}%" class="${R.meter<0.25?'low':R.meter>0.8?'high':''}"></i></div>`}`; }
@@ -6570,7 +6585,7 @@ function chNotes(notes){
   R.score+=pts; R.meter=Math.min(1,R.meter+({perfect:0.06,good:0.045,late:0.02}[grade])*(met?1:0.5));
   Object.assign(k,{state:'hit',grade,met,named,pts,hitAt:now()}); R.prev=[...new Set(notes)]; R.prevShape=chShape(notes);
   chBurst(k); chHead();
-  if(k.life&&met){ if(R.D.devil){ if(R.strikes>0){ R.strikes--; chHead(); } } else R.meter=Math.min(1,R.meter+0.3); R.pops=[{text:R.D.devil?'💚 Strike wiped!':'💚 The band lifts!',x:(R.hitX||110)+20,y:R.H*0.5-70,t0:now(),col:'#7dffb0'}]; }
+  if(k.life&&met){ if(R.D.devil){ if(R.strikes>0){ R.strikes--; chHead(); } } else R.meter=Math.min(1,R.meter+0.3); R.pops=[{text:R.D.devil?'💚 Strike wiped!':'💚 The band lifts!',x:(R.hitX||110)+20,y:R.H*0.5-70,t0:now(),col:(R.pal||chPal()).life}]; }
   if(R.D.devil&&!met&&!k.life) chStrike();   // in Devil the ask isn't optional (a life card's is a bonus)
   const bits=[{perfect:'Perfect',good:'Good',late:'Late'}[grade],named?named.name:null,k.tag!=='any'?(met?`✓ ${CH_TAG[k.tag]}`:`✗ not ${CH_TAG[k.tag]}`):null,smooth?'smooth':null].filter(Boolean);
   chFlash(`${k.sym}: ${bits.join(' · ')}  +${pts}`,met?'ok':'');
@@ -6588,38 +6603,38 @@ function chFlash(text,cls){ const m=$('chMsg'); if(m){ m.textContent=text; m.cla
 
 /* ---------------- drawing the highway ---------------- */
 const CH_PX=150;   // pixels per second of music
-function chBurst(k){ const R=CH, x=R.hitX||110, y=R.H*0.5, cols=k.grade==='perfect'?['#ffd23f','#fff3b0','#ffb347']:['#7fd3ff','#b8f2e6','#ffffff'];
+function chBurst(k){ const R=CH, P=R.pal||chPal(), x=R.hitX||110, y=R.H*0.5, cols=P.burst[k.grade==='perfect'?0:1];
   for(let i=0;i<(k.grade==='perfect'?28:16);i++){ const a=Math.random()*7, s=80+Math.random()*220; R.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0.6,max:0.6,col:cols[i%cols.length]}); }
-  if(k.named) R.pops=[{text:k.named.name+'!',x:x+20,y:y-46,t0:now(),col:'#ffd23f'}]; }   // one name at a time
+  if(k.named) R.pops=[{text:k.named.name+'!',x:x+20,y:y-46,t0:now(),col:P.pop}]; }   // one name at a time
 function chDraw(){
   const R=CH, c=R.ctx; if(!c) return; if(Math.abs(R.cv.clientWidth-R.cw)>1) chSize();   // the window changed size
-  const t=now(), W=R.W, H=R.H, hx=R.hitX=Math.max(90,W*0.18), dt=1/60;
+  const t=now(), W=R.W, H=R.H, hx=R.hitX=Math.max(90,W*0.18), dt=1/60, P=R.pal||(R.pal=chPal());
   c.setTransform(R.dpr,0,0,R.dpr,0,0); c.save(); if(R.shake>0.3){ c.translate((Math.random()-.5)*R.shake,0); R.shake*=0.88; }
-  const bg=c.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141a36'); bg.addColorStop(1,'#232c5c'); c.fillStyle=bg; c.fillRect(0,0,W,H);
+  const bg=c.createLinearGradient(0,0,0,H); bg.addColorStop(0,P.bg[0]); bg.addColorStop(1,P.bg[1]); c.fillStyle=bg; c.fillRect(0,0,W,H);
   // beat lines scroll with the music
   for(let b=Math.floor((t-R.t0)/R.spb)-2;;b++){ const x=hx+(R.t0+b*R.spb-t)*CH_PX; if(x>W) break; if(x<0) continue; const bar=b%R.song.beats===0;
-    c.fillStyle=bar?'rgba(255,255,255,.16)':'rgba(255,255,255,.06)'; c.fillRect(x,8,bar?2:1,H-16); }
+    c.fillStyle=P.beat[bar?0:1]; c.fillRect(x,8,bar?2:1,H-16); }
   // the cards
   R.cards.forEach(k=>{ const x0=hx+(k.t-t)*CH_PX, x1=hx+(k.end-t)*CH_PX; if(x1<-20||x0>W+20) return;
     const y=H*0.22, h=H*0.56, w=Math.max(40,x1-x0-6);
-    let fill='rgba(255,255,255,.10)', edge='rgba(255,255,255,.35)', ink='#e9ecff';
-    if(k.life&&(k.state==='up'||k.state==='on')){ fill='rgba(70,224,138,.22)'; edge='#46e08a'; }
-    if(k.state==='on'&&!k.life){ fill='rgba(245,197,66,.20)'; edge='#f5c542'; }
-    if(k.state==='hit'){ fill=k.met?'rgba(111,207,151,.28)':'rgba(127,211,255,.22)'; edge=k.grade==='perfect'?'#ffd23f':'#7fd3ff'; }
-    if(k.state==='miss'){ fill='rgba(220,60,60,.18)'; edge='rgba(220,60,60,.7)'; ink='rgba(233,236,255,.45)'; }
+    let fill=P.fill, edge=P.edge, ink=P.ink;
+    if(k.life&&(k.state==='up'||k.state==='on')){ fill=P.goodA(.22); edge=P.good; }
+    if(k.state==='on'&&!k.life){ fill=P.goldA(.20); edge=P.gold; }
+    if(k.state==='hit'){ fill=k.met?P.goodA(.28):P.blueA(.22); edge=k.grade==='perfect'?P.perfect:P.blue; }
+    if(k.state==='miss'){ fill=P.bad(.18); edge=P.bad(.7); ink=P.dim; }
     const pop=k.state==='hit'?Math.max(0,1-(t-k.hitAt)/0.25)*6:0;
-    c.fillStyle=fill; c.strokeStyle=edge; c.lineWidth=2; chRound(c,x0+3-pop/2,y-pop/2,w+pop,h+pop,8); c.fill(); c.stroke();
+    c.fillStyle=fill; c.strokeStyle=edge; c.lineWidth=2; chRound(c,x0+3-pop/2,y-pop/2,w+pop,h+pop,P.r); c.fill(); c.stroke();
     c.save(); c.beginPath(); c.rect(x0+3,y,w,h); c.clip();
-    c.fillStyle=ink; c.font=`700 ${Math.min(30,h*0.42)}px Barlow Condensed, sans-serif`; c.textBaseline='top'; c.fillText(k.sym,x0+12,y+8);
-    c.font=`600 13px Barlow Condensed, sans-serif`; c.fillStyle=k.state==='miss'?ink:k.tag==='any'?'rgba(233,236,255,.6)':'#f5c542'; c.fillText(k.state==='hit'&&k.named?k.named.name:(k.life?'💚 ':'')+CH_TAG[k.tag],x0+12,y+h-22);
+    c.fillStyle=ink; c.font=`${P.w} ${Math.min(30,h*0.42)}px ${P.font}`; c.textBaseline='top'; c.fillText(k.sym,x0+12,y+8);
+    c.font=`${P.w===700?600:400} 13px ${P.font}`; c.fillStyle=k.state==='miss'?ink:k.tag==='any'?P.any:P.gold; c.fillText(k.state==='hit'&&k.named?k.named.name:(k.life?'💚 ':'')+CH_TAG[k.tag],x0+12,y+h-22);
     c.restore(); });
   // the hit line
-  const glow=c.createLinearGradient(hx-14,0,hx+14,0); glow.addColorStop(0,'rgba(245,197,66,0)'); glow.addColorStop(0.5,'rgba(245,197,66,.35)'); glow.addColorStop(1,'rgba(245,197,66,0)');
-  c.fillStyle=glow; c.fillRect(hx-14,0,28,H); c.fillStyle='#f5c542'; c.fillRect(hx-1.5,4,3,H-8);
+  const glow=c.createLinearGradient(hx-14,0,hx+14,0); glow.addColorStop(0,P.goldA(0)); glow.addColorStop(0.5,P.goldA(.35)); glow.addColorStop(1,P.goldA(0));
+  c.fillStyle=glow; c.fillRect(hx-14,0,28,H); c.fillStyle=P.gold; c.fillRect(hx-1.5,4,3,H-8);
   // count-in
-  if(t<R.t0){ const left=Math.ceil((R.t0-t)/R.spb); c.fillStyle='rgba(255,255,255,.9)'; c.font='700 40px Barlow Condensed, sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(left<=R.song.beats?String(left):'Get ready',W/2,H/2); c.textAlign='left'; }
+  if(t<R.t0){ const left=Math.ceil((R.t0-t)/R.spb); c.fillStyle=P.count; c.font=`${P.w} 40px ${P.font}`; c.textAlign='center'; c.textBaseline='middle'; c.fillText(left<=R.song.beats?String(left):'Get ready',W/2,H/2); c.textAlign='left'; }
   R.parts=R.parts.filter(p=>{ p.life-=dt; if(p.life<=0) return false; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=200*dt; c.globalAlpha=p.life/p.max; c.fillStyle=p.col; c.fillRect(p.x-2,p.y-2,4,4); c.globalAlpha=1; return true; });
-  R.pops=R.pops.filter(p=>{ const a=t-p.t0; if(a>1.2) return false; c.globalAlpha=Math.min(1,(1.2-a)*2); c.font='700 22px Barlow Condensed, sans-serif'; c.lineWidth=3; c.strokeStyle='rgba(10,12,30,.7)'; c.strokeText(p.text,p.x,p.y-a*30); c.fillStyle=p.col; c.fillText(p.text,p.x,p.y-a*30); c.globalAlpha=1; return true; });
+  R.pops=R.pops.filter(p=>{ const a=t-p.t0; if(a>1.2) return false; c.globalAlpha=Math.min(1,(1.2-a)*2); c.font=`${P.w} 22px ${P.font}`; c.lineWidth=3; c.strokeStyle=P.popEdge; c.strokeText(p.text,p.x,p.y-a*30); c.fillStyle=p.col; c.fillText(p.text,p.x,p.y-a*30); c.globalAlpha=1; return true; });
   c.restore();
 }
 function chRound(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
