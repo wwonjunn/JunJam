@@ -221,6 +221,7 @@ function tick(now){
   G.raf=requestAnimationFrame(tick);
 }
 function submit(notes){
+  if(G&&!$('overOv').hidden&&new Set(notes.map(mod12)).size>=3&&performance.now()-(G.overAt||0)>1000){ start(); return; }   // any chord goes again (not one still held from the run)
   if(!G||!G.running){ showAnalysis(null,null,null,notes); return; }
   if(!G.enemies.length) return;
   const e=G.enemies[0];
@@ -372,7 +373,7 @@ function gameOver(){ clearDraft();
   if(!G.practice&&starsOf(stageN)<STAR_MAX) weak+=(weak?' ':'')+`Next star: ${STAR_GOALS[starsOf(stageN)]}`;
   $('weak').textContent=weak;
   if(!G.practice&&!newBest&&G.lives<=0) eggTitle($('overTitle'),EGG_CHORDS_OVER,1/30);
-  $('overOv').hidden=false; $('againBtn').focus();
+  $('overOv').hidden=false; $('againBtn').focus(); G.overAt=performance.now();
   renderMenu();
 }
 

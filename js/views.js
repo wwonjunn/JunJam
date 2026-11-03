@@ -129,3 +129,19 @@ function showHint(target){
   paintKeys();
 }
 
+
+/* ---------------- results: the numbers count up ----------------
+   Any results row (<div class="results"><div><b>4,200</b>score</div>…) anywhere in the app, as it appears: plain
+   numbers (with commas or a %) run up from 0 in about two thirds of a second. Reduced motion: shown as they are. */
+function countUp(b){
+  const txt=b.textContent.trim(), m=txt.match(/^([\d,]+)(%?)$/); if(!m||b.dataset.counted) return; b.dataset.counted=1;
+  const to=+m[1].replace(/,/g,''); if(to<2) return;
+  const fmt=n=>(m[1].includes(',')||to>=1000?n.toLocaleString():String(n))+m[2], t0=performance.now(), dur=Math.min(900,400+to/40);
+  const step=t=>{ const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3); if(b.textContent===txt&&k>0) return; b.textContent=k<1?fmt(Math.round(to*e)):txt; if(k<1) requestAnimationFrame(step); };
+  b.textContent=fmt(0); requestAnimationFrame(step); setTimeout(()=>{ b.textContent=txt; },dur+150);   // never left short, even if frames stall (a background tab)
+}
+new MutationObserver(ms=>{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const rows=new Set(); ms.forEach(m=>{ if(m.target.closest&&m.target.closest('.results')) rows.add(m.target.closest('.results'));
+    m.addedNodes.forEach(n=>{ if(n.nodeType!==1) return; if(n.matches('.results')) rows.add(n); n.querySelectorAll('.results').forEach(r=>rows.add(r)); }); });
+  rows.forEach(r=>r.querySelectorAll('b').forEach(countUp));
+}).observe(document.body,{childList:true,subtree:true});
