@@ -283,7 +283,7 @@ function linesFinish(quit){
   const prev=LDATA.stars[L.lick.id]||0; if(stars>prev) LDATA.stars[L.lick.id]=stars;
   addXP(L.xp); saveLines();
   $('lPlay').hidden=true; $('lResults').hidden=false;
-  const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b> ${i===0?'learned':r.clean?'clean':r.revealed?'with notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</li>`).join('');
+  const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b><em class="${i===0?'lrn':r.clean?'ok':r.revealed?'meh':'no'}">${i===0?'learned':r.clean?'clean':r.revealed?'notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</em></li>`).join('');
   $('lResults').innerHTML=`<h2>${quit?'Session ended':stars===3?'Perfect transfer':'Lick done'}</h2>${learned?`<div class="stars">${starStr(Math.max(stars,prev))}</div>`:''}
     <ul class="lkeys">${rows}</ul><p>+${L.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five new keys clean.'}`:''}</p>
     <p class="fine">Play any chord to go again.</p><button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;

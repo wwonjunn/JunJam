@@ -263,7 +263,7 @@ function vcFinish(quit){ clearDraft();
   addXP(R.xp); saveVc(); R.mode='results';
   const nx=R.type&&stars>=1?VPATH[VPATH.indexOf(R.type)+1]:null, again=()=>R.type?vcLessonStart(R.type):vcDrillStart(R.v.id);
   $('vcBody').innerHTML=`<h2>${quit?'Lesson ended':stars===3?'Every key clean':R.type?`${gigAccHTML(vcTypeName(R.type))}: done`:'Voicing done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
-    <ul class="lkeys">${R.results.map(r=>`<li><b>${gigAccHTML(vcSym(vcIn(r.v,r.key)))}</b> ${R.type?gigAccHTML(r.v.name)+': ':''}${r.learn?'learned':r.clean?'clean':r.shown?'with the shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
+    <ul class="lkeys">${R.results.map(r=>`<li><b>${gigAccHTML(vcSym(vcIn(r.v,r.key)))}</b><span>${R.type?gigAccHTML(r.v.name):''} <em class="${r.learn?'lrn':r.clean?'ok':r.shown?'meh':'no'}">${r.learn?'learned':r.clean?'clean':r.shown?'shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</em></span></li>`).join('')}</ul>
     <p>+${R.xp} XP.${stars<3&&learned&&finished?` Next star: ${stars<2?`${Math.ceil(nk*.8)} of the ${nk} from memory clean.`:'all of them clean.'}`:''}</p>
     <p class="fine">Play any chord ${nx?`for the next one: ${gigAccHTML(vcTypeName(nx))}`:'to go again'}.</p>
     <div class="erow">${nx?`<button class="go" id="vcNextT">Next: ${gigAccHTML(vcTypeName(nx))}</button>`:''}<button class="${nx?'ghost':'go'}" id="vcAgain">Again</button><button class="ghost" id="vcCard">Back to the card</button><button class="ghost" id="vcMenu">All voicings</button></div>`;

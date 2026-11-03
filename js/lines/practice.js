@@ -69,7 +69,7 @@ function lpFinish(quit){
   if(L.results.length&&L.planKind==='daily') LDATA.daily[lpDay()]={steps:L.results.length,clean:L.results.filter(r=>r.clean).length};
   addXP(L.xp+(finishedWeek?150:0)); saveLines();
   $('lPlay').hidden=true; $('lResults').hidden=false;
-  const lick=id=>lickById(id), rows=L.results.map(r=>`<li><b>${r.step.label}</b> ${lick(r.step.id).name}, in ${keyName(r.ref,false).replace(' major','')}: ${r.step.learn?'learned':r.clean?'clean':r.revealed?'with the notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</li>`).join('');
+  const lick=id=>lickById(id), rows=L.results.map(r=>`<li><b>${r.step.label}</b><span>${lick(r.step.id).name}, in ${keyName(r.ref,false).replace(' major','')} <em class="${r.step.learn?'lrn':r.clean?'ok':r.revealed?'meh':'no'}">${r.step.learn?'learned':r.clean?'clean':r.revealed?'notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</em></span></li>`).join('');
   const streak=lpStreak(), left=lpKeysLeft(w).length, more=!quit&&w.learned&&left>0;
   $('lResults').innerHTML=`<h2>${quit?'Session ended':finishedWeek?'All 12 keys: it\'s yours':'Practice done'}</h2>
     <ul class="lkeys">${rows}</ul>

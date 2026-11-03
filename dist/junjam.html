@@ -341,8 +341,11 @@ body.linesmode .panel{display:none}
 .lstaff .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--muted)}
 .lmsg{min-height:1.4em;margin:0 0 12px;font-family:var(--hand);font-weight:700;font-size:20px}
 .lmsg.ok{color:var(--brass)} .lmsg.no{color:var(--wrong)}
-.lkeys{list-style:none;padding:0;margin:0 0 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 14px;color:var(--muted)}
-.lkeys b{color:var(--ink);font-family:var(--cond);font-size:17px;margin-right:6px}
+.lkeys{list-style:none;padding:0;margin:4px 0 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 18px;color:var(--muted)}
+.lkeys li{display:flex;align-items:baseline;gap:8px;min-width:0;line-height:1.3}
+.lkeys b{color:var(--ink);font-family:var(--cond);font-size:17px;min-width:2.4em;flex:none}
+.lkeys em{font-style:normal;font-size:12px;font-family:var(--cond);letter-spacing:.3px;white-space:nowrap;padding:0 6px;border-radius:var(--radius);border:1px solid currentColor}
+.lkeys em.ok{color:var(--good)} .lkeys em.lrn{color:var(--brass)} .lkeys em.meh{color:var(--muted)} .lkeys em.no{color:var(--wrong)}
 body.menu.nohud header .modetag{display:none}
 body.linesmode header .modetag{display:none}
 .lstaff svg{height:170px;width:auto;max-width:none}
@@ -5455,7 +5458,7 @@ function linesFinish(quit){
   const prev=LDATA.stars[L.lick.id]||0; if(stars>prev) LDATA.stars[L.lick.id]=stars;
   addXP(L.xp); saveLines();
   $('lPlay').hidden=true; $('lResults').hidden=false;
-  const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b> ${i===0?'learned':r.clean?'clean':r.revealed?'with notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</li>`).join('');
+  const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b><em class="${i===0?'lrn':r.clean?'ok':r.revealed?'meh':'no'}">${i===0?'learned':r.clean?'clean':r.revealed?'notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</em></li>`).join('');
   $('lResults').innerHTML=`<h2>${quit?'Session ended':stars===3?'Perfect transfer':'Lick done'}</h2>${learned?`<div class="stars">${starStr(Math.max(stars,prev))}</div>`:''}
     <ul class="lkeys">${rows}</ul><p>+${L.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five new keys clean.'}`:''}</p>
     <p class="fine">Play any chord to go again.</p><button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
@@ -5552,7 +5555,7 @@ function lpFinish(quit){
   if(L.results.length&&L.planKind==='daily') LDATA.daily[lpDay()]={steps:L.results.length,clean:L.results.filter(r=>r.clean).length};
   addXP(L.xp+(finishedWeek?150:0)); saveLines();
   $('lPlay').hidden=true; $('lResults').hidden=false;
-  const lick=id=>lickById(id), rows=L.results.map(r=>`<li><b>${r.step.label}</b> ${lick(r.step.id).name}, in ${keyName(r.ref,false).replace(' major','')}: ${r.step.learn?'learned':r.clean?'clean':r.revealed?'with the notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</li>`).join('');
+  const lick=id=>lickById(id), rows=L.results.map(r=>`<li><b>${r.step.label}</b><span>${lick(r.step.id).name}, in ${keyName(r.ref,false).replace(' major','')} <em class="${r.step.learn?'lrn':r.clean?'ok':r.revealed?'meh':'no'}">${r.step.learn?'learned':r.clean?'clean':r.revealed?'notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</em></span></li>`).join('');
   const streak=lpStreak(), left=lpKeysLeft(w).length, more=!quit&&w.learned&&left>0;
   $('lResults').innerHTML=`<h2>${quit?'Session ended':finishedWeek?'All 12 keys: it\'s yours':'Practice done'}</h2>
     <ul class="lkeys">${rows}</ul>
@@ -5857,7 +5860,7 @@ function rhFinish(quit){ clearDraft();
   const prev=RHDATA.stars[R.move.id]||0; if(stars>prev) RHDATA.stars[R.move.id]=stars;
   addXP(R.xp); saveRh(); R.active=true; R.mode='results';
   $('rhBody').innerHTML=`<h2>${quit?'Session ended':stars===3?'Every key clean':'Move done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
-    <ul class="lkeys">${R.results.map((r,i)=>`<li><b>${keyName(r.key,R.move.minor).replace(' major','')}</b> ${i===0?'learned':r.clean?'clean':r.hinted?'with the chord shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
+    <ul class="lkeys">${R.results.map((r,i)=>`<li><b>${keyName(r.key,R.move.minor).replace(' major','')}</b><em class="${i===0?'lrn':r.clean?'ok':r.hinted?'meh':'no'}">${i===0?'learned':r.clean?'clean':r.hinted?'chord shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</em></li>`).join('')}</ul>
     <p>+${R.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five clean.'}`:''}</p>
     <div class="erow"><button class="go" id="rhAgain">Again</button><button class="ghost" id="rhCard">Back to the card</button><button class="ghost" id="rhMenu">All moves</button></div>`;
   $('rhAgain').onclick=()=>rhDrillStart(R.move.id); $('rhCard').onclick=()=>rhOpen(R.move.id); $('rhMenu').onclick=rhToMenu;
@@ -6317,7 +6320,7 @@ function vcFinish(quit){ clearDraft();
   addXP(R.xp); saveVc(); R.mode='results';
   const nx=R.type&&stars>=1?VPATH[VPATH.indexOf(R.type)+1]:null, again=()=>R.type?vcLessonStart(R.type):vcDrillStart(R.v.id);
   $('vcBody').innerHTML=`<h2>${quit?'Lesson ended':stars===3?'Every key clean':R.type?`${gigAccHTML(vcTypeName(R.type))}: done`:'Voicing done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
-    <ul class="lkeys">${R.results.map(r=>`<li><b>${gigAccHTML(vcSym(vcIn(r.v,r.key)))}</b> ${R.type?gigAccHTML(r.v.name)+': ':''}${r.learn?'learned':r.clean?'clean':r.shown?'with the shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
+    <ul class="lkeys">${R.results.map(r=>`<li><b>${gigAccHTML(vcSym(vcIn(r.v,r.key)))}</b><span>${R.type?gigAccHTML(r.v.name):''} <em class="${r.learn?'lrn':r.clean?'ok':r.shown?'meh':'no'}">${r.learn?'learned':r.clean?'clean':r.shown?'shape shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</em></span></li>`).join('')}</ul>
     <p>+${R.xp} XP.${stars<3&&learned&&finished?` Next star: ${stars<2?`${Math.ceil(nk*.8)} of the ${nk} from memory clean.`:'all of them clean.'}`:''}</p>
     <p class="fine">Play any chord ${nx?`for the next one: ${gigAccHTML(vcTypeName(nx))}`:'to go again'}.</p>
     <div class="erow">${nx?`<button class="go" id="vcNextT">Next: ${gigAccHTML(vcTypeName(nx))}</button>`:''}<button class="${nx?'ghost':'go'}" id="vcAgain">Again</button><button class="ghost" id="vcCard">Back to the card</button><button class="ghost" id="vcMenu">All voicings</button></div>`;

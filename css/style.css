@@ -331,8 +331,11 @@ body.linesmode .panel{display:none}
 .lstaff .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--muted)}
 .lmsg{min-height:1.4em;margin:0 0 12px;font-family:var(--hand);font-weight:700;font-size:20px}
 .lmsg.ok{color:var(--brass)} .lmsg.no{color:var(--wrong)}
-.lkeys{list-style:none;padding:0;margin:0 0 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 14px;color:var(--muted)}
-.lkeys b{color:var(--ink);font-family:var(--cond);font-size:17px;margin-right:6px}
+.lkeys{list-style:none;padding:0;margin:4px 0 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 18px;color:var(--muted)}
+.lkeys li{display:flex;align-items:baseline;gap:8px;min-width:0;line-height:1.3}
+.lkeys b{color:var(--ink);font-family:var(--cond);font-size:17px;min-width:2.4em;flex:none}
+.lkeys em{font-style:normal;font-size:12px;font-family:var(--cond);letter-spacing:.3px;white-space:nowrap;padding:0 6px;border-radius:var(--radius);border:1px solid currentColor}
+.lkeys em.ok{color:var(--good)} .lkeys em.lrn{color:var(--brass)} .lkeys em.meh{color:var(--muted)} .lkeys em.no{color:var(--wrong)}
 body.menu.nohud header .modetag{display:none}
 body.linesmode header .modetag{display:none}
 .lstaff svg{height:170px;width:auto;max-width:none}

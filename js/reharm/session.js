@@ -123,7 +123,7 @@ function rhFinish(quit){ clearDraft();
   const prev=RHDATA.stars[R.move.id]||0; if(stars>prev) RHDATA.stars[R.move.id]=stars;
   addXP(R.xp); saveRh(); R.active=true; R.mode='results';
   $('rhBody').innerHTML=`<h2>${quit?'Session ended':stars===3?'Every key clean':'Move done'}</h2>${learned?`<div class="stars eresults" style="margin:0"><span class="stars">${starStr(Math.max(stars,prev))}</span></div>`:''}
-    <ul class="lkeys">${R.results.map((r,i)=>`<li><b>${keyName(r.key,R.move.minor).replace(' major','')}</b> ${i===0?'learned':r.clean?'clean':r.hinted?'with the chord shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</li>`).join('')}</ul>
+    <ul class="lkeys">${R.results.map((r,i)=>`<li><b>${keyName(r.key,R.move.minor).replace(' major','')}</b><em class="${i===0?'lrn':r.clean?'ok':r.hinted?'meh':'no'}">${i===0?'learned':r.clean?'clean':r.hinted?'chord shown':`${r.mistakes} wrong tr${r.mistakes>1?'ies':'y'}`}</em></li>`).join('')}</ul>
     <p>+${R.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five clean.'}`:''}</p>
     <div class="erow"><button class="go" id="rhAgain">Again</button><button class="ghost" id="rhCard">Back to the card</button><button class="ghost" id="rhMenu">All moves</button></div>`;
   $('rhAgain').onclick=()=>rhDrillStart(R.move.id); $('rhCard').onclick=()=>rhOpen(R.move.id); $('rhMenu').onclick=rhToMenu;
