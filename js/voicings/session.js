@@ -99,7 +99,7 @@ function bindVoicingsPane(){
 }
 // scroll to a chord type on the path (from a briefing or a practice block)
 function vcShowType(q,flash=true){
-  side='voicings'; renderMenu(); const el=document.querySelector(`#vcPath [data-step="vt:${q}"]`);
+  side='voicings'; renderMenu(); const el=document.querySelector(`#vcPath .pnode[data-step="vt:${q}"]`);
   if(el){ el.scrollIntoView({block:'center'}); if(flash){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1700); } } }
 
 /* ---------------- drawing a voicing ---------------- */

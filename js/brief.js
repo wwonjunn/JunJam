@@ -85,7 +85,7 @@ function briefGo(where,qids,ears){
   // Voicings: scrolled to the first of these chords on the path, these chords flashed
   const first=VPATH.find(q=>qids.includes(q)); if(!first){ side='voicings'; renderMenu(); return; }
   vcShowType(first,false);
-  qids.forEach(q=>{ const x=document.querySelector(`#vcPath [data-step="vt:${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } });   // the highlight goes once it has faded
+  qids.forEach(q=>{ const x=document.querySelector(`#vcPath .pnode[data-step="vt:${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } });   // the highlight goes once it has faded
 }
 // two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
 function briefClicks(box,attr,parse){

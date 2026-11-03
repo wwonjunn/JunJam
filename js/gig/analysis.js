@@ -19,7 +19,7 @@ const GA_MOVE_WHY={'↑4th':'Up a 4th (down a 5th): the strongest root move, it 
 /* Annotations for every chord in the chart: map "section|bar|chord" → {role, pat, first, move} */
 function gigAnalyze(song){
   const out={}, key=song.key, isMaj=q=>!q.minor&&!GA_DOM.has(q.id);
-  const roman=pc=>GIG_NUM[mod12(pc-key.pc)];
+  const roman=(pc,q)=>{ const r=GIG_NUM[mod12(pc-key.pc)]; return q&&(q.minor||q.id==='hdim')?r.toLowerCase():r; };   // a minor chord's numeral in lower case: V/vi, not V/VI
   song.sections.forEach(sec=>{
     const seq=[]; let last=null;
     sec.bars.forEach((b,bi)=>b.chords.forEach((c,ci)=>{ if(!c.c) return; const id=`${sec.name}|${bi}|${ci}`;
@@ -40,7 +40,7 @@ function gigAnalyze(song){
       if(GA_DOM.has(a.q.id)&&b){
         if(up(a,b)===11) tag([a,b],'tri',['subV','→']);
         else if(up(a,b)===2&&isMaj(b.q)) tag([a,b],'back',['♭VII7','I']);
-        else if(up(a,b)===5&&mod12(b.pc-key.pc)!==0) tag([a,b],'sec',[`V/${roman(b.pc)}`,roman(b.pc)]); }
+        else if(up(a,b)===5&&mod12(b.pc-key.pc)!==0) tag([a,b],'sec',[`V/${roman(b.pc,b.q)}`,roman(b.pc,b.q)]); }
       if(b&&c&&(b.q.id==='dim7'||b.q.id==='dim')&&up(a,b)===1&&up(b,c)===1) tag([a,b,c],'pdim',['','°','']);
       if(b&&mod12(a.pc-key.pc)===5&&isMaj(a.q)&&b.pc===a.pc&&b.q.minor) tag([a,b],'miv',['IV','iv']);
     }

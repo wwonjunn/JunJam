@@ -779,6 +779,8 @@ button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transfor
 .mode .mnext{display:block;font-size:12px;color:var(--brass);margin-top:2px}
 .pathstrip{margin:0 0 16px}
 .phead{font-size:14px;color:var(--muted);margin:0 0 8px} .phead b{color:var(--ink);font-weight:600}
+.pnext{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid color-mix(in srgb,var(--brass) 60%,transparent);padding:0 1px;cursor:pointer}
+.pnext:hover{color:var(--brass);border-bottom-color:var(--brass)}
 .pchaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
 .pchap{background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;padding:9px 8px 6px}
 .pct{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--cond);font-weight:600;font-size:15px;padding:0 4px}
@@ -6129,7 +6131,7 @@ function bindVoicingsPane(){
 }
 // scroll to a chord type on the path (from a briefing or a practice block)
 function vcShowType(q,flash=true){
-  side='voicings'; renderMenu(); const el=document.querySelector(`#vcPath [data-step="vt:${q}"]`);
+  side='voicings'; renderMenu(); const el=document.querySelector(`#vcPath .pnode[data-step="vt:${q}"]`);
   if(el){ el.scrollIntoView({block:'center'}); if(flash){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1700); } } }
 
 /* ---------------- drawing a voicing ---------------- */
@@ -37411,7 +37413,7 @@ const GA_MOVE_WHY={'↑4th':'Up a 4th (down a 5th): the strongest root move, it 
 /* Annotations for every chord in the chart: map "section|bar|chord" → {role, pat, first, move} */
 function gigAnalyze(song){
   const out={}, key=song.key, isMaj=q=>!q.minor&&!GA_DOM.has(q.id);
-  const roman=pc=>GIG_NUM[mod12(pc-key.pc)];
+  const roman=(pc,q)=>{ const r=GIG_NUM[mod12(pc-key.pc)]; return q&&(q.minor||q.id==='hdim')?r.toLowerCase():r; };   // a minor chord's numeral in lower case: V/vi, not V/VI
   song.sections.forEach(sec=>{
     const seq=[]; let last=null;
     sec.bars.forEach((b,bi)=>b.chords.forEach((c,ci)=>{ if(!c.c) return; const id=`${sec.name}|${bi}|${ci}`;
@@ -37432,7 +37434,7 @@ function gigAnalyze(song){
       if(GA_DOM.has(a.q.id)&&b){
         if(up(a,b)===11) tag([a,b],'tri',['subV','→']);
         else if(up(a,b)===2&&isMaj(b.q)) tag([a,b],'back',['♭VII7','I']);
-        else if(up(a,b)===5&&mod12(b.pc-key.pc)!==0) tag([a,b],'sec',[`V/${roman(b.pc)}`,roman(b.pc)]); }
+        else if(up(a,b)===5&&mod12(b.pc-key.pc)!==0) tag([a,b],'sec',[`V/${roman(b.pc,b.q)}`,roman(b.pc,b.q)]); }
       if(b&&c&&(b.q.id==='dim7'||b.q.id==='dim')&&up(a,b)===1&&up(b,c)===1) tag([a,b,c],'pdim',['','°','']);
       if(b&&mod12(a.pc-key.pc)===5&&isMaj(a.q)&&b.pc===a.pc&&b.q.minor) tag([a,b],'miv',['IV','iv']);
     }
@@ -37555,7 +37557,7 @@ function reharmPathNote(t){ if(t<2) return ''; const n=REHARM_MOVES.filter(m=>m.
 // st: its stars (any truthy = done), ns: done without stars to show, off: locked. Steps are numbered on through the columns.
 function pathChapsHTML(chaps,nx,sel,max=STAR_MAX){ let i=0;
   const all=chaps.flatMap(c=>c[1]), done=all.filter(x=>x.st).length, n=all.find(x=>x.id===nx);
-  return `<div class="phead">${done} of ${all.length} done${n?`. Next up: <b>${gigAccHTML(n.t)}</b>${n.sub?` <span class="fine">(${gigAccHTML(n.sub)})</span>`:''}`:''}</div><div class="pchaps">`
+  return `<div class="phead">${done} of ${all.length} done${n?`. Next up: <button class="pnext" data-step="${n.id}"${n.off?' disabled':''}>${gigAccHTML(n.t)}${n.sub?` <span class="fine">(${gigAccHTML(n.sub)})</span>`:''} ›</button>`:''}</div><div class="pchaps">`
     +chaps.map(([name,steps,o={}])=>{ const k=steps.filter(x=>x.st).length;
       return `<div class="pchap"><div class="pct"${o.tip?` title="${o.tip}"`:''}><span>${gigAccHTML(name)}</span><span class="fine">${k}/${steps.length}</span></div>${o.sub?`<div class="pcsub">${o.sub}</div>`:''}<div class="pcbar"><i style="width:${k/steps.length*100}%"></i></div>`
         +steps.map(x=>`<button class="pnode${x.st?' got':''}${x.id===nx?' now':''}${x.id===sel?' sel':''}${x.sub?' boss':''}" data-step="${x.id}"${x.off?' disabled':''} title="${x.tip||(x.ns?'':starStr(x.st||0,max))}"><span class="pd">${++i}</span><span class="pl">${gigAccHTML(x.t)}${x.sub?`<small>${gigAccHTML(x.sub)}</small>`:''}</span>${x.st&&!x.ns?`<b>${'★'.repeat(x.st)}</b>`:''}</button>`).join('')+(o.foot||'')+'</div>'; }).join('')+'</div>';
@@ -37830,7 +37832,7 @@ function briefGo(where,qids,ears){
   // Voicings: scrolled to the first of these chords on the path, these chords flashed
   const first=VPATH.find(q=>qids.includes(q)); if(!first){ side='voicings'; renderMenu(); return; }
   vcShowType(first,false);
-  qids.forEach(q=>{ const x=document.querySelector(`#vcPath [data-step="vt:${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } });   // the highlight goes once it has faded
+  qids.forEach(q=>{ const x=document.querySelector(`#vcPath .pnode[data-step="vt:${q}"]`); if(x){ x.classList.remove('flash'); void x.offsetWidth; x.classList.add('flash'); setTimeout(()=>x.classList.remove('flash'),1700); } });   // the highlight goes once it has faded
 }
 // two clicks on the same card within 450 ms: the briefing (the first click has already selected it)
 function briefClicks(box,attr,parse){

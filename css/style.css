@@ -769,6 +769,8 @@ button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transfor
 .mode .mnext{display:block;font-size:12px;color:var(--brass);margin-top:2px}
 .pathstrip{margin:0 0 16px}
 .phead{font-size:14px;color:var(--muted);margin:0 0 8px} .phead b{color:var(--ink);font-weight:600}
+.pnext{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid color-mix(in srgb,var(--brass) 60%,transparent);padding:0 1px;cursor:pointer}
+.pnext:hover{color:var(--brass);border-bottom-color:var(--brass)}
 .pchaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
 .pchap{background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;padding:9px 8px 6px}
 .pct{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--cond);font-weight:600;font-size:15px;padding:0 4px}
