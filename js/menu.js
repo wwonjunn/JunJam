@@ -96,7 +96,7 @@ function goHome(){
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
   if(ARC.active){ arcStop(); arcFxStop(); ARC.active=false; } if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(VC.active){ vcStop(); VC.active=false; } if(CH.active){ chStop(); CH.active=false; } if(GIG.active) gigClose();
-  hideOv(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode','vcmode'); ['earsStage','arcStage','linesStage','reharmStage','voiceStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
+  hideOv(); clearLane(); kbMarks={}; paintKeys(); document.body.classList.remove('earsmode','linesmode','trmode','gigmode','vcmode'); ['earsStage','arcStage','linesStage','reharmStage','voiceStage','transStage','gigStage'].forEach(id=>$(id).hidden=true);
   side='home'; LINES.rec=null; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); $('startOv').scrollTop=0; return true;
 }
 document.addEventListener('click',()=>setTimeout(()=>{ if(!atHome()&&!(history.state&&history.state.away)) history.pushState({away:1},''); }),true);
@@ -121,7 +121,7 @@ $('startBtn').onclick=start;
 $('resumeBtn').onclick=resume;
 $('quitBtn').onclick=()=>{$('pauseOv').hidden=true; gameOver();};
 $('againBtn').onclick=start;
-$('menuBtn').onclick=()=>{hideOv(); $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu();};
+$('menuBtn').onclick=()=>{hideOv(); clearLane(); $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu();};
 
 document.body.classList.add('menu'); const CIRCLE=[0,7,2,9,4,11,6,1,8,3,10,5];
 let progReturn='startOv';

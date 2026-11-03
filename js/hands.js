@@ -163,13 +163,15 @@ function newGame(){
   $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
+// the lane emptied: chords left over from the last run don't hang behind the menu or the next run
+function clearLane(){ if(typeof G!=='undefined'&&G&&G.enemies) G.enemies=[]; $('lane').querySelectorAll('.enemy').forEach(x=>x.remove()); }
 function start(){
   document.body.classList.remove('earsmode','nohud');
   const tier=tierOf(tierId);
   if(mode==='game' && !tierUnlocked(tier)) return;
   synth.init();
   store.set('stage',stageN); store.set('mode',mode); store.set('tier',tierId);
-  newGame(); G.running=true;
+  clearLane(); newGame(); G.running=true;
   hideOv(); kbMarks={}; paintKeys(); $('staff').innerHTML=staffSVG([],[]); $('verdict').className='verdict'; $('verdict').textContent='Play the lowest chord.'; $('chips').innerHTML=''; $('why').textContent=''; $('tags').textContent='';
   G.last=performance.now(); G.raf=requestAnimationFrame(tick); metro.start();
 }
