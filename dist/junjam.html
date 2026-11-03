@@ -126,6 +126,8 @@ body.menu .panel{display:none}
 .sf .g.acc{font-size:1.2em;line-height:1}   /* a music glyph runs small next to letters of the same size */
 .enemy .sl{font-size:30px;margin-left:1px}
 .ahead .sym .sl{font-size:17px}
+/* a chord fades in as it appears (its position is a transform the game sets every frame, so only opacity here); becoming the target eases */
+.enemy{animation:enemyin .28s ease-out;transition:color .15s} @keyframes enemyin{from{opacity:0}}
 .enemy.target{color:var(--brass)}
 .enemy.target::after{content:"";position:absolute;left:6px;right:6px;bottom:0;height:3px;border-radius:2px;background:currentColor;opacity:.8}
 .enemy.danger .rt,.enemy.danger .ac,.enemy.danger .sf{color:var(--wrong)}
@@ -223,7 +225,7 @@ button,.mode,.stage,.lick,.pnode,.arcw,.lvl,.proutine{transition:border-color .1
 button:not(:disabled):active,.mode:active,.proutine:active{transform:translateY(1px)}
 .panein{animation:panein .22s ease-out} @keyframes panein{from{opacity:0;transform:translateY(6px)}}
 @media (prefers-reduced-motion: reduce){
-  .panein{animation:none} button:not(:disabled):active,.mode:active,.proutine:active{transform:none}
+  .panein,.enemy{animation:none} button:not(:disabled):active,.mode:active,.proutine:active{transform:none}
   .enemy.shake,.lane.hurt,.pop{animation:none}
   .enemy.dead{transition:none}
 }
