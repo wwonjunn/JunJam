@@ -891,6 +891,21 @@ button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transfor
   font:600 15px "Courier New",monospace;white-space:nowrap;pointer-events:none;z-index:7;animation:eggfade 1.9s ease-out forwards}
 .eggbox.egg-ut{background:#000;color:#fff;border-color:#fff;border-radius:0;animation-duration:3.6s;white-space:normal}
 h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-weight:400;letter-spacing:.18em;text-shadow:0 0 18px rgba(163,32,27,.35)}
+
+/* ---------------- feel (feel.js): bolts from your keys, sparks, a punch, a floating score ---------------- */
+.feel{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.fbolt{position:absolute;height:3px;margin-top:-1.5px;border-radius:2px;transform-origin:0 50%;animation:fbolt linear both;box-shadow:0 0 6px currentColor}
+@keyframes fbolt{0%{opacity:1;transform:rotate(var(--a)) translateX(0)}85%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--len))}}
+.fspark{position:absolute;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;animation:fspark ease-out forwards}
+@keyframes fspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
+.fring{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid;border-radius:50%;animation:fring .46s ease-out forwards}
+@keyframes fring{from{transform:scale(.4);opacity:.85}to{transform:scale(3);opacity:0}}
+.fpop{position:absolute;font-family:var(--cond);font-weight:700;font-size:21px;white-space:nowrap;text-shadow:0 1px 0 var(--lane),0 0 8px var(--lane);animation:fpop .95s ease-out forwards}
+.fpop.small{font-size:15px}
+@keyframes fpop{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}14%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}30%{transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-150%)}}
+.fpunch{animation:fpunch .26s ease-out} @keyframes fpunch{35%{transform:scale(1.05)}}
+.kb rect.kflash{animation:kflash .34s ease-out} @keyframes kflash{0%{filter:brightness(1.5) saturate(1.2)}100%{filter:none}}
+.lstaff ellipse.nglow,svg ellipse.nglow{animation:nglow .42s ease-out} @keyframes nglow{0%{filter:drop-shadow(0 0 5px var(--brass)) brightness(1.4)}100%{filter:none}}   /* a staff note lighting as the replay reaches it */
 </style>
 <style>
 /* ==================================================================================================
@@ -2286,6 +2301,51 @@ new MutationObserver(ms=>{ if(matchMedia('(prefers-reduced-motion: reduce)').mat
 }).observe(document.body,{childList:true,subtree:true});
 </script>
 <script>
+/* ---------------- feel: the Ears hit, in every mode ----------------
+   What makes a right answer in Ears satisfying: your notes leave the keys you pressed as bolts, a beat apart (30 ms), land
+   on what you got right, and it answers with a few sparks, a small punch and a score floating up. These do the same on
+   the page for the other modes. Colours come from the theme; with reduced motion only the result itself shows. */
+const FEEL={layer:null};
+const feelReduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const feelVar=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+function feelLayer(){ if(!FEEL.layer||!FEEL.layer.isConnected){ const d=document.createElement('div'); d.className='feel'; document.body.appendChild(d); FEEL.layer=d; } return FEEL.layer; }
+const feelAt=t=>{ if(!t) return null; if(!t.getBoundingClientRect) return t; const r=t.getBoundingClientRect(); return r.width||r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null; };
+// the top edge of an on-screen key, where a bolt leaves from
+function feelKeyTop(m){ const el=keyEls[m]; if(!el) return null; const r=el.getBoundingClientRect(); return r.width?{x:r.left+r.width/2,y:r.top+2}:null; }
+// the keys you played light up, low to high
+function feelKeys(notes){ if(feelReduce()||!notes) return;
+  [...new Set(notes)].sort((a,b)=>a-b).forEach((m,i)=>{ const k=keyEls[m]; if(!k) return;
+    setTimeout(()=>{ k.classList.remove('kflash'); void k.getBoundingClientRect(); k.classList.add('kflash'); setTimeout(()=>k.classList.remove('kflash'),340); },i*30); }); }
+// bolts from the played keys to a target (an element or {x,y}); land(point) runs as the first one arrives
+function feelBolts(notes,target,land,o={}){
+  const T=feelAt(target), from=[...new Set(notes||[])].sort((a,b)=>a-b).slice(0,5).map(feelKeyTop).filter(Boolean);
+  if(!T){ return; } if(feelReduce()||!from.length){ land&&land(T); return; }
+  const L=feelLayer(), col=o.col||feelVar('--brass'), dur=o.dur||170, S=46;   // S: the bolt's own length
+  from.forEach((p,i)=>{ const dx=T.x-p.x, dy=T.y-p.y, len=Math.max(0,Math.hypot(dx,dy)-S), b=document.createElement('i');
+    b.className='fbolt'; b.style.cssText=`left:${p.x}px;top:${p.y}px;width:${S}px;--a:${Math.atan2(dy,dx)}rad;--len:${len}px;color:${col};background:linear-gradient(90deg,transparent,${col});animation-duration:${dur}ms;animation-delay:${i*30}ms`;
+    L.appendChild(b); setTimeout(()=>b.remove(),i*30+dur+80); });
+  setTimeout(()=>land&&land(T),dur);
+}
+// sparks out from a point, and a ring
+function feelBurst(x,y,o={}){ if(feelReduce()) return;
+  const L=feelLayer(), cols=o.cols||[feelVar('--brass'),feelVar('--good'),feelVar('--chord')], n=o.n||12, sp=o.spread||48;
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, d=sp*(.45+Math.random()*.75), s=document.createElement('i'); s.className='fspark';
+    s.style.cssText=`left:${x}px;top:${y}px;background:${cols[i%cols.length]};--dx:${(Math.cos(a)*d).toFixed(1)}px;--dy:${(Math.sin(a)*d).toFixed(1)}px;animation-duration:${420+Math.round(Math.random()*240)}ms`;
+    L.appendChild(s); setTimeout(()=>s.remove(),720); }
+  if(o.ring!==false){ const r=document.createElement('i'); r.className='fring'; r.style.cssText=`left:${x}px;top:${y}px;border-color:${cols[0]}`; L.appendChild(r); setTimeout(()=>r.remove(),520); }
+}
+// a word or a score, floating up from a point
+function feelPop(x,y,text,o={}){ const L=feelLayer(), p=document.createElement('b'); p.className='fpop'+(o.small?' small':''); p.textContent=text;
+  p.style.cssText=`left:${x}px;top:${y}px;color:${o.col||feelVar('--brass')}`; L.appendChild(p); setTimeout(()=>p.remove(),950); }
+// a small punch on what was hit (not on things the game moves with transform)
+function feelPunch(el){ if(!el||!el.classList||feelReduce()) return;
+  if(getComputedStyle(el).display==='inline') el.style.display='inline-block';   // a transform needs a box
+  el.classList.remove('fpunch'); void el.getBoundingClientRect(); el.classList.add('fpunch'); setTimeout(()=>el.classList.remove('fpunch'),280); }
+// all of it: keys light, bolts fly, and on landing sparks, a punch and a word. o: {text, cols, n, punch:false, col}
+function feelHit(notes,target,o={}){ feelKeys(notes);
+  feelBolts(notes,target,T=>{ if(o.punch!==false) feelPunch(target&&target.classList?target:null); feelBurst(T.x,T.y,o); if(o.text) feelPop(T.x,T.y-(o.dy??26),o.text,o); o.land&&o.land(T); },o); }
+</script>
+<script>
 /* ---------------- input: MIDI + fallback ---------------- */
 const held=new Set(); let gesture=new Set(), settleTimer=null; const SETTLE=140;
 const draft=new Set();
@@ -2783,17 +2843,15 @@ function fx(e,res){
   const cx=r.left-lr.left+r.width/2, cy=r.top-lr.top+r.height/2;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const g=eggChordsKill(e,lane,cx,cy,lr);   // very rarely, a joke instead of the usual shot (eggs.js)
-  if(!reduce&&(!g||g.shot)){
-    const shot=document.createElement('div'); shot.className='shot';
-    shot.style.left=cx+'px'; shot.style.height=Math.max(10,lr.height-cy)+'px';
-    lane.appendChild(shot); requestAnimationFrame(()=>{shot.style.opacity='0';}); setTimeout(()=>shot.remove(),320);
-  }
-  setTimeout(()=>{ e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380); },g&&g.wait||0);
+  // the Ears hit: bolts from the keys you played, and on landing sparks, then the chord goes (feel.js)
+  const fire=!!e.t.fire, travel=reduce||(g&&!g.shot)?0:170;
+  if(!reduce&&(!g||g.shot)) feelHit(G.prev,e.el,{punch:false,n:fire?22:12,spread:fire?64:48,cols:fire?['#ff6b2b','#ffd23f','#ff3d00']:null});
+  setTimeout(()=>{ e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380); },g&&g.wait||travel);
   const pop=document.createElement('div'); pop.className='pop';
   pop.style.left=Math.min(Math.max(cx,70),lane.clientWidth-70)+'px'; pop.style.top=Math.max(STRIP+4,cy-10)+'px';
   const shown=res.tags.filter(t=>t.p>0 && t.t!=='Quick').slice(0,2).map(t=>t.t).join(', ');
   pop.innerHTML=`<b>+${res.total}</b>${shown?`<span>${shown}</span>`:''}`;
-  lane.appendChild(pop); setTimeout(()=>pop.remove(),1300);
+  setTimeout(()=>{ lane.appendChild(pop); setTimeout(()=>pop.remove(),1300); },travel);   // the score shows as the bolt lands
 }
 
 /* ---------------- tempo pulse + hi-hat ---------------- */
@@ -3238,6 +3296,7 @@ function earsAnswer(id,via){
   earRecord(q.item,ok,ok?secs:null);
   if(q.keyPc!=null) keyRecord(q.keyPc,ok,ok?secs/LEVELS[q.levelId].world.rt:null);
   document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.classList.add('review'); });
+  if(ok){ const b=[...document.querySelectorAll('.eopt')].find(x=>x.dataset.id===String(q.answer)), p=b&&feelAt(b); if(p){ feelPunch(b); feelBurst(p.x,p.y,{n:10,spread:40}); feelPop(p.x,p.y-30,secs<1.5?'Quick!':'✓',{small:true}); } }
   $('eReplay').hidden=false; $('eReplay').textContent='Replay question (R)';
   $('eSub').textContent='Tap any answer to hear it next to the right one.';
   const label=id==='timeout'?'Out of time':(q.options.find(o=>o.id===String(id))||{label:id}).label;
@@ -5368,8 +5427,8 @@ function lineStaffSVG(inst,idx,done){
     const di=p.n.spell.di, cx=xOf(p.at), cy=y(di), c=col(p.i), open=p.d>=2-1e-6;
     for(let d=28;d>=di;d-=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
     for(let d=40;d<=di;d+=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
-    s+=open?`<ellipse cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${c}" stroke-width="1.8"/>`
-           :`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${c}"/>`;
+    s+=open?`<ellipse data-i="${p.i}" cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${c}" stroke-width="1.8"/>`
+           :`<ellipse data-i="${p.i}" cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${c}"/>`;
     if(p.first&&p.n.spell.a) s+=accSVG(p.n.spell.a,cx-15,cy,c);
     if([.75,1.5,3].some(v=>Math.abs(p.d-v)<1e-6)) s+=`<circle cx="${cx+10}" cy="${cy-(di%2===0?5:0)}" r="1.8" fill="${c}"/>`;
     if(p.tie){ const nx=xOf(p.at+p.d,true), dn=di>=34; s+=`<path d="M${cx+4} ${cy+(dn?-7:7)} Q${(cx+nx)/2} ${cy+(dn?-16:16)} ${nx-4} ${cy+(dn?-7:7)}" fill="none" stroke="${c}" stroke-width="1.4"/>`; }
@@ -5432,7 +5491,9 @@ function linesNote(m){
   if(ok){
     L.idx++; kbMarks={}; kbMarks[m]='k-chord';
     if(L.idx===L.inst.notes.length) return linesRoundDone();
-    $('lMsg').textContent=''; linesRender(); return;
+    $('lMsg').textContent=''; linesRender();
+    const nh=document.querySelector(`#lPlay ellipse[data-i="${L.idx-1}"]`); if(nh) feelHit([m],nh,{n:5,spread:20,ring:false,punch:false,dur:130});   // each right note flies onto the staff
+    return;
   }
   L.mistakes++; L.idx=0;
   const name=plainSpell(m).name;
@@ -5447,10 +5508,16 @@ function linesRoundDone(){
   $('lMsg').textContent=clean?(learn?(L.plan?'Got it.':'Got it. Now the real test: new keys.'):'Clean.'):`Done${L.mistakes?`, after ${L.mistakes} restart${L.mistakes>1?'s':''}`:''}${!learn&&L.revealed?', with the notes showing':''}.`;
   $('lMsg').className='lmsg '+(clean?'ok':'');
   L.revealed=true; linesRender();
+  { const i=L.inst.notes.length-1, nh=document.querySelector(`#lPlay ellipse[data-i="${i}"]`); if(nh) feelHit([+Object.keys(kbMarks)[0]||L.inst.notes[i].midi],nh,{punch:false,text:clean?(learn?'Got it':'Clean'):'Done',small:!clean}); }   // the last note lands: the line is done
   // Replay the lick you just played, then go to the next key on its own (Enter skips the wait)
   const secs=linesPlay(.35)||1.2;
   L.advance=setTimeout(linesNext,secs*1000+500);
+  linesGlow(.35);
 }
+// as the line replays, each note on the staff lights up as it sounds (the replay is straight, as written: see playLine)
+function linesGlow(delay){ const L=LINES, r=L.round, spb=60/LDATA.tempo; if(feelReduce()) return;
+  L.inst.notes.forEach((n,i)=>setTimeout(()=>{ if(!L.active||!L.done||L.round!==r) return;
+    document.querySelectorAll(`#lPlay ellipse[data-i="${i}"]`).forEach(e=>{ e.classList.remove('nglow'); void e.getBoundingClientRect(); e.classList.add('nglow'); }); },(delay+n.gat*spb)*1000)); }
 function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; clearTimeout(LINES.advance); LINES.round++; if(LINES.round>(LINES.plan?LINES.plan.length-1:TRANSFER_KEYS)) return linesFinish(false); linesRound(); }
 function linesFinish(quit){
   const L=LINES; clearTimeout(L.advance); killBus(L.bus); L.active=false;
@@ -5837,6 +5904,7 @@ function rhNotes(notes){
     showAnalysis(hit.ev,{root:hit.t.root,q:hit.q,rn:hit.t.rn},null);
     if(hit.t!==want){ R.after[slot]=hit.t; R.voiced=voiceProg(R.after); } // melody reharm: keep the chord you chose
     R.solved.add(slot); R.slotPos++; R.just=slot; setTimeout(()=>{ if(R.just===slot) R.just=null; },400);
+    setTimeout(()=>feelHit(notes,$('rhBody').querySelector('.rhc.just'),{punch:false,text:'✓'}),0);   // once the row has redrawn: your chord flies into its slot
     const next=R.move.slots[R.slotPos];
     rhStop(); const t=rhPlay(R.voiced,slot+1,next===undefined?R.after.length:next,now()+RH_BAR*.9,R.mel);
     if(next===undefined) return rhRoundDone(t);
@@ -6311,6 +6379,7 @@ function vcNotes(notes){
     clearInterval(R.tick); R.done=true; R.results.push({v:rd.v,key:rd.pc,learn:rd.learn,clean,mistakes:R.mistakes,shown:!rd.learn&&R.shown});
     if(!rd.learn&&clean) R.clean++; R.xp+=10+(clean?10:0);
     vcRender(); $('vcMsg').textContent=(clean?'Clean.':`Got it${R.mistakes?`, after ${R.mistakes} wrong tr${R.mistakes>1?'ies':'y'}`:''}.`)+(res.note?' '+res.note:''); $('vcMsg').className='lmsg ok';
+    feelHit(notes,$('vcBody').querySelector('.vcdia'),{text:rd.learn?'✓':clean?'Clean':'Got it',small:!clean});   // the shape lights up as your notes land on it
     vcStaff(R.t,R.t.notes.map(m=>{ const iv=mod12(m-R.t.root.pc); return iv===0?'root':R.t.q.ct.includes(iv)?'chord':'tension'; }));
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.v.name}.`; $('why').textContent='';
     R.timer=setTimeout(vcNext,1300); return;
@@ -6413,6 +6482,7 @@ function vcRushNotes(notes){
     R.score+=pts; R.combo++; if(!R.item.life) R.cleared++; R.xp+=4; R.speed=Math.max(R.boss?vcLapFloor(R.lap):0.55,R.speed*0.97);
     let life=''; if(R.item.life){ if(R.lives<VC_LIVES){ R.lives++; life='  💚 +1 life!'; } else { R.score+=600; life='  💚 Full on lives: +600'; } }
     $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}${life}`; $('vcMsg').className='lmsg ok';
+    feelHit(notes,$('vcBody').querySelector('.vcask b'),{text:`+${pts}`,n:R.item.life?18:12,cols:R.item.life?[feelVar('--good'),'#7dffb0',feelVar('--brass')]:null});
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.item.v.name}.`;
     R.timer=setTimeout(vcRushNext,R.chain.length?380:650); return;
   }
@@ -6594,6 +6664,7 @@ function chNotes(notes){
   const named=chNamed(k,notes), met=chTagMet(k.tag,k,notes,named), dt=at-k.t;
   const grade=Math.abs(dt)<=0.12?'perfect':Math.abs(dt)<=beat*0.5?'good':'late';
   const mv=chMove(R.prev,[...new Set(notes)]), smooth=mv!=null&&mv<=2;
+  feelKeys(notes);   // your keys ripple; the highway bursts at the line (a rhythm game: no bolt travel to wait for)
   R.combo++; R.best=Math.max(R.best,R.combo); R.hits[grade]++; if(met) R.tagsMet++; if(named) R.named[named.id]=(R.named[named.id]||0)+1;
   const mult=1+Math.min(2,R.combo*0.05), pts=Math.round(({perfect:300,good:200,late:100}[grade]+(met&&k.tag!=='any'?150:0)+(named?100:0)+(smooth?60:0))*mult);
   R.score+=pts; R.meter=Math.min(1,R.meter+({perfect:0.06,good:0.045,late:0.02}[grade])*(met?1:0.5));

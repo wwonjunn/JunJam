@@ -243,6 +243,7 @@ function vcNotes(notes){
     clearInterval(R.tick); R.done=true; R.results.push({v:rd.v,key:rd.pc,learn:rd.learn,clean,mistakes:R.mistakes,shown:!rd.learn&&R.shown});
     if(!rd.learn&&clean) R.clean++; R.xp+=10+(clean?10:0);
     vcRender(); $('vcMsg').textContent=(clean?'Clean.':`Got it${R.mistakes?`, after ${R.mistakes} wrong tr${R.mistakes>1?'ies':'y'}`:''}.`)+(res.note?' '+res.note:''); $('vcMsg').className='lmsg ok';
+    feelHit(notes,$('vcBody').querySelector('.vcdia'),{text:rd.learn?'✓':clean?'Clean':'Got it',small:!clean});   // the shape lights up as your notes land on it
     vcStaff(R.t,R.t.notes.map(m=>{ const iv=mod12(m-R.t.root.pc); return iv===0?'root':R.t.q.ct.includes(iv)?'chord':'tension'; }));
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.v.name}.`; $('why').textContent='';
     R.timer=setTimeout(vcNext,1300); return;
@@ -345,6 +346,7 @@ function vcRushNotes(notes){
     R.score+=pts; R.combo++; if(!R.item.life) R.cleared++; R.xp+=4; R.speed=Math.max(R.boss?vcLapFloor(R.lap):0.55,R.speed*0.97);
     let life=''; if(R.item.life){ if(R.lives<VC_LIVES){ R.lives++; life='  💚 +1 life!'; } else { R.score+=600; life='  💚 Full on lives: +600'; } }
     $('vcMsg').textContent=`+${pts}${R.combo>1?`  ×${mult.toFixed(1)}`:''}${frac>0.6?'  Quick!':''}${life}`; $('vcMsg').className='lmsg ok';
+    feelHit(notes,$('vcBody').querySelector('.vcask b'),{text:`+${pts}`,n:R.item.life?18:12,cols:R.item.life?[feelVar('--good'),'#7dffb0',feelVar('--brass')]:null});
     $('verdict').className='verdict ok'; $('verdict').textContent=`${vcSym(R.t)}, ${R.item.v.name}.`;
     R.timer=setTimeout(vcRushNext,R.chain.length?380:650); return;
   }

@@ -130,6 +130,7 @@ function chNotes(notes){
   const named=chNamed(k,notes), met=chTagMet(k.tag,k,notes,named), dt=at-k.t;
   const grade=Math.abs(dt)<=0.12?'perfect':Math.abs(dt)<=beat*0.5?'good':'late';
   const mv=chMove(R.prev,[...new Set(notes)]), smooth=mv!=null&&mv<=2;
+  feelKeys(notes);   // your keys ripple; the highway bursts at the line (a rhythm game: no bolt travel to wait for)
   R.combo++; R.best=Math.max(R.best,R.combo); R.hits[grade]++; if(met) R.tagsMet++; if(named) R.named[named.id]=(R.named[named.id]||0)+1;
   const mult=1+Math.min(2,R.combo*0.05), pts=Math.round(({perfect:300,good:200,late:100}[grade]+(met&&k.tag!=='any'?150:0)+(named?100:0)+(smooth?60:0))*mult);
   R.score+=pts; R.meter=Math.min(1,R.meter+({perfect:0.06,good:0.045,late:0.02}[grade])*(met?1:0.5));

@@ -191,8 +191,8 @@ function lineStaffSVG(inst,idx,done){
     const di=p.n.spell.di, cx=xOf(p.at), cy=y(di), c=col(p.i), open=p.d>=2-1e-6;
     for(let d=28;d>=di;d-=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
     for(let d=40;d<=di;d+=2) s+=`<line class="ln" x1="${cx-10}" x2="${cx+10}" y1="${y(d)}" y2="${y(d)}"/>`;
-    s+=open?`<ellipse cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${c}" stroke-width="1.8"/>`
-           :`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${c}"/>`;
+    s+=open?`<ellipse data-i="${p.i}" cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${c}" stroke-width="1.8"/>`
+           :`<ellipse data-i="${p.i}" cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${c}"/>`;
     if(p.first&&p.n.spell.a) s+=accSVG(p.n.spell.a,cx-15,cy,c);
     if([.75,1.5,3].some(v=>Math.abs(p.d-v)<1e-6)) s+=`<circle cx="${cx+10}" cy="${cy-(di%2===0?5:0)}" r="1.8" fill="${c}"/>`;
     if(p.tie){ const nx=xOf(p.at+p.d,true), dn=di>=34; s+=`<path d="M${cx+4} ${cy+(dn?-7:7)} Q${(cx+nx)/2} ${cy+(dn?-16:16)} ${nx-4} ${cy+(dn?-7:7)}" fill="none" stroke="${c}" stroke-width="1.4"/>`; }
@@ -255,7 +255,9 @@ function linesNote(m){
   if(ok){
     L.idx++; kbMarks={}; kbMarks[m]='k-chord';
     if(L.idx===L.inst.notes.length) return linesRoundDone();
-    $('lMsg').textContent=''; linesRender(); return;
+    $('lMsg').textContent=''; linesRender();
+    const nh=document.querySelector(`#lPlay ellipse[data-i="${L.idx-1}"]`); if(nh) feelHit([m],nh,{n:5,spread:20,ring:false,punch:false,dur:130});   // each right note flies onto the staff
+    return;
   }
   L.mistakes++; L.idx=0;
   const name=plainSpell(m).name;
@@ -270,10 +272,16 @@ function linesRoundDone(){
   $('lMsg').textContent=clean?(learn?(L.plan?'Got it.':'Got it. Now the real test: new keys.'):'Clean.'):`Done${L.mistakes?`, after ${L.mistakes} restart${L.mistakes>1?'s':''}`:''}${!learn&&L.revealed?', with the notes showing':''}.`;
   $('lMsg').className='lmsg '+(clean?'ok':'');
   L.revealed=true; linesRender();
+  { const i=L.inst.notes.length-1, nh=document.querySelector(`#lPlay ellipse[data-i="${i}"]`); if(nh) feelHit([+Object.keys(kbMarks)[0]||L.inst.notes[i].midi],nh,{punch:false,text:clean?(learn?'Got it':'Clean'):'Done',small:!clean}); }   // the last note lands: the line is done
   // Replay the lick you just played, then go to the next key on its own (Enter skips the wait)
   const secs=linesPlay(.35)||1.2;
   L.advance=setTimeout(linesNext,secs*1000+500);
+  linesGlow(.35);
 }
+// as the line replays, each note on the staff lights up as it sounds (the replay is straight, as written: see playLine)
+function linesGlow(delay){ const L=LINES, r=L.round, spb=60/LDATA.tempo; if(feelReduce()) return;
+  L.inst.notes.forEach((n,i)=>setTimeout(()=>{ if(!L.active||!L.done||L.round!==r) return;
+    document.querySelectorAll(`#lPlay ellipse[data-i="${i}"]`).forEach(e=>{ e.classList.remove('nglow'); void e.getBoundingClientRect(); e.classList.add('nglow'); }); },(delay+n.gat*spb)*1000)); }
 function linesNext(){ if(!LINES.active) return; if(!LINES.done) return; clearTimeout(LINES.advance); LINES.round++; if(LINES.round>(LINES.plan?LINES.plan.length-1:TRANSFER_KEYS)) return linesFinish(false); linesRound(); }
 function linesFinish(quit){
   const L=LINES; clearTimeout(L.advance); killBus(L.bus); L.active=false;

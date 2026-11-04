@@ -881,3 +881,18 @@ button.arcday:hover::after,button.arcweek:hover::after{color:var(--ink);transfor
   font:600 15px "Courier New",monospace;white-space:nowrap;pointer-events:none;z-index:7;animation:eggfade 1.9s ease-out forwards}
 .eggbox.egg-ut{background:#000;color:#fff;border-color:#fff;border-radius:0;animation-duration:3.6s;white-space:normal}
 h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-weight:400;letter-spacing:.18em;text-shadow:0 0 18px rgba(163,32,27,.35)}
+
+/* ---------------- feel (feel.js): bolts from your keys, sparks, a punch, a floating score ---------------- */
+.feel{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.fbolt{position:absolute;height:3px;margin-top:-1.5px;border-radius:2px;transform-origin:0 50%;animation:fbolt linear both;box-shadow:0 0 6px currentColor}
+@keyframes fbolt{0%{opacity:1;transform:rotate(var(--a)) translateX(0)}85%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--len))}}
+.fspark{position:absolute;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;animation:fspark ease-out forwards}
+@keyframes fspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
+.fring{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid;border-radius:50%;animation:fring .46s ease-out forwards}
+@keyframes fring{from{transform:scale(.4);opacity:.85}to{transform:scale(3);opacity:0}}
+.fpop{position:absolute;font-family:var(--cond);font-weight:700;font-size:21px;white-space:nowrap;text-shadow:0 1px 0 var(--lane),0 0 8px var(--lane);animation:fpop .95s ease-out forwards}
+.fpop.small{font-size:15px}
+@keyframes fpop{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}14%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}30%{transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-150%)}}
+.fpunch{animation:fpunch .26s ease-out} @keyframes fpunch{35%{transform:scale(1.05)}}
+.kb rect.kflash{animation:kflash .34s ease-out} @keyframes kflash{0%{filter:brightness(1.5) saturate(1.2)}100%{filter:none}}
+.lstaff ellipse.nglow,svg ellipse.nglow{animation:nglow .42s ease-out} @keyframes nglow{0%{filter:drop-shadow(0 0 5px var(--brass)) brightness(1.4)}100%{filter:none}}   /* a staff note lighting as the replay reaches it */

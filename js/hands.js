@@ -279,17 +279,15 @@ function fx(e,res){
   const cx=r.left-lr.left+r.width/2, cy=r.top-lr.top+r.height/2;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const g=eggChordsKill(e,lane,cx,cy,lr);   // very rarely, a joke instead of the usual shot (eggs.js)
-  if(!reduce&&(!g||g.shot)){
-    const shot=document.createElement('div'); shot.className='shot';
-    shot.style.left=cx+'px'; shot.style.height=Math.max(10,lr.height-cy)+'px';
-    lane.appendChild(shot); requestAnimationFrame(()=>{shot.style.opacity='0';}); setTimeout(()=>shot.remove(),320);
-  }
-  setTimeout(()=>{ e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380); },g&&g.wait||0);
+  // the Ears hit: bolts from the keys you played, and on landing sparks, then the chord goes (feel.js)
+  const fire=!!e.t.fire, travel=reduce||(g&&!g.shot)?0:170;
+  if(!reduce&&(!g||g.shot)) feelHit(G.prev,e.el,{punch:false,n:fire?22:12,spread:fire?64:48,cols:fire?['#ff6b2b','#ffd23f','#ff3d00']:null});
+  setTimeout(()=>{ e.el.classList.add('dead'); setTimeout(()=>e.el.remove(),380); },g&&g.wait||travel);
   const pop=document.createElement('div'); pop.className='pop';
   pop.style.left=Math.min(Math.max(cx,70),lane.clientWidth-70)+'px'; pop.style.top=Math.max(STRIP+4,cy-10)+'px';
   const shown=res.tags.filter(t=>t.p>0 && t.t!=='Quick').slice(0,2).map(t=>t.t).join(', ');
   pop.innerHTML=`<b>+${res.total}</b>${shown?`<span>${shown}</span>`:''}`;
-  lane.appendChild(pop); setTimeout(()=>pop.remove(),1300);
+  setTimeout(()=>{ lane.appendChild(pop); setTimeout(()=>pop.remove(),1300); },travel);   // the score shows as the bolt lands
 }
 
 /* ---------------- tempo pulse + hi-hat ---------------- */

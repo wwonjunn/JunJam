@@ -147,6 +147,7 @@ js/theory.js          chord rules, spelling, scoring, chord naming, progressions
 js/state.js           storage, mastery stats, smart mix weights, XP and ranks
 js/audio.js           electric piano synth, hi-hat, scheduled tones and timbres
 js/views.js           on-screen keyboard, grand staff, analysis panel
+js/feel.js            the Ears hit everywhere: bolts from the keys you played, sparks, a punch, a floating score
 js/input.js           MIDI, computer keyboard, click input, routing to Hands or Ears
 js/hands.js           the falling-chord game
 js/ears/questions.js  ear-training question generators

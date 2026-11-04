@@ -77,6 +77,7 @@ function earsAnswer(id,via){
   earRecord(q.item,ok,ok?secs:null);
   if(q.keyPc!=null) keyRecord(q.keyPc,ok,ok?secs/LEVELS[q.levelId].world.rt:null);
   document.querySelectorAll('.eopt').forEach(b=>{ if(b.dataset.id===String(q.answer)) b.classList.add('right'); else if(b.dataset.id===String(id)) b.classList.add('wrong'); b.classList.add('review'); });
+  if(ok){ const b=[...document.querySelectorAll('.eopt')].find(x=>x.dataset.id===String(q.answer)), p=b&&feelAt(b); if(p){ feelPunch(b); feelBurst(p.x,p.y,{n:10,spread:40}); feelPop(p.x,p.y-30,secs<1.5?'Quick!':'✓',{small:true}); } }
   $('eReplay').hidden=false; $('eReplay').textContent='Replay question (R)';
   $('eSub').textContent='Tap any answer to hear it next to the right one.';
   const label=id==='timeout'?'Out of time':(q.options.find(o=>o.id===String(id))||{label:id}).label;

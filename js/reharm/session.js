@@ -98,6 +98,7 @@ function rhNotes(notes){
     showAnalysis(hit.ev,{root:hit.t.root,q:hit.q,rn:hit.t.rn},null);
     if(hit.t!==want){ R.after[slot]=hit.t; R.voiced=voiceProg(R.after); } // melody reharm: keep the chord you chose
     R.solved.add(slot); R.slotPos++; R.just=slot; setTimeout(()=>{ if(R.just===slot) R.just=null; },400);
+    setTimeout(()=>feelHit(notes,$('rhBody').querySelector('.rhc.just'),{punch:false,text:'✓'}),0);   // once the row has redrawn: your chord flies into its slot
     const next=R.move.slots[R.slotPos];
     rhStop(); const t=rhPlay(R.voiced,slot+1,next===undefined?R.after.length:next,now()+RH_BAR*.9,R.mel);
     if(next===undefined) return rhRoundDone(t);
