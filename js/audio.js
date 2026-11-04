@@ -73,6 +73,7 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   const c=synth.ctx; if(!c) return;
   if(timbre==='epiano'&&typeof keysSampled==='function'){ const k=keysSampled(); if(k&&smpTone(k,m,when,dur,vel,bus)) return; }   // the real instrument when there is one
   if(timbre==='ubass') timbre='bass';   // one bass sound everywhere
+  if(timbre==='bass'&&typeof bassSampled==='function'){ const b=bassSampled(); if(b&&smpTone(b,m,when,dur,vel,bus)) return; }   // your own bass when there is one
   const t=Math.max(when,c.currentTime), f=440*Math.pow(2,(m-69)/12), v=vel/127, out=bus||synth.master;
   const g=c.createGain(); g.connect(out);
   const end=t+dur+0.5, nodes=[];

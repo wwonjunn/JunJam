@@ -57,10 +57,11 @@ function beatBar(t0,spb,beats,info,bus,o={}){
 
 /* Your own kits: js/local-kits.js, cut from your Logic Pro library. Never committed (.gitignore) and never bundled: it's
    loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three
-   sounds where Load your own does. The first time the file is found, Crate Digger goes in. */
+   sounds where Load your own does. The first time the file is found, Loose goes in. */
 function localKitUse(name){ const k=typeof LOCAL_KITS!=='undefined'&&LOCAL_KITS[name]; if(!k) return Promise.resolve(false);
   return Promise.all(DRUM_VOICES.map(v=>smpDB.put('custom/'+v,drumRaw(k[v])))).then(()=>{ store.set('drumKit',name); return drumsReload(); }).then(()=>true); }
 (function(){ const s=document.createElement('script'); s.src='js/local-kits.js';
-  s.onload=async()=>{ if(!store.get('drumKitAuto',false)){ store.set('drumKitAuto',true); await localKitUse('Crate Digger'); }
+  s.onload=async()=>{ if(store.get('drumKit','')==='Crate Digger') store.set('drumKit','Loose');   // its new name
+    if(!store.get('drumKitAuto',false)){ store.set('drumKitAuto',true); await localKitUse('Loose'); }
     if(typeof renderDrumSound==='function'&&document.getElementById('drumSound')) renderDrumSound(); };
   s.onerror=()=>s.remove(); document.head.appendChild(s); })();

@@ -110,6 +110,7 @@ function renderSettingsPane(){
     <button class="ghost" id="bsHear">▶ Hear it</button>
     <p style="margin-top:14px">Your keys: the sound of what you play, the licks, and the Keys backing. The real instruments download once (Wi-Fi this one time), then work offline. The built-in synth always works.</p>
     <div id="keysSound"></div>
+    <div id="bassSound"></div>
     <p class="fine">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>
     <p style="margin-top:14px">Drums: a deep kick on 1 and a snare on 3 with a little room, plus a hi-hat on 2 and 4 if you like. The sounds are built in and work offline. Want a particular kit? Load your own kick, snare and hi-hat samples (a free lofi kit, say) and Gig plays those instead.</p>
     <div id="drumSound"></div>
@@ -118,7 +119,7 @@ function renderSettingsPane(){
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
-  renderKeysSound(); renderDrumSound();
+  renderKeysSound(); renderBassSound(); renderDrumSound();
   $('bsHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
@@ -129,8 +130,8 @@ function renderSettingsPane(){
 function renderKeysSound(msg){
   const el=$('keysSound'); if(!el) return; const cur=keysSoundPick(), have=smpHave();
   const opt=(id,name,sub)=>`<button class="keyopt" data-ks="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
-  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([,i])=>i.keys).map(([id,i])=>opt(id,i.name,have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
-    <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).some(id=>SMP_INFO[id]&&SMP_INFO[id].keys)?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
+  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([,i])=>i.keys).map(([id,i])=>opt(id,i.name,smpLocal(id)?'From your Logic library':have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
+    <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).some(id=>SMP_INFO[id]&&SMP_INFO[id].keys&&!smpLocal(id))?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
   el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks, pick=renderKeysSound.pick=(renderKeysSound.pick||0)+1; synth.init(); killBus(PREVIEW);   // the newest click wins
     if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); if(pick!==renderKeysSound.pick) return; renderKeysSound(); $('ksHear').click(); return; }
     if(!navigator.onLine) return renderKeysSound('No Wi-Fi right now: the download needs it once. The synth keeps playing until then.');
@@ -139,7 +140,18 @@ function renderKeysSound(msg){
     catch(e){ renderKeysSound(`Couldn't finish the download (${e.message}). The synth keeps playing; try again when you're online.`); } });
   $('ksHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; const t=now()+.05;
     [[60,64,67,71],[62,65,69,72],[59,62,67,69]].forEach((ch,i)=>playChord(ch,t+i*.6,.55,'epiano',bus,70)); [79,77,76,74,72].forEach((m,i)=>tone(m,t+1.85+i*.15,i===4?.45:.15,80,'epiano',bus)); };
-  if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave()).filter(id=>SMP_INFO[id]&&SMP_INFO[id].keys)) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
+  if($('ksForget')) $('ksForget').onclick=async()=>{ if(!confirm('Remove the downloaded instruments? The synth plays until you download them again.')) return; for(const id of Object.keys(smpHave()).filter(id=>SMP_INFO[id]&&SMP_INFO[id].keys&&!smpLocal(id))) await smpForget(id); renderKeysSound('Removed. The built-in synth is playing.'); };
+}
+// Bass: the built-in synth, or your own (js/local-sounds.js); shown only when you have one
+function renderBassSound(msg){
+  const el=$('bassSound'); if(!el) return; const mine=Object.entries(SMP_INFO).filter(([id,i])=>i.bass&&smpLocal(id)); if(!mine.length){ el.innerHTML=''; return; }
+  const cur=bassSoundPick(), opt=(id,name,sub)=>`<button class="keyopt" data-bs="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
+  el.innerHTML=`<p style="margin-top:14px">Bass: the bass under the backings in Gig, Lines, Reharm, Ears and Comp Hero.</p>
+    <div class="keyopts">${opt('synth','Built-in synth','Round and soft')}${mine.map(([id,i])=>opt(id,i.name,'From your Logic library')).join('')}</div>
+    <div class="erow" style="margin-top:6px"><button class="ghost" id="bassHear">▶ Hear the bass</button><span class="fine">${msg||''}</span></div>`;
+  el.querySelectorAll('[data-bs]').forEach(b=>b.onclick=async()=>{ synth.init(); store.set('bassSound',b.dataset.bs); if(b.dataset.bs!=='synth') await smpLoad(b.dataset.bs); renderBassSound(); $('bassHear').click(); });
+  $('bassHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; const t=now()+.05, spb=.42;   // a bar and a bit of walking bass
+    [36,40,43,45,38,41,45,47].forEach((m,i)=>tone(m,t+i*spb,spb*.9,90,'bass',bus)); };
 }
 // The Hear buttons in Sound share one bus: pressing one stops whatever the last one was playing, and nothing runs past 3 seconds
 let PREVIEW=null;
