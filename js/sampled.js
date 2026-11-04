@@ -13,7 +13,7 @@ const SMP={buf:{},ready:{},loading:{},voices:new Map()};
 const SMP_FMT=(()=>{ try{ return new Audio().canPlayType('audio/ogg; codecs="opus"')?'ogg':'m4a'; }catch(e){ return 'm4a'; } })();
 const smpFiles=id=>[...new Set(SMP_MAPS[id].regions.map(r=>r[5]))];
 const smpBase=id=>SMP_MAPS[id].base, smpExt=id=>(SMP_MAPS[id]&&SMP_MAPS[id].ext)||SMP_FMT;
-// your own instruments (js/local-sounds.js) count as had: they're on this Mac already, nothing to download
+// your own instruments (js/local/) count as had: they're on this Mac already, nothing to download
 const smpLocal=id=>!!(SMP_MAPS[id]&&SMP_MAPS[id].local);
 const smpHave=()=>{ const h=store.get('sounds',{}); Object.keys(SMP_MAPS).forEach(id=>{ if(smpLocal(id)) h[id]='local'; }); return h; };
 const smpB64=s=>{ const bin=atob(s), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
@@ -42,7 +42,8 @@ async function smpLoad(id){
   if(SMP.ready[id]||SMP.loading[id]||!smpHave()[id]) return SMP.ready[id]||false;
   const c=synth.ctx; if(!c) return false; SMP.loading[id]=true;
   try{ const out={}, files=smpFiles(id);
-    for(const f of files){ const ab=smpLocal(id)?smpB64(LOCAL_SOUNDS[id].files[f]):await smpDB.get(id+'/'+f); if(!ab) continue;
+    if(smpLocal(id)){ if(!(await smpLocalData(id))) return false; smpLocalOnly(id); }   // your own: fetch its file, and free the one it replaces
+    for(const f of files){ const ab=smpLocal(id)?smpB64(window.LOCAL_SOUND_DATA[id][f]):await smpDB.get(id+'/'+f); if(!ab) continue;
       try{ out[f]=await c.decodeAudioData(ab.slice(0)); }
       catch(e){ // a file this browser can't read: try the other format once, if we're online; otherwise its neighbours cover it
         if(!smpLocal(id)&&navigator.onLine&&smpExt(id)!=='mp3') try{ const r=await fetch(smpBase(id)+f.split('/').map(encodeURIComponent).join('/')+'.'+(SMP_FMT==='ogg'?'m4a':'ogg')); if(r.ok){ const b=await r.arrayBuffer(); out[f]=await c.decodeAudioData(b.slice(0)); await smpDB.put(id+'/'+f,b); } }catch(e2){} } }
@@ -50,7 +51,7 @@ async function smpLoad(id){
     SMP.buf[id]=out; SMP.ready[id]=true; return true;
   }catch(e){ return false; } finally{ SMP.loading[id]=false; }
 }
-function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]).forEach(id=>smpLoad(id)); }
+function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]&&(!smpLocal(id)||id===keysSoundPick()||id===bassSoundPick())).forEach(id=>smpLoad(id)); }   // your own: only the ones picked
 async function smpForget(id){ for(const f of smpFiles(id)) await smpDB.del(id+'/'+f); const have=smpHave(); delete have[id]; store.set('sounds',have); delete SMP.buf[id]; SMP.ready[id]=false; if(keysSoundPick()===id) store.set('keysSound','synth'); }
 // One note from an instrument: the region for that key and velocity (or the nearest), pitched to the exact key
 const smpRate=(r,m)=>Math.pow(2,(m-r[2]-r[3]/100)/12);
@@ -88,13 +89,19 @@ function smpRelease(v,t,rel){ if(!v) return; try{ const c=synth.ctx, at=Math.max
 // scheduled notes (licks, backing, questions): play for dur, then let go
 function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.currentTime), v=smpStart(id,m,vel,t,bus); if(v) smpRelease(v,t+dur,SMP_INFO[id].rel); return !!v; }
 
-/* Your own instruments: js/local-sounds.js, cut from your Logic Pro library. Never committed (.gitignore) and never
-   bundled: loaded here on the fly, so a copy of Jun Jam without the file just offers what it always did. The first time
-   it's found, your keys and bass switch to it. */
-(function(){ const s=document.createElement('script'); s.src='js/local-sounds.js';
+/* Your own instruments: js/local/, cut from your Logic Pro library. Never committed (.gitignore) and never bundled:
+   loaded here on the fly, so a copy of Jun Jam without the folder just offers what it always did. index.js has the names
+   and key maps; each instrument's audio is its own file, fetched only when it's picked (a piano is several MB). The first
+   time the folder is found, your keys and bass switch to it. */
+function smpLocalData(id){ if(window.LOCAL_SOUND_DATA&&LOCAL_SOUND_DATA[id]) return Promise.resolve(true);
+  return new Promise(ok=>{ const s=document.createElement('script'); s.src=`js/local/${id}.js`; s.onload=()=>ok(!!(window.LOCAL_SOUND_DATA&&LOCAL_SOUND_DATA[id])); s.onerror=()=>{ s.remove(); ok(false); }; document.head.appendChild(s); }); }
+// one of your keys (or basses) in memory at a time: a decoded piano is over 100 MB
+function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass';
+  Object.keys(SMP_MAPS).forEach(o=>{ if(o!==id&&smpLocal(o)&&SMP_INFO[o][kind]){ delete SMP.buf[o]; SMP.ready[o]=false; if(window.LOCAL_SOUND_DATA) delete LOCAL_SOUND_DATA[o]; } }); }
+(function(){ const s=document.createElement('script'); s.src='js/local/index.js';
   s.onload=()=>{ if(typeof LOCAL_SOUNDS==='undefined') return;
     Object.entries(LOCAL_SOUNDS).forEach(([id,d])=>{ SMP_MAPS[id]={regions:d.regions,local:true}; SMP_INFO[id]=d.info; });
-    if(!store.get('localSoundsAuto',false)){ store.set('localSoundsAuto',true); if(LOCAL_SOUNDS.lgrand) store.set('keysSound','lgrand'); if(LOCAL_SOUNDS.lbass) store.set('bassSound','lbass'); }
+    if(!store.get('localSoundsAuto2',false)){ store.set('localSoundsAuto2',true); if(LOCAL_SOUNDS.lgrand) store.set('keysSound','lgrand'); if(LOCAL_SOUNDS.lbass) store.set('bassSound','lbass'); }
     if(synth.ctx) smpLoadAll();
     if(typeof renderKeysSound==='function'&&document.getElementById('keysSound')){ renderKeysSound(); renderBassSound(); } };
   s.onerror=()=>s.remove(); document.head.appendChild(s); })();

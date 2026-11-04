@@ -6,4 +6,4 @@ transcriptions/
 *.wav
 *.m4a
 js/local-kits.js
-js/local-sounds.js
+js/local/
