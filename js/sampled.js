@@ -15,6 +15,7 @@ const smpFiles=id=>[...new Set(SMP_MAPS[id].regions.map(r=>r[5]))];
 const smpBase=id=>SMP_MAPS[id].base, smpExt=id=>(SMP_MAPS[id]&&SMP_MAPS[id].ext)||SMP_FMT;
 // your own instruments (js/local/) count as had: they're on this Mac already, nothing to download
 const smpLocal=id=>!!(SMP_MAPS[id]&&SMP_MAPS[id].local);
+const smpOwnKeys=()=>Object.keys(SMP_MAPS).some(id=>smpLocal(id)&&SMP_INFO[id].keys);   // your own keys are here: the downloads step aside
 const smpHave=()=>{ const h=store.get('sounds',{}); Object.keys(SMP_MAPS).forEach(id=>{ if(smpLocal(id)) h[id]='local'; }); return h; };
 const smpB64=s=>{ const bin=atob(s), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
 // the sound your keys (and the Keys backing) use: 'synth', or a downloaded instrument once it's loaded
@@ -89,7 +90,7 @@ function smpRelease(v,t,rel){ if(!v) return; try{ const c=synth.ctx, at=Math.max
 // scheduled notes (licks, backing, questions): play for dur, then let go
 function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.currentTime), v=smpStart(id,m,vel,t,bus); if(v) smpRelease(v,t+dur,SMP_INFO[id].rel); return !!v; }
 
-/* Your own instruments: js/local/, cut from your Logic Pro library. Never committed (.gitignore) and never bundled:
+/* Your own instruments: js/local/, kept on this Mac. Never committed (.gitignore) and never bundled:
    loaded here on the fly, so a copy of Jun Jam without the folder just offers what it always did. index.js has the names
    and key maps; each instrument's audio is its own file, fetched only when it's picked (a piano is several MB). The first
    time the folder is found, your keys and bass switch to it. */
@@ -101,6 +102,9 @@ function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass';
 (function(){ const s=document.createElement('script'); s.src='js/local/index.js';
   s.onload=()=>{ if(typeof LOCAL_SOUNDS==='undefined') return;
     Object.entries(LOCAL_SOUNDS).forEach(([id,d])=>{ SMP_MAPS[id]={regions:d.regions,local:true}; SMP_INFO[id]=d.info; });
+    { const k=keysSoundPick(), b=bassSoundPick();   // a pick that's gone (or a download, now set aside) falls back
+      if(k!=='synth'&&!smpLocal(k)) store.set('keysSound',LOCAL_SOUNDS.lgrand?'lgrand':'synth');
+      if(b!=='synth'&&!smpLocal(b)) store.set('bassSound','synth'); }
     if(!store.get('localSoundsAuto2',false)){ store.set('localSoundsAuto2',true); if(LOCAL_SOUNDS.lgrand) store.set('keysSound','lgrand'); if(LOCAL_SOUNDS.lbass) store.set('bassSound','lbass'); }
     if(synth.ctx) smpLoadAll();
     if(typeof renderKeysSound==='function'&&document.getElementById('keysSound')){ renderKeysSound(); renderBassSound(); } };

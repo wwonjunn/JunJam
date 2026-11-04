@@ -1391,7 +1391,7 @@ function renderSettingsPane(){
     <p style="margin-top:14px">Your keys: the sound of what you play, the licks, and the Keys backing. The real instruments download once (Wi-Fi this one time), then work offline. The built-in synth always works.</p>
     <div id="keysSound"></div>
     <div id="bassSound"></div>
-    <p class="fine">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>
+    <p class="fine" id="smpCredit">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>
     <p style="margin-top:14px">Drums: a deep kick on 1 and a snare on 3 with a little room, plus a hi-hat on 2 and 4 if you like. The sounds are built in and work offline. Want a particular kit? Load your own kick, snare and hi-hat samples (a free lofi kit, say) and Gig plays those instead.</p>
     <div id="drumSound"></div>
     <p class="fine">Built-in kit: Sonic Pi samples (freesound.org, CC0).</p>`;
@@ -1400,6 +1400,7 @@ function renderSettingsPane(){
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
   renderKeysSound(); renderBassSound(); renderDrumSound();
+  if($('smpCredit')) $('smpCredit').hidden=smpOwnKeys();
   $('bsHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };
   $('profName').oninput=e=>{ themeSet('profileName',e.target.value.trim()); renderProfileChip(); P.querySelector('.avatar').textContent=(e.target.value.trim()||'J').charAt(0).toUpperCase(); };
@@ -1410,7 +1411,7 @@ function renderSettingsPane(){
 function renderKeysSound(msg){
   const el=$('keysSound'); if(!el) return; const cur=keysSoundPick(), have=smpHave();
   const opt=(id,name,sub)=>`<button class="keyopt" data-ks="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
-  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([,i])=>i.keys).map(([id,i])=>opt(id,i.name,smpLocal(id)?'From your Logic library':have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
+  el.innerHTML=`<div class="keyopts">${opt('synth','Built-in synth','Always works, offline')}${Object.entries(SMP_INFO).filter(([id,i])=>i.keys&&(smpLocal(id)||!smpOwnKeys())).map(([id,i])=>opt(id,i.name,smpLocal(id)?'Yours':have[id]?(SMP.ready[id]?'Downloaded · works offline':'Downloaded · loads when you play'):`Download once · ${i.size}`)).join('')}</div>
     <div class="erow" style="margin-top:6px"><button class="ghost" id="ksHear">▶ Hear your keys</button>${Object.keys(have).some(id=>SMP_INFO[id]&&SMP_INFO[id].keys&&!smpLocal(id))?'<button class="ghost" id="ksForget">Remove downloads</button>':''}<span class="fine" id="ksMsg">${msg||''}</span></div>`;
   el.querySelectorAll('[data-ks]').forEach(b=>b.onclick=async()=>{ const id=b.dataset.ks, pick=renderKeysSound.pick=(renderKeysSound.pick||0)+1; synth.init(); killBus(PREVIEW);   // the newest click wins
     if(id==='synth'||have[id]){ store.set('keysSound',id); if(id!=='synth') await smpLoad(id); if(pick!==renderKeysSound.pick) return; renderKeysSound(); $('ksHear').click(); return; }
@@ -1427,7 +1428,7 @@ function renderBassSound(msg){
   const el=$('bassSound'); if(!el) return; const mine=Object.entries(SMP_INFO).filter(([id,i])=>i.bass&&smpLocal(id)); if(!mine.length){ el.innerHTML=''; return; }
   const cur=bassSoundPick(), opt=(id,name,sub)=>`<button class="keyopt" data-bs="${id}" aria-pressed="${cur===id}"><b>${name}</b><span class="fine">${sub}</span></button>`;
   el.innerHTML=`<p style="margin-top:14px">Bass: the bass under the backings in Gig, Lines, Reharm, Ears and Comp Hero.</p>
-    <div class="keyopts">${opt('synth','Built-in synth','Round and soft')}${mine.map(([id,i])=>opt(id,i.name,'From your Logic library')).join('')}</div>
+    <div class="keyopts">${opt('synth','Built-in synth','Round and soft')}${mine.map(([id,i])=>opt(id,i.name,'Yours')).join('')}</div>
     <div class="erow" style="margin-top:6px"><button class="ghost" id="bassHear">▶ Hear the bass</button><span class="fine">${msg||''}</span></div>`;
   el.querySelectorAll('[data-bs]').forEach(b=>b.onclick=async()=>{ synth.init(); store.set('bassSound',b.dataset.bs); if(b.dataset.bs!=='synth') await smpLoad(b.dataset.bs); renderBassSound(); $('bassHear').click(); });
   $('bassHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; const t=now()+.05, spb=.42;   // a bar and a bit of walking bass
@@ -1443,7 +1444,7 @@ async function renderDrumSound(msg){
   const name={kick:'Kick',snare:'Snare',hat:'Hi-hat'};
   el.innerHTML=`<div class="keyopts">${DRUM_VOICES.map(v=>`<div class="keyopt"><b>${name[v]}</b><span class="fine">${mine[v]?'Your sample':'Built in'}</span>
       <div class="erow" style="margin-top:6px"><label class="ghost trsm" style="cursor:pointer">Load your own<input type="file" accept="audio/*" data-dload="${v}" hidden></label>${mine[v]?`<button class="ghost trsm" data-dclear="${v}">Use built-in</button>`:''}</div></div>`).join('')}</div>
-    ${typeof LOCAL_KITS!=='undefined'?`<div class="erow" style="margin-top:8px;align-items:center"><span class="fine" style="margin:0">Your Logic kits</span><select id="drumKit" class="drumkitsel"><option value="">Choose a kit…</option>${Object.keys(LOCAL_KITS).map(k=>`<option${store.get('drumKit','')===k?' selected':''}>${trEsc(k)}</option>`).join('')}</select></div>`:''}
+    ${typeof LOCAL_KITS!=='undefined'?`<div class="erow" style="margin-top:8px;align-items:center"><span class="fine" style="margin:0">Your kits</span><select id="drumKit" class="drumkitsel"><option value="">Choose a kit…</option>${Object.keys(LOCAL_KITS).map(k=>`<option${store.get('drumKit','')===k?' selected':''}>${trEsc(k)}</option>`).join('')}</select></div>`:''}
     <div class="erow" style="margin-top:6px"><button class="ghost" id="drumHear">▶ Hear the beat</button><span class="fine" id="drumMsg">${msg||''}</span></div>`;
   el.querySelectorAll('[data-dload]').forEach(inp=>inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; synth.init(); const ab=await f.arrayBuffer();
     try{ await synth.ctx.decodeAudioData(ab.slice(0)); }catch(e){ return renderDrumSound("Couldn't read that file. Try a WAV, MP3, AIFF or M4A."); }
@@ -2099,6 +2100,7 @@ const smpFiles=id=>[...new Set(SMP_MAPS[id].regions.map(r=>r[5]))];
 const smpBase=id=>SMP_MAPS[id].base, smpExt=id=>(SMP_MAPS[id]&&SMP_MAPS[id].ext)||SMP_FMT;
 // your own instruments (js/local/) count as had: they're on this Mac already, nothing to download
 const smpLocal=id=>!!(SMP_MAPS[id]&&SMP_MAPS[id].local);
+const smpOwnKeys=()=>Object.keys(SMP_MAPS).some(id=>smpLocal(id)&&SMP_INFO[id].keys);   // your own keys are here: the downloads step aside
 const smpHave=()=>{ const h=store.get('sounds',{}); Object.keys(SMP_MAPS).forEach(id=>{ if(smpLocal(id)) h[id]='local'; }); return h; };
 const smpB64=s=>{ const bin=atob(s), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
 // the sound your keys (and the Keys backing) use: 'synth', or a downloaded instrument once it's loaded
@@ -2173,7 +2175,7 @@ function smpRelease(v,t,rel){ if(!v) return; try{ const c=synth.ctx, at=Math.max
 // scheduled notes (licks, backing, questions): play for dur, then let go
 function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.currentTime), v=smpStart(id,m,vel,t,bus); if(v) smpRelease(v,t+dur,SMP_INFO[id].rel); return !!v; }
 
-/* Your own instruments: js/local/, cut from your Logic Pro library. Never committed (.gitignore) and never bundled:
+/* Your own instruments: js/local/, kept on this Mac. Never committed (.gitignore) and never bundled:
    loaded here on the fly, so a copy of Jun Jam without the folder just offers what it always did. index.js has the names
    and key maps; each instrument's audio is its own file, fetched only when it's picked (a piano is several MB). The first
    time the folder is found, your keys and bass switch to it. */
@@ -2185,6 +2187,9 @@ function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass';
 (function(){ const s=document.createElement('script'); s.src='js/local/index.js';
   s.onload=()=>{ if(typeof LOCAL_SOUNDS==='undefined') return;
     Object.entries(LOCAL_SOUNDS).forEach(([id,d])=>{ SMP_MAPS[id]={regions:d.regions,local:true}; SMP_INFO[id]=d.info; });
+    { const k=keysSoundPick(), b=bassSoundPick();   // a pick that's gone (or a download, now set aside) falls back
+      if(k!=='synth'&&!smpLocal(k)) store.set('keysSound',LOCAL_SOUNDS.lgrand?'lgrand':'synth');
+      if(b!=='synth'&&!smpLocal(b)) store.set('bassSound','synth'); }
     if(!store.get('localSoundsAuto2',false)){ store.set('localSoundsAuto2',true); if(LOCAL_SOUNDS.lgrand) store.set('keysSound','lgrand'); if(LOCAL_SOUNDS.lbass) store.set('bassSound','lbass'); }
     if(synth.ctx) smpLoadAll();
     if(typeof renderKeysSound==='function'&&document.getElementById('keysSound')){ renderKeysSound(); renderBassSound(); } };
@@ -2604,7 +2609,7 @@ function beatBar(t0,spb,beats,info,bus,o={}){
     if(o.hat) [1,3].forEach(x=>{ if(b0+x<beats) drumHit('hat',at(x),0.9,bus); }); }
 }
 
-/* Your own kits: js/local-kits.js, cut from your Logic Pro library. Never committed (.gitignore) and never bundled: it's
+/* Your own kits: js/local-kits.js, kept on this Mac. Never committed (.gitignore) and never bundled: it's
    loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three
    sounds where Load your own does. The first time the file is found, Loose goes in. */
 function localKitUse(name){ const k=typeof LOCAL_KITS!=='undefined'&&LOCAL_KITS[name]; if(!k) return Promise.resolve(false);

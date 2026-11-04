@@ -55,7 +55,7 @@ function beatBar(t0,spb,beats,info,bus,o={}){
     if(o.hat) [1,3].forEach(x=>{ if(b0+x<beats) drumHit('hat',at(x),0.9,bus); }); }
 }
 
-/* Your own kits: js/local-kits.js, cut from your Logic Pro library. Never committed (.gitignore) and never bundled: it's
+/* Your own kits: js/local-kits.js, kept on this Mac. Never committed (.gitignore) and never bundled: it's
    loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three
    sounds where Load your own does. The first time the file is found, Loose goes in. */
 function localKitUse(name){ const k=typeof LOCAL_KITS!=='undefined'&&LOCAL_KITS[name]; if(!k) return Promise.resolve(false);
