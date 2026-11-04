@@ -923,6 +923,18 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 #transStage:has(#trBar) .tredit{margin:0 0 6px}
 #transStage:has(#trBar) .trroll{max-height:none;margin-bottom:4px}
 #transStage:has(#trBar) .trhintline{margin:0;min-height:1.3em}
+/* the player bar sits at the bottom of the editor; its menus open upward. Adjust holds the rarely touched fixes */
+#transStage:has(#trBar) .trtransport{margin:8px 0 0;padding:6px 8px;gap:6px 8px;background:var(--panel);border-radius:var(--radius-lg)}
+#trBar .trmenulist{top:auto;bottom:calc(100% + 6px)}
+#trBar .trhintline{flex:1 1 140px;min-width:0;margin:0;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.trfixpop{min-width:300px;padding:10px 12px}
+.trfixpop .trfix{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:0}
+.trfixpop .trgrp{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.trfixpop .trmenulist button,.trfixpop .seg button{display:inline-block;width:auto}
+.trfixpop .trq{width:auto;margin-top:2px}
+/* note actions appear only when notes are selected */
+.tredit .selacts{display:none} .tredit.hassel .selacts{display:inline-flex}
+#transStage:has(#trBar) .trtop{gap:8px} #trExportBtn{font-size:20px;line-height:1;padding:4px 12px}
 </style>
 <style>
 /* ==================================================================================================
@@ -7596,44 +7608,48 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
    (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
    sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
 // a click anywhere outside the Save menu closes it (one listener for the page)
-document.addEventListener('pointerdown',e=>{ const l=$('trExportList'); if(l&&!l.hidden&&!e.target.closest('.trmenu')) l.hidden=true; });
+document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
 function trEdit(score,res,savedIndex){
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
   const R=!!TR.res, A=!!(TR.url&&TR.res);
-  $('trBody').innerHTML=`<div class="trtop">${TR.buf&&R?'<button class="ghost" id="trSettings" title="Back to what to write, instrument and part">← Settings</button>':''}
+  // Laid out like a practice player (after Soundslice and Moises): the sheet music in the middle with the room, a slim top
+  // bar (title, Save, and a ⋯ menu for everything occasional), the piano roll as a panel you can resize or hide, and one
+  // player bar at the bottom. Rarely touched fixes sit in an Adjust popover; note actions show only with notes selected.
+  $('trBody').innerHTML=`<div class="trtop">
+      <button class="ghost" id="trClose" title="Close this transcription">← Close</button>
       <span class="etitle" id="trTitle" title="Click to rename"></span><span class="fine" id="trInfo"></span><span class="trspace"></span><span class="fine" id="trDirty"></span>
-      <div class="trmenu"><button class="go" id="trExportBtn" aria-haspopup="true">Save ▾</button><div class="trmenulist" id="trExportList" hidden>
-        <button data-exp="app">In Jun Jam <span class="fine">With the recording, under Your transcriptions (${MODK}+S)</span></button>
-        <button data-exp="pdf">PDF <span class="fine">The sheet music, to print or send</span></button><hr>
-        <button data-exp="xml">MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">MIDI, on the beat</button>${R?'<button data-exp="midp">MIDI, as played</button>':''}</div></div>
-      <button class="ghost" id="trLick" title="Select 3 to 16 notes in the piano roll first">→ Lines</button><button class="ghost" id="trClose">Close</button></div>
-    <div class="trtransport" id="trBar">
-      <button class="go trplay" id="trPlay" title="Play / pause (Space)">▶</button><button class="ghost" id="trStop" title="Stop, back to the start">■</button>
-      <span class="trpos" id="trPos">1 · 1</span>
-      ${A?`<span class="trgrp"><span class="fine">Hear</span>${trSeg('src',[['notes','Notes'],['orig','Recording'],['both','Both']],TR.src||'notes')}</span>`:''}
-      <span class="trgrp"><span class="fine">Speed</span>${trSeg('speed',[[.5,'50%'],[.75,'75%'],[1,'100%']],TR.speed)}</span>
-      <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across the beat numbers to choose the bars">⟳ Loop</button>
-      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
-      <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
-      <button class="ghost tgl" id="trRollBtn" title="Show or hide the piano roll (the note editor) under the sheet music">Piano roll</button>
-      <span class="trspace"></span>
-      <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button>
-      <button class="ghost" id="trHelpBtn" title="How everything here works">? Guide</button></div>
-    <div class="trfix">${R?`<span class="trgrp" title="How sure a note has to be to show. Lower: cleaner, can miss quiet or very fast notes. Higher: catches more, and more stray notes."><span class="fine">Sensitivity</span>${trSeg('sens',TR_SENS_NAMES.map((t,i)=>[i,t]),score.sens??2)}</span>
-      <span class="trgrp"><span class="fine">Tempo</span>${trSeg('bs',[[.5,'Half'],[1,'As heard'],[2,'Double']],score.beatScale||1)}</span>
-      <span class="trgrp" title="Where beat 1 is. Works from the playhead's bar on; earlier bars stay as they are."><span class="fine">Beat 1</span><span class="seg"><button id="trShiftL" title="Bars from the playhead's bar on: one beat earlier">◀</button><button id="trB1Here" title="The beat at the playhead is beat 1 (from here on)">Here</button><button id="trShiftR" title="Bars from the playhead's bar on: one beat later">▶</button></span><span class="fine" id="trB1From">all bars</span></span>`:''}
-      <span class="trgrp"><span class="fine">Roll</span>${trSeg('tm',[['beat','On the beat','Notes on the grid, like the sheet music'],['played','As played','Notes where they really were, over the recording']],TR.timing==='played'?'played':'beat')}</span>
-      <button class="ghost ic trq" data-guide="fix" title="What these do">?</button></div>
+      <button class="go" id="trSaveBtn" title="Save in Jun Jam, with the recording, under Your transcriptions (${MODK}+S)">Save</button>
+      <div class="trmenu"><button class="ghost ic" id="trExportBtn" aria-haspopup="true" title="Export, send to Lines, settings, guide">⋯</button><div class="trmenulist" id="trExportList" hidden>
+        <button data-exp="pdf">Export PDF <span class="fine">The sheet music, to print or send</span></button>
+        <button data-exp="xml">Export MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">Export MIDI, on the beat</button>${R?'<button data-exp="midp">Export MIDI, as played</button>':''}<hr>
+        <button id="trLick">Send to Lines <span class="fine">Select 3 to 16 notes in the piano roll first</span></button>
+        ${TR.buf&&R?'<button id="trSettings">Settings <span class="fine">What to write, instrument and part</span></button>':''}
+        <button id="trHelpBtn">Guide <span class="fine">How everything here works</span></button></div></div></div>
     <div class="trscore" id="trScore"></div>
     <div class="trsplit" id="trSplit" title="Drag to make the piano roll taller or shorter; double-click to hide it"></div>
     <div class="trpane" id="trPane"><div class="tredit">
-      <span class="trgrp"><span class="fine">Tool</span>${trSeg('tool',[['select','Select','Click notes to select them, drag to move; drag on empty space to select several'],['draw','✎ Draw','Click to add a note, drag to set its length']],TR.tool||'select')}</span>
+      ${trSeg('tool',[['select','Select','Click notes to select them, drag to move; drag on empty space to select several'],['draw','✎ Draw','Click to add a note, drag to set its length']],TR.tool||'select')}
       <span class="trgrp" title="Where new and moved notes land"><span class="fine">Snap</span>${trSeg('snap',[[1,'♩'],[2,'♪'],[4,'16th'],[8,'32nd'],[3,'Triplet']],TR.snapDiv||4)}</span>
-      <span class="trgrp"><button class="ghost ic" data-selact="up" title="Up a half step (↑)">▲</button><button class="ghost ic" data-selact="down" title="Down a half step (↓)">▼</button><button class="ghost ic" data-selact="oup" title="Up an octave (Shift+↑)">+8</button><button class="ghost ic" data-selact="odown" title="Down an octave (Shift+↓)">−8</button><button class="ghost ic" data-selact="del" title="Delete (Delete key)">🗑</button></span>
+      <span class="trgrp selacts"><button class="ghost ic" data-selact="up" title="Up a half step (↑)">▲</button><button class="ghost ic" data-selact="down" title="Down a half step (↓)">▼</button><button class="ghost ic" data-selact="oup" title="Up an octave (Shift+↑)">+8</button><button class="ghost ic" data-selact="odown" title="Down an octave (Shift+↓)">−8</button><button class="ghost ic" data-selact="del" title="Delete (Delete key)">🗑</button></span>
       <span class="fine" id="trSelInfo"></span><span class="trspace"></span><button class="ghost ic trq" data-guide="edit" title="How editing works">?</button></div>
-    <div class="trroll" id="trRoll"></div>
-    <div class="trhintline" id="trHintLine"></div></div>`;
+    <div class="trroll" id="trRoll"></div></div>
+    <div class="trtransport" id="trBar">
+      <button class="go trplay" id="trPlay" title="Play / pause (Space)">▶</button><button class="ghost ic" id="trStop" title="Stop, back to the start">■</button>
+      <span class="trpos" id="trPos">1 · 1</span>
+      ${A?`<span class="trgrp" title="What you hear while it plays">${trSeg('src',[['notes','Notes'],['orig','Recording'],['both','Both']],TR.src||'notes')}</span>`:''}
+      <span class="trgrp" title="Playback speed">${trSeg('speed',[[.5,'50%'],[.75,'75%'],[1,'100%']],TR.speed)}</span>
+      <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across the beat numbers to choose the bars">⟳ Loop</button>
+      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
+      <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
+      <span class="trhintline" id="trHintLine"></span>
+      <div class="trmenu"><button class="ghost" id="trFixBtn" aria-haspopup="true" title="Fix the tempo, where beat 1 is, how many notes it catches">Adjust ▾</button><div class="trmenulist trfixpop" id="trFixPop" hidden><div class="trfix">${R?`<span class="trgrp" title="How sure a note has to be to show. Lower: cleaner, can miss quiet or very fast notes. Higher: catches more, and more stray notes."><span class="fine">Sensitivity</span>${trSeg('sens',TR_SENS_NAMES.map((t,i)=>[i,t]),score.sens??2)}</span>
+        <span class="trgrp"><span class="fine">Tempo</span>${trSeg('bs',[[.5,'Half'],[1,'As heard'],[2,'Double']],score.beatScale||1)}</span>
+        <span class="trgrp" title="Where beat 1 is. Works from the playhead's bar on; earlier bars stay as they are."><span class="fine">Beat 1</span><span class="seg"><button id="trShiftL" title="Bars from the playhead's bar on: one beat earlier">◀</button><button id="trB1Here" title="The beat at the playhead is beat 1 (from here on)">Here</button><button id="trShiftR" title="Bars from the playhead's bar on: one beat later">▶</button></span><span class="fine" id="trB1From">all bars</span></span>`:''}
+        <span class="trgrp"><span class="fine">Piano roll</span>${trSeg('tm',[['beat','On the beat','Notes on the grid, like the sheet music'],['played','As played','Notes where they really were, over the recording']],TR.timing==='played'?'played':'beat')}</span>
+        <button class="ghost trq" data-guide="fix" title="What these do">What these do</button></div></div></div>
+      <button class="ghost tgl" id="trRollBtn" title="Show or hide the piano roll (the note editor) under the sheet music">Piano roll</button>
+      <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button></div>`;
   const B=$('trBody');
   // the piano roll is a panel under the sheet music: shown or hidden, and how tall, both remembered; the sheet takes the rest
   const pane=$('trPane'), split=$('trSplit'), rollBtn=$('trRollBtn'), roll=$('trRoll');
@@ -7665,9 +7681,12 @@ function trEdit(score,res,savedIndex){
     trMsg(TR.timing==='played'?'As played: every note where it really was, over the recording. Edits here move the sheet music too.':'On the beat: notes on the grid, like the sheet music.'); trResume(); });
   $('trLick').onclick=trToLick; $('trClose').onclick=()=>trLeave(trOpen,'Close this transcription?');
   $('trTitle').onclick=()=>{ const t=prompt('Name',TR.score.title); if(t&&t.trim()){ TR.score.title=t.trim(); trSetDirty(); trInfo(); } };
-  const list=$('trExportList'); $('trExportBtn').onclick=e=>{ list.hidden=!list.hidden; e.stopPropagation(); };
+  const list=$('trExportList'), fixPop=$('trFixPop'); $('trSaveBtn').onclick=trSave;
+  $('trExportBtn').onclick=e=>{ list.hidden=!list.hidden; fixPop.hidden=true; e.stopPropagation(); };
+  list.addEventListener('click',e=>{ if(e.target.closest('button')) list.hidden=true; });
+  $('trFixBtn').onclick=e=>{ fixPop.hidden=!fixPop.hidden; list.hidden=true; e.stopPropagation(); };
   list.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>{ list.hidden=true; const k=b.dataset.exp;
-    if(k==='app') trSave(); else if(k==='pdf') trPDF();
+    if(k==='pdf') trPDF();
     else if(k==='xml') trDownload(toMusicXML(TR.score),'musicxml','application/vnd.recordare.musicxml+xml');
     else trDownload(toMidiFile(TR.score,k==='midp'?trMaps():null),'mid','audio/midi'); });
   // scrolling a view yourself pauses its following for a moment
@@ -7940,7 +7959,7 @@ const trWhere=b=>{ const bb=Math.max(0,b); return `bar ${Math.floor(bb/4)+1}, be
 function trHint(t){ const h=$('trHintLine'); if(h) h.textContent=t||(TR.selected.size?'':'Hover over the piano roll to see what a click or drag does there.'); }
 function trSelInfo(){ const el=$('trSelInfo'); if(!el) return; const s=TR.score, sel=[...TR.selected].map(i=>s.melody[i]).filter(Boolean).sort((a,b)=>a.gat-b.gat||a.midi-b.midi);
   el.textContent=sel.length?`${sel.length} note${sel.length>1?'s':''} selected: ${sel.slice(0,6).map(n=>trNoteName(n.midi)).join(' ')}${sel.length>6?' …':''} (${trWhere(sel[0].gat)})`:'No notes selected';
-  document.querySelectorAll('#trBody [data-selact]').forEach(b=>b.disabled=!sel.length); }
+  document.querySelectorAll('#trBody [data-selact]').forEach(b=>b.disabled=!sel.length); const ed=document.querySelector('#trBody .tredit'); if(ed) ed.classList.toggle('hassel',!!sel.length); }
 // selected notes: transpose, octave, delete
 function trSelAct(k){ const s=TR.score, sel=[...TR.selected]; if(!sel.length) return trMsg('Select notes first: click one, or drag a box around several.');
   if(k==='del'){ trPush(); s.melody=s.melody.filter((n,i)=>!TR.selected.has(i)); TR.selected.clear(); trRender(); trMsg(`Deleted ${sel.length} note${sel.length>1?'s':''}. Undo brings ${sel.length>1?'them':'it'} back.`); return; }
