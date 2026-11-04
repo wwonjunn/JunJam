@@ -270,6 +270,7 @@ body.earsmode .ahead{display:none}
 .erow{display:flex;gap:8px;flex-wrap:wrap}
 .erow .go,.erow .ghost{margin-left:0}
 .erow.vctop{margin:2px 0 14px}
+.vcinc{font-style:normal;font-weight:400;font-size:.72em;color:var(--muted);white-space:nowrap}   /* the C spelling beside a Roman-numeral name */
 .eresults{margin:auto;max-width:560px}
 .eresults .stars{font-size:30px;color:var(--brass);letter-spacing:3px;margin:-4px 0 10px}
 .eresults p{color:var(--muted)}

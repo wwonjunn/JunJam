@@ -121,6 +121,15 @@ const VOICINGS=[
   V('maj_2','slash','IV over V','D2 D3 | C4 E4 G4',1,'C over D (a IV triad on the V bass, in G): the J-pop and gospel dominant. Softer than a D7, and it still pulls home.'),
   V('maj_2','slash','IV over V, spread','D3 | E4 G4 C5',1,'D in the left hand alone, C triad high. Lighter, for ballads.'),
 ];
+/* Names that spell notes ("Em over C") only make sense in C, so they read in Roman numerals from the chord's root
+   instead, true in every key: the upper triad or chord over I (or over I7, Imaj7 when it sits on that chord). Case is the
+   triad's quality. The C spelling stays as inC for the lesson cards, which show C. Ids keep the old names, so stars stay. */
+const VC_RN={'Em over C':'iii over I','D over Cmaj7 (Lydian)':'II over Imaj7 (Lydian)','E over C':'III over I','E♭ over C':'♭III over I',
+  'E♭maj7 over C':'♭IIImaj7 over I','E♭m over C':'♭iii over I','B♭ over C (Herbie sus)':'♭VII over I (Herbie sus)','B♭maj7 over C':'♭VIImaj7 over I',
+  'B♭m over C (Phrygian)':'♭vii over I (Phrygian)','D♭°7 over C':'♭ii°7 over I','A over C7 (upper structure VI)':'VI over I7 (upper structure)',
+  'E♭ over C7 (upper structure ♭III)':'♭III over I7 (upper structure)','A♭ over C7 (upper structure ♭VI)':'♭VI over I7 (upper structure)',
+  'G♭ over C7 (upper structure ♭V)':'♭V over I7 (upper structure)','D over C7 (upper structure II)':'II over I7 (upper structure)'};
+VOICINGS.forEach(v=>{ const rn=VC_RN[v.name]; if(rn){ v.inC=v.name.replace(/ \(.*\)$/,''); v.name=rn; } });
 const VOICE=Object.fromEntries(VOICINGS.map(v=>[v.id,v]));
 // The voicing in a key: midi notes for both hands, the root and the chord
 function vcIn(v,pc){

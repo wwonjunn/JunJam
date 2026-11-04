@@ -280,6 +280,7 @@ body.earsmode .ahead{display:none}
 .erow{display:flex;gap:8px;flex-wrap:wrap}
 .erow .go,.erow .ghost{margin-left:0}
 .erow.vctop{margin:2px 0 14px}
+.vcinc{font-style:normal;font-weight:400;font-size:.72em;color:var(--muted);white-space:nowrap}   /* the C spelling beside a Roman-numeral name */
 .eresults{margin:auto;max-width:560px}
 .eresults .stars{font-size:30px;color:var(--brass);letter-spacing:3px;margin:-4px 0 10px}
 .eresults p{color:var(--muted)}
@@ -6042,6 +6043,15 @@ const VOICINGS=[
   V('maj_2','slash','IV over V','D2 D3 | C4 E4 G4',1,'C over D (a IV triad on the V bass, in G): the J-pop and gospel dominant. Softer than a D7, and it still pulls home.'),
   V('maj_2','slash','IV over V, spread','D3 | E4 G4 C5',1,'D in the left hand alone, C triad high. Lighter, for ballads.'),
 ];
+/* Names that spell notes ("Em over C") only make sense in C, so they read in Roman numerals from the chord's root
+   instead, true in every key: the upper triad or chord over I (or over I7, Imaj7 when it sits on that chord). Case is the
+   triad's quality. The C spelling stays as inC for the lesson cards, which show C. Ids keep the old names, so stars stay. */
+const VC_RN={'Em over C':'iii over I','D over Cmaj7 (Lydian)':'II over Imaj7 (Lydian)','E over C':'III over I','E♭ over C':'♭III over I',
+  'E♭maj7 over C':'♭IIImaj7 over I','E♭m over C':'♭iii over I','B♭ over C (Herbie sus)':'♭VII over I (Herbie sus)','B♭maj7 over C':'♭VIImaj7 over I',
+  'B♭m over C (Phrygian)':'♭vii over I (Phrygian)','D♭°7 over C':'♭ii°7 over I','A over C7 (upper structure VI)':'VI over I7 (upper structure)',
+  'E♭ over C7 (upper structure ♭III)':'♭III over I7 (upper structure)','A♭ over C7 (upper structure ♭VI)':'♭VI over I7 (upper structure)',
+  'G♭ over C7 (upper structure ♭V)':'♭V over I7 (upper structure)','D over C7 (upper structure II)':'II over I7 (upper structure)'};
+VOICINGS.forEach(v=>{ const rn=VC_RN[v.name]; if(rn){ v.inC=v.name.replace(/ \(.*\)$/,''); v.name=rn; } });
 const VOICE=Object.fromEntries(VOICINGS.map(v=>[v.id,v]));
 // The voicing in a key: midi notes for both hands, the root and the chord
 function vcIn(v,pc){
@@ -6218,7 +6228,7 @@ function vcTypeOpen(q){
   $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(vcTypeName(q))}</span><span>${c?`Chapter ${VCHAPTERS.indexOf(c)+1}: ${c.name} · `:''}${starStr(st)}</span></div>
     <p>${ways.length===1?'One way to play it':`${ways.length} ways to play it`}, easiest first. The lesson: each one in C with the shape shown, then ${Math.max(5,ways.length+2)} from memory in new keys, mixed.${pre?` <b class="vcprew">Recommended first: ★ on ${gigAccHTML(vcTypeName(pre))}.</b>`:''}</p>
     <div class="erow vctop"><button class="go" id="vcLesson">Start the lesson (Enter)</button><button class="ghost" id="vcBack">Back</button></div>
-    <div class="vcways">${ways.map((v,i)=>{ const t=vcIn(v,0); return `<div class="vcway"><div class="vwh"><b>${i+1}. ${gigAccHTML(v.name)}</b><span>${VFAM[v.fam]} · ${vcDots(v.diff)}</span></div>${vcDiagram(t)}<div class="vwf">${vcHands(v)}</div><p class="fine">${gigAccHTML(v.tip)}</p><div class="erow"><button class="ghost" data-vh="${i}">Hear</button><button class="ghost" data-vc="${v.id}">Card</button></div></div>`; }).join('')}</div>
+    <div class="vcways">${ways.map((v,i)=>{ const t=vcIn(v,0); return `<div class="vcway"><div class="vwh"><b>${i+1}. ${gigAccHTML(v.name)}${v.inC?` <i class="vcinc">${gigAccHTML(v.inC)} in C</i>`:''}</b><span>${VFAM[v.fam]} · ${vcDots(v.diff)}</span></div>${vcDiagram(t)}<div class="vwf">${vcHands(v)}</div><p class="fine">${gigAccHTML(v.tip)}</p><div class="erow"><button class="ghost" data-vh="${i}">Hear</button><button class="ghost" data-vc="${v.id}">Card</button></div></div>`; }).join('')}</div>
     ${vcStageOf(q)?`<p class="fine vcback">Drill ${gigAccHTML(vcSym(t0))} chords against the clock: <button class="ghost" id="vcToChords">Chords: ${STAGE[vcStageOf(q)].t}</button></p>`:''}
 `;
   $('vcBody').querySelectorAll('[data-vh]').forEach(b=>b.onclick=()=>vcPlay(vcIn(ways[+b.dataset.vh],0)));
@@ -6233,7 +6243,7 @@ function vcOpen(id){
   Object.assign(VC,{active:true,mode:'card',v});
   vcShow(); vcHintKeys(t); vcStaff(t);
   const sib=vcSiblings(v);
-  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(v.name)}</span><span>${gigAccHTML(vcSym(t))} · ${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}</span></div>
+  $('vcBody').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(v.name)}${v.inC?` <i class="vcinc">${gigAccHTML(v.inC)} in C</i>`:''}</span><span>${gigAccHTML(vcSym(t))} · ${VFAM[v.fam]} · ${'●'.repeat(v.diff)}${'○'.repeat(3-v.diff)}</span></div>
     <p class="vctip">${gigAccHTML(v.tip)}</p>
     ${vcDiagram(t)}
     <div class="vchands"><span class="lh"><b>Left hand</b> ${t.lh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span><span class="rh"><b>Right hand</b> ${t.rh.map(m=>`${vcSpell(t,m).name}<em>${vcLab(t,m)}</em>`).join(' ')}</span></div>
