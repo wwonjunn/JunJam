@@ -276,6 +276,7 @@ function trEdit(score,res,savedIndex){
       <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across the beat numbers to choose the bars">⟳ Loop</button>
       <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
       <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
+      <button class="ghost tgl" id="trRollBtn" title="Show or hide the piano roll (the note editor) under the sheet music">Piano roll</button>
       <span class="trspace"></span>
       <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button>
       <button class="ghost" id="trHelpBtn" title="How everything here works">? Guide</button></div>
@@ -285,14 +286,25 @@ function trEdit(score,res,savedIndex){
       <span class="trgrp"><span class="fine">Roll</span>${trSeg('tm',[['beat','On the beat','Notes on the grid, like the sheet music'],['played','As played','Notes where they really were, over the recording']],TR.timing==='played'?'played':'beat')}</span>
       <button class="ghost ic trq" data-guide="fix" title="What these do">?</button></div>
     <div class="trscore" id="trScore"></div>
-    <div class="tredit">
+    <div class="trsplit" id="trSplit" title="Drag to make the piano roll taller or shorter; double-click to hide it"></div>
+    <div class="trpane" id="trPane"><div class="tredit">
       <span class="trgrp"><span class="fine">Tool</span>${trSeg('tool',[['select','Select','Click notes to select them, drag to move; drag on empty space to select several'],['draw','✎ Draw','Click to add a note, drag to set its length']],TR.tool||'select')}</span>
       <span class="trgrp" title="Where new and moved notes land"><span class="fine">Snap</span>${trSeg('snap',[[1,'♩'],[2,'♪'],[4,'16th'],[8,'32nd'],[3,'Triplet']],TR.snapDiv||4)}</span>
       <span class="trgrp"><button class="ghost ic" data-selact="up" title="Up a half step (↑)">▲</button><button class="ghost ic" data-selact="down" title="Down a half step (↓)">▼</button><button class="ghost ic" data-selact="oup" title="Up an octave (Shift+↑)">+8</button><button class="ghost ic" data-selact="odown" title="Down an octave (Shift+↓)">−8</button><button class="ghost ic" data-selact="del" title="Delete (Delete key)">🗑</button></span>
       <span class="fine" id="trSelInfo"></span><span class="trspace"></span><button class="ghost ic trq" data-guide="edit" title="How editing works">?</button></div>
     <div class="trroll" id="trRoll"></div>
-    <div class="trhintline" id="trHintLine"></div>`;
+    <div class="trhintline" id="trHintLine"></div></div>`;
   const B=$('trBody');
+  // the piano roll is a panel under the sheet music: shown or hidden, and how tall, both remembered; the sheet takes the rest
+  const pane=$('trPane'), split=$('trSplit'), rollBtn=$('trRollBtn'), roll=$('trRoll');
+  const rollOn=()=>store.get('trRollOn',true), rollH=h=>Math.round(Math.max(90,Math.min(innerHeight*0.7,h)));
+  const applyRoll=()=>{ pane.hidden=split.hidden=!rollOn(); rollBtn.setAttribute('aria-pressed',rollOn()); roll.style.height=rollH(store.get('trRollH',innerHeight*0.2))+'px'; };
+  applyRoll();
+  rollBtn.onclick=()=>{ store.set('trRollOn',!rollOn()); applyRoll(); if(rollOn()) trRollView(); };
+  split.ondblclick=()=>rollBtn.click();
+  split.onpointerdown=e=>{ e.preventDefault(); const y0=e.clientY, h0=roll.offsetHeight; split.setPointerCapture(e.pointerId); split.classList.add('drag');
+    split.onpointermove=ev=>{ roll.style.height=rollH(h0-(ev.clientY-y0))+'px'; };
+    split.onpointerup=()=>{ split.onpointermove=null; split.classList.remove('drag'); store.set('trRollH',roll.offsetHeight); }; };
   $('trPlay').onclick=trToggle; $('trStop').onclick=()=>{ trStopAll(); TR.posB=TR.looping&&TR.loop?TR.loop.a:0; trHead(TR.posB); };
   B.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{ TR.src=b.dataset.src; trPress('src',b.dataset.src); trResume(); });
   $('trLoopBtn').onclick=trLoopToggle;
@@ -419,12 +431,15 @@ function trMsg(t,cls=''){ if(!t) return; let m=$('trToast'); if(!m){ m=document.
   m.textContent=t; m.className='trtoast show '+cls; clearTimeout(TR.toastT); TR.toastT=setTimeout(()=>m.classList.remove('show'),cls==='no'?6000:4200); }
 
 // Sheet music: four bars to a line, chord symbols above, notes spelled from their chords
+// a wider or narrower window: lay the sheet out again for the new width, at the same place in the music
+let trReflowT=0; addEventListener('resize',()=>{ clearTimeout(trReflowT); trReflowT=setTimeout(()=>{ const sc=$('trScore'); if(!TR.active||TR.step!=='edit'||!sc) return;
+  const at=sc.scrollTop/Math.max(1,sc.scrollHeight); trScoreView(); sc.scrollTop=at*sc.scrollHeight; },150); });
 function trScoreView(){
   const s=TR.score, vis=visibleMelody(s), lines=[], ps=vis.map(n=>n.midi).sort((a,b)=>a-b), low=ps.length&&ps[ps.length>>1]<57; // a low line reads on a bass clef
-  // up to four bars to a line, fewer when they're busy, so fast runs stay readable (beats widen like grandStaffSVG's)
+  // as many bars to a line as fit the width (up to eight), fewer when they're busy, so fast runs stay readable (beats widen like grandStaffSVG's)
   const per=Array(s.bars*4).fill(0); vis.forEach(n=>{ const b=Math.floor(n.gat+1e-6); if(b>=0&&b<per.length) per[b]++; });
   const barW=b=>[0,1,2,3].reduce((a,k)=>a+Math.max(44,per[b*4+k]*15+10),0), room=Math.max(560,($('trScore').clientWidth||900)-90);
-  TR.lines=[]; const starts=[]; for(let b=0;b<s.bars;){ let n=1, w=barW(b); while(n<4&&b+n<s.bars&&w+barW(b+n)<=room){ w+=barW(b+n); n++; } starts.push([b,n]); b+=n; }
+  TR.lines=[]; const starts=[]; for(let b=0;b<s.bars;){ let n=1, w=barW(b); while(n<8&&b+n<s.bars&&w+barW(b+n)<=room){ w+=barW(b+n); n++; } starts.push([b,n]); b+=n; }
   starts.forEach(([b,nb])=>{
     const a=b*4, z=a+nb*4, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
       return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,tup:n.tup||0,spell:{...sp,midi:n.midi},name:sp.name}; });
