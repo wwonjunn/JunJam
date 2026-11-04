@@ -9,7 +9,7 @@ const GA_PAT={
   iivi:{name:'ii–V–I',why:'The front door home: a minor 7 up a 4th to a 7 chord, then up another 4th to home. The strongest pull there is: the 7 chord\'s 3rd rises a half step to the root, its 7th falls a half step to the 3rd.'},
   iiv:{name:'ii–V',why:'The first two steps of the front door, without the home chord: it sets up a key and then goes somewhere else (common in standards and city pop).'},
   back:{name:'Backdoor',why:'Home from the flat side: iv minor 7 up a 4th to ♭VII7, then a whole step up to I. Borrowed from the minor key, so it lands warm and wistful instead of bright: the ♭VII7\'s A♭ and F (in C) fall a half step onto G and E.'},
-  tri:{name:'Tritone sub',why:'A 7 chord a half step above where it\'s going: it has the same two tense notes as the normal V7 (a G7 in disguise), so it slides down a half step into the next chord.'},
+  tri:{name:'Tritone sub',why:'A 7 chord a half step above where it\'s going: it has the same two tense notes as the normal V7 (that V7 in disguise), so it slides down a half step into the next chord.'},
   sec:{name:'V of…',why:'A secondary dominant: a 7 chord that resolves up a 4th to a chord that isn\'t home, as if that chord were home for a moment. It borrows that chord\'s V7 to make arriving there stronger.'},
   pdim:{name:'Passing °',why:'A diminished chord between two chords a whole step apart: its bass fills the gap a half step at a time, and every note of it leans into the next chord.'},
   miv:{name:'Minor iv',why:'IV turning minor: the 6th of the key drops a half step (A to A♭ in C). The bittersweet J-pop and gospel move, borrowed from the minor key.'},

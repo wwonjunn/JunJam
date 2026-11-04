@@ -70,7 +70,7 @@ function rhRound(){
 function rhRender(){
   const R=REHARM, m=R.move, learn=R.round===0, slot=m.slots[R.slotPos];
   $('rhBody').innerHTML=`<div class="etop"><span class="etitle">${m.name}</span><span>${learn?'Learn it, in C':`New key ${R.round} of ${RH_KEYS}`}</span></div>
-    <p class="rhwhat">${R.done?'Done.':m.ask+(R.hinted&&slot!==undefined?`: play <b>${rhTargets(m,slot,R.keys[R.round]).slice(0,3).map(c=>symText(c)).join('</b> or <b>')}</b>`:'.')}</p>
+    <p class="rhwhat">${R.done?'Done.':(R.mel!=null?m.ask.replace(/\bC\b/g,plainSpell(R.mel).name):m.ask)+(R.hinted&&slot!==undefined?`: play <b>${rhTargets(m,slot,R.keys[R.round]).slice(0,3).map(c=>symText(c)).join('</b> or <b>')}</b>`:'.')}</p>
     <div class="sec">Original in ${keyName(R.keys[R.round],m.minor)}${R.mel!==null?`, melody note ${plainSpell(R.mel).name} held on top`:''}</div>${chordRow(R.before)}
     <div class="sec">Reharmonised</div>${chordRow(R.after,new Set(m.slots),R.solved,R.done?-1:slot,R.just??-1)}
     <div class="lmsg" id="rhMsg"></div>

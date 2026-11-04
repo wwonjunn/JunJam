@@ -59,7 +59,7 @@ function briefOpen(id){
     :id==='p:mix'?`<span>All ${PROGS.length} progressions</span>`:id==='p:final'?`<span>All ${PROGS.length} progressions</span><span>and every chord type</span>`
     :qids.length>16?`<span>All ${qids.length} chord types</span>`:qids.map(q=>`<span>${gigAccHTML(sym(q))}</span>`).join('');
   $('briefCard').innerHTML=`<div class="etop"><span class="etitle">${gigAccHTML(briefTitle(id))}</span><span>${starStr(st,STAR_MAX)}${devilOf(id)?' '+'💀'.repeat(devilOf(id)):''}</span></div>
-    <div class="sec">What's coming</div><div class="briefchords">${chords}</div>
+    <div class="sec">What's coming${P?' <span class="fine">in C here; the game uses every key</span>':!pb&&!/^p:/.test(String(id))&&qids.length<=16?' <span class="fine">shown on C; the game uses every root</span>':''}</div><div class="briefchords">${chords}</div>
     <p>${mode==='practice'?'Practice: no clock, take your time.':`${t.name}, ♩ = ${t.bpm}, ${t.lives} ${t.lives===1?'life':'lives'}${t.devil?'. Every chord on fire, no hints':''}.`}${fire&&mode==='game'?` 🔥 chords will ask for the ${['','3rd','3rd or 5th','3rd, 5th or 7th'][fire]} in the bass.`:''} 💚 life chords now and then.</p>
     <p class="fine">${chordsStep(id)?`Step ${chordsStep(id)} of ${NEXT_ORDER.length}. `:''}${st<STAR_MAX?`Next star: ${STAR_GOALS[st]}`:'Every star. 😈 Devil is open for this one in the tempo list.'}</p>
     ${chordsPathNote(id)?`<p class="fine pathnote">${gigAccHTML(chordsPathNote(id))}</p>`:''}
