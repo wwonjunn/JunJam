@@ -32,7 +32,7 @@ function feelBurst(x,y,o={}){ if(feelReduce()) return;
   if(o.ring!==false){ const r=document.createElement('i'); r.className='fring'; r.style.cssText=`left:${x}px;top:${y}px;border-color:${cols[0]}`; L.appendChild(r); setTimeout(()=>r.remove(),520); }
 }
 // a word or a score, floating up from a point
-function feelPop(x,y,text,o={}){ const L=feelLayer(), p=document.createElement('b'); p.className='fpop'+(o.small?' small':''); p.textContent=text;
+function feelPop(x,y,text,o={}){ if(feelReduce()) return; const L=feelLayer(), p=document.createElement('b'); p.className='fpop'+(o.small?' small':''); p.textContent=text;
   p.style.cssText=`left:${x}px;top:${y}px;color:${o.col||feelVar('--brass')}`; L.appendChild(p); setTimeout(()=>p.remove(),950); }
 // a small punch on what was hit (not on things the game moves with transform)
 function feelPunch(el){ if(!el||!el.classList||feelReduce()) return;

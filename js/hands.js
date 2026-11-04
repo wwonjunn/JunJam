@@ -160,7 +160,7 @@ function newGame(){
      lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:tier.devil&&!practice?3:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[],devil:!!tier.devil&&!practice};
   // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
   G.srs=opts.smart&&!isProgStage()?srsStart(stagePool(stageN).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
-  $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
+  $('lane').querySelectorAll('.enemy,.pop').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
 // the lane emptied: chords left over from the last run don't hang behind the menu or the next run

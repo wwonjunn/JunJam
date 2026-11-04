@@ -21,11 +21,16 @@ function devilLockText(){
   const open=STAR_IDS().filter(id=>starsOf(id)>=STAR_MAX).map(name);
   return `Unlocks per stage at ★★★★★. ${name(stageN)} has ${starStr(starsOf(stageN),STAR_MAX)}.${open.length?` Open on: ${open.join(', ')}.`:''}`;
 }
-let shownSide=null;
+let shownSide=null, ovToggled=true;   // true at load: the menu arrives with its own fade
+// the menu overlay was hidden or shown since the last render (a game came and went): it arrives with its own fade
+const ovObs=new MutationObserver(()=>{ ovToggled=true; }); ovObs.observe($('startOv'),{attributes:true,attributeFilter:['hidden']});
 function renderMenu(){
   $('rankLine').textContent=rankLine();
   ['home','hands','ears','lines','reharm','voicings','plan','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
-  if(side!==shownSide){ const p=$(side+'Pane'); p.classList.remove('panein'); void p.offsetWidth; p.classList.add('panein'); shownSide=side; }   // a new page eases in; a re-render of the same one doesn't
+  if(side!==shownSide){ shownSide=side; const p=$(side+'Pane'), ov=$('startOv');   // a new page eases in; a re-render of the same one doesn't,
+    const arriving=ov.hidden||ovToggled||ovObs.takeRecords().length>0;   // nor one arriving with the menu itself (that has its own)
+    p.classList.remove('panein'); if(!arriving){ void p.offsetWidth; p.classList.add('panein'); } }
+  ovObs.takeRecords(); ovToggled=false;
   document.querySelector('.homehead').hidden=side==='settings';
   if(side==='home'){ renderHome(); renderProfileChip(); }
   if(side==='settings') renderSettingsPane();

@@ -136,7 +136,6 @@ body.menu .panel{display:none}
 .enemy.dead{transition:opacity .35s, filter .35s;opacity:0;filter:blur(6px)}
 .enemy .prog{display:block;font-family:var(--cond);font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin:2px 0 6px;text-align:left}
 
-.shot{position:absolute;width:2px;background:var(--brass);transform-origin:bottom center;bottom:0;opacity:.9;transition:opacity .3s}
 .pop{position:absolute;font-family:var(--cond);font-weight:700;color:var(--brass);pointer-events:none;text-align:center;transform:translateX(-50%);animation:rise 1.3s ease-out forwards}
 .pop b{display:block;font-size:30px;line-height:1}
 .pop span{display:block;font-size:13px;font-weight:600;color:var(--ink);opacity:.85;white-space:nowrap}
@@ -222,10 +221,10 @@ body.menu .panel{display:none}
 /* feel: hovers ease rather than snap, a press gives a little, a new page eases in */
 button,.mode,.stage,.lick,.pnode,.arcw,.lvl,.proutine{transition:border-color .15s,background-color .15s,color .15s,opacity .15s,box-shadow .15s}
 .stage:hover:not(.locked){border-color:var(--brass)}
-button:not(:disabled):active,.mode:active,.proutine:active{transform:translateY(1px)}
+button:not(:disabled):active,.mode:active,.proutine:active{translate:0 1px}   /* translate, not transform: it adds to a theme's own tilt or press */
 .panein{animation:panein .22s ease-out} @keyframes panein{from{opacity:0;transform:translateY(6px)}}
 @media (prefers-reduced-motion: reduce){
-  .panein,.enemy{animation:none} button:not(:disabled):active,.mode:active,.proutine:active{transform:none}
+  .panein,.enemy{animation:none} button:not(:disabled):active,.mode:active,.proutine:active{translate:none}
   .enemy.shake,.lane.hurt,.pop{animation:none}
   .enemy.dead{transition:none}
 }
@@ -894,8 +893,8 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 
 /* ---------------- feel (feel.js): bolts from your keys, sparks, a punch, a floating score ---------------- */
 .feel{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
-.fbolt{position:absolute;height:3px;margin-top:-1.5px;border-radius:2px;transform-origin:0 50%;animation:fbolt linear both;box-shadow:0 0 6px currentColor}
-@keyframes fbolt{0%{opacity:1;transform:rotate(var(--a)) translateX(0)}85%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--len))}}
+.fbolt{position:absolute;height:3px;margin-top:-1.5px;border-radius:2px;transform-origin:0 50%;animation:fbolt linear both;filter:drop-shadow(0 0 3px currentColor)}   /* the glow follows the streak, not its box */
+@keyframes fbolt{0%{opacity:0;transform:rotate(var(--a)) translateX(0)}8%{opacity:1}85%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--len))}}
 .fspark{position:absolute;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;animation:fspark ease-out forwards}
 @keyframes fspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
 .fring{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid;border-radius:50%;animation:fring .46s ease-out forwards}
@@ -904,8 +903,9 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .fpop.small{font-size:15px}
 @keyframes fpop{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}14%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}30%{transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-150%)}}
 .fpunch{animation:fpunch .26s ease-out} @keyframes fpunch{35%{transform:scale(1.05)}}
-.kb rect.kflash{animation:kflash .34s ease-out} @keyframes kflash{0%{filter:brightness(1.5) saturate(1.2)}100%{filter:none}}
-.lstaff ellipse.nglow,svg ellipse.nglow{animation:nglow .42s ease-out} @keyframes nglow{0%{filter:drop-shadow(0 0 5px var(--brass)) brightness(1.4)}100%{filter:none}}   /* a staff note lighting as the replay reaches it */
+.kb rect.kflash{animation:kflash .36s ease-out} @keyframes kflash{0%{filter:drop-shadow(0 0 5px var(--brass)) drop-shadow(0 0 2px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}}
+#lPlay ellipse.nglow{animation:nglow .45s ease-out} #lPlay ellipse.nglow[fill="none"]{animation-name:nglowo}
+@keyframes nglow{0%{fill:var(--brass);filter:drop-shadow(0 0 4px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}} @keyframes nglowo{0%{stroke:var(--brass);filter:drop-shadow(0 0 4px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}}   /* a staff note lighting as the replay reaches it */
 </style>
 <style>
 /* ==================================================================================================
@@ -2335,7 +2335,7 @@ function feelBurst(x,y,o={}){ if(feelReduce()) return;
   if(o.ring!==false){ const r=document.createElement('i'); r.className='fring'; r.style.cssText=`left:${x}px;top:${y}px;border-color:${cols[0]}`; L.appendChild(r); setTimeout(()=>r.remove(),520); }
 }
 // a word or a score, floating up from a point
-function feelPop(x,y,text,o={}){ const L=feelLayer(), p=document.createElement('b'); p.className='fpop'+(o.small?' small':''); p.textContent=text;
+function feelPop(x,y,text,o={}){ if(feelReduce()) return; const L=feelLayer(), p=document.createElement('b'); p.className='fpop'+(o.small?' small':''); p.textContent=text;
   p.style.cssText=`left:${x}px;top:${y}px;color:${o.col||feelVar('--brass')}`; L.appendChild(p); setTimeout(()=>p.remove(),950); }
 // a small punch on what was hit (not on things the game moves with transform)
 function feelPunch(el){ if(!el||!el.classList||feelReduce()) return;
@@ -2724,7 +2724,7 @@ function newGame(){
      lastSym:null,firstTry:0,escapes:0,raf:0,last:0,id:0,fireLvl:tier.devil&&!practice?3:fireLevel(stageN),fireGap:0,fireCleared:0,cleanTimes:[],devil:!!tier.devil&&!practice};
   // spaced review (part of Smart mix) on the chord stages; progressions come as whole sequences
   G.srs=opts.smart&&!isProgStage()?srsStart(stagePool(stageN).flatMap(q=>[...Array(12).keys()].map(pc=>statKey(q.id,pc)))):null;
-  $('lane').querySelectorAll('.enemy,.pop,.shot').forEach(n=>n.remove());
+  $('lane').querySelectorAll('.enemy,.pop').forEach(n=>n.remove());
   fillQueue(); renderAhead(); updateHud();
 }
 // the lane emptied: chords left over from the last run don't hang behind the menu or the next run
@@ -37720,11 +37720,16 @@ function devilLockText(){
   const open=STAR_IDS().filter(id=>starsOf(id)>=STAR_MAX).map(name);
   return `Unlocks per stage at ★★★★★. ${name(stageN)} has ${starStr(starsOf(stageN),STAR_MAX)}.${open.length?` Open on: ${open.join(', ')}.`:''}`;
 }
-let shownSide=null;
+let shownSide=null, ovToggled=true;   // true at load: the menu arrives with its own fade
+// the menu overlay was hidden or shown since the last render (a game came and went): it arrives with its own fade
+const ovObs=new MutationObserver(()=>{ ovToggled=true; }); ovObs.observe($('startOv'),{attributes:true,attributeFilter:['hidden']});
 function renderMenu(){
   $('rankLine').textContent=rankLine();
   ['home','hands','ears','lines','reharm','voicings','plan','settings'].forEach(s=>$(s+'Pane').hidden=side!==s);
-  if(side!==shownSide){ const p=$(side+'Pane'); p.classList.remove('panein'); void p.offsetWidth; p.classList.add('panein'); shownSide=side; }   // a new page eases in; a re-render of the same one doesn't
+  if(side!==shownSide){ shownSide=side; const p=$(side+'Pane'), ov=$('startOv');   // a new page eases in; a re-render of the same one doesn't,
+    const arriving=ov.hidden||ovToggled||ovObs.takeRecords().length>0;   // nor one arriving with the menu itself (that has its own)
+    p.classList.remove('panein'); if(!arriving){ void p.offsetWidth; p.classList.add('panein'); } }
+  ovObs.takeRecords(); ovToggled=false;
   document.querySelector('.homehead').hidden=side==='settings';
   if(side==='home'){ renderHome(); renderProfileChip(); }
   if(side==='settings') renderSettingsPane();
