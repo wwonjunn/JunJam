@@ -896,3 +896,4 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .kb rect.kflash{animation:kflash .36s ease-out} @keyframes kflash{0%{filter:drop-shadow(0 0 5px var(--brass)) drop-shadow(0 0 2px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}}
 #lPlay ellipse.nglow{animation:nglow .45s ease-out} #lPlay ellipse.nglow[fill="none"]{animation-name:nglowo}
 @keyframes nglow{0%{fill:var(--brass);filter:drop-shadow(0 0 4px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}} @keyframes nglowo{0%{stroke:var(--brass);filter:drop-shadow(0 0 4px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}}   /* a staff note lighting as the replay reaches it */
+.drumkitsel{font:inherit;font-size:14px;padding:5px 8px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink)}

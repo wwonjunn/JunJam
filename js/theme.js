@@ -151,11 +151,13 @@ async function renderDrumSound(msg){
   const name={kick:'Kick',snare:'Snare',hat:'Hi-hat'};
   el.innerHTML=`<div class="keyopts">${DRUM_VOICES.map(v=>`<div class="keyopt"><b>${name[v]}</b><span class="fine">${mine[v]?'Your sample':'Built in'}</span>
       <div class="erow" style="margin-top:6px"><label class="ghost trsm" style="cursor:pointer">Load your own<input type="file" accept="audio/*" data-dload="${v}" hidden></label>${mine[v]?`<button class="ghost trsm" data-dclear="${v}">Use built-in</button>`:''}</div></div>`).join('')}</div>
+    ${typeof LOCAL_KITS!=='undefined'?`<div class="erow" style="margin-top:8px;align-items:center"><span class="fine" style="margin:0">Your Logic kits</span><select id="drumKit" class="drumkitsel"><option value="">Choose a kit…</option>${Object.keys(LOCAL_KITS).map(k=>`<option${store.get('drumKit','')===k?' selected':''}>${trEsc(k)}</option>`).join('')}</select></div>`:''}
     <div class="erow" style="margin-top:6px"><button class="ghost" id="drumHear">▶ Hear the beat</button><span class="fine" id="drumMsg">${msg||''}</span></div>`;
   el.querySelectorAll('[data-dload]').forEach(inp=>inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; synth.init(); const ab=await f.arrayBuffer();
     try{ await synth.ctx.decodeAudioData(ab.slice(0)); }catch(e){ return renderDrumSound("Couldn't read that file. Try a WAV, MP3, AIFF or M4A."); }
-    await smpDB.put('custom/'+inp.dataset.dload,ab); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
-  el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
+    await smpDB.put('custom/'+inp.dataset.dload,ab); store.set('drumKit',''); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
+  if($('drumKit')) $('drumKit').onchange=async e=>{ const k=e.target.value; if(!k) return; synth.init(); await localKitUse(k); renderDrumSound(`${trEsc(k)} kit: kick, snare and hi-hat.`); $('drumHear').click(); };
+  el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); store.set('drumKit',''); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
   $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=previewBus(); if(!bus) return; const spb=60/96, t=now()+.08;   // one bar with the hi-hat, then the downbeat
     beatBar(t,spb,4,{bar:1},bus,{hat:true}); drumHit('kick',t+4*spb,1,bus);
     [[2,'min7',0,4],[7,'dom7',4,.5]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb,backSound(),bus,backVel(56)); }); };

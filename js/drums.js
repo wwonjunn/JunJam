@@ -5,16 +5,20 @@
    (Profile & settings → Sound). A synth kit stands in only if neither will decode. */
 const DRUM={buf:{},ready:false,verb:null,verbCtx:null};
 const DRUM_VOICES=['kick','snare','hat'];
+const drumRaw=b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
 async function drumsInit(){
-  const c=synth.ctx; if(!c||DRUM.ready||DRUM.loading) return; DRUM.loading=true;
-  for(const v of DRUM_VOICES){
-    let ab=typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
-    const raw=b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
-    const tries=ab?[ab]:[raw(DRUM_KIT_DATA[v].ogg),raw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
-    DRUM.buf[v]=null; for(const x of tries){ try{ DRUM.buf[v]=await c.decodeAudioData(x.slice(0)); break; }catch(e){} } }
-  DRUM.ready=true; DRUM.loading=false;
+  const c=synth.ctx; if(!c||DRUM.ready) return; if(DRUM.loading) return DRUM.pending;
+  DRUM.loading=true;
+  DRUM.pending=(async()=>{ do{ DRUM.again=false;   // sounds changed while this ran (a kit picked, a file loaded): go round again
+    for(const v of DRUM_VOICES){
+      let ab=typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
+      const tries=ab?[ab]:[drumRaw(DRUM_KIT_DATA[v].ogg),drumRaw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
+      let buf=null; for(const x of tries){ try{ buf=await c.decodeAudioData(x.slice(0)); break; }catch(e){} } DRUM.buf[v]=buf; }
+  }while(DRUM.again); DRUM.ready=true; DRUM.loading=false; })();
+  return DRUM.pending;
 }
-function drumsReload(){ DRUM.ready=false; DRUM.buf={}; return drumsInit(); }   // after loading or clearing your own sounds
+// after loading or clearing your own sounds; a load already running picks the change up before it finishes
+function drumsReload(){ if(DRUM.loading){ DRUM.again=true; return DRUM.pending; } DRUM.ready=false; return drumsInit(); }
 // A small room for the snare: a short, dark, decaying burst of noise as the reverb's impulse
 // One reverb per bus, so stopping a backing stops its snare tails too (a shared one would leak into every bus it ever fed)
 const DRUM_VERBS=new WeakMap();
@@ -50,3 +54,13 @@ function beatBar(t0,spb,beats,info,bus,o={}){
     if(beats-b0>=3) drumHit('snare',at(2)+lazy,1,bus);
     if(o.hat) [1,3].forEach(x=>{ if(b0+x<beats) drumHit('hat',at(x),0.9,bus); }); }
 }
+
+/* Your own kits: js/local-kits.js, cut from your Logic Pro library. Never committed (.gitignore) and never bundled: it's
+   loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three
+   sounds where Load your own does. The first time the file is found, Crate Digger goes in. */
+function localKitUse(name){ const k=typeof LOCAL_KITS!=='undefined'&&LOCAL_KITS[name]; if(!k) return Promise.resolve(false);
+  return Promise.all(DRUM_VOICES.map(v=>smpDB.put('custom/'+v,drumRaw(k[v])))).then(()=>{ store.set('drumKit',name); return drumsReload(); }).then(()=>true); }
+(function(){ const s=document.createElement('script'); s.src='js/local-kits.js';
+  s.onload=async()=>{ if(!store.get('drumKitAuto',false)){ store.set('drumKitAuto',true); await localKitUse('Crate Digger'); }
+    if(typeof renderDrumSound==='function'&&document.getElementById('drumSound')) renderDrumSound(); };
+  s.onerror=()=>s.remove(); document.head.appendChild(s); })();

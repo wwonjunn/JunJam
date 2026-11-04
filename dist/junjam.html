@@ -906,6 +906,7 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .kb rect.kflash{animation:kflash .36s ease-out} @keyframes kflash{0%{filter:drop-shadow(0 0 5px var(--brass)) drop-shadow(0 0 2px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}}
 #lPlay ellipse.nglow{animation:nglow .45s ease-out} #lPlay ellipse.nglow[fill="none"]{animation-name:nglowo}
 @keyframes nglow{0%{fill:var(--brass);filter:drop-shadow(0 0 4px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}} @keyframes nglowo{0%{stroke:var(--brass);filter:drop-shadow(0 0 4px var(--brass))}100%{filter:drop-shadow(0 0 0 transparent)}}   /* a staff note lighting as the replay reaches it */
+.drumkitsel{font:inherit;font-size:14px;padding:5px 8px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink)}
 </style>
 <style>
 /* ==================================================================================================
@@ -1430,11 +1431,13 @@ async function renderDrumSound(msg){
   const name={kick:'Kick',snare:'Snare',hat:'Hi-hat'};
   el.innerHTML=`<div class="keyopts">${DRUM_VOICES.map(v=>`<div class="keyopt"><b>${name[v]}</b><span class="fine">${mine[v]?'Your sample':'Built in'}</span>
       <div class="erow" style="margin-top:6px"><label class="ghost trsm" style="cursor:pointer">Load your own<input type="file" accept="audio/*" data-dload="${v}" hidden></label>${mine[v]?`<button class="ghost trsm" data-dclear="${v}">Use built-in</button>`:''}</div></div>`).join('')}</div>
+    ${typeof LOCAL_KITS!=='undefined'?`<div class="erow" style="margin-top:8px;align-items:center"><span class="fine" style="margin:0">Your Logic kits</span><select id="drumKit" class="drumkitsel"><option value="">Choose a kit…</option>${Object.keys(LOCAL_KITS).map(k=>`<option${store.get('drumKit','')===k?' selected':''}>${trEsc(k)}</option>`).join('')}</select></div>`:''}
     <div class="erow" style="margin-top:6px"><button class="ghost" id="drumHear">▶ Hear the beat</button><span class="fine" id="drumMsg">${msg||''}</span></div>`;
   el.querySelectorAll('[data-dload]').forEach(inp=>inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; synth.init(); const ab=await f.arrayBuffer();
     try{ await synth.ctx.decodeAudioData(ab.slice(0)); }catch(e){ return renderDrumSound("Couldn't read that file. Try a WAV, MP3, AIFF or M4A."); }
-    await smpDB.put('custom/'+inp.dataset.dload,ab); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
-  el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
+    await smpDB.put('custom/'+inp.dataset.dload,ab); store.set('drumKit',''); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
+  if($('drumKit')) $('drumKit').onchange=async e=>{ const k=e.target.value; if(!k) return; synth.init(); await localKitUse(k); renderDrumSound(`${trEsc(k)} kit: kick, snare and hi-hat.`); $('drumHear').click(); };
+  el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); store.set('drumKit',''); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
   $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=previewBus(); if(!bus) return; const spb=60/96, t=now()+.08;   // one bar with the hi-hat, then the downbeat
     beatBar(t,spb,4,{bar:1},bus,{hat:true}); drumHit('kick',t+4*spb,1,bus);
     [[2,'min7',0,4],[7,'dom7',4,.5]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb,backSound(),bus,backVel(56)); }); };
@@ -2514,16 +2517,20 @@ const DRUM_KIT_DATA={"kick": {"ogg": "T2dnUwACAAAAAAAAAADvTWHNAAAAAI+qWOgBE09wdX
    (Profile & settings → Sound). A synth kit stands in only if neither will decode. */
 const DRUM={buf:{},ready:false,verb:null,verbCtx:null};
 const DRUM_VOICES=['kick','snare','hat'];
+const drumRaw=b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
 async function drumsInit(){
-  const c=synth.ctx; if(!c||DRUM.ready||DRUM.loading) return; DRUM.loading=true;
-  for(const v of DRUM_VOICES){
-    let ab=typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
-    const raw=b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u.buffer; };
-    const tries=ab?[ab]:[raw(DRUM_KIT_DATA[v].ogg),raw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
-    DRUM.buf[v]=null; for(const x of tries){ try{ DRUM.buf[v]=await c.decodeAudioData(x.slice(0)); break; }catch(e){} } }
-  DRUM.ready=true; DRUM.loading=false;
+  const c=synth.ctx; if(!c||DRUM.ready) return; if(DRUM.loading) return DRUM.pending;
+  DRUM.loading=true;
+  DRUM.pending=(async()=>{ do{ DRUM.again=false;   // sounds changed while this ran (a kit picked, a file loaded): go round again
+    for(const v of DRUM_VOICES){
+      let ab=typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
+      const tries=ab?[ab]:[drumRaw(DRUM_KIT_DATA[v].ogg),drumRaw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
+      let buf=null; for(const x of tries){ try{ buf=await c.decodeAudioData(x.slice(0)); break; }catch(e){} } DRUM.buf[v]=buf; }
+  }while(DRUM.again); DRUM.ready=true; DRUM.loading=false; })();
+  return DRUM.pending;
 }
-function drumsReload(){ DRUM.ready=false; DRUM.buf={}; return drumsInit(); }   // after loading or clearing your own sounds
+// after loading or clearing your own sounds; a load already running picks the change up before it finishes
+function drumsReload(){ if(DRUM.loading){ DRUM.again=true; return DRUM.pending; } DRUM.ready=false; return drumsInit(); }
 // A small room for the snare: a short, dark, decaying burst of noise as the reverb's impulse
 // One reverb per bus, so stopping a backing stops its snare tails too (a shared one would leak into every bus it ever fed)
 const DRUM_VERBS=new WeakMap();
@@ -2559,6 +2566,16 @@ function beatBar(t0,spb,beats,info,bus,o={}){
     if(beats-b0>=3) drumHit('snare',at(2)+lazy,1,bus);
     if(o.hat) [1,3].forEach(x=>{ if(b0+x<beats) drumHit('hat',at(x),0.9,bus); }); }
 }
+
+/* Your own kits: js/local-kits.js, cut from your Logic Pro library. Never committed (.gitignore) and never bundled: it's
+   loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three
+   sounds where Load your own does. The first time the file is found, Crate Digger goes in. */
+function localKitUse(name){ const k=typeof LOCAL_KITS!=='undefined'&&LOCAL_KITS[name]; if(!k) return Promise.resolve(false);
+  return Promise.all(DRUM_VOICES.map(v=>smpDB.put('custom/'+v,drumRaw(k[v])))).then(()=>{ store.set('drumKit',name); return drumsReload(); }).then(()=>true); }
+(function(){ const s=document.createElement('script'); s.src='js/local-kits.js';
+  s.onload=async()=>{ if(!store.get('drumKitAuto',false)){ store.set('drumKitAuto',true); await localKitUse('Crate Digger'); }
+    if(typeof renderDrumSound==='function'&&document.getElementById('drumSound')) renderDrumSound(); };
+  s.onerror=()=>s.remove(); document.head.appendChild(s); })();
 </script>
 <script>
 /* ---------------- game ---------------- */
