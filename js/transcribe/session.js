@@ -261,9 +261,9 @@ function trEdit(score,res,savedIndex){
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
   const R=!!TR.res, A=!!(TR.url&&TR.res);
-  // Laid out like a practice player (after Soundslice and Moises): the sheet music in the middle with the room, a slim top
-  // bar (title, Save, and a ⋯ menu for everything occasional), the piano roll as a panel you can resize or hide, and one
-  // player bar at the bottom. Rarely touched fixes sit in an Adjust popover; note actions show only with notes selected.
+  // Laid out like a practice player (after Soundslice and Moises): a slim top bar (title, Save, and a ⋯ menu for everything
+  // occasional), the player bar under it, and the sheet music with all the room. The note editor (piano roll) opens under the
+  // sheet only when you ask (✎ Edit notes). Rarely touched fixes sit in an Adjust popover; note actions show with a selection.
   $('trBody').innerHTML=`<div class="trtop">
       <button class="ghost" id="trClose" title="Close this transcription">← Close</button>
       <span class="etitle" id="trTitle" title="Click to rename"></span><span class="fine" id="trInfo"></span><span class="trspace"></span><span class="fine" id="trDirty"></span>
@@ -274,14 +274,6 @@ function trEdit(score,res,savedIndex){
         <button id="trLick">Send to Lines <span class="fine">Select 3 to 16 notes in the piano roll first</span></button>
         ${TR.buf&&R?'<button id="trSettings">Settings <span class="fine">What to write, instrument and part</span></button>':''}
         <button id="trHelpBtn">Guide <span class="fine">How everything here works</span></button></div></div></div>
-    <div class="trscore" id="trScore"></div>
-    <div class="trsplit" id="trSplit" title="Drag to make the piano roll taller or shorter; double-click to hide it"></div>
-    <div class="trpane" id="trPane"><div class="tredit">
-      ${trSeg('tool',[['select','Select','Click notes to select them, drag to move; drag on empty space to select several'],['draw','✎ Draw','Click to add a note, drag to set its length']],TR.tool||'select')}
-      <span class="trgrp" title="Where new and moved notes land"><span class="fine">Snap</span>${trSeg('snap',[[1,'♩'],[2,'♪'],[4,'16th'],[8,'32nd'],[3,'Triplet']],TR.snapDiv||4)}</span>
-      <span class="trgrp selacts"><button class="ghost ic" data-selact="up" title="Up a half step (↑)">▲</button><button class="ghost ic" data-selact="down" title="Down a half step (↓)">▼</button><button class="ghost ic" data-selact="oup" title="Up an octave (Shift+↑)">+8</button><button class="ghost ic" data-selact="odown" title="Down an octave (Shift+↓)">−8</button><button class="ghost ic" data-selact="del" title="Delete (Delete key)">🗑</button></span>
-      <span class="fine" id="trSelInfo"></span><span class="trspace"></span><button class="ghost ic trq" data-guide="edit" title="How editing works">?</button></div>
-    <div class="trroll" id="trRoll"></div></div>
     <div class="trtransport" id="trBar">
       <button class="go trplay" id="trPlay" title="Play / pause (Space)">▶</button><button class="ghost ic" id="trStop" title="Stop, back to the start">■</button>
       <span class="trpos" id="trPos">1 · 1</span>
@@ -296,15 +288,24 @@ function trEdit(score,res,savedIndex){
         <span class="trgrp" title="Where beat 1 is. Works from the playhead's bar on; earlier bars stay as they are."><span class="fine">Beat 1</span><span class="seg"><button id="trShiftL" title="Bars from the playhead's bar on: one beat earlier">◀</button><button id="trB1Here" title="The beat at the playhead is beat 1 (from here on)">Here</button><button id="trShiftR" title="Bars from the playhead's bar on: one beat later">▶</button></span><span class="fine" id="trB1From">all bars</span></span>`:''}
         <span class="trgrp"><span class="fine">Piano roll</span>${trSeg('tm',[['beat','On the beat','Notes on the grid, like the sheet music'],['played','As played','Notes where they really were, over the recording']],TR.timing==='played'?'played':'beat')}</span>
         <button class="ghost trq" data-guide="fix" title="What these do">What these do</button></div></div></div>
-      <button class="ghost tgl" id="trRollBtn" title="Show or hide the piano roll (the note editor) under the sheet music">Piano roll</button>
-      <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button></div>`;
+      <button class="ghost tgl" id="trRollBtn" title="Open the note editor (piano roll) under the sheet music to fix or add notes">✎ Edit notes</button>
+      <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button></div>
+    <div class="trscore" id="trScore"></div>
+    <div class="trsplit" id="trSplit" title="Drag to make the piano roll taller or shorter; double-click to hide it"></div>
+    <div class="trpane" id="trPane"><div class="tredit">
+      ${trSeg('tool',[['select','Select','Click notes to select them, drag to move; drag on empty space to select several'],['draw','✎ Draw','Click to add a note, drag to set its length']],TR.tool||'select')}
+      <span class="trgrp" title="Where new and moved notes land"><span class="fine">Snap</span>${trSeg('snap',[[1,'♩'],[2,'♪'],[4,'16th'],[8,'32nd'],[3,'Triplet']],TR.snapDiv||4)}</span>
+      <span class="trgrp selacts"><button class="ghost ic" data-selact="up" title="Up a half step (↑)">▲</button><button class="ghost ic" data-selact="down" title="Down a half step (↓)">▼</button><button class="ghost ic" data-selact="oup" title="Up an octave (Shift+↑)">+8</button><button class="ghost ic" data-selact="odown" title="Down an octave (Shift+↓)">−8</button><button class="ghost ic" data-selact="del" title="Delete (Delete key)">🗑</button></span>
+      <span class="fine" id="trSelInfo"></span><span class="trspace"></span><button class="ghost ic trq" data-guide="edit" title="How editing works">?</button></div>
+    <div class="trroll" id="trRoll"></div></div>
+`;
   const B=$('trBody');
   // the piano roll is a panel under the sheet music: shown or hidden, and how tall, both remembered; the sheet takes the rest
   const pane=$('trPane'), split=$('trSplit'), rollBtn=$('trRollBtn'), roll=$('trRoll');
-  const rollOn=()=>store.get('trRollOn',true), rollH=h=>Math.round(Math.max(90,Math.min(innerHeight*0.7,h)));
-  const applyRoll=()=>{ pane.hidden=split.hidden=!rollOn(); rollBtn.setAttribute('aria-pressed',rollOn()); roll.style.height=rollH(store.get('trRollH',innerHeight*0.2))+'px'; };
+  const rollOn=()=>store.get('trEditOn',false), rollH=h=>Math.round(Math.max(90,Math.min(innerHeight*0.7,h)));
+  const applyRoll=()=>{ pane.hidden=split.hidden=!rollOn(); rollBtn.setAttribute('aria-pressed',rollOn()); roll.style.height=rollH(store.get('trRollH',innerHeight*0.3))+'px'; };
   applyRoll();
-  rollBtn.onclick=()=>{ store.set('trRollOn',!rollOn()); applyRoll(); if(rollOn()) trRollView(); };
+  rollBtn.onclick=()=>{ store.set('trEditOn',!rollOn()); applyRoll(); if(rollOn()) trRollView(); };
   split.ondblclick=()=>rollBtn.click();
   split.onpointerdown=e=>{ e.preventDefault(); const y0=e.clientY, h0=roll.offsetHeight; split.setPointerCapture(e.pointerId); split.classList.add('drag');
     split.onpointermove=ev=>{ roll.style.height=rollH(h0-(ev.clientY-y0))+'px'; };

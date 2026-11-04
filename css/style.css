@@ -913,10 +913,9 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 #transStage:has(#trBar) .tredit{margin:0 0 6px}
 #transStage:has(#trBar) .trroll{max-height:none;margin-bottom:4px}
 #transStage:has(#trBar) .trhintline{margin:0;min-height:1.3em}
-/* the player bar sits at the bottom of the editor; its menus open upward. Adjust holds the rarely touched fixes */
-#transStage:has(#trBar) .trtransport{margin:8px 0 0;padding:6px 8px;gap:6px 8px;background:var(--panel);border-radius:var(--radius-lg)}
-#trBar .trmenulist{top:auto;bottom:calc(100% + 6px)}
-#trBar .trhintline{flex:1 1 140px;min-width:0;margin:0;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+/* the player bar sits under the top bar. Adjust holds the rarely touched fixes */
+#transStage:has(#trBar) .trtransport{margin:0 0 8px;padding:6px 8px;gap:6px 8px;background:var(--panel);border-radius:var(--radius-lg)}
+#trBar .trhintline{flex:1 1 0;min-width:0;margin:0;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
 .trfixpop{min-width:300px;padding:10px 12px}
 .trfixpop .trfix{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:0}
 .trfixpop .trgrp{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
