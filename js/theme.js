@@ -112,8 +112,9 @@ function renderSettingsPane(){
     <div id="keysSound"></div>
     <div id="bassSound"></div>
     <p class="fine" id="smpCredit">Wurlitzer EP200 samples by Greg Sullivan (CC BY 3.0). Steinway grand samples: public domain, released by Akai. Both via sfzinstruments.</p>
-    <p style="margin-top:14px">Drums: a deep kick on 1 and a snare on 3 with a little room, plus a hi-hat on 2 and 4 if you like. The sounds are built in and work offline. Want a particular kit? Load your own kick, snare and hi-hat samples (a free lofi kit, say) and Gig plays those instead.</p>
+    <p style="margin-top:14px">Drums: the kit. The sounds are built in and work offline. Want a particular kit? Load your own kick, snare and hi-hat samples (a free lofi kit, say) and Gig plays those instead.</p>
     <div id="drumSound"></div>
+    <div id="drumBeat"></div>
     <p class="fine">Built-in kit: Sonic Pi samples (freesound.org, CC0).</p>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
@@ -156,8 +157,8 @@ function renderBassSound(msg){
 }
 // The Hear buttons in Sound share one bus: pressing one stops whatever the last one was playing, and nothing runs past 3 seconds
 let PREVIEW=null;
-function previewBus(){ synth.init(); killBus(PREVIEW); clearTimeout(previewBus.t); const b=PREVIEW=newBus(); if(!b) return null;
-  previewBus.t=setTimeout(()=>{ if(PREVIEW===b){ killBus(b); PREVIEW=null; } },3000); return b; }
+function previewBus(ms=3000){ synth.init(); killBus(PREVIEW); clearTimeout(previewBus.t); const b=PREVIEW=newBus(); if(!b) return null;
+  previewBus.t=setTimeout(()=>{ if(PREVIEW===b){ killBus(b); PREVIEW=null; } },ms); return b; }
 // Drums: the built-in kit, or your own samples for any of the three sounds (kept in this browser, offline)
 async function renderDrumSound(msg){
   const el=$('drumSound'); if(!el) return; const mine={}; for(const v of DRUM_VOICES) mine[v]=!!(await smpDB.get('custom/'+v));
@@ -171,9 +172,37 @@ async function renderDrumSound(msg){
     await smpDB.put('custom/'+inp.dataset.dload,ab); store.set('drumKit',''); await drumsReload(); renderDrumSound(`${name[inp.dataset.dload]}: ${trEsc(f.name)} loaded. It works offline from now on.`); $('drumHear').click(); });
   if($('drumKit')) $('drumKit').onchange=async e=>{ const k=e.target.value; if(!k) return; synth.init(); await localKitUse(k); renderDrumSound(`${trEsc(k)} kit: kick, snare and hi-hat.`); $('drumHear').click(); };
   el.querySelectorAll('[data-dclear]').forEach(b=>b.onclick=async()=>{ await smpDB.del('custom/'+b.dataset.dclear); store.set('drumKit',''); await drumsReload(); renderDrumSound('Back to the built-in sound.'); });
-  $('drumHear').onclick=async()=>{ synth.init(); await drumsInit(); const bus=previewBus(); if(!bus) return; const spb=60/96, t=now()+.08;   // one bar with the hi-hat, then the downbeat
-    beatBar(t,spb,4,{bar:1},bus,{hat:true}); drumHit('kick',t+4*spb,1,bus);
-    [[2,'min7',0,4],[7,'dom7',4,.5]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb,backSound(),bus,backVel(56)); }); };
+  $('drumHear').onclick=()=>drumHearBeat();
+  renderDrumBeat();
+}
+// Two bars of the beat at 92 bpm with a little bass and keys, the step being played lit in the grid
+async function drumHearBeat(){ synth.init(); await drumsInit(); const spb=60/92, bus=previewBus(Math.ceil((8*spb+1)*1000)); if(!bus) return; const t=now()+.08;
+  beatBar(t,spb,4,{bar:0},bus,{hat:true}); beatBar(t+4*spb,spb,4,{bar:1},bus,{hat:true}); drumHit('kick',t+8*spb,1,bus);
+  [[2,'min7',0,4],[7,'dom7',4,4]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb*.9,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb*.9,backSound(),bus,backVel(56)); });
+  const me=drumHearBeat.n=(drumHearBeat.n||0)+1, t0=performance.now()+(t-now())*1000;
+  const tick=()=>{ const g=$('drumGrid'); if(!g||me!==drumHearBeat.n) return; const st=Math.floor((performance.now()-t0)/1000/spb*4);
+    g.querySelectorAll('.dstep.dnow').forEach(c=>c.classList.remove('dnow')); if(st>=32||PREVIEW!==bus) return;
+    if(st>=0) g.querySelectorAll(`.dstep[data-i="${st}"]`).forEach(c=>c.classList.add('dnow')); requestAnimationFrame(tick); };
+  requestAnimationFrame(tick); }
+/* The beat: the patterns to pick from, and a grid to edit. Click a step: off → full → soft → off. Editing any pattern
+   makes it yours (kept as "Yours", one at a time); the patterns themselves never change. */
+function renderDrumBeat(){
+  const el=$('drumBeat'); if(!el) return; const id=store.get('drumPat','laid'), c=store.get('drumCustom',null), p=drumPat(), cur=id==='custom'&&c&&c.k?'custom':(DRUM_PATS[id]?id:'laid');
+  const pats=[...Object.entries(DRUM_PATS),...(c&&c.k?[['custom',{name:'Yours'}]]:[])];
+  const name={kick:'Kick',snare:'Snare',hat:'Hi-hat'};
+  el.innerHTML=`<p style="margin-top:14px">The beat: pick a pattern, or click the grid to make your own. It plays in Gig and Comp Hero, with whatever kit is loaded.</p>
+    <div class="seg dpats" role="group">${pats.map(([k,v])=>`<button data-dpat="${k}" aria-pressed="${k===cur}">${v.name}</button>`).join('')}</div>
+    <div class="dgrid" id="drumGrid">${DRUM_ROWS.map(([v,r])=>`<span class="dname">${name[v]}</span><div class="drow">${[...p[r]].map((ch,i)=>`<button class="dstep${i%4===0?' dbeat':''}${i===16?' bar2':''}" data-r="${r}" data-v="${v}" data-i="${i}" data-c="${ch==='x'?2:ch==='o'?1:0}" aria-label="${name[v]}, bar ${i<16?1:2}, step ${i%16+1}"></button>`).join('')}</div>`).join('')}</div>
+    <div class="erow" style="margin-top:6px;align-items:center"><span class="fine" style="margin:0">Swing</span><div class="seg" role="group">${[[0,'Straight'],[0.3,'Light'],[0.6,'Heavy']].map(([v,l])=>`<button data-dsw="${v}" aria-pressed="${Math.abs((p.sw||0)-v)<0.16}">${l}</button>`).join('')}</div>
+      <span class="fine" style="margin:0">Full step: click once. Soft: twice.</span></div>`;
+  // editing: copy what's showing into Yours first
+  const mine=()=>{ const q=drumPat(); return {name:'Yours',sw:q.sw||0,lazy:q.lazy||0,k:q.k,s:q.s,h:q.h}; };
+  const save=(m,hear)=>{ store.set('drumCustom',m); store.set('drumPat','custom'); renderDrumBeat(); if(hear) drumHearBeat(); };
+  el.querySelectorAll('[data-dpat]').forEach(b=>b.onclick=()=>{ store.set('drumPat',b.dataset.dpat); renderDrumBeat(); drumHearBeat(); });
+  el.querySelectorAll('[data-dsw]').forEach(b=>b.onclick=()=>{ const m=mine(); m.sw=+b.dataset.dsw; save(m,true); });
+  el.querySelectorAll('.dstep').forEach(b=>b.onclick=()=>{ const m=mine(), r=b.dataset.r, i=+b.dataset.i, n=(+b.dataset.c+2)%3;   // 0 → 2 → 1 → 0
+    m[r]=m[r].slice(0,i)+'.ox'[n]+m[r].slice(i+1); save(m,false);
+    if(n){ synth.init(); drumsInit().then(()=>{ const bus=previewBus(1500); if(bus) drumHit(b.dataset.v,now()+.02,n===2?1:.55,bus); }); } });
 }
 // the chip on the home card that opens Profile & settings
 function renderProfileChip(){ const c=$('profileChip'); if(!c) return; const name=themeGet('profileName','');

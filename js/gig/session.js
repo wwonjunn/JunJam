@@ -177,7 +177,7 @@ function gigShow(id){
         <span class="trspace"></span>
         <div class="trmenu"><button class="ghost" id="gigMixBtn" aria-haspopup="true" title="What plays under you">Mix ▾</button>
           <div class="trmenulist gigmix" id="gigMix" hidden>
-            <div class="gmrow"><span class="fine">Play</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}">Bass</button><button class="ghost tgl" id="gigDrumsT" aria-pressed="${GDATA.drums==='on'}" title="Kick on 1, snare on 3">Drums</button></div>
+            <div class="gmrow"><span class="fine">Play</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}">Bass</button><button class="ghost tgl" id="gigDrumsT" aria-pressed="${GDATA.drums==='on'}" title="The beat you picked in Profile &amp; settings → Sound">Drums</button></div>
             <div class="gmrow"><span class="fine">Hi-hat</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4, the jazz click']],GDATA.click)}</div>
             <div class="gmrow"><span class="fine">Chords</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</div>
             <p class="fine" style="margin:6px 2px 0">Your own drum sounds: Profile &amp; settings → Sound.</p></div></div>

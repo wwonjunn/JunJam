@@ -926,3 +926,15 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 #transStage:has(#trBar) .trtop{gap:8px} #trExportBtn{font-size:20px;line-height:1;padding:4px 12px}
 /* the looped bars, tinted right on the sheet music */
 .trsloop{position:absolute;top:2px;bottom:2px;pointer-events:none;background:color-mix(in srgb,var(--brass) 13%,transparent);border-left:2px solid color-mix(in srgb,var(--brass) 70%,transparent);border-right:2px solid color-mix(in srgb,var(--brass) 70%,transparent);border-radius:var(--radius)}
+/* the drum pattern grid (Profile → Sound) */
+.dpats{flex-wrap:wrap;margin-bottom:8px}
+.dgrid{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;align-items:center;max-width:720px}
+.dname{font-family:var(--cond);font-size:15px;color:var(--ink)}
+.drow{display:grid;grid-template-columns:repeat(16,1fr) 6px repeat(16,1fr);gap:2px}
+.dstep{aspect-ratio:1;min-width:0;padding:0;margin:0;border:1px solid var(--line-strong);border-radius:3px;background:transparent;cursor:pointer}
+.dstep.dbeat{border-color:color-mix(in srgb, var(--ink) 45%, transparent)}
+.dstep.bar2{grid-column-start:18}
+.dstep[data-c="2"]{background:var(--brass);border-color:var(--brass)}
+.dstep[data-c="1"]{background:color-mix(in srgb, var(--brass) 38%, transparent);border-color:var(--brass)}
+.dstep.dnow{outline:2px solid var(--ink);outline-offset:0}
+@media (max-width:560px){ .drow{grid-template-columns:repeat(16,1fr);row-gap:4px} .dstep.bar2{grid-column-start:1} }
