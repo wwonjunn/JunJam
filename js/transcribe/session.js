@@ -284,7 +284,7 @@ function trEdit(score,res,savedIndex){
       <span class="trgrp trspeed" title="How fast you hear it back (the transcription stays as it is). [ and ] change it"><button class="ghost ic" id="trSlower" title="Slower ([)">−</button><button class="ghost" id="trSpeedVal" title="Back to 100%"></button><button class="ghost ic" id="trFaster" title="Faster (])">+</button></span>
       <div class="trmenu"><button class="ghost" id="trSoundBtn" aria-haspopup="true" title="The sound the transcription plays on, so it's not the same as your keys">Sound ▾</button><div class="trmenulist" id="trSoundList" hidden></div></div>
       <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across bars in the sheet music to choose which">⟳ Loop</button>
-      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
+      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button><button class="ghost tgl" id="trMetro" aria-pressed="${!!store.get('trMetro',false)}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher. It follows the speed, and the recording's own beat when it plays">Click</button>
       <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
       <span class="trhintline" id="trHintLine"></span>
       <div class="trmenu"><button class="ghost" id="trFixBtn" aria-haspopup="true" title="Fix the tempo, where beat 1 is, how many notes it catches">Adjust ▾</button><div class="trmenulist trfixpop" id="trFixPop" hidden><div class="trfix">${R?`<span class="trgrp" title="How sure a note has to be to show. Lower: cleaner, can miss quiet or very fast notes. Higher: catches more, and more stray notes."><span class="fine">Sensitivity</span>${trSeg('sens',TR_SENS_NAMES.map((t,i)=>[i,t]),score.sens??2)}</span>
@@ -319,6 +319,7 @@ function trEdit(score,res,savedIndex){
   $('trLoopBtn').onclick=trLoopToggle;
   $('trSlower').onclick=()=>trSpeed(-1); $('trFaster').onclick=()=>trSpeed(1); $('trSpeedVal').onclick=()=>trSpeed(0); trSpeedShow();
   $('trSoundBtn').onclick=e=>{ const l=$('trSoundList'); l.hidden=!l.hidden; if(!l.hidden) trSoundMenu(); e.stopPropagation(); };
+  $('trMetro').onclick=()=>{ const on=!store.get('trMetro',false); store.set('trMetro',on); $('trMetro').setAttribute('aria-pressed',on); trResume(); };
   $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); trResume(); };
   $('trUndo').onclick=trUndo; $('trRedo').onclick=trRedo; $('trHelpBtn').onclick=()=>trGuide('start');
   $('trRec').onclick=()=>{ TR.rec=!TR.rec; $('trRec').setAttribute('aria-pressed',TR.rec); if(TR.rec) trMsg(TR.playing?'Recording: play along and your notes are written in.':'Rec is on: press Play, then play along on your keyboard.'); };
@@ -381,7 +382,7 @@ const TR_GUIDE=[
  ['play','Playing',`<ul><li><kbd>Space</kbd> plays and pauses from the playhead (the red line). <b>■</b> goes back to the start.</li>
    <li>Click the <b>beat numbers</b> above the piano roll, or anywhere in the <b>sheet music</b>, to move the playhead there.</li>
    <li><b>Loop</b>: drag across the beat numbers to loop those bars. <kbd>Shift+L</kbd> or ⟳ Loop turns it on and off.</li>
-   <li><b>Hear</b>: Notes (what was transcribed), Recording (the original), or Both. <b>Speed</b> (− and +, or [ and ]): hear it slower or faster, 25% to 150%, without changing the pitch or the transcription; click the number for 100%. <b>Sound</b>: what the transcription plays on, so it sounds different from your keys when you play along.</li>
+   <li><b>Hear</b>: Notes (what was transcribed), Recording (the original), or Both. <b>Speed</b> (− and +, or [ and ]): hear it slower or faster, 25% to 150%, without changing the pitch or the transcription; click the number for 100%. <b>Click</b>: a metronome on every beat, beat 1 higher. <b>Sound</b>: what the transcription plays on, so it sounds different from your keys when you play along.</li>
    <li><b>Chords</b> plays the chord symbols under the notes. Turn it off to hear only the notes.</li>
    <li>While it plays, the views follow the playhead. Scroll yourself and they wait a moment before following again.</li></ul>`],
  ['fix','Fixing the reading',`<p>These change how the recording is read. Any edits you made to notes are replaced (Undo brings them back).</p>
@@ -731,6 +732,7 @@ function trPlayScore(from){
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
         pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),bus,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
+    if(store.get('trMetro',false)) for(let b=Math.ceil(from-1e-6);b<endB-1e-6;b++){ const a=T(b); if(a>=-.005) clickAt(t0+a,mod12(b)%4===0,bus); }   // the metronome, beat 1 of each bar higher
     const step=()=>{ if(!TR.playing) return; const el=now()-t0;
       TR.posB=Math.min(endB,real?mp.toBeat(sec0+Math.max(0,el)*sp):from+Math.max(0,el)*sp/spb); trHead(TR.posB);
       if(el<endT) TR.raf=requestAnimationFrame(step); else if(loop) trPlayScore(loop.a); else { trStopAll(); TR.posB=0; trHead(0); } };

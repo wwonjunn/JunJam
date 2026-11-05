@@ -116,6 +116,12 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   }
   nodes.forEach(n=>{n.start(t); n.stop(end+0.05);});
 }
+/* The metronome's click (Gig and Transcribe): a short, woody blip, higher on beat 1 so you can hear where the bar starts */
+function clickAt(t,accent,bus){
+  const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+  o.type='triangle'; o.frequency.value=accent?1760:1175; f.type='bandpass'; f.frequency.value=o.frequency.value; f.Q.value=1.2;
+  const pk=accent?0.55:0.36; g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);
+  o.connect(f); f.connect(g); g.connect(bus||synth.master); o.start(t); o.stop(t+0.08); }
 /* Backing voicing (Gig and Transcribe): open and spread, so busy chords don't turn to mush. The 3rd (or the sus note) and the 7th
    (or 6th; the 5th on a triad, or when it's altered), then one colour tone the symbol asks for, stacked so no two
    neighbours are closer than a minor 3rd. The bass plays the root, so it's left out up here. Each chord sits as

@@ -173,7 +173,7 @@ function gigShow(id){
       <div class="gigrow">
         <button class="go trplay" id="gigPlay" title="Play the changes (Space)">▶</button><span class="trpos" id="gigPos">1</span>
         <span class="trgrp"><span class="fine">Key</span><button class="ghost ic" id="gigDown" title="Down a half step (-)">−</button><b class="gigkey">${gigAccHTML(keyName(k.pc,k.minor))}</b><button class="ghost ic" id="gigUp" title="Up a half step (=)">+</button>${sh?'<button class="ghost trsm" id="gigOrig" title="Back to the original key">↺</button>':''}</span>
-        <span class="trgrp"><span class="fine">♩</span><button class="ghost ic" id="gigSlower">−</button><b id="gigTempo">${tempo}</b><button class="ghost ic" id="gigFaster">+</button></span>
+        <span class="trgrp"><span class="fine">♩</span><button class="ghost ic" id="gigSlower">−</button><b id="gigTempo">${tempo}</b><button class="ghost ic" id="gigFaster">+</button></span><button class="ghost tgl" id="gigMetro" aria-pressed="${!!GDATA.metro}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher">Click</button>
         <span class="trspace"></span>
         <div class="trmenu"><button class="ghost" id="gigMixBtn" aria-haspopup="true" title="What plays under you">Mix ▾</button>
           <div class="trmenulist gigmix" id="gigMix" hidden>
@@ -204,6 +204,7 @@ function gigShow(id){
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
   const mix=$('gigMix'); $('gigMixBtn').onclick=e=>{ mix.hidden=!mix.hidden; e.stopPropagation(); };
+  $('gigMetro').onclick=()=>{ GDATA.metro=!GDATA.metro; saveGig(); $('gigMetro').setAttribute('aria-pressed',GDATA.metro); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigDrumsT').onclick=()=>{ GDATA.drums=GDATA.drums==='on'?'off':'on'; saveGig(); $('gigDrumsT').setAttribute('aria-pressed',GDATA.drums==='on'); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigAn').onclick=()=>{ GDATA.an=!GDATA.an; saveGig(); re(); };
   $('gigBody').querySelectorAll('[data-gpat],[data-gmv]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const p=GA_PAT[x.dataset.gpat]; trMsg(p?`${p.name}: ${p.why}`:GA_MOVE_WHY[x.dataset.gmv]); });
@@ -254,6 +255,7 @@ function gigPlay(from=0){
         if(GDATA.pad){ prev=spreadVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
         if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.4),84,'bass',bus);
         cue.push({at,bar:i,ch}); });
+      if(GDATA.metro) for(let k=0;k<s.beats;k++) clickAt(t+k*spb,k===0,bus);   // the metronome
       if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats});
       else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,bus);
       t+=s.beats*spb; i=(i+1)%total; }
