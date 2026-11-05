@@ -257,7 +257,7 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
    (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
    sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
 // a click anywhere outside the Save menu closes it (one listener for the page)
-document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop','trSoundList'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
+document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop','trSoundList','trBeatPop'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
 function trEdit(score,res,savedIndex){
   trSensV2(score);   // saved on the old Sensitivity scale: same notes, new name
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
@@ -284,7 +284,7 @@ function trEdit(score,res,savedIndex){
       <span class="trgrp trspeed" title="How fast you hear it back (the transcription stays as it is). [ and ] change it"><button class="ghost ic" id="trSlower" title="Slower ([)">−</button><button class="ghost" id="trSpeedVal" title="Back to 100%"></button><button class="ghost ic" id="trFaster" title="Faster (])">+</button></span>
       <div class="trmenu"><button class="ghost" id="trSoundBtn" aria-haspopup="true" title="The sound the transcription plays on, so it's not the same as your keys">Sound ▾</button><div class="trmenulist" id="trSoundList" hidden></div></div>
       <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across bars in the sheet music to choose which">⟳ Loop</button>
-      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button><button class="ghost tgl" id="trMetro" aria-pressed="${!!store.get('trMetro',false)}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher. It follows the speed, and the recording's own beat when it plays">Click</button>
+      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button><div class="trmenu"><button class="ghost tgl" id="trDrumsBtn" aria-haspopup="true" aria-pressed="${!!score.drums}" title="Drums under it: on or off, and this transcription's own beat">Drums ▾</button><div class="trmenulist trbeatpop" id="trBeatPop" hidden></div></div><button class="ghost tgl" id="trMetro" aria-pressed="${!!store.get('trMetro',false)}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher. It follows the speed, and the recording's own beat when it plays">Click</button>
       <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
       <span class="trhintline" id="trHintLine"></span>
       <div class="trmenu"><button class="ghost" id="trFixBtn" aria-haspopup="true" title="Fix the tempo, where beat 1 is, how many notes it catches">Adjust ▾</button><div class="trmenulist trfixpop" id="trFixPop" hidden><div class="trfix">${R?`<span class="trgrp" title="How sure a note has to be to show. Lower: cleaner, can miss quiet or very fast notes. Higher: catches more, and more stray notes."><span class="fine">Sensitivity</span>${trSeg('sens',TR_SENS_NAMES.map((t,i)=>[i,t]),score.sens??2)}</span>
@@ -319,6 +319,7 @@ function trEdit(score,res,savedIndex){
   $('trLoopBtn').onclick=trLoopToggle;
   $('trSlower').onclick=()=>trSpeed(-1); $('trFaster').onclick=()=>trSpeed(1); $('trSpeedVal').onclick=()=>trSpeed(0); trSpeedShow();
   $('trSoundBtn').onclick=e=>{ const l=$('trSoundList'); l.hidden=!l.hidden; if(!l.hidden) trSoundMenu(); e.stopPropagation(); };
+  $('trDrumsBtn').onclick=e=>{ const p=$('trBeatPop'); p.hidden=!p.hidden; if(!p.hidden) trBeatMenu(); e.stopPropagation(); };
   $('trMetro').onclick=()=>{ const on=!store.get('trMetro',false); store.set('trMetro',on); $('trMetro').setAttribute('aria-pressed',on); trResume(); };
   $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); trResume(); };
   $('trUndo').onclick=trUndo; $('trRedo').onclick=trRedo; $('trHelpBtn').onclick=()=>trGuide('start');
@@ -716,6 +717,12 @@ function trSoundMenu(){ const l=$('trSoundList'); if(!l) return; const cur=trSou
   l.querySelectorAll('[data-trsnd]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const id=b.dataset.trsnd; store.set('trSound',id); trSoundMenu();
     if(SMP_MAPS[id]){ b.querySelector('.fine')||b.insertAdjacentHTML('beforeend','<span class="fine">Loading…</span>'); await smpLoad(id); trSoundMenu(); }
     if(TR.playing) trResume(); else { const bus=previewBus(); if(bus){ const t=now()+.05; [67,71,74,72].forEach((m,i)=>trTone(m,t+i*.22,i===3?.6:.2,90,bus)); } } }); }
+// Drums under the transcription: on or off, and its own beat (kept with it: score.drums, score.beat; none: Profile's)
+function trBeatMenu(){ const el=$('trBeatPop'), s=TR.score; if(!el) return;
+  el.innerHTML=`<div class="erow" style="margin:0 0 8px;align-items:center"><button class="ghost tgl" id="trDrumsOn" aria-pressed="${!!s.drums}">${s.drums?'Drums on':'Drums off'}</button><span class="fine" style="margin:0">The beat for this transcription, saved with it. Sounds: Profile → Sound.</span></div><div></div>`;
+  $('trDrumsOn').onclick=e=>{ e.stopPropagation(); s.drums=!s.drums; trSetDirty(); $('trDrumsBtn').setAttribute('aria-pressed',!!s.drums); trBeatMenu(); trResume(); };
+  drumBeatEditor(el.lastElementChild,{value:s.beat??null,def:true,mine:'This transcription',live:!!(TR.playing&&s.drums),
+    set:v=>{ if(v==null) delete s.beat; else s.beat=v; if(!s.drums){ s.drums=true; $('trDrumsBtn').setAttribute('aria-pressed',true); $('trDrumsOn').setAttribute('aria-pressed',true); $('trDrumsOn').textContent='Drums on'; } trSetDirty(); trResume(); }}); }
 /* ---------------- playback, save, export, to Lines ---------------- */
 /* Playback from the playhead (TR.posB, in beats). Space plays and pauses where it is; Stop goes back to the start.
    What it plays: the transcription, the original recording, or both together (then the notes keep their real timing,
@@ -736,6 +743,9 @@ function trPlayScore(from){
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
         pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),bus,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
+    if(s.drums){ drumsInit(); const pat=drumPatOf(s.beat??null);   // drums: bar by bar, so they follow the recording's own beat when it plays
+      for(let bar=Math.floor(from/4+1e-6);bar*4<endB-1e-6;bar++){ const a=T(bar*4), z=T(bar*4+4); if(z<=0) continue;
+        beatBar(t0+a,(z-a)/4,4,{bar},bus,{hat:true,pat,after:t0-.005,until:t0+endT}); } }
     if(store.get('trMetro',false)) for(let b=Math.ceil(from-1e-6);b<endB-1e-6;b++){ const a=T(b); if(a>=-.005) clickAt(t0+a,mod12(b)%4===0,bus); }   // the metronome, beat 1 of each bar higher
     const step=()=>{ if(!TR.playing) return; const el=now()-t0;
       TR.posB=Math.min(endB,real?mp.toBeat(sec0+Math.max(0,el)*sp):from+Math.max(0,el)*sp/spb); trHead(TR.posB);

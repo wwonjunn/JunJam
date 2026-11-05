@@ -156,7 +156,12 @@ function gigList(){
 }
 const gigSeg=(attr,items,cur)=>`<div class="seg" role="group">${items.map(([v,t,tip])=>`<button data-${attr}="${v}" aria-pressed="${String(cur)===String(v)}"${tip?` title="${tip}"`:''}>${t}</button>`).join('')}</div>`;
 // a click anywhere outside the Mix menu closes it (one listener for the page; the menu is redrawn with the chart)
-document.addEventListener('pointerdown',e=>{ const m=$('gigMix'); if(m&&!m.hidden&&!e.target.closest('.trmenu')) m.hidden=true; });
+document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['gigMix','gigBeat'].forEach(id=>{ const m=$(id); if(m&&!m.hidden) m.hidden=true; }); });
+// This song's beat (GDATA.beats[song id]; none: the default from Profile). While it plays, a change comes in at the next bar.
+function gigBeatEditor(){ const el=$('gigBeat'), s=GIG.song; if(!el||!s) return; GDATA.beats=GDATA.beats||{};
+  el.innerHTML=`<p class="fine gbhead">${GDATA.drums==='on'?'The drum beat for this song.':'Drums are off for now: turn them on in Mix to hear this.'}${GDATA.click==='off'?' The hi-hat row plays when Mix → Hi-hat is on.':''}</p><div></div>`;
+  drumBeatEditor(el.lastElementChild,{value:GDATA.beats[s.id]??null,def:true,mine:'This song',live:GIG.playing,
+    set:v=>{ if(v==null) delete GDATA.beats[s.id]; else GDATA.beats[s.id]=v; saveGig(); }}); }
 function gigShow(id){
   gigStop(); const s=gigById(id); if(!s) return gigList();
   const fresh=GIG.view!=='sheet'||!GIG.song||GIG.song.id!==id; gigLeaveList(); if(fresh) $('gigStage').scrollTop=0;
@@ -175,6 +180,7 @@ function gigShow(id){
         <span class="trgrp"><span class="fine">Key</span><button class="ghost ic" id="gigDown" title="Down a half step (-)">−</button><b class="gigkey">${gigAccHTML(keyName(k.pc,k.minor))}</b><button class="ghost ic" id="gigUp" title="Up a half step (=)">+</button>${sh?'<button class="ghost trsm" id="gigOrig" title="Back to the original key">↺</button>':''}</span>
         <span class="trgrp"><span class="fine">♩</span><button class="ghost ic" id="gigSlower">−</button><b id="gigTempo">${tempo}</b><button class="ghost ic" id="gigFaster">+</button></span><button class="ghost tgl" id="gigMetro" aria-pressed="${!!GDATA.metro}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher">Click</button>
         <span class="trspace"></span>
+        <div class="trmenu"><button class="ghost" id="gigBeatBtn" aria-haspopup="true" title="This song's drum beat: the default from Profile, another pattern, or your own">Beat ▾</button><div class="trmenulist gigbeat" id="gigBeat" hidden></div></div>
         <div class="trmenu"><button class="ghost" id="gigMixBtn" aria-haspopup="true" title="What plays under you">Mix ▾</button>
           <div class="trmenulist gigmix" id="gigMix" hidden>
             <div class="gmrow"><span class="fine">Play</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}">Bass</button><button class="ghost tgl" id="gigDrumsT" aria-pressed="${GDATA.drums==='on'}" title="The beat you picked in Profile &amp; settings → Sound">Drums</button></div>
@@ -204,6 +210,7 @@ function gigShow(id){
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
   const mix=$('gigMix'); $('gigMixBtn').onclick=e=>{ mix.hidden=!mix.hidden; e.stopPropagation(); };
+  const beat=$('gigBeat'); $('gigBeatBtn').onclick=e=>{ beat.hidden=!beat.hidden; mix.hidden=true; if(!beat.hidden) gigBeatEditor(); e.stopPropagation(); };
   $('gigMetro').onclick=()=>{ GDATA.metro=!GDATA.metro; saveGig(); $('gigMetro').setAttribute('aria-pressed',GDATA.metro); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigDrumsT').onclick=()=>{ GDATA.drums=GDATA.drums==='on'?'off':'on'; saveGig(); $('gigDrumsT').setAttribute('aria-pressed',GDATA.drums==='on'); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigAn').onclick=()=>{ GDATA.an=!GDATA.an; saveGig(); re(); };
@@ -256,7 +263,7 @@ function gigPlay(from=0){
         if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.4),84,'bass',bus);
         cue.push({at,bar:i,ch}); });
       if(GDATA.metro) for(let k=0;k<s.beats;k++) clickAt(t+k*spb,k===0,bus);   // the metronome
-      if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats});
+      if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats,pat:drumPatOf(GDATA.beats&&GDATA.beats[s.id])});   // this song's beat, read each bar so a change comes straight in
       else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,bus);
       t+=s.beats*spb; i=(i+1)%total; }
     if(cue.length>256) cue.splice(0,cue.length-256); };   // in a background tab nothing draws, so don't let the queue grow

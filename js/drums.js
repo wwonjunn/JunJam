@@ -58,18 +58,61 @@ const DRUM_PATS={
   four:  {name:'Four on the floor', sw:0, k:'x...x...x...x...x...x...x...x...', s:'....o.......o.......o.......o...', h:'..x...x...x...x...x...x...x...x.'},
 };
 const DRUM_ROWS=[['kick','k'],['snare','s'],['hat','h']];
+const DRUM_ROWS_SHOWN=[['hat','h'],['snare','s'],['kick','k']];   // the grid reads like drum notation: hi-hat on top, kick at the bottom
 // the pattern picked (yours if you've edited one), or Laid back
 function drumPat(){ const id=store.get('drumPat','laid'), c=store.get('drumCustom',null);
   if(id==='custom'&&c&&c.k&&c.k.length===32) return c; return DRUM_PATS[id]||DRUM_PATS.laid; }
+/* A song's or a transcription's own beat: null (follow the default above), a pattern's id ('custom': your default's
+   Yours), or a pattern of its own ({name,k,s,h,sw,lazy}) */
+function drumPatOf(v){ if(v&&typeof v==='object'&&v.k&&v.k.length===32) return v;
+  if(v==='custom'){ const c=store.get('drumCustom',null); if(c&&c.k) return c; }
+  return typeof v==='string'&&DRUM_PATS[v]?DRUM_PATS[v]:drumPat(); }
 /* One bar of the beat. Bars alternate between the pattern's two halves; a bar of 3 plays the first twelve steps,
-   longer bars repeat the bar. o.hat: play the hi-hat row (Gig's Hi-hat switch; Comp Hero leaves it out). */
+   longer bars repeat the bar. o.hat: play the hi-hat row (Gig's Hi-hat switch; Comp Hero leaves it out).
+   o.after / o.until: only hits from / before these times (starting or stopping partway through a bar). */
 function beatBar(t0,spb,beats,info,bus,o={}){
   const p=o.pat||drumPat(), lazy=p.lazy?Math.min(0.025,spb*0.04):0, half=(info.bar%2)*16, sw=p.sw||0;
   for(let b0=0;b0<beats;b0+=4) for(let st=0;st<16&&b0+st/4<beats;st++){
     const t=t0+(b0+st/4)*spb+(st%4===2?sw*spb/6:st%2?sw*spb/12:0);   // swing: the 8th offbeat later, the 16ths a little
     for(const [v,r] of DRUM_ROWS){ if(v==='hat'&&!o.hat) continue; const c=p[r][half+st];
+      if(o.after!=null&&t<o.after-1e-3||o.until!=null&&t>=o.until) continue;
       if(c==='x'||c==='o') drumHit(v,t+(v==='snare'?lazy:0),(c==='x'?1:0.55)*(v==='hat'?0.9:1),bus); } }
 }
+
+/* Two bars of a beat at 92 bpm with a little bass and keys; the step being played lights up in grid's editor */
+async function drumHearBeat(p,host){ synth.init(); await drumsInit(); const spb=60/92, bus=previewBus(Math.ceil((8*spb+1)*1000)); if(!bus) return; const t=now()+.08;
+  beatBar(t,spb,4,{bar:0},bus,{hat:true,pat:p}); beatBar(t+4*spb,spb,4,{bar:1},bus,{hat:true,pat:p}); drumHit('kick',t+8*spb,1,bus);
+  [[2,'min7',0,4],[7,'dom7',4,4]].forEach(([r,q,at,d])=>{ tone(36+r,t+at*spb,d*spb*.9,84,'bass',bus); playChord(spreadVoice(Q[q],r,null),t+at*spb,d*spb*.9,backSound(),bus,backVel(56)); });
+  const me=drumHearBeat.n=(drumHearBeat.n||0)+1, t0=performance.now()+(t-now())*1000;
+  const tick=()=>{ const g=host&&host.querySelector('.dgrid'); if(!g||!g.isConnected||me!==drumHearBeat.n) return; const st=Math.floor((performance.now()-t0)/1000/spb*4);
+    g.querySelectorAll('.dstep.dnow').forEach(c=>c.classList.remove('dnow')); if(st>=32||PREVIEW!==bus) return;
+    if(st>=0) g.querySelectorAll(`.dstep[data-i="${st}"]`).forEach(c=>c.classList.add('dnow')); requestAnimationFrame(tick); };
+  requestAnimationFrame(tick); }
+/* The beat editor, in Profile (the default) and for one song or transcription. Pick a pattern, or click a step:
+   off → full → soft → off. Editing makes it a pattern of its own (o.mine names it). o.value: what's picked now (see
+   drumPatOf); o.set(v) keeps a change (and may return what to show as picked now); o.def: offer "Default" (follow Profile's). o.live: something is playing that
+   picks the change up by itself, so don't play a preview over it. */
+function drumBeatEditor(el,o){
+  const draw=()=>{ const v=o.value, p=drumPatOf(v), c=store.get('drumCustom',null), own=v&&typeof v==='object';
+    const cur=own?'own':v==null?'def':v==='custom'&&c&&c.k?'custom':DRUM_PATS[v]?v:o.def?'def':'laid';
+    const pats=[...(o.def?[['def',{name:`Default (${drumPat().name})`}]]:[]),...Object.entries(DRUM_PATS),...(c&&c.k?[['custom',{name:o.def?'Your default':'Yours'}]]:[]),...(own?[['own',{name:o.mine}]]:[])]
+      .filter(([k],i,a)=>!(o.def&&k==='custom'&&store.get('drumPat','laid')==='custom'));   // "Default" already is Yours then
+    const name={kick:'Kick',snare:'Snare',hat:'Hi-hat'};
+    el.innerHTML=`${o.intro?`<p style="margin-top:14px">${o.intro}</p>`:''}
+      <div class="seg dpats" role="group">${pats.map(([k,x])=>`<button data-dpat="${k}" aria-pressed="${k===cur}">${x.name}</button>`).join('')}</div>
+      <div class="dgrid">${DRUM_ROWS_SHOWN.map(([v,r])=>`<span class="dname">${name[v]}</span><div class="drow">${[...p[r]].map((ch,i)=>`<button class="dstep${i%4===0?' dbeat':''}${i===16?' bar2':''}" data-r="${r}" data-v="${v}" data-i="${i}" data-c="${ch==='x'?2:ch==='o'?1:0}" aria-label="${name[v]}, bar ${i<16?1:2}, step ${i%16+1}"></button>`).join('')}</div>`).join('')}</div>
+      <div class="erow" style="margin-top:6px;align-items:center"><span class="fine" style="margin:0">Swing</span><div class="seg" role="group">${[[0,'Straight'],[0.3,'Light'],[0.6,'Heavy']].map(([x,l])=>`<button data-dsw="${x}" aria-pressed="${Math.abs((p.sw||0)-x)<0.16}">${l}</button>`).join('')}</div>
+        ${o.live?'':'<button class="ghost trsm dhear">▶ Hear it</button>'}<span class="fine" style="margin:0">Click a step: once full, twice soft.</span></div>`;
+    const hear=()=>{ if(!o.live) drumHearBeat(drumPatOf(o.value),el); };
+    const keep=v=>{ const r=o.set(v); o.value=r!==undefined?r:v; draw(); };   // set may say how it kept it (Profile keeps an edit as 'custom')
+    const mine=()=>{ const q=drumPatOf(o.value); return {name:o.mine,sw:q.sw||0,lazy:q.lazy||0,k:q.k,s:q.s,h:q.h}; };
+    el.querySelectorAll('[data-dpat]').forEach(b=>b.onclick=()=>{ const k=b.dataset.dpat; if(k==='own') return; keep(k==='def'?null:k); hear(); });
+    el.querySelectorAll('[data-dsw]').forEach(b=>b.onclick=()=>{ const m=mine(); m.sw=+b.dataset.dsw; keep(m); hear(); });
+    if(el.querySelector('.dhear')) el.querySelector('.dhear').onclick=hear;
+    el.querySelectorAll('.dstep').forEach(b=>b.onclick=()=>{ const m=mine(), r=b.dataset.r, i=+b.dataset.i, n=(+b.dataset.c+2)%3;   // 0 → 2 → 1 → 0
+      m[r]=m[r].slice(0,i)+'.ox'[n]+m[r].slice(i+1); keep(m);
+      if(n&&!o.live){ synth.init(); drumsInit().then(()=>{ const bus=previewBus(1500); if(bus) drumHit(b.dataset.v,now()+.02,n===2?1:.55,bus); }); } }); };
+  draw(); }
 
 /* Your own kits: js/local-kits.js, kept on this Mac. Never committed (.gitignore) and never bundled: it's
    loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three
