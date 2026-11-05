@@ -206,14 +206,18 @@ function mergeFragments(notes,gap=.05){
   return out.sort((a,b)=>a.s-b.s);
 }
 /* Sensitivity: how sure a note has to be (c) and how long (l, seconds) to be kept. Lowest → Highest; Medium is the default.
-   Best (the models voted): c .7 means two or more models heard it; a note only one model heard scores .3 to .5 by how
-   much that model agrees with the others on this recording, so .42 and .38 let in more of those, and .3 all of them.
-   Agreement is the strong filter, so even Low keeps notes down to 45 ms (a 32nd at 120 bpm is 62 ms). On test clips,
-   Low to Highest go from 96% of the shown notes being right (83% of the notes found) to 87% (90% found).
-   Quick (one model) needs length to filter the noise instead. */
-const TR_SENS={vote:[{c:.7,l:.07},{c:.7,l:.045},{c:.42,l:.04},{c:.38,l:.035},{c:.3,l:.025}],
-  one:[{c:.6,l:.1},{c:.5,l:.08},{c:.4,l:.06},{c:.3,l:.04},{c:.24,l:.03}]};
+   Best (the models voted): a note all three models heard scores .95 (.9 when the helper has two models and both heard
+   it), two of three .75, and a note only one model heard .3 to .5 by how much that model agrees with the others on this
+   recording. Medium (c .7) keeps what two or more heard, 70 ms and longer. Low asks the same but 90 ms long, and Lowest
+   only what every model heard, for busy solos (fast runs over comping) where Medium still writes too much. High and
+   Highest let shorter notes and single-model notes in (on test clips: 96% of shown notes right, 83% found, down to 87%
+   right, 90% found). Quick (one model) needs length to filter the noise instead. (Before 2026-11, the scale was two
+   steps more sensitive: the old Lowest is today's Medium; see trSensV2.) */
+const TR_SENS={vote:[{c:.9,l:.09},{c:.7,l:.09},{c:.7,l:.07},{c:.7,l:.045},{c:.42,l:.04}],
+  one:[{c:.76,l:.15},{c:.68,l:.12},{c:.6,l:.1},{c:.5,l:.08},{c:.4,l:.06}]};
 const TR_SENS_NAMES=['Lowest','Low','Medium','High','Highest'];
+// A score saved on the old scale: its level moves two steps down the new one (old Lowest is now Medium)
+function trSensV2(score){ if(score&&score.sensV!==2){ if(score.sens!=null) score.sens=Math.min(4,score.sens+2); score.sensV=2; } return score; }
 // Half-time / double-time: beat trackers often lock onto half or double the real tempo
 function scaleBeats(beats,k){ if(k===1||beats.length<2) return beats; if(k<1) return beats.filter((_,i)=>i%2===0);
   const out=[]; beats.forEach((b,i)=>{ out.push(b); if(i+1<beats.length) out.push((b+beats[i+1])/2); }); return out; }
@@ -271,5 +275,5 @@ function buildScore(res0,{mode,instrument,shift=null,title='Untitled',texture='l
   const chords=chordsPerBar(res.notes.bass,res.notes.harmony,toSec,bars,1);
   const key=guessKey([...res.notes.target,...res.notes.harmony]);
   const used=Math.max(melody.length?Math.floor(Math.max(...melody.map(n=>n.gat))/4)+1:1,chords.length?Math.floor(chords[chords.length-1].at/4)+1:1);
-  return {v:1,title,mode,instrument,sens,beatScale,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift,anchors:res0.anchors||[]};
+  return {v:1,title,mode,instrument,sens,sensV:2,beatScale,texture:full?'full':'line',grand:!!(full&&inst.grand),tempo:Math.round(res.tempo),bars:Math.min(bars,used),key:{pc:key.pc,minor:key.minor},melody,chords,soloBars:[],shift,anchors:res0.anchors||[]};
 }

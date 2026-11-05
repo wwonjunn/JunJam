@@ -259,6 +259,7 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
 // a click anywhere outside the Save menu closes it (one listener for the page)
 document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop','trSoundList'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
 function trEdit(score,res,savedIndex){
+  trSensV2(score);   // saved on the old Sensitivity scale: same notes, new name
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
   const R=!!TR.res, A=!!(TR.url&&TR.res);
@@ -384,7 +385,7 @@ const TR_GUIDE=[
    <li><b>Chords</b> plays the chord symbols under the notes. Turn it off to hear only the notes.</li>
    <li>While it plays, the views follow the playhead. Scroll yourself and they wait a moment before following again.</li></ul>`],
  ['fix','Fixing the reading',`<p>These change how the recording is read. Any edits you made to notes are replaced (Undo brings them back).</p>
-   <ul><li><b>Sensitivity</b>: how sure a note has to be to show. <b>Low</b> or <b>Medium</b> suits fast, busy playing (fewer stray notes). <b>High</b> catches quiet or very short notes, with more stray ones.</li>
+   <ul><li><b>Sensitivity</b>: how sure a note has to be to show. <b>Medium</b> suits most playing. A fast, busy solo still writing too much? <b>Low</b> keeps only surer notes, and <b>Lowest</b> only the notes every model heard. <b>High</b> and <b>Highest</b> catch quiet or very short notes, with more stray ones.</li>
    <li><b>Tempo</b>: if the beat was heard at half or double speed (everything looks twice too fast or too slow), pick Half or Double.</li>
    <li><b>Beat 1</b>: each bar starts on the downbeat that was heard. If the bars go off from some point on:
      <ol><li>Put the playhead on the beat that should be 1 (click the beat numbers or the sheet music).</li><li>Press <b>Here</b>. The bars from there on start there; the ones before stay as they are.</li></ol>
