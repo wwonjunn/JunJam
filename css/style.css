@@ -924,3 +924,5 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 /* note actions appear only when notes are selected */
 .tredit .selacts{display:none} .tredit.hassel .selacts{display:inline-flex}
 #transStage:has(#trBar) .trtop{gap:8px} #trExportBtn{font-size:20px;line-height:1;padding:4px 12px}
+/* the looped bars, tinted right on the sheet music */
+.trsloop{position:absolute;top:2px;bottom:2px;pointer-events:none;background:color-mix(in srgb,var(--brass) 13%,transparent);border-left:2px solid color-mix(in srgb,var(--brass) 70%,transparent);border-right:2px solid color-mix(in srgb,var(--brass) 70%,transparent);border-radius:var(--radius)}
