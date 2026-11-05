@@ -48,9 +48,12 @@ async function smpDownload(id,onProgress){
   await smpLoad(id); return true;
 }
 // Load a downloaded instrument from the database into memory (no network). Quietly stays on the synth if anything's missing.
-async function smpLoad(id){
-  if(SMP.ready[id]||SMP.loading[id]||!smpHave()[id]) return SMP.ready[id]||false;
-  const c=synth.ctx; if(!c) return false; SMP.loading[id]=true;
+// Asking again while it loads gets the same load to wait for (it used to answer "not ready", so the synth stood in)
+function smpLoad(id){ if(SMP.ready[id]) return Promise.resolve(true); SMP.loadP=SMP.loadP||{};
+  if(SMP.loadP[id]) return SMP.loadP[id]; if(!smpHave()[id]||!synth.ctx) return Promise.resolve(false);
+  return SMP.loadP[id]=smpLoad1(id).finally(()=>{ delete SMP.loadP[id]; }); }
+async function smpLoad1(id){
+  const c=synth.ctx; SMP.loading[id]=true;
   try{ const out={}, files=smpFiles(id);
     if(smpLocal(id)){ if(!(await smpLocalData(id))) return false; smpLocalOnly(id); }   // your own: fetch its file, and free the one it replaces
     for(const f of files){ const ab=smpLocal(id)?smpB64(window.LOCAL_SOUND_DATA[id][f]):await smpDB.get(id+'/'+f); if(!ab) continue;
@@ -61,7 +64,7 @@ async function smpLoad(id){
     SMP.buf[id]=out; SMP.ready[id]=true; return true;
   }catch(e){ return false; } finally{ SMP.loading[id]=false; }
 }
-function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]&&(!smpLocal(id)||id===keysSoundPick()||id===bassSoundPick())).forEach(id=>smpLoad(id)); }   // your own: only the ones picked
+function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]&&(!smpLocal(id)||id===keysSoundPick()||id===bassSoundPick()||id===store.get('trSound',null))).forEach(id=>smpLoad(id)); }   // your own: only the ones picked (keys, bass, Transcribe's)
 async function smpForget(id){ for(const f of smpFiles(id)) await smpDB.del(id+'/'+f); const have=smpHave(); delete have[id]; store.set('sounds',have); delete SMP.buf[id]; SMP.ready[id]=false; if(keysSoundPick()===id) store.set('keysSound','synth'); }
 // One note from an instrument: the region for that key and velocity (or the nearest), pitched to the exact key
 const smpRate=(r,m)=>Math.pow(2,(m-r[2]-r[3]/100)/12);
@@ -109,8 +112,10 @@ function smpLocalData(id){ if(window.LOCAL_SOUND_DATA&&LOCAL_SOUND_DATA[id]) ret
 // (your keys and Transcribe's sound may be two different ones: both stay)
 function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass', keep=[id,keysSoundPick(),bassSoundPick(),store.get('trSound',null)];
   Object.keys(SMP_MAPS).forEach(o=>{ if(!keep.includes(o)&&smpLocal(o)&&SMP_INFO[o][kind]){ delete SMP.buf[o]; SMP.ready[o]=false; if(window.LOCAL_SOUND_DATA) delete LOCAL_SOUND_DATA[o]; } }); }
+// settles once your own instruments are known (or known to be missing), so nothing picks a sound before then
+let smpLocalDone; const SMP_LOCAL_READY=new Promise(ok=>{ smpLocalDone=ok; });
 (function(){ const s=document.createElement('script'); s.src='js/local/index.js';
-  s.onload=()=>{ if(typeof LOCAL_SOUNDS==='undefined') return;
+  s.onload=()=>{ setTimeout(smpLocalDone,0); if(typeof LOCAL_SOUNDS==='undefined') return;
     Object.entries(LOCAL_SOUNDS).forEach(([id,d])=>{ SMP_MAPS[id]={regions:d.regions,local:true}; SMP_INFO[id]=d.info; });
     { const k=keysSoundPick(), b=bassSoundPick();   // a pick that's gone (or a download, now set aside) falls back
       if(k!=='synth'&&!smpLocal(k)) store.set('keysSound',LOCAL_SOUNDS.lgrand?'lgrand':'synth');
@@ -118,4 +123,4 @@ function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass', keep=[id,
     if(!store.get('localSoundsAuto2',false)){ store.set('localSoundsAuto2',true); if(LOCAL_SOUNDS.lgrand) store.set('keysSound','lgrand'); if(LOCAL_SOUNDS.lbass) store.set('bassSound','lbass'); }
     if(synth.ctx) smpLoadAll();
     if(typeof renderKeysSound==='function'&&document.getElementById('keysSound')){ renderKeysSound(); renderBassSound(); } };
-  s.onerror=()=>s.remove(); document.head.appendChild(s); })();
+  s.onerror=()=>{ s.remove(); smpLocalDone(); }; document.head.appendChild(s); })();

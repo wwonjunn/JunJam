@@ -943,7 +943,7 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .trspeed #trSpeedVal{min-width:5.4em;padding-left:6px;padding-right:6px;white-space:nowrap}
 .trspeed #trSpeedVal .fine{display:inline;margin:0 0 0 3px}
 .trspeed button:disabled{opacity:.35;cursor:default}
-#trSoundList{min-width:230px} #trSoundList .trsndhead{margin:4px 10px 2px}
+#trSoundList{min-width:330px} #trSoundList .trsndhead{margin:4px 10px 2px}
 /* a song's / transcription's own beat, in a menu */
 .gigbeat,.trbeatpop{width:min(700px,92vw);padding:10px 12px;cursor:default}
 .gigbeat .seg button,.trbeatpop .seg button,.gigbeat .dstep,.trbeatpop .dstep{display:inline-block;width:auto}
@@ -957,3 +957,9 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .gigbeat .dhear,.trbeatpop .dhear,.trbeatpop #trDrumsOn{display:inline-block;width:auto;padding:4px 12px;font-size:14px;border:1.5px solid var(--line-strong);border-radius:6px}
 .trbeatpop #trDrumsOn[aria-pressed="true"]{background:color-mix(in srgb, var(--brass) 22%, transparent);border-color:var(--brass)}
 .gigbeat .erow,.trbeatpop .erow{flex-wrap:wrap;gap:8px}
+/* level sliders (Transcribe's Sound menu, Gig's Mix) */
+.mixbox{display:grid;gap:4px;padding:2px 10px 6px;min-width:250px}
+.mixrow{display:grid;grid-template-columns:7.5em 1fr 3.2em;align-items:center;gap:8px;font-family:var(--cond);font-size:15px;color:var(--ink);cursor:default}
+.mixrow input{width:100%;accent-color:var(--brass);margin:0}
+.mixrow b{font-weight:400;font-size:13px;color:var(--muted);text-align:right}
+.gmlevels{align-items:flex-start} .gmlevels .mixbox{padding:0;flex:1}

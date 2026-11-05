@@ -5,6 +5,7 @@ const synth={ctx:null,voices:new Map(),
       const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
       this.ctx=new AC(); this.master=this.ctx.createGain(); this.master.gain.value=0.22;
       const comp=this.ctx.createDynamicsCompressor(); this.master.connect(comp); comp.connect(this.ctx.destination);
+      this.keysOut=this.ctx.createGain(); this.keysOut.gain.value=mixGet('keys'); this.keysOut.connect(this.master);   // what you play: its own level (Mix)
     }
     if(this.ctx.state!=='running') this.ctx.resume().then(sndStatus,sndStatus);
     sndStatus();
@@ -16,7 +17,7 @@ const synth={ctx:null,voices:new Map(),
     if(!this.ctx||this.ctx.state!=='running'){ sndStatus(); if(this.ctx) this.ctx.resume(); if(!this.ctx) return; }
     this.off(m,0.03);
     const k=typeof keysSampled==='function'&&keysSampled();   // a real instrument, if one is downloaded and picked
-    if(k){ const sv=smpStart(k,m,v,this.ctx.currentTime); if(sv){ this.voices.set(m,{smp:sv}); return; } }
+    if(k){ const sv=smpStart(k,m,v,this.ctx.currentTime,this.keysOut); if(sv){ this.voices.set(m,{smp:sv}); return; } }
     const c=this.ctx,t=c.currentTime,f=440*Math.pow(2,(m-69)/12),vel=v/127;
     const car=c.createOscillator(), mod=c.createOscillator(), mg=c.createGain(), g=c.createGain();
     car.type='sine'; mod.type='sine'; car.frequency.value=f; mod.frequency.value=f;
@@ -25,7 +26,7 @@ const synth={ctx:null,voices:new Map(),
     const peak=0.08+0.3*vel;
     g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(peak,t+0.006);
     g.gain.exponentialRampToValueAtTime(peak*0.3,t+1.3); g.gain.exponentialRampToValueAtTime(0.0001,t+7);
-    car.connect(g); g.connect(this.master); car.start(t); mod.start(t); car.stop(t+7.1); mod.stop(t+7.1);
+    car.connect(g); g.connect(this.keysOut); car.start(t); mod.start(t); car.stop(t+7.1); mod.stop(t+7.1);
     this.voices.set(m,{g,car,mod});
   },
   off(m,rel=0.3){
@@ -116,6 +117,20 @@ function tone(m,when,dur=0.9,vel=90,timbre='epiano',bus=null){
   }
   nodes.forEach(n=>{n.start(t); n.stop(end+0.05);});
 }
+/* Levels (Gig and Transcribe): what you play, the click, the drums, the band, the transcription, the recording.
+   0 to 1.5 (150%), kept for next time. A playing backing gives each part its own gain (mixBus), so a slider moves it
+   right away (mixLive). */
+const mixGet=k=>{ const v=store.get('mix',{})[k]; return typeof v==='number'?v:1; };
+function mixSet(k,v){ const m=store.get('mix',{}); m[k]=v; store.set('mix',m);
+  if(k==='keys'&&synth.keysOut) synth.keysOut.gain.setTargetAtTime(v,synth.ctx.currentTime,.02); }
+function mixBus(parent,k){ const g=synth.ctx.createGain(); g.gain.value=mixGet(k); g.connect(parent); return g; }
+const MIX_NAMES={keys:'Your keys',notes:'Transcription',rec:'Recording',band:'Chords & bass',drums:'Drums',click:'Click'};
+// sliders for these parts; live() gives the gains playing now ({part: GainNode}), onRec(v) sets the recording's volume
+function mixSliders(el,parts,{live=()=>null,onRec=null}={}){
+  el.innerHTML=parts.map(k=>`<label class="mixrow"><span>${MIX_NAMES[k]}</span><input type="range" min="0" max="${k==='rec'?100:150}" step="5" value="${Math.round(mixGet(k)*100)}" data-mix="${k}"><b>${Math.round(mixGet(k)*100)}%</b></label>`).join('');
+  el.querySelectorAll('[data-mix]').forEach(r=>{ r.oninput=()=>{ const k=r.dataset.mix, v=+r.value/100; mixSet(k,v); r.nextElementSibling.textContent=r.value+'%';
+    const g=live()&&live()[k]; if(g&&synth.ctx) g.gain.setTargetAtTime(v,synth.ctx.currentTime,.02); if(k==='rec'&&onRec) onRec(v); };
+    r.ondblclick=()=>{ r.value=100; r.oninput(); }; r.onpointerdown=e=>e.stopPropagation(); }); }
 /* The metronome's click (Gig and Transcribe): a short, woody blip, higher on beat 1 so you can hear where the bar starts */
 function clickAt(t,accent,bus){
   const c=synth.ctx; if(!c) return; t=Math.max(t,c.currentTime); const o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();

@@ -33,12 +33,25 @@ function gsEvents(notes,lineBeats){
   st.forEach((k,i)=>{ const next=i+1<st.length?st[i+1].gat:lineBeats; rests(t,k.gat);
     if(k.tup){ const beatEnd=Math.floor(k.gat+1e-6)+1, slots=Math.max(1,Math.round(Math.min(k.hold,next-k.gat,beatEnd-k.gat)*k.tup)), w=slots/tupNormal(k.tup);
       ev.push({gat:k.gat,w:GS_VALUES.find(v=>v<=w+1e-6)||.125,notes:k.notes,tup:k.tup,first:true,tieIn:k.tieIn}); t=k.gat+slots/k.tup; return; }
-    const d=Math.max(.125,Math.min(k.hold,next-k.gat)), ps=gsSplit(k.gat,d,false);
+    // how long it's written: a gap under half a beat goes to the note (players don't read 16th rests between every note
+    // of a line), up to the barline; a longer gap starts its rest on an 8th, so rests stay few and simple
+    let end=k.gat+Math.min(k.hold,next-k.gat); const bar=(Math.floor(k.gat/4+1e-6)+1)*4;
+    if(next-end<.5-1e-6) end=end<bar-1e-6&&next>bar+1e-6?bar:next; else end=Math.min(next,Math.ceil(end*2-1e-6)/2);
+    const d=Math.max(.125,end-k.gat), ps=gsSplit(k.gat,d,false);
     ps.forEach((x,j)=>ev.push({gat:x.at,w:x.w,notes:k.notes,tup:0,first:j===0,tieIn:j===0&&k.tieIn,tieNext:j<ps.length-1}));
     t=k.gat+d; });
   rests(t,lineBeats);
   return ev;
 }
+/* How wide each beat is drawn: room for everything in it, on any staff (notes and tied pieces, rests, an accidental
+   or a dot needs a little more). staffs: each staff's notes. The sheet view works this out once for the whole piece,
+   so the line it draws and the playhead over it agree. */
+function gsBeatWidths(staffs,beats){
+  const pos=[...Array(beats)].map(()=>new Map());
+  staffs.forEach(ns=>gsEvents(ns,beats).forEach(e=>{ if(e.bar) return; const at=e.rest?e.at:e.gat, b=Math.floor(at+1e-6); if(b<0||b>=beats) return;
+    const extra=(e.rest?-.25:0)+(!e.rest&&e.first&&e.notes.some(n=>n.spell.a)?.5:0)+([.375,.75,1.5,3].some(v=>Math.abs(e.w-v)<1e-6)?.3:0);
+    const k=Math.round(at*840); pos[b].set(k,Math.max(pos[b].get(k)??-1,1+extra)); }));
+  return pos.map(m=>{ let w=0; m.forEach(v=>w+=v); return Math.round(Math.max(40,14+w*18)); }); }
 const gsFlags=w=>w<=.125+1e-6?3:w<=.375+1e-6?2:w<1-1e-6?1:0;
 // A rest of value w (quarters) at x, drawn (music fonts vary too much from Mac to Mac to trust their glyphs)
 function gsRest(x,st,w){ const ink='var(--ink)', ym=st.y(st.mid); let r='';
@@ -49,10 +62,9 @@ function gsRest(x,st,w){ const ink='var(--ink)', ym=st.y(st.mid); let r='';
     for(let k=0;k<f;k++){ const fy=y0+k*7, fx=x+5-k*2.6; r+=`<circle cx="${fx-6}" cy="${fy+1}" r="2.4" fill="${ink}"/><path d="M${fx-6} ${fy+2} Q${fx-3} ${fy+4} ${fx} ${fy}" fill="none" stroke="${ink}" stroke-width="1.4"/>`; } }
   if([.375,.75,1.5,3].some(v=>Math.abs(w-v)<1e-6)) r+=`<circle cx="${x+10}" cy="${ym-3}" r="1.8" fill="${ink}"/>`;
   return r; }
-function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble'}){
-  // busy beats get wider, so eight 32nds still read
-  const per=Array(beats).fill(0); notes.forEach(n=>{ const b=Math.floor(n.gat+1e-6); if(b>=0&&b<beats) per[b]++; });
-  const bw=per.map(c=>Math.max(44,c*15+10)), cum=[0]; bw.forEach(w=>cum.push(cum[cum.length-1]+w));
+function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble',bw=null}){
+  // busy beats get wider, so eight 32nds still read (bw: the widths, when the caller has worked them out)
+  bw=bw||gsBeatWidths(grand?[notes.filter(n=>n.midi>=60),notes.filter(n=>n.midi<60)]:[notes],beats); const cum=[0]; bw.forEach(w=>cum.push(cum[cum.length-1]+w));
   const X0=64, W=X0+cum[beats]+16, xOf=b=>{ const i=Math.max(0,Math.min(beats-1,Math.floor(b+1e-9))); return X0+cum[i]+(b-i)*bw[i]; };
   const T0=36, B0=grand?T0+100:null, H=grand?B0+76:T0+86;
   const bass1=!grand&&clef==='bass';

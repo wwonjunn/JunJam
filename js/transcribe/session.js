@@ -217,7 +217,8 @@ function trPlayOriginal(from,to){
     const wh=$('trWHead'); if(wh&&TR.buf){ wh.style.left=(au.currentTime/TR.buf.duration*100)+'%'; wh.style.display=au.paused?'none':'block'; }
     const pb=$('trPlaySel'); if(pb) pb.textContent=au.paused?'▶ Play part':'■ Stop'; },40);
 }
-function trStopAll(){ if(TR.audio){ TR.audio.onplaying=null; TR.audio.pause(); } TR.token=(TR.token||0)+1; clearInterval(TR.audioTimer); killBus(TR.bus); TR.bus=null; cancelAnimationFrame(TR.raf); TR.playing=false; }
+function trStopAll(){ TR.soundTok=(TR.soundTok||0)+1;   // a play still waiting for its sound doesn't start
+  if(TR.audio){ TR.audio.onplaying=null; TR.audio.pause(); } TR.token=(TR.token||0)+1; clearInterval(TR.audioTimer); killBus(TR.bus); TR.bus=null; cancelAnimationFrame(TR.raf); TR.playing=false; }
 
 /* ---------------- send the selection to the helper ---------------- */
 async function trWav(buf,from,to){ // the selection, resampled to 44.1 kHz stereo, as a 16-bit WAV
@@ -260,7 +261,7 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
 document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop','trSoundList','trBeatPop'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
 function trEdit(score,res,savedIndex){
   trSensV2(score);   // saved on the old Sensitivity scale: same notes, new name
-  trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
+  trStopAll(); Object.assign(TR,{active:true,step:'edit',soundOK:false,rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
   const R=!!TR.res, A=!!(TR.url&&TR.res);
   // Laid out like a practice player (after Soundslice and Moises): a slim top bar (title, Save, and a ⋯ menu for everything
@@ -468,8 +469,9 @@ let trReflowT=0; addEventListener('resize',()=>{ clearTimeout(trReflowT); trRefl
 function trScoreView(){
   const s=TR.score, vis=visibleMelody(s), lines=[], ps=vis.map(n=>n.midi).sort((a,b)=>a-b), low=ps.length&&ps[ps.length>>1]<57; // a low line reads on a bass clef
   // as many bars to a line as fit the width (up to eight), fewer when they're busy, so fast runs stay readable (beats widen like grandStaffSVG's)
-  const per=Array(s.bars*4).fill(0); vis.forEach(n=>{ const b=Math.floor(n.gat+1e-6); if(b>=0&&b<per.length) per[b]++; });
-  const barW=b=>[0,1,2,3].reduce((a,k)=>a+Math.max(44,per[b*4+k]*15+10),0), room=Math.max(560,($('trScore').clientWidth||900)-90);
+  const sn=vis.map(n=>({midi:n.midi,gat:n.gat,gdur:n.gdur,tri:n.tri,tup:n.tup||0,spell:{...spellIn(s,n.midi,n.gat),midi:n.midi}}));
+  const BW=gsBeatWidths(s.texture==='full'&&s.grand?[sn.filter(n=>n.midi>=60),sn.filter(n=>n.midi<60)]:[sn],s.bars*4);   // each beat's width, for the whole piece
+  const barW=b=>[0,1,2,3].reduce((a,k)=>a+BW[b*4+k],0), room=Math.max(560,($('trScore').clientWidth||900)-90);
   TR.lines=[]; const starts=[]; for(let b=0;b<s.bars;){ let n=1, w=barW(b); while(n<8&&b+n<s.bars&&w+barW(b+n)<=room){ w+=barW(b+n); n++; } starts.push([b,n]); b+=n; }
   starts.forEach(([b,nb])=>{
     const a=b*4, z=a+nb*4, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
@@ -480,9 +482,10 @@ function trScoreView(){
       notes.push({midi:n.midi,gat:0,gdur:Math.min(n.gat+n.gdur-a,first,nb*4),tri:false,tup:0,tieIn:true,spell:{...sp,midi:n.midi},name:sp.name}); });
     const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a,i:s.chords.indexOf(c)}));
     const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+nb);
-    const svg=s.texture==='full'?grandStaffSVG({notes,chords,beats:nb*4,grand:!!s.grand}):s.mode==='lead'?lineStaffSVG({notes,chords,total:nb*4},-1,false)
-      :grandStaffSVG({notes,chords,beats:nb*4,grand:false,clef:low?'bass':'treble'});
-    const bw=[...Array(nb*4)].map((_,k)=>Math.max(44,per[a+k]*15+10)), cum=[0]; bw.forEach(w=>cum.push(cum[cum.length-1]+w));
+    const bw=BW.slice(a,a+nb*4);
+    const svg=s.texture==='full'?grandStaffSVG({notes,chords,beats:nb*4,grand:!!s.grand,bw}):s.mode==='lead'?lineStaffSVG({notes,chords,total:nb*4},-1,false)
+      :grandStaffSVG({notes,chords,beats:nb*4,grand:false,clef:low?'bass':'treble',bw});
+    const cum=[0]; bw.forEach(w=>cum.push(cum[cum.length-1]+w));
     TR.lines.push({a,nb,bw,cum,X0:s.mode==='lead'&&s.texture!=='full'?null:64,W:64+cum[nb*4]+16});
     lines.push(`<div class="trline" data-line="${TR.lines.length-1}"><span class="trbar">${b+1}${solo.length?` · solo ${solo.map(x=>x+1).join(', ')}`:''}</span>${svg}<i class="trshead"></i></div>`);
   });
@@ -713,8 +716,9 @@ function trSpeedShow(){ const v=$('trSpeedVal'); if(!v) return; const bpm=Math.r
 function trSoundMenu(){ const l=$('trSoundList'); if(!l) return; const cur=trSoundPick(), keys=keysSoundPick();
   const inst=Object.entries(SMP_INFO).filter(([id])=>trSoundOK(id)&&SMP_MAPS[id]).map(([id,i])=>[id,i.name]);
   const opt=([id,name])=>`<button data-trsnd="${id}" aria-pressed="${id===cur}">${id===cur?'✓ ':''}${name}${id===keys?'<span class="fine">Same as your keys</span>':''}</button>`;
-  l.innerHTML=`<p class="fine trsndhead">The transcription plays on</p>${TR_SOUNDS.map(opt).join('')}${inst.length?'<hr>'+inst.map(opt).join(''):''}`;
-  l.querySelectorAll('[data-trsnd]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const id=b.dataset.trsnd; store.set('trSound',id); trSoundMenu();
+  l.innerHTML=`<p class="fine trsndhead">Levels <span class="fine">(double-click a slider for 100%)</span></p><div class="mixbox" id="trMixBox"></div><hr><p class="fine trsndhead">The transcription plays on</p>${TR_SOUNDS.map(opt).join('')}${inst.length?'<hr>'+inst.map(opt).join(''):''}`;
+  mixSliders($('trMixBox'),['notes',...(TR.url&&TR.res?['rec']:[]),'band','drums','click','keys'],{live:()=>TR.playing&&TR.mixG,onRec:v=>{ if(TR.audio) TR.audio.volume=Math.min(1,v); }});
+  l.querySelectorAll('[data-trsnd]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const id=b.dataset.trsnd; store.set('trSound',id); TR.soundOK=false; trSoundMenu();
     if(SMP_MAPS[id]){ b.querySelector('.fine')||b.insertAdjacentHTML('beforeend','<span class="fine">Loading…</span>'); await smpLoad(id); trSoundMenu(); }
     if(TR.playing) trResume(); else { const bus=previewBus(); if(bus){ const t=now()+.05; [67,71,74,72].forEach((m,i)=>trTone(m,t+i*.22,i===3?.6:.2,90,bus)); } } }); }
 // Drums under the transcription: on or off, and its own beat (kept with it: score.drums, score.beat; none: Profile's)
@@ -731,22 +735,27 @@ function trBeatMenu(){ const el=$('trBeatPop'), s=TR.score; if(!el) return;
 function trToggle(){ if(TR.playing){ const p=TR.posB; trStopAll(); TR.posB=p; trHead(p); } else trPlayScore(); }
 function trResume(){ if(TR.playing) trPlayScore(TR.posB); }
 function trPlayScore(from){
+  // its sound first: until your instruments are known and the picked one is loaded, the synth would stand in for it
+  if(!TR.soundOK){ const tok=TR.soundTok=(TR.soundTok||0)+1; synth.init();
+    SMP_LOCAL_READY.then(()=>{ const k=trSoundPick(); return SMP_MAPS[k]&&!SMP.ready[k]?(trMsg(`Loading ${SMP_INFO[k].name}…`),smpLoad(k)):true; })
+      .then(()=>{ if(tok!==TR.soundTok) return; TR.soundOK=true; trPlayScore(from); }); return; }
   const s=TR.score; if(from==null) from=TR.posB||0; trStopAll();
   const src=TR.url&&TR.res?TR.src||'notes':'notes', real=trPlayed()||src!=='notes', mp=trMaps(), sp=TR.speed, spb=60/(s.tempo||100);
   const loop=TR.looping&&TR.loop?TR.loop:null; if(loop&&(from<loop.a-1e-6||from>=loop.b-1e-6)) from=loop.a;
   const endB=loop?loop.b:s.bars*4; if(from>=endB-1e-6) from=0;
   const secOf=b=>real?Math.max(0,mp.toSec(b)):b*spb, sec0=secOf(from), T=b=>(secOf(b)-sec0)/sp, endT=T(endB);
   const bus=TR.bus=newBus(); if(!bus) return; TR.playing=true; TR.posB=from; TR.recTake=false;
+  const mx=TR.mixG={notes:mixBus(bus,'notes'),band:mixBus(bus,'band'),drums:mixBus(bus,'drums'),click:mixBus(bus,'click')};   // each part's level (Sound ▾)
   const go=t0=>{
     if(src!=='orig'){
-      visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; trTone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,bus); });
+      visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; trTone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,mx.notes); });
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
-        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),bus,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
+        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),mx.band,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',mx.band); }); }
     if(s.drums){ drumsInit(); const pat=drumPatOf(s.beat??null);   // drums: bar by bar, so they follow the recording's own beat when it plays
       for(let bar=Math.floor(from/4+1e-6);bar*4<endB-1e-6;bar++){ const a=T(bar*4), z=T(bar*4+4); if(z<=0) continue;
-        beatBar(t0+a,(z-a)/4,4,{bar},bus,{hat:true,pat,after:t0-.005,until:t0+endT}); } }
-    if(store.get('trMetro',false)) for(let b=Math.ceil(from-1e-6);b<endB-1e-6;b++){ const a=T(b); if(a>=-.005) clickAt(t0+a,mod12(b)%4===0,bus); }   // the metronome, beat 1 of each bar higher
+        beatBar(t0+a,(z-a)/4,4,{bar},mx.drums,{hat:true,pat,after:t0-.005,until:t0+endT}); } }
+    if(store.get('trMetro',false)) for(let b=Math.ceil(from-1e-6);b<endB-1e-6;b++){ const a=T(b); if(a>=-.005) clickAt(t0+a,mod12(b)%4===0,mx.click); }   // the metronome, beat 1 of each bar higher
     const step=()=>{ if(!TR.playing) return; const el=now()-t0;
       TR.posB=Math.min(endB,real?mp.toBeat(sec0+Math.max(0,el)*sp):from+Math.max(0,el)*sp/spb); trHead(TR.posB);
       if(el<endT) TR.raf=requestAnimationFrame(step); else if(loop) trPlayScore(loop.a); else { trStopAll(); TR.posB=0; trHead(0); } };
@@ -755,7 +764,7 @@ function trPlayScore(from){
   if(src==='notes') return go(now()+.1);
   // with the recording: start it, then line the notes up with where it really is once it plays
   const au=TR.audio||(TR.audio=new Audio()); if(au.src!==TR.url) au.src=TR.url;
-  au.preservesPitch=true; au.playbackRate=sp; au.currentTime=TR.sel[0]+sec0;
+  au.preservesPitch=true; au.playbackRate=sp; au.volume=Math.min(1,mixGet('rec')); au.currentTime=TR.sel[0]+sec0;
   const token=TR.token=(TR.token||0)+1;
   au.onplaying=()=>{ au.onplaying=null; if(token!==TR.token||!TR.playing) return; go(now()-(au.currentTime-TR.sel[0]-sec0)/sp); };
   au.play().catch(()=>{});

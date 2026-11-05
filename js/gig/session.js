@@ -186,6 +186,7 @@ function gigShow(id){
             <div class="gmrow"><span class="fine">Play</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}">Bass</button><button class="ghost tgl" id="gigDrumsT" aria-pressed="${GDATA.drums==='on'}" title="The beat you picked in Profile &amp; settings → Sound">Drums</button></div>
             <div class="gmrow"><span class="fine">Hi-hat</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4, the jazz click']],GDATA.click)}</div>
             <div class="gmrow"><span class="fine">Chords</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</div>
+            <div class="gmrow gmlevels"><span class="fine">Levels</span><div class="mixbox" id="gigMixBox"></div></div>
             <p class="fine" style="margin:6px 2px 0">Your own drum sounds: Profile &amp; settings → Sound.</p></div></div>
       </div>
       <div class="gigrow">
@@ -210,6 +211,7 @@ function gigShow(id){
   $('gigSlower').onclick=()=>setT((GDATA.tempo[id]||s.tempo)-4); $('gigFaster').onclick=()=>setT((GDATA.tempo[id]||s.tempo)+4);
   $('gigTones').onclick=()=>{ GDATA.tones=!GDATA.tones; saveGig(); $('gigTones').setAttribute('aria-pressed',GDATA.tones); gigLight(); };
   const mix=$('gigMix'); $('gigMixBtn').onclick=e=>{ mix.hidden=!mix.hidden; e.stopPropagation(); };
+  mixSliders($('gigMixBox'),['band','drums','click','keys'],{live:()=>GIG.playing&&GIG.mixG});
   const beat=$('gigBeat'); $('gigBeatBtn').onclick=e=>{ beat.hidden=!beat.hidden; mix.hidden=true; if(!beat.hidden) gigBeatEditor(); e.stopPropagation(); };
   $('gigMetro').onclick=()=>{ GDATA.metro=!GDATA.metro; saveGig(); $('gigMetro').setAttribute('aria-pressed',GDATA.metro); if(GIG.playing) gigPlay(GIG.pos); };
   $('gigDrumsT').onclick=()=>{ GDATA.drums=GDATA.drums==='on'?'off':'on'; saveGig(); $('gigDrumsT').setAttribute('aria-pressed',GDATA.drums==='on'); if(GIG.playing) gigPlay(GIG.pos); };
@@ -252,6 +254,7 @@ function gigLight(ch){ if(ch) GIG.lit=ch; ch=GIG.lit; kbMarks={};
 function gigPlay(from=0){
   gigStop(); const s=GIG.song, tl=GIG.tl; if(!s||!tl.length) return; synth.init();
   const bus=GIG.bus=newBus(); if(!bus) return; GIG.playing=true; $('gigPlay').textContent='❚❚';
+  const mx=GIG.mixG={band:mixBus(bus,'band'),drums:mixBus(bus,'drums'),click:mixBus(bus,'click')};   // each part's level (Mix)
   const spb=60/(GDATA.tempo[s.id]||s.tempo), sh=gigShift(s), total=tl.length;
   let i=from%total, t=now()+.12, prev=null; const drums=GDATA.drums==='on', hats=GDATA.click==='24'; drumsInit();
   const cue=[], snd=backSound(), vel=backVel(62);
@@ -259,12 +262,12 @@ function gigPlay(from=0){
     while(t<now()+.25){ const bar=tl[i];
       bar.chords.forEach(ch=>{ const at=t+(ch.at-bar.beat)*spb, d=ch.dur*spb*.96; if(!ch.c) return;
         const r=mod12(ch.c.root.pc+sh), bpc=mod12((ch.c.bass||ch.c.root).pc+sh);
-        if(GDATA.pad){ prev=spreadVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,bus,vel); }
-        if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.4),84,'bass',bus);
+        if(GDATA.pad){ prev=spreadVoice(Q[ch.c.qid],r,prev); playChord(prev,at,d,snd,mx.band,vel); }
+        if(GDATA.bass) tone(36+mod12(bpc-36),at,Math.min(d,2.4),84,'bass',mx.band);
         cue.push({at,bar:i,ch}); });
-      if(GDATA.metro) for(let k=0;k<s.beats;k++) clickAt(t+k*spb,k===0,bus);   // the metronome
-      if(drums) beatBar(t,spb,s.beats,{bar:i},bus,{hat:hats,pat:drumPatOf(GDATA.beats&&GDATA.beats[s.id])});   // this song's beat, read each bar so a change comes straight in
-      else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,bus);
+      if(GDATA.metro) for(let k=0;k<s.beats;k++) clickAt(t+k*spb,k===0,mx.click);   // the metronome
+      if(drums) beatBar(t,spb,s.beats,{bar:i},mx.drums,{hat:hats,pat:drumPatOf(GDATA.beats&&GDATA.beats[s.id])});   // this song's beat, read each bar so a change comes straight in
+      else if(hats) for(let k=1;k<s.beats;k+=2) drumHit('hat',t+k*spb,0.9,mx.drums);
       t+=s.beats*spb; i=(i+1)%total; }
     if(cue.length>256) cue.splice(0,cue.length-256); };   // in a background tab nothing draws, so don't let the queue grow
   const draw=()=>{ if(!GIG.playing) return; while(cue.length&&cue[0].at<=now()+.02){ const c=cue.shift(); if(GIG.pos!==c.bar||GIG.markAt!==c.at){ GIG.pos=c.bar; GIG.markAt=c.at; gigMark(c.bar); gigLight(c.ch); } } GIG.raf=requestAnimationFrame(draw); };
