@@ -24,6 +24,15 @@ const keysSampled=()=>{ const k=keysSoundPick(); return k!=='synth'&&SMP.ready[k
 // the bass the same way: 'synth' (audio.js), or one of your own instruments once it's loaded
 const bassSoundPick=()=>store.get('bassSound','synth');
 const bassSampled=()=>{ const k=bassSoundPick(); return k!=='synth'&&SMP.ready[k]?k:null; };
+/* Transcribe plays its notes on a sound of its own, so you can tell it from what you play over it: 'fm' (the synth
+   electric piano), 'pluck', 'mellow', or an instrument. Left unpicked, it's whichever differs from your keys. */
+const TR_SOUNDS=[['fm','Synth electric piano'],['pluck','Pluck'],['mellow','Soft pad']];
+const trSoundOK=id=>TR_SOUNDS.some(x=>x[0]===id)||(SMP_INFO[id]&&SMP_INFO[id].keys&&!!smpHave()[id]&&(smpLocal(id)||!smpOwnKeys()));
+const trSoundPick=()=>{ const k=store.get('trSound',null); if(k&&trSoundOK(k)) return k; return keysSoundPick()==='synth'?'pluck':'fm'; };
+// one note of a transcription: on its instrument once that's loaded, on the synth electric piano until then
+function trTone(m,when,dur,vel,bus){ const k=trSoundPick();
+  if(SMP_MAPS[k]){ if(SMP.ready[k]&&smpTone(k,m,when,dur,vel,bus)) return; if(!SMP.ready[k]) smpLoad(k); return tone(m,when,dur,vel,'fm',bus); }
+  tone(m,when,dur,vel,k,bus); }
 // a database just for sounds, so it never touches the transcriptions'
 const smpDB=(()=>{ let p; const open=()=>p||(p=new Promise((ok,no)=>{ const r=indexedDB.open('junjam-sounds',1);
     r.onupgradeneeded=()=>r.result.createObjectStore('files'); r.onsuccess=()=>ok(r.result); r.onerror=()=>no(r.error); }));
@@ -96,9 +105,10 @@ function smpTone(id,m,when,dur,vel,bus){ const c=synth.ctx, t=Math.max(when,c.cu
    time the folder is found, your keys and bass switch to it. */
 function smpLocalData(id){ if(window.LOCAL_SOUND_DATA&&LOCAL_SOUND_DATA[id]) return Promise.resolve(true);
   return new Promise(ok=>{ const s=document.createElement('script'); s.src=`js/local/${id}.js`; s.onload=()=>ok(!!(window.LOCAL_SOUND_DATA&&LOCAL_SOUND_DATA[id])); s.onerror=()=>{ s.remove(); ok(false); }; document.head.appendChild(s); }); }
-// one of your keys (or basses) in memory at a time: a decoded piano is over 100 MB
-function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass';
-  Object.keys(SMP_MAPS).forEach(o=>{ if(o!==id&&smpLocal(o)&&SMP_INFO[o][kind]){ delete SMP.buf[o]; SMP.ready[o]=false; if(window.LOCAL_SOUND_DATA) delete LOCAL_SOUND_DATA[o]; } }); }
+// only the picked keys (and bass) in memory: a decoded piano is over 100 MB
+// (your keys and Transcribe's sound may be two different ones: both stay)
+function smpLocalOnly(id){ const kind=SMP_INFO[id].keys?'keys':'bass', keep=[id,keysSoundPick(),bassSoundPick(),store.get('trSound',null)];
+  Object.keys(SMP_MAPS).forEach(o=>{ if(!keep.includes(o)&&smpLocal(o)&&SMP_INFO[o][kind]){ delete SMP.buf[o]; SMP.ready[o]=false; if(window.LOCAL_SOUND_DATA) delete LOCAL_SOUND_DATA[o]; } }); }
 (function(){ const s=document.createElement('script'); s.src='js/local/index.js';
   s.onload=()=>{ if(typeof LOCAL_SOUNDS==='undefined') return;
     Object.entries(LOCAL_SOUNDS).forEach(([id,d])=>{ SMP_MAPS[id]={regions:d.regions,local:true}; SMP_INFO[id]=d.info; });

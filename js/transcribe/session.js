@@ -257,7 +257,7 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
    (play, where you are, what you hear, loop, speed, undo). Then "Fix the reading" (re-reads the recording), the
    sheet music (click it to play from there) and the piano roll. Messages pop up at the bottom of the screen. */
 // a click anywhere outside the Save menu closes it (one listener for the page)
-document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
+document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop','trSoundList'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
 function trEdit(score,res,savedIndex){
   trStopAll(); Object.assign(TR,{active:true,step:'edit',rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
@@ -280,7 +280,8 @@ function trEdit(score,res,savedIndex){
       <button class="go trplay" id="trPlay" title="Play / pause (Space)">▶</button><button class="ghost ic" id="trStop" title="Stop, back to the start">■</button>
       <span class="trpos" id="trPos">1 · 1</span>
       ${A?`<span class="trgrp" title="What you hear while it plays">${trSeg('src',[['notes','Notes'],['orig','Recording'],['both','Both']],TR.src||'notes')}</span>`:''}
-      <span class="trgrp" title="Playback speed">${trSeg('speed',[[.5,'50%'],[.75,'75%'],[1,'100%']],TR.speed)}</span>
+      <span class="trgrp trspeed" title="How fast you hear it back (the transcription stays as it is). [ and ] change it"><button class="ghost ic" id="trSlower" title="Slower ([)">−</button><button class="ghost" id="trSpeedVal" title="Back to 100%"></button><button class="ghost ic" id="trFaster" title="Faster (])">+</button></span>
+      <div class="trmenu"><button class="ghost" id="trSoundBtn" aria-haspopup="true" title="The sound the transcription plays on, so it's not the same as your keys">Sound ▾</button><div class="trmenulist" id="trSoundList" hidden></div></div>
       <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across bars in the sheet music to choose which">⟳ Loop</button>
       <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button>
       <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
@@ -315,7 +316,8 @@ function trEdit(score,res,savedIndex){
   $('trPlay').onclick=trToggle; $('trStop').onclick=()=>{ trStopAll(); TR.posB=TR.looping&&TR.loop?TR.loop.a:0; trHead(TR.posB); };
   B.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{ TR.src=b.dataset.src; trPress('src',b.dataset.src); trResume(); });
   $('trLoopBtn').onclick=trLoopToggle;
-  B.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{ TR.speed=+b.dataset.speed; TR.rate=TR.speed; trPress('speed',b.dataset.speed); trResume(); });
+  $('trSlower').onclick=()=>trSpeed(-1); $('trFaster').onclick=()=>trSpeed(1); $('trSpeedVal').onclick=()=>trSpeed(0); trSpeedShow();
+  $('trSoundBtn').onclick=e=>{ const l=$('trSoundList'); l.hidden=!l.hidden; if(!l.hidden) trSoundMenu(); e.stopPropagation(); };
   $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); trResume(); };
   $('trUndo').onclick=trUndo; $('trRedo').onclick=trRedo; $('trHelpBtn').onclick=()=>trGuide('start');
   $('trRec').onclick=()=>{ TR.rec=!TR.rec; $('trRec').setAttribute('aria-pressed',TR.rec); if(TR.rec) trMsg(TR.playing?'Recording: play along and your notes are written in.':'Rec is on: press Play, then play along on your keyboard.'); };
@@ -378,7 +380,7 @@ const TR_GUIDE=[
  ['play','Playing',`<ul><li><kbd>Space</kbd> plays and pauses from the playhead (the red line). <b>■</b> goes back to the start.</li>
    <li>Click the <b>beat numbers</b> above the piano roll, or anywhere in the <b>sheet music</b>, to move the playhead there.</li>
    <li><b>Loop</b>: drag across the beat numbers to loop those bars. <kbd>Shift+L</kbd> or ⟳ Loop turns it on and off.</li>
-   <li><b>Hear</b>: Notes (what was transcribed), Recording (the original), or Both. <b>Speed</b> slows everything down without changing the pitch.</li>
+   <li><b>Hear</b>: Notes (what was transcribed), Recording (the original), or Both. <b>Speed</b> (− and +, or [ and ]): hear it slower or faster, 25% to 150%, without changing the pitch or the transcription; click the number for 100%. <b>Sound</b>: what the transcription plays on, so it sounds different from your keys when you play along.</li>
    <li><b>Chords</b> plays the chord symbols under the notes. Turn it off to hear only the notes.</li>
    <li>While it plays, the views follow the playhead. Scroll yourself and they wait a moment before following again.</li></ul>`],
  ['fix','Fixing the reading',`<p>These change how the recording is read. Any edits you made to notes are replaced (Undo brings them back).</p>
@@ -692,6 +694,22 @@ function trChordEdit(i,e){ const s=TR.score, c=s.chords[i];
 function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.key.pc,qid:'maj7'};
   trChordPopup(e,{...prev},(root,qid)=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); s.chords.push({at,root,qid}); s.chords.sort((a,b)=>a.at-b.at); trRender(); },null,`New chord, ${trWhere(at)}`); }
 
+/* How fast you hear it back: 25% to 150% in steps of 5 (dir 0: back to 100%). Only the listening changes; the
+   transcription's tempo stays. The recording keeps its pitch. The label shows the tempo you'll hear. */
+const TR_SPEEDS=Array.from({length:26},(_,i)=>.25+i*.05);
+function trSpeed(dir){ const i=TR_SPEEDS.findIndex(v=>Math.abs(v-TR.speed)<.01), j=dir?Math.max(0,Math.min(TR_SPEEDS.length-1,(i<0?15:i)+dir)):15;
+  TR.speed=TR.rate=Math.round(TR_SPEEDS[j]*100)/100; trSpeedShow(); trResume(); }
+function trSpeedShow(){ const v=$('trSpeedVal'); if(!v) return; const bpm=Math.round((TR.score.tempo||100)*TR.speed);
+  v.innerHTML=`${Math.round(TR.speed*100)}%<span class="fine"> ♩=${bpm}</span>`; v.setAttribute('aria-pressed',TR.speed!==1);
+  $('trSlower').disabled=TR.speed<=.25+1e-6; $('trFaster').disabled=TR.speed>=1.5-1e-6; }
+// The sound menu: the transcription's own sound (your keys stay what they are, so you can hear yourself over it)
+function trSoundMenu(){ const l=$('trSoundList'); if(!l) return; const cur=trSoundPick(), keys=keysSoundPick();
+  const inst=Object.entries(SMP_INFO).filter(([id])=>trSoundOK(id)&&SMP_MAPS[id]).map(([id,i])=>[id,i.name]);
+  const opt=([id,name])=>`<button data-trsnd="${id}" aria-pressed="${id===cur}">${id===cur?'✓ ':''}${name}${id===keys?'<span class="fine">Same as your keys</span>':''}</button>`;
+  l.innerHTML=`<p class="fine trsndhead">The transcription plays on</p>${TR_SOUNDS.map(opt).join('')}${inst.length?'<hr>'+inst.map(opt).join(''):''}`;
+  l.querySelectorAll('[data-trsnd]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const id=b.dataset.trsnd; store.set('trSound',id); trSoundMenu();
+    if(SMP_MAPS[id]){ b.querySelector('.fine')||b.insertAdjacentHTML('beforeend','<span class="fine">Loading…</span>'); await smpLoad(id); trSoundMenu(); }
+    if(TR.playing) trResume(); else { const bus=previewBus(); if(bus){ const t=now()+.05; [67,71,74,72].forEach((m,i)=>trTone(m,t+i*.22,i===3?.6:.2,90,bus)); } } }); }
 /* ---------------- playback, save, export, to Lines ---------------- */
 /* Playback from the playhead (TR.posB, in beats). Space plays and pauses where it is; Stop goes back to the start.
    What it plays: the transcription, the original recording, or both together (then the notes keep their real timing,
@@ -708,7 +726,7 @@ function trPlayScore(from){
   const bus=TR.bus=newBus(); if(!bus) return; TR.playing=true; TR.posB=from; TR.recTake=false;
   const go=t0=>{
     if(src!=='orig'){
-      visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; tone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,'epiano',bus); });
+      visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; trTone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,bus); });
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
         pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),bus,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',bus); }); }
@@ -861,6 +879,7 @@ function trKey(e){
   if(cmd&&e.key.toLowerCase()==='y'){ e.preventDefault(); trRedo(); return true; }
   if(cmd&&e.key.toLowerCase()==='s'){ e.preventDefault(); trSave(); return true; }
   if(!cmd&&e.shiftKey&&e.key.toLowerCase()==='l'){ trLoopToggle(); return true; }
+  if(!cmd&&(e.key==='['||e.key===']')){ trSpeed(e.key===']'?1:-1); return true; }   // slower / faster
   // the computer keys as a piano (as in Hands): A W S E D F T G Y H U J K O L P ; '   Z / X: octave down / up
   const qk=e.key.toLowerCase();
   if(!cmd&&!e.altKey&&!e.shiftKey&&(qk==='z'||qk==='x')){ qOct=Math.max(36,Math.min(84,qOct+(qk==='x'?12:-12))); paintQwerty(); trMsg(`Computer keys play from C${qOct/12-1}.`); return true; }

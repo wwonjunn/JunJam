@@ -938,3 +938,9 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .dstep[data-c="1"]{background:color-mix(in srgb, var(--brass) 38%, transparent);border-color:var(--brass)}
 .dstep.dnow{outline:2px solid var(--ink);outline-offset:0}
 @media (max-width:560px){ .drow{grid-template-columns:repeat(16,1fr);row-gap:4px} .dstep.bar2{grid-column-start:1} }
+/* Transcribe: listening speed and the playback sound */
+.trspeed{display:inline-flex;align-items:center;gap:2px}
+.trspeed #trSpeedVal{min-width:5.4em;padding-left:6px;padding-right:6px;white-space:nowrap}
+.trspeed #trSpeedVal .fine{display:inline;margin:0 0 0 3px}
+.trspeed button:disabled{opacity:.35;cursor:default}
+#trSoundList{min-width:230px} #trSoundList .trsndhead{margin:4px 10px 2px}

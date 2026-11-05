@@ -51,7 +51,7 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && synth.
 
 /* ---------------- scheduled tones (used by Ears and "by ear" chords) ----------------
    Every question gets its own bus, so stopping a question fades everything it scheduled. */
-const TIMBRES=['epiano','mellow','pluck'];
+const TIMBRES=['epiano','mellow','pluck'];   // 'fm': the synth electric piano even when your keys are an instrument (Transcribe)
 /* The backing-chord sound everywhere chords play under you (Gig, Lines, Reharm, Transcribe): Keys or Pad.
    One setting, picked in Gig or in Profile & settings. Ears keeps its own sounds. */
 const BACK_SOUNDS=[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held']];
