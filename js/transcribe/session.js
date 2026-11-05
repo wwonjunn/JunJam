@@ -260,6 +260,7 @@ const PXB=46, ROW=11, RULER=16, LANE=26; // the ruler (beat numbers, click to se
 // a click anywhere outside the Save menu closes it (one listener for the page)
 document.addEventListener('pointerdown',e=>{ if(e.target.closest('.trmenu')) return; ['trExportList','trFixPop','trSoundList','trBeatPop'].forEach(id=>{ const l=$(id); if(l) l.hidden=true; }); });
 function trEdit(score,res,savedIndex){
+  if(SND_OVR.song!==score){ soundOvrClear(); SND_OVR.song=score; }   // another transcription: Profile's sounds again
   trSensV2(score);   // saved on the old Sensitivity scale: same notes, new name
   trStopAll(); Object.assign(TR,{active:true,step:'edit',soundOK:false,rec:false,recOn:{},down:new Set(),score,res:res||TR.res||null,saved:savedIndex,sel:TR.sel,undo:[],redo:[],selected:new Set(),rate:TR.rate||1,speed:1,posB:0,loop:null,looping:false,dirty:savedIndex==null,edited:false});
   if(!res){ TR.res=null; } // reopened from the list: no audio, no re-analysis
@@ -716,7 +717,8 @@ function trSpeedShow(){ const v=$('trSpeedVal'); if(!v) return; const bpm=Math.r
 function trSoundMenu(){ const l=$('trSoundList'); if(!l) return; const cur=trSoundPick(), keys=keysSoundPick();
   const inst=Object.entries(SMP_INFO).filter(([id])=>trSoundOK(id)&&SMP_MAPS[id]).map(([id,i])=>[id,i.name]);
   const opt=([id,name])=>`<button data-trsnd="${id}" aria-pressed="${id===cur}">${id===cur?'✓ ':''}${name}${id===keys?'<span class="fine">Same as your keys</span>':''}</button>`;
-  l.innerHTML=`<p class="fine trsndhead">Levels <span class="fine">(double-click a slider for 100%)</span></p><div class="mixbox" id="trMixBox"></div><hr><p class="fine trsndhead">The transcription plays on</p>${TR_SOUNDS.map(opt).join('')}${inst.length?'<hr>'+inst.map(opt).join(''):''}`;
+  l.innerHTML=`<p class="fine trsndhead">Levels <span class="fine">(double-click a slider for 100%)</span></p><div class="mixbox" id="trMixBox"></div><hr><p class="fine trsndhead">Under it <span class="fine">(just for this one; Profile's otherwise)</span></p><div class="ovbox" id="trOvBox"></div><hr><p class="fine trsndhead">The transcription plays on</p>${TR_SOUNDS.map(opt).join('')}${inst.length?'<hr>'+inst.map(opt).join(''):''}`;
+  soundOvrUI($('trOvBox'),()=>trResume());
   mixSliders($('trMixBox'),['notes',...(TR.url&&TR.res?['rec']:[]),'band','drums','click','keys'],{live:()=>TR.playing&&TR.mixG,onRec:v=>{ if(TR.audio) TR.audio.volume=Math.min(1,v); }});
   l.querySelectorAll('[data-trsnd]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const id=b.dataset.trsnd; store.set('trSound',id); TR.soundOK=false; trSoundMenu();
     if(SMP_MAPS[id]){ b.querySelector('.fine')||b.insertAdjacentHTML('beforeend','<span class="fine">Loading…</span>'); await smpLoad(id); trSoundMenu(); }

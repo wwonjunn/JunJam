@@ -56,7 +56,10 @@ const TIMBRES=['epiano','mellow','pluck'];   // 'fm': the synth electric piano e
 /* The backing-chord sound everywhere chords play under you (Gig, Lines, Reharm, Transcribe): Keys or Pad.
    One setting, picked in Gig or in Profile & settings. Ears keeps its own sounds. */
 const BACK_SOUNDS=[['epiano','Keys','Electric piano'],['mellow','Pad','Soft, held']];
-const backSound=()=>{ const s=store.get('backSound',null)??(store.get('gig',{}).sound); return s==='mellow'?'mellow':'epiano'; };
+/* Sounds swapped for just the song or transcription that's open (Gig's Mix, Transcribe's Sound): the chords sound, the
+   bass, the drum kit. null: Profile's. Opening another one, or going home, puts Profile's back (soundOvrClear). */
+const SND_OVR={chords:null,bass:null,kit:null,song:null};
+const backSound=()=>{ if(SND_OVR.chords) return SND_OVR.chords; const s=store.get('backSound',null)??(store.get('gig',{}).sound); return s==='mellow'?'mellow':'epiano'; };
 const setBackSound=s=>store.set('backSound',s==='mellow'?'mellow':'epiano');
 const backVel=v=>backSound()==='mellow'?Math.round(v*.82):v;   // the pad sits a little softer than the keys
 function newBus(){

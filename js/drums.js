@@ -12,8 +12,9 @@ async function drumsInit(){
   DRUM.loading=true;
   DRUM.pending=(async()=>{ do{ DRUM.again=false;   // sounds changed while this ran (a kit picked, a file loaded): go round again
     for(const v of DRUM_VOICES){
-      let ab=typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
-      const tries=ab?[ab]:[drumRaw(DRUM_KIT_DATA[v].ogg),drumRaw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
+      const ov=SND_OVR.kit, kit=ov&&ov!=='builtin'&&typeof LOCAL_KITS!=='undefined'&&LOCAL_KITS[ov];   // a kit just for this song
+      let ab=!ov&&typeof smpDB!=='undefined'?await smpDB.get('custom/'+v):null;   // yours first
+      const tries=kit?[drumRaw(kit[v])]:ab?[ab]:[drumRaw(DRUM_KIT_DATA[v].ogg),drumRaw(DRUM_KIT_DATA[v].m4a)];   // whichever this browser can read
       let buf=null; for(const x of tries){ try{ buf=await c.decodeAudioData(x.slice(0)); break; }catch(e){} } DRUM.buf[v]=buf; }
   }while(DRUM.again); DRUM.ready=true; DRUM.loading=false; })();
   return DRUM.pending;
@@ -113,6 +114,20 @@ function drumBeatEditor(el,o){
       m[r]=m[r].slice(0,i)+'.ox'[n]+m[r].slice(i+1); keep(m);
       if(n&&!o.live){ synth.init(); drumsInit().then(()=>{ const bus=previewBus(1500); if(bus) drumHit(b.dataset.v,now()+.02,n===2?1:.55,bus); }); } }); };
   draw(); }
+
+/* Swapping sounds for the song that's open (Gig's Mix, Transcribe's Sound): rows of pickers, each starting on Default
+   (Profile's). Nothing is kept per song: soundOvrClear puts Profile's back. onChange: after a swap has loaded. */
+function soundOvrClear(){ const kit=SND_OVR.kit!=null; SND_OVR.chords=SND_OVR.bass=SND_OVR.kit=null; SND_OVR.song=null; if(kit) drumsReload(); }
+function soundOvrUI(el,onChange){
+  const bassName=id=>id==='synth'?'Built-in synth':(SMP_INFO[id]&&SMP_INFO[id].name)||id, kits=typeof LOCAL_KITS!=='undefined'?Object.keys(LOCAL_KITS):[];
+  const basses=Object.keys(SMP_INFO).filter(id=>SMP_INFO[id].bass&&smpLocal(id)), defChords=(store.get('backSound','epiano')==='mellow'?'Pad':'Keys');
+  const sel=(k,def,opts,cur)=>`<label class="ovrow"><span>${{chords:'Chords',bass:'Bass',kit:'Drum kit'}[k]}</span><select data-ovr="${k}"><option value="">Default (${def})</option>${opts.map(([v,l])=>`<option value="${v}"${cur===v?' selected':''}>${l}</option>`).join('')}</select></label>`;
+  el.innerHTML=sel('chords',defChords,BACK_SOUNDS.map(([v,l])=>[v,l]),SND_OVR.chords)
+    +(basses.length?sel('bass',bassName(store.get('bassSound','synth')),[['synth','Built-in synth'],...basses.map(id=>[id,bassName(id)])],SND_OVR.bass):'')
+    +sel('kit',store.get('drumKit','')||'Profile',[['builtin','Built-in'],...kits.map(k=>[k,k])],SND_OVR.kit);
+  el.querySelectorAll('[data-ovr]').forEach(s=>{ s.onpointerdown=e=>e.stopPropagation(); s.onchange=async()=>{ const k=s.dataset.ovr, v=s.value||null; synth.init(); SND_OVR[k]=v;
+    if(k==='bass'&&v&&v!=='synth') await smpLoad(v); if(k==='bass'&&!v&&bassSoundPick()!=='synth') await smpLoad(bassSoundPick());
+    if(k==='kit') await drumsReload(); if(onChange) onChange(k); }; }); }
 
 /* Your own kits: js/local-kits.js, kept on this Mac. Never committed (.gitignore) and never bundled: it's
    loaded here on the fly, so a copy of Jun Jam without the file just doesn't offer them. Choosing one puts its three

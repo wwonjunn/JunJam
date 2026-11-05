@@ -103,6 +103,7 @@ bindLinesPane(); bindReharmPane(); bindVoicingsPane();
 const atHome=()=>!$('startOv').hidden&&side==='home'&&!(typeof TR!=='undefined'&&TR.active)&&!GIG.active;
 function goHome(){
   clearDraft();
+  if(typeof soundOvrClear==='function') setTimeout(soundOvrClear,0);   // sounds swapped for a song go back to Profile's
   if(typeof TR!=='undefined'&&TR.active){ if(TR.step==='edit'&&TR.dirty&&!confirm("Leave this transcription? It isn't saved.")) return false; trToMenu(); }
   if(typeof G!=='undefined'&&G&&(G.running||G.paused)){ G.running=false; G.paused=false; cancelAnimationFrame(G.raf); metro.stop(); stopByEar(); }
   if(ARC.active){ arcStop(); arcFxStop(); ARC.active=false; } if(EARS.active) earsToMenu(); if(LINES.active) linesToMenu(); if(REHARM.active) rhToMenu(); if(VC.active){ vcStop(); VC.active=false; } if(CH.active){ chStop(); CH.active=false; } if(GIG.active) gigClose();

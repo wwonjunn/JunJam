@@ -120,7 +120,7 @@ function gigOpen(id){
   GIG.active=true; hideOv(); document.body.classList.add('gigmode','nohud'); document.body.classList.remove('menu'); $('gigStage').hidden=false; synth.init();
   if(id&&gigById(id)) gigShow(id); else gigList();
 }
-function gigClose(){ gigStop(); GIG.active=false; $('gigStage').hidden=true; document.body.classList.remove('gigmode'); kbMarks={}; paintKeys(); }
+function gigClose(){ gigStop(); soundOvrClear(); GIG.active=false; $('gigStage').hidden=true; document.body.classList.remove('gigmode'); kbMarks={}; paintKeys(); }
 function gigToMenu(){ gigClose(); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
 const gigOrder=s=>{ const i=GIG_GENRES.findIndex(g=>g[0]===s.genre); return s.mine?-1:i<0?99:i; };
 function gigMatches(s){ const g=GDATA.genre, q=(GIG.q||'').toLowerCase();
@@ -163,6 +163,7 @@ function gigBeatEditor(){ const el=$('gigBeat'), s=GIG.song; if(!el||!s) return;
   drumBeatEditor(el.lastElementChild,{value:GDATA.beats[s.id]??null,def:true,mine:'This song',live:GIG.playing,
     set:v=>{ if(v==null) delete GDATA.beats[s.id]; else GDATA.beats[s.id]=v; saveGig(); }}); }
 function gigShow(id){
+  if(SND_OVR.song!=='gig:'+id){ soundOvrClear(); SND_OVR.song='gig:'+id; }   // another song: Profile's sounds again
   gigStop(); const s=gigById(id); if(!s) return gigList();
   const fresh=GIG.view!=='sheet'||!GIG.song||GIG.song.id!==id; gigLeaveList(); if(fresh) $('gigStage').scrollTop=0;
   Object.assign(GIG,{view:'sheet',song:s,lastId:id,tl:gigTimeline(s),pos:0}); GDATA.last=id; saveGig();
@@ -185,7 +186,7 @@ function gigShow(id){
           <div class="trmenulist gigmix" id="gigMix" hidden>
             <div class="gmrow"><span class="fine">Play</span><button class="ghost tgl" id="gigPad" aria-pressed="${GDATA.pad}">Chords</button><button class="ghost tgl" id="gigBass" aria-pressed="${GDATA.bass}">Bass</button><button class="ghost tgl" id="gigDrumsT" aria-pressed="${GDATA.drums==='on'}" title="The beat you picked in Profile &amp; settings → Sound">Drums</button></div>
             <div class="gmrow"><span class="fine">Hi-hat</span>${gigSeg('gclick',[['off','Off'],['24','2 & 4','Hi-hat on beats 2 and 4, the jazz click']],GDATA.click)}</div>
-            <div class="gmrow"><span class="fine">Chords</span>${gigSeg('gsound',BACK_SOUNDS,backSound())}</div>
+            <div class="gmrow gmlevels"><span class="fine">Sounds</span><div class="ovbox" id="gigOvBox"></div></div>
             <div class="gmrow gmlevels"><span class="fine">Levels</span><div class="mixbox" id="gigMixBox"></div></div>
             <p class="fine" style="margin:6px 2px 0">Your own drum sounds: Profile &amp; settings → Sound.</p></div></div>
       </div>
@@ -219,7 +220,7 @@ function gigShow(id){
   $('gigBody').querySelectorAll('[data-gpat],[data-gmv]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const p=GA_PAT[x.dataset.gpat]; trMsg(p?`${p.name}: ${p.why}`:GA_MOVE_WHY[x.dataset.gmv]); });
   $('gigBody').querySelectorAll('[data-gclick]').forEach(b=>b.onclick=()=>{ GDATA.click=b.dataset.gclick; saveGig(); $('gigBody').querySelectorAll('[data-gclick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
   [['gigPad','pad'],['gigBass','bass']].forEach(([el,k])=>$(el).onclick=()=>{ GDATA[k]=!GDATA[k]; saveGig(); $(el).setAttribute('aria-pressed',GDATA[k]); if(GIG.playing) gigPlay(GIG.pos); });
-  $('gigBody').querySelectorAll('[data-gsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.gsound); $('gigBody').querySelectorAll('[data-gsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(GIG.playing) gigPlay(GIG.pos); });
+  soundOvrUI($('gigOvBox'),()=>{ if(GIG.playing) gigPlay(GIG.pos); });   // just this song's sounds (Profile's are the default)
   $('gigBody').querySelectorAll('[data-gview]').forEach(b=>b.onclick=()=>{ GDATA.view=b.dataset.gview; saveGig(); re(); });
   $('gigBody').querySelectorAll('[data-gsize]').forEach(b=>b.onclick=()=>{ GDATA.size=+b.dataset.gsize; saveGig(); re(); });
   // a bar: start from its first time in the form
