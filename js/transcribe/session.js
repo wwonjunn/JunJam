@@ -473,6 +473,10 @@ function trScoreView(){
   starts.forEach(([b,nb])=>{
     const a=b*4, z=a+nb*4, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
       return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,tup:n.tup||0,spell:{...sp,midi:n.midi},name:sp.name}; });
+    // a note held over from the line before carries on here, tied, until it ends or the next note starts
+    const first=notes.length?Math.min(...notes.map(n=>n.gat)):nb*4;
+    if(first>.12) vis.filter(n=>n.gat<a-1e-6&&n.gat+n.gdur>a+.12&&!n.tup&&!n.tri).forEach(n=>{ const sp=spellIn(s,n.midi,n.gat);
+      notes.push({midi:n.midi,gat:0,gdur:Math.min(n.gat+n.gdur-a,first,nb*4),tri:false,tup:0,tieIn:true,spell:{...sp,midi:n.midi},name:sp.name}); });
     const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a,i:s.chords.indexOf(c)}));
     const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+nb);
     const svg=s.texture==='full'?grandStaffSVG({notes,chords,beats:nb*4,grand:!!s.grand}):s.mode==='lead'?lineStaffSVG({notes,chords,total:nb*4},-1,false)

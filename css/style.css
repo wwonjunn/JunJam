@@ -389,7 +389,7 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trscore{max-height:46vh;overflow-y:auto;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;margin-bottom:10px}
 .trline{position:relative} .trline svg{max-width:100%;height:auto;display:block}
 .trbar{position:absolute;left:4px;top:0;font-family:var(--cond);font-weight:600;font-size:11px;color:var(--muted)}
-.trscore .ln{stroke:var(--ink);stroke-width:1;opacity:.55} .trscore .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
+.trscore .ln{stroke:var(--ink);stroke-width:1;opacity:.55} .trscore .ln.bl{stroke-width:1.6;opacity:.85} .trscore .clef{fill:var(--ink);opacity:.8;font-family:'Bravura','Noto Music','Segoe UI Symbol','Apple Symbols',serif}
 .trscore .acc{font-family:var(--body);font-size:15px;font-weight:600} .trscore .csym{font-family:var(--hand);font-weight:700;font-size:15px;fill:var(--ink)}
 .trroll{overflow:auto;max-height:34vh;border:1px solid var(--line-strong);border-radius:6px;margin-bottom:8px;user-select:none}
 .trroll svg{display:block;touch-action:none}
