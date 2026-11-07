@@ -967,3 +967,13 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .ovbox{display:grid;gap:5px;padding:2px 10px 6px} .gmlevels .ovbox{padding:0;flex:1}
 .ovrow{display:grid;grid-template-columns:7.5em 1fr;align-items:center;gap:8px;font-family:var(--cond);font-size:15px;color:var(--ink);cursor:default}
 .ovrow select{font:inherit;font-size:14px;padding:3px 6px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink);min-width:0}
+/* Transcribe → Lines: the send panel over the sheet music, and the picked notes tinted */
+.trsend{border:1.5px solid var(--brass);border-radius:var(--radius-lg,8px);background:color-mix(in srgb, var(--brass) 7%, var(--panel));padding:10px 14px;margin:0 0 8px;display:grid;gap:8px}
+.trsendhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap} .trsendhead b{font-family:var(--cond);font-size:17px} .trsendhead .fine{margin:0}
+.trsendrow{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start}
+.trsendrow>div{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px} .trsendrow>div>b{font-family:var(--cond);font-size:15px}
+.trsendrow .fine{margin:0}
+.trsendn{width:22px;height:22px;border-radius:50%;background:var(--brass);color:var(--lane);display:grid;place-items:center;font-size:13px;font-weight:700}
+.trsend select,.trsend input{font:inherit;font-size:14px;padding:4px 8px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink)}
+.trsendnames label{display:grid;gap:2px} .trsendnames input{width:min(260px,60vw)} .trsendnames .go{align-self:end}
+.trssend{position:absolute;top:0;bottom:0;background:color-mix(in srgb, var(--brass) 22%, transparent);border-radius:4px;pointer-events:none}

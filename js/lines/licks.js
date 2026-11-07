@@ -101,7 +101,7 @@ function lickInstance(l,refPc){
   const plain=(m,sp)=>{ if(Math.abs(sp.a)<=1) return sp; const opts=spellingsFor(mod12(m)), pk=opts.find(([,a])=>a===0)||opts.find(([,a])=>k.a<0?a<0:a>0)||opts[0];
     const oct=Math.floor((m-pk[1])/12)-1; return {l:pk[0],a:pk[1],oct,di:oct*7+pk[0],name:LETTERS[pk[0]]+ACC[pk[1]]}; };
   const notes=raw.map(n=>{ const m=n.midi+shift, c=chords.filter(c=>c.at<=n.at+1e-6).pop()||chords[0], sp=plain(m,spellNote(m,c.root,qOf(c))); return {...n,midi:m,spell:{...sp,midi:m},name:sp.name}; });
-  return {notes,chords,total,ref:refPc,real:l.notes.some(n=>n.length>2)};
+  return {notes,chords,total,ref:refPc,real:l.notes.some(n=>n.length>2),nochord:!!l.nochord};   // nochord: just the line (sent from Transcribe with No chord)
 }
 // Start and length of every note in beats: real starts when the lick has them, otherwise one after another
 function lickTimes(l){ let t=0; return l.notes.map(n=>{ const at=n.length>2?n[2]:t; t=at+n[1]; return {at,dur:n[1]}; }); }
@@ -123,7 +123,7 @@ function gridTimes(times){
   return times.map((x,i)=>{ const unit=tri[i]?1/3:.25, own=Math.max(unit,Math.round(x.dur/unit)*unit), nx=pos[i+1];
     return {gat:pos[i],gdur:nx!==undefined?Math.min(nx-pos[i],own):own,tri:tri[i]}; });
 }
-const lickOver=l=>l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
+const lickOver=l=>l.nochord?'no chord':l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
 
 /* ---------------- difficulty: what each note is over its chord, and how you get to it ----------------
    Chord tones are free; natural tensions cost a little; altered or outside notes cost a lot, unless they're

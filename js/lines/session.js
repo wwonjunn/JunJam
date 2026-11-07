@@ -135,7 +135,7 @@ function linesRender(){
   const L=LINES, inst=L.inst, learn=linesLearnStep(), step=L.plan?L.plan[L.round]:null;
   $('lTitle').textContent=L.lick.name; $('lFav').textContent=isFav(L.lick.id)?'♥':'♡'; $('lFav').title=isFav(L.lick.id)?'Remove from favourites':'Add to favourites';
   $('lCount').textContent=step?`${step.label} · ${L.round+1} of ${L.plan.length}`:learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
-  $('lChords').textContent=inst.chords.map(c=>symText(c)).join('  →  ');
+  $('lChords').textContent=inst.nochord?'Just the line, no chord':inst.chords.map(c=>symText(c)).join('  →  ');
   $('lSub').textContent=learn?(LDATA.lh?'Listen, then play it back with your right hand above middle C; hold the chord with your left if you like.':'Listen, then play it back on your keyboard. Any octave works.')+(L.lick.tip?' '+L.lick.tip:'')
     :'Same lick, new key. Play it without looking; press N if you need the notes.';
   $('lDots').innerHTML=inst.notes.map((_,i)=>`<i class="${i<L.idx?'on':i===L.idx&&!L.done?'cur':''}"></i>`).join('');
@@ -180,7 +180,7 @@ function lineStaffSVG(inst,idx,done){
   for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*k)}" y2="${y(38-2*k)}"/>`;
   s+=`<text class="clef" x="10" y="${y(32)+9}" font-size="44">𝄞</text>`;
   for(let b=4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b,true)-8}" x2="${xOf(b,true)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
-  inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="14">${symText(c)}</text>`; });
+  if(!inst.nochord) inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="14">${symText(c)}</text>`; });
   // beam groups: consecutive notes shorter than a beat inside the same beat
   const groups=[]; let g=null;
   P.forEach((p,k)=>{ const short=p.d<1-1e-6&&!(p.tri&&p.d>.5), beat=Math.floor(p.at+1e-9);
@@ -226,7 +226,7 @@ function playLine(inst,lick,bus,t0,bpm){
   const spb=60/bpm, T=b=>t0+b*spb, startOf=n=>n.gat, lenOf=n=>n.gdur;
   // Comp: the 3rd, 7th and a colour tone packed just under the lick's lowest note (down to C3), root in the bass
   const low=Math.min(...inst.notes.map(n=>n.midi)), ceil=Math.max(55,Math.min(low-1,69));
-  inst.chords.forEach(c=>{
+  if(!inst.nochord) inst.chords.forEach(c=>{
     const at=T(c.at), d=c.beats*spb*.95;
     playChord(compUnder(c,ceil),at,d,backSound(),bus,backVel(44));
     tone(40+mod12(c.root.pc-40),at,Math.min(d,2.2),70,'bass',bus);
