@@ -67,8 +67,13 @@ function beatMapper(beats,shift=0){
   };
 }
 // One line from many notes: at each onset keep the highest confident note (the "skyline"), no overlaps
+/* Long enough to keep: minLen, or a grace note: shorter (20 ms or more) but leading straight (within 120 ms) into a note
+   that is long enough, a step or two away. Sensitivity's length filter used to drop every grace note. */
+function keepLen(ns,minLen){ const long=ns.filter(n=>n.e-n.s>=minLen);
+  return ns.filter(n=>{ const d=n.e-n.s; if(d>=minLen) return true; if(d<.02) return false;
+    return long.some(m=>m.s>n.s+.01&&m.s-n.s<=.12+d&&Math.abs(m.p-n.p)>0&&Math.abs(m.p-n.p)<=4); }); }
 function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
-  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
+  const ok=keepLen(notes.filter(n=>n.c>=minConf&&n.p>=lo&&n.p<=hi),minLen).sort((a,b)=>a.s-b.s||b.p-a.p);
   const out=[]; let g0=null;
   for(const n of ok){
     const last=out[out.length-1];
@@ -78,7 +83,7 @@ function topLine(notes,{minConf=.3,minLen=.06,lo=0,hi=127}={}){
     if(last&&last.e>n.s) last.e=n.s;                                                     // cut the one before
     out.push({...n});
   }
-  return out.filter(n=>n.e-n.s>=.03);
+  return out.filter(n=>n.e-n.s>=.02);
 }
 /* Rhythm: each beat is split into the number of equal parts that fits its notes best: 1, 2, 4 or 8 (up to 32nds),
    3 (triplets), 5, 6 or 7 (quintuplets, sextuplets, septuplets). Simple divisions are preferred unless the timing
@@ -120,7 +125,7 @@ const asPlayed=(s,e)=>({sec:Math.round(s*1000)/1000,dsec:Math.round(Math.max(.03
    3. If that note is doubled an octave up and two models heard the top, the top is the melody. On Jesus Molina's Spain
       solo (real piano, octave-doubled lines) the models hear the lower note of the octave more surely. */
 function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above=10,chord=4,anchor=.45,octaves=false}={}){
-  const ok=notes.filter(n=>n.c>=minConf&&n.e-n.s>=minLen&&n.p>=lo&&n.p<=hi).sort((a,b)=>a.s-b.s||b.p-a.p);
+  const ok=keepLen(notes.filter(n=>n.c>=minConf&&n.p>=lo&&n.p<=hi),minLen).sort((a,b)=>a.s-b.s||b.p-a.p);
   const groups=[]; ok.forEach(n=>{ const g=groups[groups.length-1]; if(g&&n.s-g[0].s<.04) g.push(n); else groups.push([n]); });
   const marks=groups.filter(g=>g.length<chord).map(g=>g.reduce((a,b)=>b.c>a.c+.05||(Math.abs(b.c-a.c)<=.05&&b.p>a.p)?b:a)).filter(n=>n.c>=anchor);
   const lineAt=t=>{ const ps=marks.filter(m=>Math.abs(m.s-t)<=win).map(m=>m.p).sort((x,y)=>x-y); return ps.length>=2?ps[ps.length>>1]:null; };
@@ -131,15 +136,30 @@ function leadLine(notes,{minConf=.3,minLen=.04,lo=0,hi=127,win=.6,below=10,above
     // an octave doubling (pianists double the melody a lot): the top of the octave is the line, if two models heard it
     if(octaves) for(let up;(up=g.find(n=>n.p===best.p+12&&n.c>=.7&&n.p<=hi));) best=up;
     const last=out[out.length-1]; if(last&&last.e>best.s) last.e=best.s; out.push({...best}); });
-  return out.filter(n=>n.e-n.s>=.03);
+  return out.filter(n=>n.e-n.s>=.02);
 }
 // The written melody in beats on the tuplet grid (tupletGrid); lead sheets keep simple rhythms and drop ornaments
+/* Grace notes: a very short note (a 32nd or less, under 100 ms) a step or two from the note it leads into, which comes
+   right after it and lasts. One or two in a row. They're written small before that note instead of squeezed into the
+   rhythm (where they used to turn a plain beat into a 5- or 7-tuplet). */
+function graceMarks(ns){ const g=ns.map(()=>false);
+  for(let i=ns.length-2;i>=0;i--){ const n=ns[i], nx=ns[i+1]; let j=i+1; while(j<ns.length&&g[j]) j++; const m=ns[j]; if(!m||j-i>2) continue;
+    const d=Math.abs(nx.midi-n.midi);
+    if(n.dur<=.14&&n.e-n.s<=.1&&nx.at-n.at<=.16&&m.dur>=.3&&d>0&&d<=4) g[i]=true; }
+  return g; }
+const TR_GRACE=1/16;   // where a grace note is kept: this far before its note, per grace (gord 1 is the nearest)
 function melodyBeats(line,toBeat,lead){
   let notes=line.map(n=>({midi:n.p,at:toBeat(n.s),dur:Math.max(.05,toBeat(n.e)-toBeat(n.s)),c:n.c,s:n.s,e:n.e})).filter(n=>n.at>-.25);
   if(lead) notes=notes.filter((n,i)=>n.dur>=.2||(notes[i+1]&&notes[i+1].at-n.at>=.4));       // grace notes and turns go
-  const g=tupletGrid(notes.map(n=>({at:Math.max(0,n.at),dur:n.dur})),lead?{divs:[1,2]}:{});
-  return notes.map((n,i)=>({midi:n.midi,gat:g[i].gat,gdur:g[i].gdur,tri:g[i].tri,tup:g[i].tup,...asPlayed(n.s,n.e)}))
+  const gr=lead?notes.map(()=>false):graceMarks(notes), main=notes.filter((n,i)=>!gr[i]);
+  const g=tupletGrid(main.map(n=>({at:Math.max(0,n.at),dur:n.dur})),lead?{divs:[1,2]}:{});
+  const out=main.map((n,i)=>({midi:n.midi,gat:g[i].gat,gdur:g[i].gdur,tri:g[i].tri,tup:g[i].tup,...asPlayed(n.s,n.e)}))
     .filter((n,i,a)=>!lead||i===0||n.gat>a[i-1].gat).map((n,i,a)=>lead&&a[i+1]?{...n,gdur:Math.min(Math.max(n.gdur,.5),a[i+1].gat-n.gat)}:n);
+  if(lead) return out;
+  // each grace note just before the note it leads into
+  notes.forEach((n,i)=>{ if(!gr[i]) return; let j=i+1, k=1; while(gr[j]){ j++; k++; } const at=out[main.indexOf(notes[j])]; if(!at) return;
+    out.push({midi:n.midi,gat:Math.max(0,at.gat-TR_GRACE*k),gdur:TR_GRACE,tri:false,tup:0,grace:true,gord:k,...asPlayed(n.s,n.e)}); });
+  return out.sort((a,b)=>a.gat-b.gat);
 }
 // Full parts (piano or guitar with chords): keep every note. Notes that start together are one chord; the chords'
 // starts go on the tuplet grid like a line (tupletGrid), and each note keeps its own length, so held notes can overlap.

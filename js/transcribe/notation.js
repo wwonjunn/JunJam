@@ -22,6 +22,7 @@ const gsGrid=x=>Math.abs(x*8-Math.round(x*8))<1e-6;   // on the 32nd grid (a tup
    lasts as long as it's held, or until the next stack; one that crosses a beat it shouldn't, or a barline, is written
    as tied pieces (tieIn: the first piece continues a note from the line before). Tuplets stay inside their beat. */
 function gsEvents(notes,lineBeats){
+  notes=notes.filter(n=>!n.grace);   // grace notes are drawn small before their note (gsGraces), outside the rhythm
   const by=new Map(); notes.forEach(n=>{ const k=Math.round(n.gat*840); if(!by.has(k)) by.set(k,[]); by.get(k).push(n); });
   const st=[...by.entries()].sort((a,b)=>a[0]-b[0]).map(([k,ns])=>({gat:k/840,notes:ns.sort((a,b)=>a.spell.di-b.spell.di),
     tup:Math.max(...ns.map(n=>n.tup||(n.tri?3:0))),hold:Math.max(...ns.map(n=>n.gdur)),tieIn:ns.some(n=>n.tieIn)}));
@@ -48,6 +49,7 @@ function gsEvents(notes,lineBeats){
    so the line it draws and the playhead over it agree. */
 function gsBeatWidths(staffs,beats){
   const pos=[...Array(beats)].map(()=>new Map());
+  staffs.forEach(ns=>ns.forEach(n=>{ if(!n.grace) return; const at=n.gat+TR_GRACE*(n.gord||1), b=Math.floor(at+1e-6); if(b>=0&&b<beats) pos[b].set('g'+Math.round(at*840)+'.'+n.gord,.95); }));   // room for grace notes
   staffs.forEach(ns=>gsEvents(ns,beats).forEach(e=>{ if(e.bar) return; const at=e.rest?e.at:e.gat, b=Math.floor(at+1e-6); if(b<0||b>=beats) return;
     const extra=(e.rest?-.25:0)+(!e.rest&&e.first&&e.notes.some(n=>n.spell.a)?.5:0)+([.375,.75,1.5,3].some(v=>Math.abs(e.w-v)<1e-6)?.3:0);
     const k=Math.round(at*840); pos[b].set(k,Math.max(pos[b].get(k)??-1,1+extra)); }));
@@ -116,6 +118,14 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble',bw=null})
       for(let f=0;f<gsFlags(k.w);f++){ const fy=y1+(up?f*7:-f*7); s+=`<path d="M${sx} ${fy} q9 ${up?8:-8} 7 ${up?20:-20}" fill="none" stroke="${ink}" stroke-width="2"/>`; }
       if(k.tup) s+=`<text class="csym" x="${x}" y="${up?y1-6:y1+16}" text-anchor="middle">${k.tup}</text>`;
     });
+    // grace notes: small, stem up with a slash, just left of the note they lead into
+    st.notes.filter(n=>n.grace).forEach(n=>{ const at=n.gat+TR_GRACE*(n.gord||1), k=stacks.find(x=>x.gat>=at-.03); if(!k) return;
+      const acc=k.notes.some(m=>m.spell.a)&&k.first?10:0, x=xOf(k.gat)-14-acc-(n.gord-1)*11, di=n.spell.di, cy=st.y(di);
+      for(let d=st.lo-2;d>=di;d-=2) s+=`<line class="ln" x1="${x-6}" x2="${x+6}" y1="${st.y(d)}" y2="${st.y(d)}"/>`;
+      for(let d=st.hi+2;d<=di;d+=2) s+=`<line class="ln" x1="${x-6}" x2="${x+6}" y1="${st.y(d)}" y2="${st.y(d)}"/>`;
+      s+=`<ellipse cx="${x}" cy="${cy}" rx="4.3" ry="3.1" transform="rotate(-20 ${x} ${cy})" fill="${ink}"/><line x1="${x+3.9}" x2="${x+3.9}" y1="${cy}" y2="${cy-21}" stroke="${ink}" stroke-width="1.1"/>`
+        +`<path d="M${x+3.9} ${cy-21} q6 5 4.5 13" fill="none" stroke="${ink}" stroke-width="1.4"/><line x1="${x-1}" y1="${cy-8}" x2="${x+9}" y2="${cy-17}" stroke="${ink}" stroke-width="1.1"/>`;
+      if(n.spell.a) s+=`<text class="acc" x="${x-9}" y="${cy+4}" text-anchor="middle" fill="${ink}" style="font-size:11px">${ACC[n.spell.a]}</text>`; });
     groups.filter(gr=>gr.items.length>1).forEach(gr=>{
       const up=upOf(gr.items), ends=gr.items.map(i=>{ const dis=stacks[i].notes.map(n=>n.spell.di); return up?st.y(Math.max(...dis))-32:st.y(Math.min(...dis))+32; });
       const by=up?Math.min(...ends):Math.max(...ends), xs=gr.items.map(i=>xOf(stacks[i].gat)+(up?5.6:-5.6)), th=4, off=up?7:-7;

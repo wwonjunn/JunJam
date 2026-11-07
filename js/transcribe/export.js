@@ -82,7 +82,7 @@ function xmlTupBeats(notes){ const m=new Map(); notes.forEach(n=>{ const t=n.tup
 
 function toMusicXML(score){
   if(score.texture==='full') return toMusicXMLFull(score);
-  const vis=visibleMelody(score), tupAt=xmlTupBeats(vis);
+  const graces=visibleMelody(score).filter(n=>n.grace), vis=visibleMelody(score).filter(n=>!n.grace), tupAt=xmlTupBeats(vis);   // grace notes: <grace/> before their note
   // melody as integer divisions, with no overlaps
   const mel=vis.map(n=>({...n,s:Math.round(n.gat*XDIV),e:Math.round((n.gat+n.gdur)*XDIV)})).sort((a,b)=>a.s-b.s);
   mel.forEach((n,i)=>{ if(mel[i+1]&&n.e>mel[i+1].s) n.e=mel[i+1].s; if(n.e<=n.s) n.e=n.s+1; });
@@ -98,10 +98,11 @@ function toMusicXML(score){
     mel.filter(n=>n.e>b0&&n.s<b1).forEach(n=>{
       const s=Math.max(n.s,b0,t), e=Math.min(n.e,b1); if(e<=s) return;
       restTo(s); const ps=xmlPieces(s,e,tupAt);
-      ps.forEach((p,i)=>{ items.push({t,p,pitch:pitchXml(n.midi,n.gat),tieStop:i>0||n.s<b0,tieStart:i<ps.length-1||n.e>b1}); t+=p.d; });
+      const gr=n.s>=b0?graces.filter(g=>Math.abs(Math.round((g.gat+TR_GRACE*(g.gord||1))*XDIV)-n.s)<=2).sort((a,b)=>(b.gord||1)-(a.gord||1)):[];
+      ps.forEach((p,i)=>{ items.push({t,p,pitch:pitchXml(n.midi,n.gat),tieStop:i>0||n.s<b0,tieStart:i<ps.length-1||n.e>b1,gr:i?null:gr}); t+=p.d; });
     });
     restTo(b1); xmlMarkTuplets(items);
-    const out=items.map(it=>({t:it.t,xml:xmlNote(it)}));
+    const out=items.map(it=>({t:it.t,xml:(it.gr||[]).map(g=>`<note><grace slash="yes"/>${pitchXml(g.midi,g.gat)}<type>eighth</type><stem>up</stem></note>`).join('')+xmlNote(it)}));
     // each chord symbol goes before the first note or rest at or after its time
     score.chords.filter(c=>Math.round(c.at*XDIV)>=b0&&Math.round(c.at*XDIV)<b1).forEach(c=>{ const ct=Math.round(c.at*XDIV), i=out.findIndex(o=>o.t>=ct);
       out.splice(i<0?out.length:i,0,{t:ct,xml:xharmony(c)}); });

@@ -46,7 +46,7 @@ async function trOpen(){
     <p>Drop in an mp3 (or any audio file you own). Choose what you want to see, select the part of the song, and it comes back as sheet music with chords that you can fix and save.</p>
     <div id="trGuide"></div>
     <label class="trdrop" id="trDrop"><input type="file" id="trFile" accept="audio/*,.junjam" hidden><b>Choose an audio file</b><span>or drop it here. A .junjam file someone sent you opens here too.</span></label>
-    <div class="trhome"><button class="ghost" id="trRec" style="margin-left:0">Record from a tab</button><span>Playing it on YouTube or anywhere else in Chrome? Capture that tab's sound while you play the part you want.</span></div>
+    <div class="trhome"><button class="ghost" id="trTabRec" style="margin-left:0">Record from a tab</button><span>Playing it on YouTube or anywhere else in Chrome? Capture that tab's sound while you play the part you want.</span></div>
     <div class="erow" style="margin-top:14px"><button class="ghost" id="trHome">Back</button></div>`;
   $('trHome').onclick=trToMenu; $('trBack').onclick=trToMenu;
   const f=$('trFile'), drop=$('trDrop');
@@ -56,7 +56,7 @@ async function trOpen(){
   trLibRender();
   $('trBody').onclick=e=>{ const c=e.target.closest('[data-copy]');
     if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
-    if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trRec') trTabRecord(); };
+    if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trTabRec') trTabRecord(); };
   trCheck();
 }
 /* ---------------- your transcriptions: folders, rename, move, delete (all kept inside Jun Jam) ---------------- */
@@ -271,7 +271,7 @@ function trEdit(score,res,savedIndex){
   $('trBody').innerHTML=`<div class="trtop">
       <button class="ghost" id="trClose" title="Close this transcription">← Close</button>
       <span class="etitle" id="trTitle" title="Click to rename"></span><span class="fine" id="trInfo"></span><span class="trspace"></span><span class="fine" id="trDirty"></span>
-      <button class="ghost" id="trSendBtn" title="Turn a few notes of this into a lick to practise in all keys, in Lines">→ Lines</button>
+      <button class="ghost tgl" id="trSendBtn" title="Turn a few notes of this into a lick to practise in all keys, in Lines">→ Lines</button>
       <button class="go" id="trSaveBtn" title="Save in Jun Jam, with the recording, under Your transcriptions (${MODK}+S)">Save</button>
       <div class="trmenu"><button class="ghost ic" id="trExportBtn" aria-haspopup="true" title="Export, send to Lines, settings, guide">⋯</button><div class="trmenulist" id="trExportList" hidden>
         <button data-exp="junjam">Share as a Jun Jam file <span class="fine">A .junjam with the recording, for a friend with Jun Jam</span></button><hr>
@@ -475,16 +475,17 @@ let trReflowT=0; addEventListener('resize',()=>{ clearTimeout(trReflowT); trRefl
 function trScoreView(){
   const s=TR.score, vis=visibleMelody(s), lines=[], ps=vis.map(n=>n.midi).sort((a,b)=>a-b), low=ps.length&&ps[ps.length>>1]<57; // a low line reads on a bass clef
   // as many bars to a line as fit the width (up to eight), fewer when they're busy, so fast runs stay readable (beats widen like grandStaffSVG's)
-  const sn=vis.map(n=>({midi:n.midi,gat:n.gat,gdur:n.gdur,tri:n.tri,tup:n.tup||0,spell:{...spellIn(s,n.midi,n.gat),midi:n.midi}}));
+  const sn=vis.map(n=>({midi:n.midi,gat:n.gat,gdur:n.gdur,tri:n.tri,tup:n.tup||0,grace:!!n.grace,gord:n.gord||1,spell:{...spellIn(s,n.midi,n.gat),midi:n.midi}}));
   const BW=gsBeatWidths(s.texture==='full'&&s.grand?[sn.filter(n=>n.midi>=60),sn.filter(n=>n.midi<60)]:[sn],s.bars*4);   // each beat's width, for the whole piece
   const barW=b=>[0,1,2,3].reduce((a,k)=>a+BW[b*4+k],0), room=Math.max(560,($('trScore').clientWidth||900)-90);
   TR.lines=[]; const starts=[]; for(let b=0;b<s.bars;){ let n=1, w=barW(b); while(n<8&&b+n<s.bars&&w+barW(b+n)<=room){ w+=barW(b+n); n++; } starts.push([b,n]); b+=n; }
   starts.forEach(([b,nb])=>{
-    const a=b*4, z=a+nb*4, notes=vis.filter(n=>n.gat>=a-1e-6&&n.gat<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
-      return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,tup:n.tup||0,spell:{...sp,midi:n.midi},name:sp.name}; });
+    const at=n=>n.grace?n.gat+TR_GRACE*(n.gord||1):n.gat;   // a grace note goes with the note it leads into (even over a barline)
+    const a=b*4, z=a+nb*4, notes=vis.filter(n=>at(n)>=a-1e-6&&at(n)<z-1e-6).map(n=>{ const sp=spellIn(s,n.midi,n.gat);
+      return {midi:n.midi,gat:n.gat-a,gdur:Math.min(n.gdur,z-n.gat),tri:n.tri,tup:n.tup||0,grace:!!n.grace,gord:n.gord||1,spell:{...sp,midi:n.midi},name:sp.name}; });
     // a note held over from the line before carries on here, tied, until it ends or the next note starts
-    const first=notes.length?Math.min(...notes.map(n=>n.gat)):nb*4;
-    if(first>.12) vis.filter(n=>n.gat<a-1e-6&&n.gat+n.gdur>a+.12&&!n.tup&&!n.tri).forEach(n=>{ const sp=spellIn(s,n.midi,n.gat);
+    const first=Math.min(nb*4,...notes.map(n=>n.grace?n.gat+TR_GRACE*n.gord:n.gat));
+    if(first>.12) vis.filter(n=>n.gat<a-1e-6&&n.gat+n.gdur>a+.12&&!n.tup&&!n.tri&&!n.grace).forEach(n=>{ const sp=spellIn(s,n.midi,n.gat);
       notes.push({midi:n.midi,gat:0,gdur:Math.min(n.gat+n.gdur-a,first,nb*4),tri:false,tup:0,tieIn:true,spell:{...sp,midi:n.midi},name:sp.name}); });
     const chords=s.chords.filter(c=>c.at>=a-1e-6&&c.at<z-1e-6).map(c=>({...chordObj(c),at:c.at-a,i:s.chords.indexOf(c)}));
     const solo=(s.soloBars||[]).filter(x=>x>=b&&x<b+nb);
@@ -677,7 +678,7 @@ function trTidy(){ const m=TR.score.melody; const sel=[...TR.selected].map(i=>m[
 // the division a beat is written in: its notes' tuplet, else 16ths (skip: the note being moved)
 function trDivAt(beat,skip,dflt=4){ const ns=TR.score.melody.filter((n,i)=>i!==skip&&Math.floor(n.gat+1e-6)===beat&&n.tup); return ns.length?ns[0].tup:dflt; }
 // after an edit, each beat's tuplet is whatever its notes still fit: the beat's most common tuplet if they all sit on its spots, else plain
-function trRetuple(m){ const by=new Map(); m.forEach(n=>{ const b=Math.floor(n.gat+1e-6); if(!by.has(b)) by.set(b,[]); by.get(b).push(n); });
+function trRetuple(m){ const by=new Map(); m.forEach(n=>{ if(n.grace) return; const b=Math.floor(n.gat+1e-6); if(!by.has(b)) by.set(b,[]); by.get(b).push(n); });
   const on=(n,D)=>Math.abs((n.gat-Math.floor(n.gat+1e-6))*D-Math.round((n.gat-Math.floor(n.gat+1e-6))*D))<1e-4;
   by.forEach(ns=>{ const cnt={}; ns.forEach(n=>{ if(n.tup) cnt[n.tup]=(cnt[n.tup]||0)+1; }); const D=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]||0;
     const all=D&&ns.every(n=>on(n,D)); ns.forEach(n=>{ const t=all||(D&&on(n,D)&&!on(n,8))?D:0; n.tup=t; n.tri=t===3; }); }); }
@@ -927,7 +928,7 @@ function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r
       ${n?'<button class="ghost trsm" id="trSendHear">▶ Hear it</button>':''}</div></div>
     <div class="trsendrow"><span class="trsendn">2</span><div><b>Practised over</b>
       <div class="seg" role="group"><button data-smode="one" aria-pressed="${mode==='one'}">One chord</button>${chs.length>1?`<button data-smode="tr" aria-pressed="${mode==='tr'}">As transcribed</button>`:''}<button data-smode="none" aria-pressed="${mode==='none'}">No chord</button></div>
-      ${mode==='one'?`<select id="trSendRoot">${TR_PCN.map((x,i)=>`<option value="${i}"${i===root?' selected':''}>${x}</option>`).join('')}</select><select id="trSendQ">${QUALS.map(q=>`<option value="${q.id}"${q.id===qid?' selected':''}>${q.suf||'major'}</option>`).join('')}</select>`
+      ${mode==='one'?`<select id="trSendRoot">${TR_PCN.map((x,i)=>`<option value="${i}"${i===root?' selected':''}>${x}</option>`).join('')}</select><select id="trSendQ">${[...new Set([...TR_QUALS,qid])].filter(id=>Q[id]).map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>`
         :mode==='tr'?`<span class="fine">${chs.map(chName).join(' → ')}</span>`:`<span class="fine">Just the line: Lines plays no chords under it.</span>`}</div></div>
     <div class="trsendrow"><span class="trsendn">3</span><div class="trsendnames"><label><span class="fine">Name</span><input id="trSendName" value="${trEsc(r.name)}"></label><label><span class="fine">Player (optional)</span><input id="trSendWho" value="${trEsc(r.player)}" placeholder="e.g. Chick Corea"></label>
       <button class="go" id="trSendGo"${ok?'':' disabled'}>Send to Lines</button></div></div>`;

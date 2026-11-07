@@ -977,3 +977,9 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .trsend select,.trsend input{font:inherit;font-size:14px;padding:4px 8px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink)}
 .trsendnames label{display:grid;gap:2px} .trsendnames input{width:min(260px,60vw)} .trsendnames .go{align-self:end}
 .trssend{position:absolute;top:0;bottom:0;background:color-mix(in srgb, var(--brass) 22%, transparent);border-radius:4px;pointer-events:none}
+/* On/off buttons that are on (Loop, Chords, Drums, Click, Rec, Edit notes, Why it works...): filled, so it's plain at a
+   glance which are on. html:root wins over every theme's own .ghost look and hover. */
+html:root .ghost.tgl[aria-pressed="true"],html:root .trtransport .ghost[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--lane)}
+html:root .ghost.tgl[aria-pressed="true"]:hover,html:root .trtransport .ghost[aria-pressed="true"]:hover{background:color-mix(in srgb, var(--brass) 85%, var(--ink));color:var(--lane)}
+html:root .trtransport .ghost[aria-pressed="true"] .fine{color:inherit;opacity:.85}
+.trsend[hidden]{display:none}
