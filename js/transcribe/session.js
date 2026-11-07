@@ -408,7 +408,7 @@ const TR_GUIDE=[
    <li>With notes selected: <b>▲ ▼</b> (<kbd>↑</kbd> <kbd>↓</kbd>) a half step, <b>+8 −8</b> (<kbd>Shift+↑</kbd> <kbd>Shift+↓</kbd>) an octave, <kbd>←</kbd> <kbd>→</kbd> nudge in time, <b>🗑</b> (<kbd>Delete</kbd>) removes.</li>
    <li><b>Right-click</b> a note or a beat for everything you can do there.</li>
    <li>Click a key on the side keyboard, or a note, to hear it. <kbd>${MODK}+Z</kbd> undoes, <kbd>Shift+${MODK}+Z</kbd> redoes.</li></ul>`],
- ['chords','Chords',`<ul><li>The chord lane is the strip above the notes. <b>Click a chord</b> there, or on the sheet music, to change it: pick the root and the type (you hear each choice), then OK. <b>Remove</b> takes it out.</li>
+ ['chords','Chords',`<ul><li>The chord lane is the strip above the notes. <b>Click a chord</b> there, or on the sheet music, to change it. <b>Type it</b> (C#13b9, Dbmaj7, F/A, Bbm7b5), or <b>build it</b>: the root letter with ♭ ♮ ♯ (C♯ and D♭ are written as you choose), the type, the 6th or 7th, extensions and alterations (9, 11, 13, ♭9, ♯11...), and a slash bass. You hear each change. <b>Remove</b> takes it out.</li>
    <li><b>Click an empty spot</b> in the lane to add a chord on that beat, so a bar can have two or more. Right-click for the same choices.</li>
    <li>Chords are guessed one per bar. Reharmonised passages are often simplified, so check them by ear with <b>Chords</b> on.</li>
    <li>Lead sheets: <b>solo?</b> at the end of each bar marks it as a solo bar, which leaves it out of the sheet music and exports.</li></ul>`],
@@ -685,31 +685,81 @@ function trRetuple(m){ const by=new Map(); m.forEach(n=>{ if(n.grace) return; co
 // chord symbols: click to change, click an empty spot in the lane to add one
 const TR_QUALS=['maj','min','dom7','maj7','min7','hdim','dim7','dim','aug','sus4','sus7','six','min6','mmaj7','maj9','dom9','min9','dom13','min11','d7b9','d7s9','alt','d7s11','add9','six9'];
 // Pick a root and a chord type; you hear each choice. Enter = OK, Escape = cancel
+/* The chord picker: type the chord (C#13b9, Dbmaj7, F/A), or build it: root letter and ♭ ♮ ♯ (so C♯ and D♭ are
+   their own), the type, the 6th or 7th, extensions and alterations, a slash bass. Both stay in step; you hear each change.
+   onSave({root,sp,qid,suf,bass}). Enter = OK, Escape = cancel. */
+const TR_EXT=[['9','9'],['11','11'],['13','13'],['b9','♭9'],['#9','♯9'],['#11','♯11'],['b13','♭13'],['b5','♭5'],['#5','♯5'],['alt','alt']];
+// the suffix for a built chord: st {q: maj|min|dim|hdim|aug|sus4|sus2, s: ''|6|7|maj7, x: Set of TR_EXT keys}
+function trSufOf(st){ const x=st.x, nat=['13','11','9'].find(n=>x.has(n)), alts=['b5','#5','b9','#9','#11','b13'].filter(a=>x.has(a)&&!(st.q==='aug'&&a==='#5')&&!(st.q==='hdim'&&a==='b5')).map(a=>a.replace('b','♭').replace('#','♯')).join('');
+  if(x.has('alt')) return '7alt'; const s7=st.s;
+  const core={maj:s7==='maj7'?'maj'+(nat||'7'):s7==='7'?(nat||'7'):s7==='6'?(x.has('9')?'6/9':'6'):nat?'add'+nat:'',
+    min:s7==='maj7'?'m(maj'+(nat||'7')+')':s7==='7'?'m'+(nat||'7'):s7==='6'?(x.has('9')?'m6/9':'m6'):nat?'m(add'+nat+')':'m',
+    dim:s7==='7'||s7==='6'?'°7':'°', hdim:nat&&nat!=='9'?'m'+nat+'♭5':'m7♭5',
+    aug:s7==='maj7'?'maj7♯5':s7==='7'?(nat||'7')+'♯5':'+',
+    sus4:s7==='7'?(nat||'7')+'sus4':nat?'sus4(add'+nat+')':'sus4', sus2:s7==='7'?'7sus2':'sus2'}[st.q];
+  return core+alts; }
+// a suffix back into the builder (as near as it maps)
+function trSufState(suf){ const f=(suf||'').replace(/♭/g,'b').replace(/♯/g,'#'), x=new Set();
+  const q=/^(m7b5|ø|m(9|11|13)b5)/.test(f)?'hdim':/^(°|dim|o(?!\w))/.test(f)?'dim':/^(m|min|-)(?!aj)/.test(f)?'min':/^(\+|aug)|^(7|9|11|13)?#5|maj7#5/.test(f)?'aug':/sus2/.test(f)?'sus2':/sus/.test(f)?'sus4':'maj';
+  [['b5',/b5/],['#5',/#5/],['b9',/b9/],['#9',/#9/],['#11',/#11/],['b13',/b13/],['alt',/alt/]].forEach(([k,re])=>{ if(re.test(f)) x.add(k); });
+  const nat=f.replace(/[b#](5|9|11|13)/g,''); ['9','11','13'].forEach(n=>{ if(new RegExp('(^|[^0-9])'+n+'(?![0-9])').test(nat.replace('6/9','9'))) x.add(n); });
+  const s=/maj|M7|Δ|\(maj/.test(f)?'maj7':/6/.test(nat)?'6':/add/.test(f)&&!/7/.test(f)?'':/7|9|11|13|alt/.test(nat)||q==='hdim'?'7':'';
+  if(q==='dim'&&/7/.test(f)) return {q,s:'7',x}; return {q,s,x}; }
 function trChordPopup(e,c,onSave,onDel,title){
   document.querySelectorAll('.trpop').forEach(x=>x.remove());
-  const pop=document.createElement('div'); pop.className='trpop trchordpop'; let root=c.root, qid=c.qid||'maj7', bus=null;
-  pop.innerHTML=`<div class="tptitle"><b id="tpSym"></b><span class="fine">${title||''}</span></div>
-    <div class="tproots">${[...Array(12).keys()].map(pc=>`<button data-tpr="${pc}" aria-pressed="${pc===root}">${rootName(defaultRoot(pc,false))}</button>`).join('')}</div>
-    <div class="tprow"><select id="tpQ" title="Chord type">${TR_QUALS.map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>
-    <button class="ghost ic" id="tpHear" title="Hear it">▶</button><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
-  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const t=chordObj({root,qid}); playChord(spreadVoice(t.q,root,null,48,54,69),now()+.03,1.2,backSound(),bus,backVel(70)); tone(36+mod12(root-36),now()+.03,1.2,70,'bass',bus); };
-  const show=()=>{ pop.querySelector('#tpSym').textContent=symText(chordObj({root,qid})); pop.querySelectorAll('[data-tpr]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.tpr===root)); };
-  pop.querySelectorAll('[data-tpr]').forEach(b=>b.onclick=()=>{ root=+b.dataset.tpr; show(); hear(); });
-  pop.querySelector('#tpQ').onchange=ev=>{ qid=ev.target.value; show(); hear(); };
-  pop.querySelector('#tpHear').onclick=hear; show();
+  const r0=chordRoot(c); let L=r0.l, A=r0.a, st=trSufState(c.suf??(Q[c.qid]||Q.maj7).suf), bass=c.bass?{...c.bass}:null, bus=null;
+  const sym=()=>LETTERS[L]+ACC[A]+trSufOf(st)+(bass?'/'+LETTERS[bass.l]+ACC[bass.a]:'');
+  const pop=document.createElement('div'); pop.className='trpop trchordpop';
+  const chips=(k,opts,cur)=>opts.map(([v,l])=>`<button data-${k}="${v}" aria-pressed="${cur(v)}">${l}</button>`).join('');
+  const BASSES=[null,...[0,1,2,3,4,5,6].flatMap(l=>[[l,-1],[l,0],[l,1]]).filter(([l,a])=>!(a===1&&(l===2||l===6))&&!(a===-1&&(l===3||l===0))).map(([l,a])=>({l,a}))];
+  pop.innerHTML=`<div class="tptitle"><input id="tpText" spellcheck="false" autocomplete="off" title="Type a chord: C#13b9, Dbmaj7, F/A"><button class="ghost ic" id="tpHear" title="Hear it">▶</button><span class="fine">${title||''}</span></div>
+    <div class="tpline"><span class="fine">Root</span><div class="tpchips" id="tpL"></div><div class="tpchips tpacc" id="tpA"></div></div>
+    <div class="tpline"><span class="fine">Type</span><div class="tpchips" id="tpQ"></div></div>
+    <div class="tpline"><span class="fine">6th / 7th</span><div class="tpchips" id="tpS"></div></div>
+    <div class="tpline"><span class="fine">Add</span><div class="tpchips tpext" id="tpX"></div></div>
+    <div class="tpline"><span class="fine">Bass</span><select id="tpB">${BASSES.map((b,i)=>`<option value="${i}">${b?'/'+LETTERS[b.l]+ACC[b.a]:'Root (no slash)'}</option>`).join('')}</select></div>
+    <div class="tprow"><span class="fine" id="tpMsg"></span><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
+  const $p=sel=>pop.querySelector(sel);
+  const fields=()=>{ const t=(typeof gigChord==='function'&&gigChord(sym()))||null, pc=mod12(LETTER_PC[L]+A);
+    return {root:pc,sp:{l:L,a:A},qid:t&&Q[t.qid]?t.qid:'maj7',suf:trSufOf(st),bass:bass||undefined}; };
+  const hear=()=>{ killBus(bus); bus=newBus(); if(!bus) return; const f=fields(), t=chordObj(f); playChord(spreadVoice(t.q,f.root,null,48,54,69),now()+.03,1.2,backSound(),bus,backVel(70)); tone(36+mod12(chordBassPc(f)-36),now()+.03,1.2,70,'bass',bus); };
+  const draw=(fromText)=>{
+    $p('#tpL').innerHTML=chips('l',LETTERS.map((x,i)=>[i,x]),v=>+v===L); $p('#tpA').innerHTML=chips('a',[[-1,'♭'],[0,'♮'],[1,'♯']],v=>+v===A);
+    $p('#tpQ').innerHTML=chips('q',[['maj','Major'],['min','Minor'],['dim','Dim'],['hdim','Half-dim'],['aug','Aug'],['sus4','Sus4'],['sus2','Sus2']],v=>v===st.q);
+    $p('#tpS').innerHTML=chips('s',[['','None'],['6','6'],['7','7'],['maj7','maj7']],v=>v===st.s);
+    $p('#tpX').innerHTML=chips('x',TR_EXT,v=>st.x.has(v));
+    $p('#tpB').value=String(bass?BASSES.findIndex(b=>b&&b.l===bass.l&&b.a===bass.a):0);
+    if(!fromText){ $p('#tpText').value=sym(); $p('#tpText').classList.remove('bad'); }
+    $p('#tpMsg').textContent=''; wire(); };
+  const change=()=>{ draw(false); hear(); };
+  const wire=()=>{
+    pop.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{ L=+b.dataset.l; change(); });
+    pop.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ A=+b.dataset.a; change(); });
+    pop.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{ st.q=b.dataset.q; if(st.q==='hdim') st.s='7'; change(); });
+    pop.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ st.s=b.dataset.s; change(); });
+    pop.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{ const k=b.dataset.x; st.x.has(k)?st.x.delete(k):st.x.add(k);
+      if(['9','11','13'].includes(k)&&st.x.has(k)&&st.s===''&&st.q!=='maj'&&st.q!=='min') st.s='7'; change(); }); };
+  // typing: read it as you go (a chord Gig can read), and light up the builder to match
+  $p('#tpText').oninput=ev=>{ const v=ev.target.value.trim(), t=v&&typeof gigChord==='function'?gigChord(v):null; ev.target.classList.toggle('bad',!!v&&!t);
+    if(!t){ $p('#tpMsg').textContent=v?'Not a chord yet: try C#13b9, Dbmaj7, F/A':''; return; }
+    L=t.root.l; A=t.root.a; st=trSufState(t.suf); bass=t.bass?{l:t.bass.l,a:t.bass.a}:null; draw(true); };
+  $p('#tpText').onkeydown=ev=>{ ev.stopPropagation(); if(ev.key==='Enter'){ ev.preventDefault(); if(!ev.target.classList.contains('bad')) $p('#tpOk').click(); } if(ev.key==='Escape') pop.remove(); };
+  $p('#tpText').onchange=()=>{ if(!$p('#tpText').classList.contains('bad')) hear(); };
+  $p('#tpB').onchange=ev=>{ bass=BASSES[+ev.target.value]; change(); };
+  $p('#tpHear').onclick=hear; draw(false);
   document.body.appendChild(pop);
   const w=pop.offsetWidth, h=pop.offsetHeight; let y=e.clientY+12; if(y+h>innerHeight-8) y=Math.max(8,e.clientY-h-12);
   pop.style.left=Math.max(8,Math.min(innerWidth-w-8,e.clientX-20))+'px'; pop.style.top=y+'px';
-  pop.onkeydown=ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); pop.querySelector('#tpOk').click(); } };
-  pop.querySelector('#tpOk').onclick=()=>{ onSave(root,qid); pop.remove(); };
-  pop.querySelector('#tpOk').focus();
-  if(onDel) pop.querySelector('#tpDel').onclick=()=>{ onDel(); pop.remove(); };
+  pop.onkeydown=ev=>{ if(ev.key==='Enter'&&ev.target.tagName!=='INPUT'){ ev.preventDefault(); $p('#tpOk').click(); } };
+  $p('#tpOk').onclick=()=>{ const t=$p('#tpText'); if(t.classList.contains('bad')) return; onSave(fields()); pop.remove(); };
+  $p('#tpText').focus(); $p('#tpText').select();
+  if(onDel) $p('#tpDel').onclick=()=>{ onDel(); pop.remove(); };
   setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('pointerdown',f); } }),0);
 }
 function trChordEdit(i,e){ const s=TR.score, c=s.chords[i];
-  trChordPopup(e,c,(root,qid)=>{ trPush(); s.chords[i]={...c,root,qid}; trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); },trWhere(c.at)); }
+  trChordPopup(e,c,f=>{ trPush(); const {sp,suf,bass,...rest}=c; s.chords[i]={...rest,...f}; if(!f.bass) delete s.chords[i].bass; trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); },trWhere(c.at)); }
 function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.key.pc,qid:'maj7'};
-  trChordPopup(e,{...prev},(root,qid)=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); s.chords.push({at,root,qid}); s.chords.sort((a,b)=>a.at-b.at); trRender(); },null,`New chord, ${trWhere(at)}`); }
+  trChordPopup(e,{...prev},f=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); const nc={at,...f}; if(!f.bass) delete nc.bass; s.chords.push(nc); s.chords.sort((a,b)=>a.at-b.at); trRender(); },null,`New chord, ${trWhere(at)}`); }
 
 /* How fast you hear it back: 25% to 150% in steps of 5 (dir 0: back to 100%). Only the listening changes; the
    transcription's tempo stays. The recording keeps its pitch. The label shows the tempo you'll hear. */
@@ -759,7 +809,7 @@ function trPlayScore(from){
       visibleMelody(s).forEach(n=>{ const a=real?(n.sec-sec0)/sp:T(n.gat), d=real?n.dsec/sp:n.gdur*spb*.92/sp; if(a<-.005||a>=endT) return; trTone(n.midi,t0+a,Math.max(.08,Math.min(d,endT-a)),94,mx.notes); });
       let pv=null; if(TR.backing) s.chords.forEach((c,i)=>{ const cz=s.chords[i+1]?s.chords[i+1].at:s.bars*4; if(cz<=from||c.at>=endB) return;
         const a=Math.max(0,T(c.at)), z=Math.min(endT,T(cz)), t=chordObj(c); if(z-a<.05) return;
-        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),mx.band,backVel(48)); tone(36+mod12(c.root-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',mx.band); }); }
+        pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,(z-a)*.95,backSound(),mx.band,backVel(48)); tone(36+mod12(chordBassPc(c)-36),t0+a,Math.min((z-a)*.95,2.2),66,'bass',mx.band); }); }
     if(s.drums){ drumsInit(); const pat=drumPatOf(s.beat??null);   // drums: bar by bar, so they follow the recording's own beat when it plays
       for(let bar=Math.floor(from/4+1e-6);bar*4<endB-1e-6;bar++){ const a=T(bar*4), z=T(bar*4+4); if(z<=0) continue;
         beatBar(t0+a,(z-a)/4,4,{bar},mx.drums,{hat:true,pat,after:t0-.005,until:t0+endT}); } }
@@ -945,7 +995,7 @@ function trSendHear(){ const L=trSendLick(); if(!L) return; const s=TR.score, sp
   L.ns.forEach(n=>trTone(n.midi,t0+(n.gat-L.start)*spb,Math.max(.1,n.gdur*spb*.92),94,bus));
   const dur=(L.end-L.start)*spb;
   if(L.mode==='one'){ const q=Q[TR.send.qid||L.c0.qid]; playChord(spreadVoice(q,L.root,null,48,54,69),t0,dur,backSound(),bus,backVel(44)); tone(36+mod12(L.root-36),t0,Math.min(dur,2.2),66,'bass',bus); }
-  else if(L.mode==='tr'){ let pv=null; L.chs.forEach((c,i)=>{ const a=Math.max(0,(i?c.at:L.start)-L.start)*spb, z=((L.chs[i+1]?L.chs[i+1].at:L.end)-L.start)*spb, t=chordObj(c); pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,Math.max(.2,z-a),backSound(),bus,backVel(44)); tone(36+mod12(c.root-36),t0+a,Math.min(z-a,2.2),66,'bass',bus); }); } }
+  else if(L.mode==='tr'){ let pv=null; L.chs.forEach((c,i)=>{ const a=Math.max(0,(i?c.at:L.start)-L.start)*spb, z=((L.chs[i+1]?L.chs[i+1].at:L.end)-L.start)*spb, t=chordObj(c); pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,Math.max(.2,z-a),backSound(),bus,backVel(44)); tone(36+mod12(chordBassPc(c)-36),t0+a,Math.min(z-a,2.2),66,'bass',bus); }); } }
 function trSendGo(){ const r=TR.send, L=trSendLick(), s=TR.score; if(!L||L.ns.length<3||L.ns.length>24) return;
   const artist=(r.player||'').trim(); store.set('lickArtist',artist);
   const lick=Lk('u'+Date.now(),(r.name||'').trim()||`${s.title}, bar ${trBars({a:L.start,b:L.end})}`,2,'Yours',L.over,L.ns.map(n=>[n.midi-60-L.root,n.gdur,n.gat-L.start]));

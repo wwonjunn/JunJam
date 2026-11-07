@@ -2,7 +2,18 @@
    score: {title, tempo, bars, key:{pc,minor}, melody:[{midi,gat,gdur,tri}], chords:[{at,root,qid}], soloBars:[bar...]} */
 
 const scoreChordAt=(score,at)=>score.chords.filter(c=>c.at<=at+1e-6).pop()||null;
-const chordObj=c=>({root:defaultRoot(c.root,Q[c.qid].minor),q:Q[c.qid]});
+/* A chord as written. Stored: {at, root (pitch class), qid (the nearest chord type, for how it sounds)}, and when you
+   wrote it yourself also sp (the root as spelled: C♯ or D♭, {l,a}), suf (the symbol as written: 13♭9) and bass (a
+   slash bass, {l,a}). The suffix's tensions join the type's colour notes, altered ones first, so 13♭9 sounds like one. */
+const TR_TENS=[[/(♭|b)9/,1],[/(♯|#)9/,3],[/(♯|#)11/,6],[/(♭|b)13/,8],[/(♭|b)5/,6],[/(♯|#)5/,8]];
+function chordQ(c){ const q=Q[c.qid]||Q.maj7; if(!c.suf||c.suf===q.suf) return q;
+  const add=[]; TR_TENS.forEach(([re,iv])=>{ if(re.test(c.suf)) add.push(iv); });
+  const nat=c.suf.replace(/(♭|b|♯|#)(5|9|11|13)/g,'').replace(/6\/9/,'9');
+  if(/13/.test(nat)) add.push(9); if(/9/.test(nat)) add.push(2); if(/11/.test(nat)&&(q.minor||/sus/.test(c.suf))) add.push(5);
+  return {...q,req:[...new Set([...add,...q.req])]}; }
+const chordRoot=c=>c.sp?mkRoot(c.sp.l,c.sp.a):defaultRoot(c.root,(Q[c.qid]||Q.maj).minor);
+const chordBassPc=c=>c.bass?mod12(LETTER_PC[c.bass.l]+c.bass.a):c.root;   // what the bass plays: the slash note, or the root
+const chordObj=c=>{ const q=chordQ(c), sl=c.bass?'/'+rootName(mkRoot(c.bass.l,c.bass.a)):''; return {root:chordRoot(c),q,suf:c.suf!=null||sl?(c.suf??q.suf)+sl:undefined}; };
 // Spell a melody note from the chord it sits over (so F♯ over D7, G♭ over A♭m), falling back to the key
 function spellIn(score,midi,at){
   const c=scoreChordAt(score,at);
@@ -42,7 +53,7 @@ const XKIND={maj:'major',min:'minor',dim:'diminished',aug:'augmented',maj7:'majo
   dim7:'diminished-seventh',six:'major-sixth',min6:'minor-sixth',sus7:'suspended-fourth',sus4:'suspended-fourth',sus2:'suspended-second',mmaj7:'major-minor',maj9:'major-ninth',dom9:'dominant-ninth',min9:'minor-ninth'};
 const xesc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const xfifths=k=>{ const order=[0,7,2,9,4,11,6,1,8,3,10,5]; let f=order.indexOf(mod12(k.minor?k.pc+3:k.pc)); if(f>6) f-=12; return f; };
-const xharmony=c=>{ const o=chordObj(c); return `<harmony><root><root-step>${LETTERS[o.root.l]}</root-step>${o.root.a?`<root-alter>${o.root.a}</root-alter>`:''}</root><kind text="${xesc(o.q.suf)}">${XKIND[o.q.id]||'major'}</kind></harmony>`; };
+const xharmony=c=>{ const o=chordObj(c); return `<harmony><root><root-step>${LETTERS[o.root.l]}</root-step>${o.root.a?`<root-alter>${o.root.a}</root-alter>`:''}</root><kind text="${xesc(c.suf??o.q.suf)}">${XKIND[o.q.id]||'major'}</kind>${c.bass?`<bass><bass-step>${LETTERS[c.bass.l]}</bass-step>${c.bass.a?`<bass-alter>${c.bass.a}</bass-alter>`:''}</bass>`:''}</harmony>`; };
 // Split [s,e) (divisions) into writable pieces. In a beat written as a tuplet of D (tupAt(beat)), pieces are whole tuplet spots.
 function xmlPieces(s,e,tupAt=()=>0){
   const out=[]; let t=s;

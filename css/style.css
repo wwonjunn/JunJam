@@ -983,3 +983,15 @@ html:root .ghost.tgl[aria-pressed="true"],html:root .trtransport .ghost[aria-pre
 html:root .ghost.tgl[aria-pressed="true"]:hover,html:root .trtransport .ghost[aria-pressed="true"]:hover{background:color-mix(in srgb, var(--brass) 85%, var(--ink));color:var(--lane)}
 html:root .trtransport .ghost[aria-pressed="true"] .fine{color:inherit;opacity:.85}
 .trsend[hidden]{display:none}
+/* the chord picker: type it or build it */
+.trchordpop{width:min(440px,94vw)} .trchordpop .tptitle{align-items:center}
+.trchordpop #tpText{font-family:var(--hand);font-size:24px;flex:1;min-width:0;padding:2px 8px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink)}
+.trchordpop #tpText.bad{border-color:#c0392b}
+.tpline{display:grid;grid-template-columns:64px 1fr;gap:4px 8px;align-items:center;margin-bottom:6px} .tpline .fine{margin:0}
+.tpline #tpA{grid-column:2}
+.tpchips{display:flex;flex-wrap:wrap;gap:4px}
+.tpchips button{font-family:var(--cond);font-weight:600;font-size:15px;background:transparent;color:var(--ink);border:1.5px solid var(--line-strong);border-radius:4px;padding:3px 9px;cursor:pointer;min-width:30px}
+.tpchips button[aria-pressed="true"]{border-color:var(--brass);background:var(--brass);color:var(--lane)}
+.tpline select{font:inherit;font-size:14px;padding:3px 6px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink);justify-self:start}
+.trchordpop .tprow{margin-top:4px}
+.tpacc button{font-size:19px;line-height:1;padding:2px 12px;font-family:'Noto Music','Apple Symbols',var(--cond)}
