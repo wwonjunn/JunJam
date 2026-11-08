@@ -7,6 +7,11 @@ if(!['all','solo','runs','orig','user','fav'].includes(LDATA.from)) LDATA.from='
 const isFav=id=>!!LDATA.fav[id];
 function toggleFav(id){ if(LDATA.fav[id]) delete LDATA.fav[id]; else LDATA.fav[id]=1; saveLines(); }
 const saveLines=()=>store.set('lines',LDATA);
+// licks sent from a transcription before Send to Lines kept only the melody: take out the bass notes once
+LDATA.user.forEach(l=>{ if(l.mainV||!/^From your transcription/.test(l.tip||'')) return; l.mainV=1;
+  const keep=mainLineKeep(l.notes.map(n=>n[0])); if(keep.every(Boolean)||keep.filter(Boolean).length<3) return;
+  l.notes=l.notes.filter((n,i)=>keep[i]); const t0=l.notes[0].length>2?l.notes[0][2]:0; if(t0) l.notes=l.notes.map(n=>n.length>2?[n[0],n[1],Math.round((n[2]-t0)*1000)/1000]:n); });
+saveLines();
 const allLicks=()=>[...LICKS,...SOLO_LICKS,...LDATA.user];
 applyRatings([...LICKS,...SOLO_LICKS],LDATA.user); // difficulty and tags from what the notes are, not just how many
 const lickFrom=l=>l.user?'user':l.style==='Solo'?'solo':l.style==='Runs'?'runs':'orig';

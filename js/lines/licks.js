@@ -69,6 +69,13 @@ const LICKS=[
   Lk('pryor','Running-bass gospel line',2,'Gospel','dom7',S([7,4,5,6,7,9,12,11,10],.5,1.5),{src:LSRC.wilson,artist:'Joseph Pryor',tip:'5, down to 3, then chromatic up to the root and back to ♭7. Notes as written by Sean Wilson; rhythm approximate.'}),
   Lk('shout','Gospel shout run',3,'Gospel','dom7',S([12,9,7,4,3,4,2,0],.25,1.5),{src:LSRC.gospel,tip:'1 6 5 3 ♭3 3 2 1, fast.'}),
 ];
+/* The main line of a run of notes (pitches in time order): which to keep. A note well under the line around it (more
+   than a 6th below both its neighbours' line and the passage's upper notes) is the bass or the left hand, not the
+   melody, so it goes; a lick is one line. Transcribe's Send to Lines uses it, and licks sent before it are cleaned once. */
+function mainLineKeep(ps){ if(ps.length<4) return ps.map(()=>true);
+  const hi=[...ps].sort((a,b)=>a-b)[Math.floor(ps.length*.7)];
+  return ps.map((p,i)=>{ const nb=ps.slice(Math.max(0,i-4),i).concat(ps.slice(i+1,i+5)).sort((a,b)=>a-b), loc=nb[Math.floor(nb.length*.65)];
+    return !(p<loc-9&&p<hi-9); }); }
 // Place a lick on a reference pitch class: real notes, chords with start beats, and spellings
 function lickInstance(l,refPc){
   // a minor key only when the minor chord sits on the reference itself (a ii–V–I starts on a minor ii but is in major)

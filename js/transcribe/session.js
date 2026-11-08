@@ -277,7 +277,7 @@ function trEdit(score,res,savedIndex){
         <button data-exp="junjam">Share as a Jun Jam file <span class="fine">A .junjam with the recording, for a friend with Jun Jam</span></button><hr>
         <button data-exp="pdf">Export PDF <span class="fine">The sheet music, to print or send</span></button>
         <button data-exp="xml">Export MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">Export MIDI, on the beat</button>${R?'<button data-exp="midp">Export MIDI, as played</button>':''}<hr>
-        <button id="trLick">Send to Lines <span class="fine">Pick a few notes in the sheet music, and send them as a lick</span></button>
+        <button id="trLick">Send to Lines <span class="fine">Pick a few notes in the sheet music (double-click one for its phrase), and send them as a lick</span></button>
         ${TR.buf&&R?'<button id="trSettings">Settings <span class="fine">What to write, instrument and part</span></button>':''}
         <button id="trHelpBtn">Guide <span class="fine">How everything here works</span></button></div></div></div>
     <div class="trtransport" id="trBar">
@@ -501,6 +501,7 @@ function trScoreView(){
   // click the music to put the playhead there
   $('trScore').onclick=e=>{ if(TR.sclickSkip){ TR.sclickSkip=false; return; } const ce=e.target.closest('[data-c]'); if(ce) return trChordEdit(+ce.dataset.c,e);
     const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return; TR.posB=b; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
+  $('trScore').ondblclick=e=>{ if(e.target.closest('[data-c]')) return; const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendPhrase(b); };   // a note's phrase, ready to send to Lines
   $('trScore').onpointerdown=e=>{ if(e.button||e.target.closest('[data-c]')) return; const b0=trSheetBeat(e.clientX,e.clientY); if(b0!=null) TR.sdrag={x:e.clientX,y:e.clientY,b0,moved:false}; };
   trSheetHead(TR.posB||0); trLoopShow(); trSendTint();
 }
@@ -956,8 +957,10 @@ function trSendTint(){ const sc=$('trScore'); if(!sc) return; sc.querySelectorAl
     const xb=t=>{ const u=t-L.a, i=Math.min(n-1,Math.floor(u+1e-9)); return L.X0+L.cum[i]+(u-i)*L.bw[i]; };
     const sr=svg.getBoundingClientRect(), er=el.getBoundingClientRect(), k2=sr.width/L.W, d=document.createElement('i');
     d.className='trssend'; d.style.left=(sr.left-er.left+(xb(a)-10)*k2)+'px'; d.style.width=((xb(b)-xb(a))*k2)+'px'; el.appendChild(d); }); }
-// what will be sent: the notes, the root they're measured from, and the chord(s)
-function trSendLick(){ const s=TR.score, r=TR.send, ns=r.idx.map(i=>s.melody[i]); if(!ns.length) return null;
+// what will be sent: the melody of the picked notes (bass notes under the line left out, unless you keep them), the root
+// they're measured from, and the chord(s)
+function trSendLick(){ const s=TR.score, r=TR.send; let ns=r.idx.map(i=>s.melody[i]).filter(Boolean).sort((a,b)=>a.gat-b.gat); if(!ns.length) return null;
+  const keep=mainLineKeep(ns.map(n=>n.midi)), low=ns.filter((n,i)=>!keep[i]); if(!r.keepLow&&low.length&&ns.length-low.length>=1) ns=ns.filter((n,i)=>keep[i]);
   const start=Math.floor(ns[0].gat*2)/2, end=Math.max(...ns.map(n=>n.gat+n.gdur)), c0=scoreChordAt(s,ns[0].gat)||{root:s.key.pc,qid:s.key.minor?'min7':'maj7'};
   const chs=[c0,...s.chords.filter(c=>c.at>ns[0].gat+1e-6&&c.at<end-1e-6)];
   const mode=r.mode||'one', root=mode==='one'?(r.root??c0.root):mode==='tr'?c0.root:s.key.pc;
@@ -966,29 +969,55 @@ function trSendLick(){ const s=TR.score, r=TR.send, ns=r.idx.map(i=>s.melody[i])
   else if(mode==='none') over=s.key.minor?'min7':'maj7';
   else { const r0=chordObj(c0).root; over=chs.map((c,i)=>{ const rr=chordObj(c).root, at=Math.max(start,i?c.at:start), next=i<chs.length-1?chs[i+1].at:Math.ceil(end);
     return [mod7(rr.l-r0.l),mod12(c.root-c0.root),c.qid,Math.max(.5,next-at)]; }); if(over.length===1) over=over[0][2]; }
-  return {ns,start,end,c0,chs,mode,root,over}; }
+  return {ns,low,start,end,c0,chs,mode,root,over}; }
+// the lick itself, as Lines will have it
+function trSendBuild(L){ const r=TR.send, s=TR.score, artist=(r.player||'').trim();
+  const lick=Lk('u'+Date.now(),(r.name||'').trim()||`${s.title}, bar ${trBars({a:L.start,b:L.end})}`,2,'Yours',L.over,L.ns.map(n=>[n.midi-60-L.root,n.gdur,Math.round((n.gat-L.start)*1000)/1000]));
+  lick.user=true; lick.mainV=1; if(L.mode==='none') lick.nochord=true; if(artist) lick.artist=artist;
+  lick.tip=`From your transcription of ${s.title}${artist?`, played by ${artist}`:''}.`; applyRatings([],[lick]); return lick; }
+// the transcription's notes in order (what the start / end buttons step through)
+const trSendNotes=()=>visibleMelody(TR.score).map(n=>TR.score.melody.indexOf(n)).sort((x,y)=>TR.score.melody[x].gat-TR.score.melody[y].gat);
+// move the start or the end of the pick by one note
+function trSendNudge(end,dir){ const r=TR.send, m=TR.score.melody, all=trSendNotes(); if(!r.idx.length) return;
+  const pos=r.idx.map(i=>all.indexOf(i)).filter(x=>x>=0).sort((a,b)=>a-b); let lo=pos[0], hi=pos[pos.length-1];
+  if(end) hi=Math.max(lo,Math.min(all.length-1,hi+dir)); else lo=Math.min(hi,Math.max(0,lo+dir));
+  r.a=m[all[lo]].gat; r.b=m[all[hi]].gat+1e-3; r.own=false; trSendPick(); trSendTint(); trSendRender(); trRollView(); }
+// double-click a note: its phrase (notes running on with gaps under half a beat), up to 24 notes
+function trSendPhrase(b){ const m=TR.score.melody, all=trSendNotes(); if(!all.length) return;
+  let k=0; all.forEach((i,j)=>{ if(Math.abs(m[i].gat-b)<Math.abs(m[all[k]].gat-b)) k=j; });
+  const gap=(x,y)=>m[all[y]].gat-(m[all[x]].gat+m[all[x]].gdur); let lo=k, hi=k;
+  while(lo>0&&gap(lo-1,lo)<.5&&m[all[lo]].gat-m[all[lo-1]].gat<1.5&&hi-lo<23) lo--;
+  while(hi<all.length-1&&gap(hi,hi+1)<.5&&m[all[hi+1]].gat-m[all[hi]].gat<1.5&&hi-lo<23) hi++;
+  if(!TR.send) trSendOpen(); const r=TR.send; r.a=m[all[lo]].gat; r.b=m[all[hi]].gat+1e-3; r.own=false; trSendPick(); trSendTint(); trSendRender(); trRollView(); }
 function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r) return;
-  const L=trSendLick(), n=r.idx.length, bars=L?trBars({a:L.start,b:L.end}):'', ok=n>=3&&n<=24;
+  const L=trSendLick(), n=L?L.ns.length:0, bars=L?trBars({a:L.start,b:L.end}):'', ok=n>=3&&n<=24;
   const c0=L?L.c0:scoreChordAt(s,r.a)||{root:s.key.pc,qid:'maj7'}, chs=L?L.chs:[], mode=r.mode||'one', root=r.root??c0.root, qid=r.qid||c0.qid;
   const chName=c=>symText(chordObj(c));
-  if(r.name==null||!r.nameEdited) r.name=`${s.title}${L?`, bar ${bars}`:''}`;
-  el.innerHTML=`<div class="trsendhead"><b>Send to Lines</b><span class="fine">A few notes become a lick you practise in all 12 keys.</span><span class="trspace"></span><button class="ghost ic" id="trSendX" title="Close (Esc)">✕</button></div>
-    <div class="trsendrow"><span class="trsendn">1</span><div><b>${n?`${n} note${n===1?'':'s'}, bar${bars.includes('–')?'s':''} ${bars}`:'No notes picked yet'}</b>
-      <span class="fine">${n?(ok?'':n<3?' Pick at least 3.':' That\'s a lot: 24 at most, shorter licks travel better.'):' Drag across the notes you want in the sheet music.'} Drag again to change it${TR.looping&&TR.loop?'; or ':'.'}</span>${TR.looping&&TR.loop?'<button class="ghost trsm" id="trSendLoop">use the looped bars</button>':''}
-      ${n?'<button class="ghost trsm" id="trSendHear">▶ Hear it</button>':''}</div></div>
-    <div class="trsendrow"><span class="trsendn">2</span><div><b>Practised over</b>
-      <div class="seg" role="group"><button data-smode="one" aria-pressed="${mode==='one'}">One chord</button>${chs.length>1?`<button data-smode="tr" aria-pressed="${mode==='tr'}">As transcribed</button>`:''}<button data-smode="none" aria-pressed="${mode==='none'}">No chord</button></div>
-      ${mode==='one'?`<select id="trSendRoot">${TR_PCN.map((x,i)=>`<option value="${i}"${i===root?' selected':''}>${x}</option>`).join('')}</select><select id="trSendQ">${[...new Set([...TR_QUALS,qid])].filter(id=>Q[id]).map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>`
-        :mode==='tr'?`<span class="fine">${chs.map(chName).join(' → ')}</span>`:`<span class="fine">Just the line: Lines plays no chords under it.</span>`}</div></div>
-    <div class="trsendrow"><span class="trsendn">3</span><div class="trsendnames"><label><span class="fine">Name</span><input id="trSendName" value="${trEsc(r.name)}"></label><label><span class="fine">Player (optional)</span><input id="trSendWho" value="${trEsc(r.player)}" placeholder="e.g. Chick Corea"></label>
-      <button class="go" id="trSendGo"${ok?'':' disabled'}>Send to Lines</button></div></div>`;
+  if(!r.nameEdited) r.name=`${s.title}${L?`, bar ${bars}`:''}`;
+  let preview=''; if(L&&n>=2){ try{ preview=`<div class="lstaff trsendprev">${lineStaffSVG(lickInstance(trSendBuild(L),L.root),-1,false)}</div>`; }catch(e){} }
+  el.innerHTML=`<div class="trsendhead"><b>Send to Lines</b><span class="fine">Drag across notes in the sheet music, or double-click a note for its phrase.</span><span class="trspace"></span><button class="ghost ic" id="trSendX" title="Close (Esc)">✕</button></div>
+    <div class="trsendmain"><div class="trsendleft">
+      <div class="trsendrow"><span class="trsendn">1</span><div><b>${n?`${n} note${n===1?'':'s'}, bar${bars.includes('–')?'s':''} ${bars}`:'No notes picked yet'}</b>
+        ${r.idx.length?`<span class="seg trnudge" role="group" title="Move the start or the end by one note"><button data-nudge="s-1" title="Start one note earlier">◂</button><button disabled>Start</button><button data-nudge="s1" title="Start one note later">▸</button></span><span class="seg trnudge" role="group"><button data-nudge="e-1" title="End one note earlier">◂</button><button disabled>End</button><button data-nudge="e1" title="End one note later">▸</button></span>`:''}
+        ${TR.looping&&TR.loop?'<button class="ghost trsm" id="trSendLoop">Use the looped bars</button>':''}${n?'<button class="ghost trsm" id="trSendHear">▶ Hear it</button>':''}
+        ${L&&L.low.length?`<span class="fine trsendlow">${r.keepLow?`Keeping ${L.low.length} low note${L.low.length===1?'':'s'} under the line.`:`Melody only: ${L.low.length} low note${L.low.length===1?'':'s'} under the line (the bass) left out.`} <a href="#" id="trSendKeep">${r.keepLow?'Melody only':'Keep them'}</a></span>`:''}
+        ${n&&!ok?`<span class="fine trsendlow">${n<3?'Pick at least 3 notes.':'24 notes at most: shorter licks travel better.'}</span>`:''}</div></div>
+      <div class="trsendrow"><span class="trsendn">2</span><div><b>Over</b>
+        <div class="seg" role="group"><button data-smode="one" aria-pressed="${mode==='one'}">One chord</button>${chs.length>1?`<button data-smode="tr" aria-pressed="${mode==='tr'}">As transcribed</button>`:''}<button data-smode="none" aria-pressed="${mode==='none'}">No chord</button></div>
+        ${mode==='one'?`<select id="trSendRoot">${TR_PCN.map((x,i)=>`<option value="${i}"${i===root?' selected':''}>${x}</option>`).join('')}</select><select id="trSendQ">${[...new Set([...TR_QUALS,qid])].filter(id=>Q[id]).map(id=>`<option value="${id}"${id===qid?' selected':''}>${Q[id].suf||'major'}</option>`).join('')}</select>`
+          :mode==='tr'?`<span class="fine">${chs.map(chName).join(' → ')}</span>`:`<span class="fine">Just the line.</span>`}</div></div>
+      <div class="trsendrow"><span class="trsendn">3</span><div class="trsendnames"><label><span class="fine">Name</span><input id="trSendName" value="${trEsc(r.name)}"></label><label><span class="fine">Player (optional)</span><input id="trSendWho" value="${trEsc(r.player)}" placeholder="e.g. Chick Corea"></label>
+        <button class="go" id="trSendGo"${ok?'':' disabled'}>Send to Lines</button></div></div></div>
+      ${preview?`<div class="trsendright"><span class="fine">How it'll look in Lines</span>${preview}</div>`:''}</div>`;
   $('trSendX').onclick=trSendClose;
   if($('trSendLoop')) $('trSendLoop').onclick=()=>{ r.a=TR.loop.a; r.b=TR.loop.b; r.own=false; trSendPick(); trSendTint(); trSendRender(); trRollView(); };
   if($('trSendHear')) $('trSendHear').onclick=trSendHear;
+  if($('trSendKeep')) $('trSendKeep').onclick=e=>{ e.preventDefault(); r.keepLow=!r.keepLow; trSendRender(); };
+  el.querySelectorAll('[data-nudge]').forEach(b=>b.onclick=()=>{ const v=b.dataset.nudge; trSendNudge(v[0]==='e',+v.slice(1)); });
   el.querySelectorAll('[data-smode]').forEach(b=>b.onclick=()=>{ r.mode=b.dataset.smode; trSendRender(); });
-  if($('trSendRoot')){ $('trSendRoot').onchange=e=>{ r.root=+e.target.value; trSendHear(); }; $('trSendQ').onchange=e=>{ r.qid=e.target.value; trSendHear(); }; }
+  if($('trSendRoot')){ $('trSendRoot').onchange=e=>{ r.root=+e.target.value; trSendRender(); trSendHear(); }; $('trSendQ').onchange=e=>{ r.qid=e.target.value; trSendRender(); trSendHear(); }; }
   $('trSendName').oninput=e=>{ r.name=e.target.value; r.nameEdited=true; }; $('trSendWho').oninput=e=>{ r.player=e.target.value; };
-  el.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==='Enter'&&ok) trSendGo(); });   // typing here isn't the computer-keys piano
+  el.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==='Enter'&&ok) trSendGo(); if(e.key==='Escape') trSendClose(); });   // typing here isn't the computer-keys piano
   $('trSendGo').onclick=trSendGo; }
 // hear what will be sent: the notes, over the chord(s) it'll be practised over
 function trSendHear(){ const L=trSendLick(); if(!L) return; const s=TR.score, spb=60/(s.tempo||100)/(TR.speed||1), bus=previewBus(Math.ceil(((L.end-L.start)*spb+1.5)*1000)); if(!bus) return; const t0=now()+.08;
@@ -996,16 +1025,13 @@ function trSendHear(){ const L=trSendLick(); if(!L) return; const s=TR.score, sp
   const dur=(L.end-L.start)*spb;
   if(L.mode==='one'){ const q=Q[TR.send.qid||L.c0.qid]; playChord(spreadVoice(q,L.root,null,48,54,69),t0,dur,backSound(),bus,backVel(44)); tone(36+mod12(L.root-36),t0,Math.min(dur,2.2),66,'bass',bus); }
   else if(L.mode==='tr'){ let pv=null; L.chs.forEach((c,i)=>{ const a=Math.max(0,(i?c.at:L.start)-L.start)*spb, z=((L.chs[i+1]?L.chs[i+1].at:L.end)-L.start)*spb, t=chordObj(c); pv=spreadVoice(t.q,t.root.pc,pv,48,54,69); playChord(pv,t0+a,Math.max(.2,z-a),backSound(),bus,backVel(44)); tone(36+mod12(chordBassPc(c)-36),t0+a,Math.min(z-a,2.2),66,'bass',bus); }); } }
-function trSendGo(){ const r=TR.send, L=trSendLick(), s=TR.score; if(!L||L.ns.length<3||L.ns.length>24) return;
+function trSendGo(){ const r=TR.send, L=trSendLick(); if(!L||L.ns.length<3||L.ns.length>24) return;
   const artist=(r.player||'').trim(); store.set('lickArtist',artist);
-  const lick=Lk('u'+Date.now(),(r.name||'').trim()||`${s.title}, bar ${trBars({a:L.start,b:L.end})}`,2,'Yours',L.over,L.ns.map(n=>[n.midi-60-L.root,n.gdur,n.gat-L.start]));
-  lick.user=true; if(L.mode==='none') lick.nochord=true; if(artist) lick.artist=artist;
-  lick.tip=`From your transcription of ${s.title}${artist?`, played by ${artist}`:''}.`; applyRatings([],[lick]); LDATA.user.push(lick); saveLines();
+  const lick=trSendBuild(L); LDATA.user.push(lick); saveLines();
   const el=$('trSend'); el.innerHTML=`<div class="trsendhead"><b>Sent to Lines: ${trEsc(lick.name)}</b><span class="fine">${lick.diff===1?'Easy':lick.diff===2?'Medium':'Hard'}, under Yours${artist?` and under ${trEsc(artist)}`:''}.</span><span class="trspace"></span>
     <button class="ghost" id="trSendMore">Send another</button><button class="go" id="trSendPlay">Practise it now</button><button class="ghost ic" id="trSendX" title="Close">✕</button></div>`;
   $('trSendX').onclick=trSendClose; $('trSendMore').onclick=()=>{ TR.selected.clear(); trSendOpen(); trRollView(); };
   $('trSendPlay').onclick=()=>trLeave(()=>{ trSendClose(); trToMenu(); side='lines'; renderMenu(); linesStart(lick.id); },'Leave the transcription to practise it?'); }
-const mod7=x=>((x%7)+7)%7;
 function trToMenu(){ trStopAll(); if(TR.recCancel) TR.recCancel(); if(TR.abort){ TR.abort.abort(); TR.abort=null; } TR.active=false; $('transStage').hidden=true; document.body.classList.remove('trmode'); side='home'; $('startOv').hidden=false; document.body.classList.add('menu'); renderMenu(); }
 function trKey(e){
   if(!TR.active) return false;
