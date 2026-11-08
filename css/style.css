@@ -1000,3 +1000,12 @@ html:root .trtransport .ghost[aria-pressed="true"] .fine{color:inherit;opacity:.
 .trsendprev svg{display:block;height:112px;width:auto;max-width:none}
 .trnudge button{padding:2px 8px;font-size:14px} .trnudge button:disabled{opacity:1;cursor:default;font-size:12px;color:var(--muted)}
 .trsendlow{flex-basis:100%}
+/* the lick's chords: a strip across its beats */
+.trsendover{align-items:flex-start!important} .trsendover>b{padding-top:6px}
+.trcstrip{position:relative;flex:1 1 360px;min-width:240px;height:40px;display:grid;grid-template-columns:repeat(var(--n),1fr);border:1.5px solid var(--line-strong);border-radius:var(--radius);overflow:hidden}
+.trcstrip i{cursor:copy;border-left:1px dotted color-mix(in srgb, var(--line-strong) 60%, transparent)} .trcstrip i.cbeat{border-left:1px solid var(--line-strong)} .trcstrip i.cbar{border-left:2px solid color-mix(in srgb, var(--ink) 55%, transparent)}
+.trcstrip i:first-child{border-left:0} .trcstrip i:hover{background:color-mix(in srgb, var(--brass) 14%, transparent)}
+.trcchip{position:absolute;top:5px;margin:0 0 0 3px;font-family:var(--hand);font-weight:700;font-size:15px;padding:3px 8px;border-radius:5px;border:1.5px solid var(--brass);background:var(--panel);color:var(--ink);cursor:pointer;white-space:nowrap;z-index:1}
+.trcchip:hover{background:var(--brass);color:var(--lane)}
+.trstriphint{flex-basis:100%;margin:0} .trsendopts{display:flex;align-items:center;gap:10px}
+.trcstrip i{position:relative} .trcstrip i[data-n]::after{content:attr(data-n);position:absolute;left:3px;bottom:1px;font-size:10px;color:var(--muted);pointer-events:none}

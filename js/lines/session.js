@@ -234,7 +234,7 @@ function playLine(inst,lick,bus,t0,bpm){
   if(!inst.nochord) inst.chords.forEach(c=>{
     const at=T(c.at), d=c.beats*spb*.95;
     playChord(compUnder(c,ceil),at,d,backSound(),bus,backVel(44));
-    tone(40+mod12(c.root.pc-40),at,Math.min(d,2.2),70,'bass',bus);
+    tone(40+mod12((c.bassPc??c.root.pc)-40),at,Math.min(d,2.2),70,'bass',bus);   // a slash chord: its bass note
   });
   let end=0;
   inst.notes.forEach(n=>{ const a=T(startOf(n)), e=T(startOf(n)+lenOf(n)); end=Math.max(end,e); tone(n.midi,a,Math.max(.1,(e-a)*.92),96,'epiano',bus); });

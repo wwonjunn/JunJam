@@ -95,7 +95,10 @@ function lickInstance(l,refPc){
     return r;};
   const times=lickTimes(l), total=Math.max(...times.map(x=>x.at+x.dur));
   let t=0;
-  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b])=>{ const beats=b||Math.max(2,Math.ceil(total)); const c={root:at(s,i,qid),q:Q[qid],at:t,beats}; t+=beats; return c; });
+  // a chord sent from Transcribe may carry its symbol as written (suf: 13♭9, with its tensions in the sound) and a slash
+  // bass (bs: [letters, semitones] above its root); both move with the key like the root does
+  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b,suf,bs])=>{ const beats=b||Math.max(2,Math.ceil(total)), root=at(s,i,qid), br=bs?at(s+bs[0],i+bs[1],'maj'):null;
+    const c={root,q:suf&&typeof chordQ==='function'?chordQ({qid,suf}):Q[qid],at:t,beats}; if(suf!=null||br) c.suf=(suf??Q[qid].suf)+(br?'/'+rootName(br):''); if(br) c.bassPc=br.pc; t+=beats; return c; });
   const R=60+mod12(refPc), grid=gridTimes(times);
   const raw=l.notes.map(([s],i)=>({midi:R+s,...times[i],...grid[i]}));
   // Right-hand register: lowest note from middle C up when it fits, so the comp has room underneath
@@ -130,7 +133,7 @@ function gridTimes(times){
   return times.map((x,i)=>{ const unit=tri[i]?1/3:.25, own=Math.max(unit,Math.round(x.dur/unit)*unit), nx=pos[i+1];
     return {gat:pos[i],gdur:nx!==undefined?Math.min(nx-pos[i],own):own,tri:tri[i]}; });
 }
-const lickOver=l=>l.nochord?'no chord':l.ch?l.ch.map(([,,qid])=>Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
+const lickOver=l=>l.nochord?'no chord':l.ch?l.ch.map(([,,qid,,suf])=>suf||Q[qid].suf||'maj').join(' → '):(Q[l.over].suf||'major');
 
 /* ---------------- difficulty: what each note is over its chord, and how you get to it ----------------
    Chord tones are free; natural tensions cost a little; altered or outside notes cost a lot, unless they're

@@ -5,6 +5,7 @@ const scoreChordAt=(score,at)=>score.chords.filter(c=>c.at<=at+1e-6).pop()||null
 /* A chord as written. Stored: {at, root (pitch class), qid (the nearest chord type, for how it sounds)}, and when you
    wrote it yourself also sp (the root as spelled: C♯ or D♭, {l,a}), suf (the symbol as written: 13♭9) and bass (a
    slash bass, {l,a}). The suffix's tensions join the type's colour notes, altered ones first, so 13♭9 sounds like one. */
+const mod7=x=>((x%7)+7)%7;   // letter steps (a lick's chords are stored a number of letters and semitones above its first)
 const TR_TENS=[[/(♭|b)9/,1],[/(♯|#)9/,3],[/(♯|#)11/,6],[/(♭|b)13/,8],[/(♭|b)5/,6],[/(♯|#)5/,8]];
 function chordQ(c){ const q=Q[c.qid]||Q.maj7; if(!c.suf||c.suf===q.suf) return q;
   const add=[]; TR_TENS.forEach(([re,iv])=>{ if(re.test(c.suf)) add.push(iv); });
