@@ -1,7 +1,6 @@
 .DS_Store
 *.log
 .claude/
-transcriptions/
 *.mp3
 *.wav
 *.m4a
