@@ -132,10 +132,10 @@ async function libOpen(){
   catch(e){ libFail(); LIB.err=e.name==='NotFoundError'?"The library folder isn't there any more (moved or deleted?). Pick it again.":`Couldn't open the library folder (${e.message}).`; return false; } }
 // From a click: ask for the folder (or for permission again), then bring in what this browser has
 async function libLink(){
-  let h; try{ h=await window.showDirectoryPicker({id:'junjam-library',mode:'readwrite',startIn:'documents'}); }catch(e){ return false; }
+  let h; try{ h=await window.showDirectoryPicker({id:'junjam-library',mode:'readwrite',startIn:'desktop'}); }catch(e){ return false; }   // Jun Jam usually sits on the Desktop
   if(LIB.pick&&!await LIB.pick.isSameEntry(h).catch(()=>false)) libForget();   // another folder: sync it afresh
-  const isApp=await libHas(h,'index.html','file')&&await libHas(h,'js','directory');   // the Jun Jam folder: use library/ inside it
-  LIB.pick=h; LIB.sub=isApp?'library':null; await trDB.put(LIB_KEY,{handle:h,sub:LIB.sub});
+  // whatever you pick, the files go in a library/ folder inside it (made for you); a folder already called library is used as it is
+  LIB.pick=h; LIB.sub=h.name.toLowerCase()==='library'?null:'library'; await trDB.put(LIB_KEY,{handle:h,sub:LIB.sub});
   if(!await libOpen()) return false;
   return libCopyIn(); }
 async function libAllow(){

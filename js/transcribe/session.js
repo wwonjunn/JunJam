@@ -907,6 +907,11 @@ function trSheetHead(b){ const sc=$('trScore'); if(!sc||!TR.lines) return;
     hd.style.display='block'; hd.style.left=(sr.left-er.left+x*sr.width/L.W)+'px';
     if(TR.playing&&trFollow()){ const er=el.getBoundingClientRect(), cr=sc.getBoundingClientRect(); if(er.top<cr.top||er.bottom>cr.bottom) sc.scrollTop+=er.top-cr.top-6; } }); }
 async function trSave(){
+  // No library folder yet: Save links it (Chrome's folder window has to open straight from the click). Pick the Jun Jam
+  // folder and library/ is made inside it. Cancel and it saves in the browser, as before, and doesn't ask again this time.
+  if(LIB_OK&&!LIB.on&&!LIB.declined){
+    const ask=LIB.need?libAllow():(trMsg('Choose the Jun Jam folder (on your Desktop): your transcriptions go in a library folder inside it.'),libLink());
+    if(await ask){ await libSyncAll(); libChip(); } else LIB.declined=true; }
   const s=TR.score; if(!s.id) s.id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const at=TR.saved!=null?TRDATA.list.findIndex(t=>t.id===s.id):-1, old=at>=0&&TRDATA.list[at], withMedia=!!(TR.file&&TR.raw&&TR.res);
   const newMedia=withMedia&&TR.mediaFor!==s.id+'|'+TR.sel;   // the recording goes in once (and again only if the part changed)
