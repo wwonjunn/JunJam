@@ -457,6 +457,7 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trmenulist .fine{display:block;font-weight:400}
 .trmenulist hr{border:0;border-top:1px solid var(--line-strong);margin:4px 6px}
 .trlibbar{display:flex;align-items:center;gap:8px;margin-bottom:6px} .trlibbar .sec{margin:0}
+.libchip{position:fixed;right:14px;bottom:14px;z-index:60;background:var(--bg,#111)}
 .trlibwhere{display:flex;align-items:center;gap:8px;margin:-2px 0 8px} .trlibwhere b{font-weight:600} .trlibneed .erow{margin-top:8px}
 #trLib .lick .lt{padding-right:40px}
 .trfolder{border-radius:8px;margin-bottom:6px;transition:background .12s} .trfolder.over{background:color-mix(in srgb, var(--brass) 14%, transparent);outline:2px dashed var(--brass)}

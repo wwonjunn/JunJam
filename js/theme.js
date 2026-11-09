@@ -115,12 +115,13 @@ function renderSettingsPane(){
     <p style="margin-top:14px">Drums: the kit. The sounds are built in and work offline. Want a particular kit? Load your own kick, snare and hi-hat samples (a free lofi kit, say) and Gig plays those instead.</p>
     <div id="drumSound"></div>
     <div id="drumBeat"></div>
-    <p class="fine">Built-in kit: Sonic Pi samples (freesound.org, CC0).</p>`;
+    <p class="fine">Built-in kit: Sonic Pi samples (freesound.org, CC0).</p>
+    <h2>Your files</h2><div id="libBox"></div>`;
   const P=$('settingsPane');
   P.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.pick); P.querySelectorAll('[data-pick]').forEach(x=>x.setAttribute('aria-pressed',x===b)); P.querySelector('.shaderow').hidden=b.dataset.pick!=='classic'; renderProfileChip(); });
   P.querySelectorAll('[data-shade]').forEach(b=>b.onclick=()=>{ applyTheme('classic',b.dataset.shade); P.querySelectorAll('[data-shade]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
   P.querySelectorAll('[data-bsound]').forEach(b=>b.onclick=()=>{ setBackSound(b.dataset.bsound); P.querySelectorAll('[data-bsound]').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('bsHear').click(); });
-  renderKeysSound(); renderBassSound(); renderDrumSound();
+  renderKeysSound(); renderBassSound(); renderDrumSound(); if(typeof libProfileBox==='function') libProfileBox($('libBox'));
   if($('smpCredit')) $('smpCredit').hidden=smpOwnKeys();
   $('bsHear').onclick=()=>{ const bus=previewBus(); if(!bus) return; let pv=null, t=now()+.05;
     [[2,'min9'],[7,'dom13'],[0,'maj9']].forEach(([r,q],i)=>{ pv=spreadVoice(Q[q],r,pv); playChord(pv,t+i*.9,.85,backSound(),bus,backVel(62)); tone(36+mod12(r-36),t+i*.9,.85,80,'bass',bus); }); };

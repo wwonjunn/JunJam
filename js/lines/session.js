@@ -1,12 +1,11 @@
 /* Lines: learn a lick in one key, then move it to five more. The drill is transfer, not memorising.
    Grading follows the notes in order, in any octave; rhythm is free for now. */
 let LDATA=store.get('lines',{stars:{},user:[],tempo:100,diff:0});
-if(typeof LDATA.lh!=='boolean') LDATA.lh=true; // left hand: notes below middle C are your comping, not part of the lick
-const LH_SPLIT=60; // playback feel for every lick, the player's choice
+delete LDATA.lh;   // every note you play is the lick (right hand); there's no left-hand comping split any more
 if(!['all','solo','runs','orig','user','fav'].includes(LDATA.from)) LDATA.from='all'; LDATA.artist=LDATA.artist||''; LDATA.chord=LDATA.chord||''; LDATA.fav=LDATA.fav||{}; // fav: licks saved with ♥
 const isFav=id=>!!LDATA.fav[id];
 function toggleFav(id){ if(LDATA.fav[id]) delete LDATA.fav[id]; else LDATA.fav[id]=1; saveLines(); }
-const saveLines=()=>store.set('lines',LDATA);
+const saveLines=()=>{ store.set('lines',LDATA); if(typeof libSaveSoon==='function') libSaveSoon(); };   // and to the library folder, when there is one
 // licks sent from a transcription before Send to Lines kept only the melody: take out the bass notes once
 LDATA.user.forEach(l=>{ if(l.mainV||!/^From your transcription/.test(l.tip||'')) return; l.mainV=1;
   const keep=mainLineKeep(l.notes.map(n=>n[0])); if(keep.every(Boolean)||keep.filter(Boolean).length<3) return;
@@ -129,7 +128,6 @@ function linesRound(){
   const step=LINES.plan?LINES.plan[LINES.round]:null; if(step) LINES.lick=lickById(step.id);   // a practice session: each step names its lick and key
   const ref=step?step.key:LINES.keys[LINES.round];
   const inst=lickInstance(LINES.lick,ref);
-  while(LDATA.lh&&Math.min(...inst.notes.map(n=>n.midi))<LH_SPLIT) inst.notes.forEach(n=>{ n.midi+=12; n.spell={...n.spell,midi:n.midi,oct:n.spell.oct+1,di:n.spell.di+7}; });   // the whole lick above middle C
   Object.assign(LINES,{inst,idx:0,offset:null,mistakes:0,revealed:linesLearnStep(),done:false});
   $('lMsg').textContent=''; $('lMsg').className='lmsg';
   kbMarks={}; linesRender(); setTimeout(linesPlay,250);
@@ -141,11 +139,11 @@ function linesRender(){
   $('lTitle').textContent=L.lick.name; $('lFav').textContent=isFav(L.lick.id)?'♥':'♡'; $('lFav').title=isFav(L.lick.id)?'Remove from favourites':'Add to favourites';
   $('lCount').textContent=step?`${step.label} · ${L.round+1} of ${L.plan.length}`:learn?'Learn it':`New key ${L.round} of ${TRANSFER_KEYS}`;
   $('lChords').textContent=inst.nochord?'Just the line, no chord':inst.chords.map(c=>symText(c)).join('  →  ');
-  $('lSub').textContent=learn?(LDATA.lh?'Listen, then play it back with your right hand above middle C; hold the chord with your left if you like.':'Listen, then play it back on your keyboard. Any octave works.')+(L.lick.tip?' '+L.lick.tip:'')
+  $('lSub').textContent=learn?'Listen, then play it back on your keyboard, anywhere on it. Any octave works.'+(L.lick.tip?' '+L.lick.tip:'')
     :'Same lick, new key. Play it without looking; press N if you need the notes.';
   $('lDots').innerHTML=inst.notes.map((_,i)=>`<i class="${i<L.idx?'on':i===L.idx&&!L.done?'cur':''}"></i>`).join('');
   $('lStaff').innerHTML=L.revealed?lineStaffSVG(inst,L.idx,L.done):'<p class="fine">Notes hidden. Hear it with R, or press N to show them.</p>';
-  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done; $('lLH').textContent=LDATA.lh?'Left hand: on':'Left hand: off';
+  $('lShow').hidden=L.revealed; $('lNext').hidden=!L.done;
   if(learn&&!L.done){ kbMarks={}; const n=inst.notes[L.idx]; kbMarks[n.midi+(L.offset??0)]='k-hint'; }
   paintKeys();
 }
@@ -254,7 +252,6 @@ function linesNote(m){
   if(LINES.rec){ LINES.rec.notes.push({m,t:performance.now()}); const c=$('iCount'); if(c) c.textContent=`${LINES.rec.notes.length} notes`; return; }
   if(LINES.after){ if(held.size>=3){ const f=LINES.after; LINES.after=null; f(); } return; }   // the results: any chord carries on
   const L=LINES; if(!L.active||L.done) return;
-  if(LDATA.lh&&m<LH_SPLIT) return;   // left hand below middle C is your comping: never counted, right or wrong
   const want=L.inst.notes[L.idx].midi, ok=mod12(m-want)===0;   // any octave, for every note: jump up or down mid-line if you like
   if(!ok&&L.idx>0&&mod12(m-L.inst.notes[L.idx-1].midi)===0) return;   // the note you just played, again: a slip, not a wrong note
   if(ok){

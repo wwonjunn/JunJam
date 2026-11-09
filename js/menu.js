@@ -92,7 +92,6 @@ $('tiers').addEventListener('click',e=>{const b=e.target.closest('.stage'); if(!
 $('modes').addEventListener('click',e=>{const b=e.target.closest('.mode'); if(!b||b.classList.contains('soon')) return; if(b.dataset.mode==='gig') return gigOpen(); if(b.dataset.mode==='transcribe') return trOpen(); if(b.dataset.mode==='lines') LINES.over=null; side=b.dataset.mode; renderMenu(); $('startOv').scrollTop=0;});
 $('startOv').addEventListener('click',e=>{ if(e.target.closest('[data-home]')){ side='home'; LINES.rec=null; renderMenu(); $('startOv').scrollTop=0; } });
 $('lHear').onclick=()=>linesPlay();
-$('lLH').onclick=()=>{ LDATA.lh=!LDATA.lh; saveLines(); linesRound(); };
 $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender(); } };
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();

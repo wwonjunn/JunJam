@@ -76,14 +76,14 @@ function trLibNotes(){ if(LIB.notes.length){ trMsg(LIB.notes.join(' '),LIB.notes
 function trLibWire(){
   const link=$('trLibLink'), allow=$('trLibAllow'), more=$('trLibMore'), off=$('trLibOff');
   if(link) link.onclick=async()=>{ trMsg('Choose the Jun Jam folder (they go in library/ inside it), or any folder you like.');
-    const r=await libLink(); trLibRender(); if(!r){ trMsg(LIB.err||'No folder picked; they stay in the browser.',LIB.err?'no':''); return; }
+    const r=await libLink(); if(r) await libSyncAll(); libChip(); trLibRender(); if(!r){ trMsg(LIB.err||'No folder picked; they stay in the browser.',LIB.err?'no':''); return; }
     trMsg(`Linked. ${r.n?`Copied your ${r.n} transcription${r.n>1?'s':''} into it${r.rec?` (${r.rec} with the recording)`:''}; the browser keeps its copy too.`:'From now on they\'re saved there.'}${r.failed.length?` Couldn't copy: ${r.failed.join(', ')}.`:''}`,r.failed.length?'no':'ok'); trLibNotes(); };
-  if(allow) allow.onclick=async()=>{ if(await libAllow()){ trLibRender(); trLibNotes(); } else trMsg("Chrome didn't allow it, so the library can't be read yet.",'no'); };
+  if(allow) allow.onclick=async()=>{ if(await libAllow()){ await libSyncAll(); libChip(); trLibRender(); trLibNotes(); } else trMsg("Chrome didn't allow it, so the library can't be read yet.",'no'); };
   if(off) off.onclick=async()=>{ await libUnlink(); trLibRender(); trMsg('Back to the transcriptions kept in this browser.'); };
   if(more) more.onclick=e=>{ const left=LIB.on?libBrowserOnly().length:0;
     trMenu(e,[...(LIB.on?[{t:'Read the folder again',f:()=>trLibAct(libScan,()=>{ trLibNotes(); return 'Read it again.'; })}]:[]),
       ...(left?[{t:`Copy in the ${left} kept in this browser`,f:()=>trLibAct(libCopyIn,r=>`Copied ${r.n}.`)}]:[]),
-      {t:'Use a different folder…',f:()=>link?link.onclick():(async()=>{ const r=await libLink(); trLibRender(); if(r) trMsg('Linked.','ok'); })()},
+      {t:'Use a different folder…',f:()=>link?link.onclick():(async()=>{ const r=await libLink(); if(r) await libSyncAll(); trLibRender(); if(r) trMsg('Linked.','ok'); })()},
       null,{t:'Stop using the folder (back to the browser)',f:async()=>{ if(!confirm('Go back to the transcriptions kept in this browser? The files stay in the folder; the browser shows what it had when you linked it.')) return; await libUnlink(); trLibRender(); }}]); };
 }
 function trLibRender(){

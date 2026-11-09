@@ -119,8 +119,11 @@ A jazz piano trainer with two sides:
   one bar per line, `3: Em7 A7@3`), `recording.mp3` (as imported) and `reading.json` (what the helper heard). Your
   Transcribe folders are real folders. Edit `chords.txt` (by hand, or have an AI fix it against a real chart) and Jun Jam
   reads it back when you open the transcription; a line it can't read is named and the old chords kept. A transcription
-  is known by the id inside its score.json, so renaming or moving folders in Finder is fine. Delete `library/` before
-  sharing Jun Jam.
+  is known by the id inside its score.json, so renaming or moving folders in Finder is fine. The same folder keeps your
+  own licks (`licks.json`, one per line, read back if changed outside Jun Jam) and everything else Jun Jam remembers
+  (`progress.json`: stars, reviews, Gig charts, routines, settings), written a few seconds after each change; on a new
+  computer or after Chrome is cleared, link the folder again and Jun Jam offers to bring it all back. Profile & settings →
+  Your files shows where things are. Delete `library/` before sharing Jun Jam.
   Needs a helper program on your computer (one-time install, about 4 GB with its models, 5 to 15 minutes; it fetches
   its own Python, so you don't need one). Jun Jam shows these steps when the helper isn't running:
   - **Mac:** in Terminal, `bash "<Jun Jam folder>/tools/transcriber/install.sh"`. After that, Jun Jam.app starts it for you.
@@ -182,7 +185,7 @@ js/transcribe/analyze.js   helper notes (seconds) to a score: beats, top line, c
 js/transcribe/export.js    spelling, MIDI and MusicXML export (one line, or a two-staff part with chords)
 js/transcribe/notation.js  sheet music for full parts: chords stacked, grand staff for piano
 js/transcribe/session.js   Transcribe screens: import, what to see, region, helper call, editor
-js/transcribe/library.js   the library folder: transcriptions as files (score.json, chords.txt, recording) in library/
+js/transcribe/library.js   the library folder: transcriptions as files (score.json, chords.txt, recording), licks.json, progress.json
 tools/transcriber/         the local helper: install.sh, requirements.txt, server.py
 js/gig/sheets.js      Gig: the built-in lead sheets (chord charts as text)
 js/gig/session.js     Gig: reading charts, the library, the sheet, playing the changes, adding your own

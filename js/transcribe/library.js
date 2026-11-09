@@ -133,6 +133,7 @@ async function libOpen(){
 // From a click: ask for the folder (or for permission again), then bring in what this browser has
 async function libLink(){
   let h; try{ h=await window.showDirectoryPicker({id:'junjam-library',mode:'readwrite',startIn:'documents'}); }catch(e){ return false; }
+  if(LIB.pick&&!await LIB.pick.isSameEntry(h).catch(()=>false)) libForget();   // another folder: sync it afresh
   const isApp=await libHas(h,'index.html','file')&&await libHas(h,'js','directory');   // the Jun Jam folder: use library/ inside it
   LIB.pick=h; LIB.sub=isApp?'library':null; await trDB.put(LIB_KEY,{handle:h,sub:LIB.sub});
   if(!await libOpen()) return false;
@@ -141,7 +142,8 @@ async function libAllow(){
   if(!LIB.pick) return false;
   const p=await LIB.pick.requestPermission({mode:'readwrite'}).catch(()=>'denied'); if(p!=='granted') return false;
   return libOpen(); }
-async function libUnlink(){ await trDB.del(LIB_KEY); Object.assign(LIB,{on:false,need:false,err:'',pick:null,sub:null,root:null,tr:null,where:new Map(),notes:[]});
+const libForget=()=>{ ['libLicksHash','libLickIds','libProgAt'].forEach(k=>localStorage.removeItem('mtc:'+k)); LIB.progH=null; LIB.lastLicks=null; };   // sync marks belong to one folder
+async function libUnlink(){ libForget(); await trDB.del(LIB_KEY); Object.assign(LIB,{on:false,need:false,err:'',pick:null,sub:null,root:null,tr:null,where:new Map(),notes:[]});
   TRDATA=store.get('trans',{list:[]}); TRDATA.folders=TRDATA.folders||[]; }
 const libWhereName=()=>LIB.sub?`${LIB.pick.name}/${LIB.sub}/transcriptions`:`${LIB.pick?LIB.pick.name:''}/transcriptions`;
 // The ones kept in this browser that the folder doesn't have yet (by id), copied in with their recordings.
@@ -198,3 +200,87 @@ async function libDeleteFolder(fid,keep){ const old=libSafe(fid.slice(2));
   if(keep) for(const t of TRDATA.list.filter(t=>t.folder===fid)) await libMove(t,'');
   await LIB.tr.removeEntry(old,{recursive:true}); }
 function libSetClosed(fid,closed){ const cl=store.get('trLibClosed',{}), n=libSafe(fid.slice(2)); if(closed) cl[n]=true; else delete cl[n]; store.set('trLibClosed',cl); }
+
+/* ---------------- your licks and your progress ----------------
+   The browser keeps working copies (it's fast and always there); the library folder keeps the copies that last:
+
+     library/licks.json      your own licks (recorded, typed, or sent from a transcription), one per line
+     library/progress.json   everything else Jun Jam remembers: stars, streaks, reviews, Gig charts you added, routines,
+                             settings (every saved item but the transcriptions, which have their own folders)
+
+   Both are written a few seconds after anything changes. Licks go both ways: change licks.json outside Jun Jam
+   and it's read back next time Jun Jam starts (or the folder is linked); a lick added on one side and one deleted on
+   the other are both respected (the ids at the last sync tell which is which). Progress comes back from the folder
+   when this browser hasn't synced with it yet (a new computer, Chrome cleared), after you say yes. */
+const LIB_EXCLUDE=new Set(['trans']);   // the transcriptions live in their own folders
+const libProgress=()=>{ const o={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(!k||!k.startsWith('mtc:')) continue; const s=k.slice(4);
+    if(LIB_EXCLUDE.has(s)||s.startsWith('lib')) continue; try{ o[s]=JSON.parse(localStorage.getItem(k)); }catch(e){} } return o; };
+const libLicksOf=()=>(typeof LDATA!=='undefined'&&LDATA.user)||[];
+function libLicksJSON(licks){ return `{\n  "format": "junjam-licks",\n  "version": 1,\n  "licks": [\n${licks.map(l=>'    '+JSON.stringify(l)).join(',\n')}\n  ]\n}\n`; }
+// Merge the folder's licks with the browser's, three ways (last: the ids both had at the last sync)
+function libMergeLicks(file,browser,last,fileChanged){
+  const F=new Map(file.map(l=>[l.id,l])), B=new Map(browser.map(l=>[l.id,l])), was=new Set(last), out=[];
+  new Set([...B.keys(),...F.keys()]).forEach(id=>{ const f=F.get(id), b=B.get(id);
+    if(f&&b) out.push(fileChanged?f:b);
+    else if(b){ if(!(was.has(id)&&fileChanged)) out.push(b); }   // only in the browser: new here, unless the file dropped it since
+    else if(!was.has(id)) out.push(f); });                     // only in the file: new there, unless the browser deleted it
+  return out; }
+async function libSyncLicks(){
+  if(!LIB.on||typeof LDATA==='undefined') return;
+  const txt=await libText(LIB.root,'licks.json'); let file=null;
+  if(txt!=null){ try{ const d=JSON.parse(txt); if(Array.isArray(d.licks)) file=d.licks.filter(l=>l&&l.id&&Array.isArray(l.notes)); }catch(e){} 
+    if(!file){ LIB.notes.push("licks.json can't be read, so your licks there were left as they are (the browser's copy is still here)."); return; } }
+  const changed=txt!=null&&libHash(txt)!==store.get('libLicksHash',''), merged=file?libMergeLicks(file,libLicksOf(),store.get('libLickIds',[]),changed):libLicksOf();
+  const before=JSON.stringify(libLicksOf());
+  if(JSON.stringify(merged)!==before){ merged.forEach(l=>{ l.user=true; }); LDATA.user=merged; if(typeof applyRatings==='function') applyRatings([],LDATA.user); saveLines(); }
+  const out=libLicksJSON(LDATA.user); if(out!==txt) await libWrite(LIB.root,'licks.json',out);
+  store.set('libLicksHash',libHash(out)); store.set('libLickIds',LDATA.user.map(l=>l.id)); }
+async function libSaveProgress(){
+  if(!LIB.on) return; const data=libProgress(), body=JSON.stringify(data), h=libHash(body);
+  if(h===LIB.progH) return;
+  await libWrite(LIB.root,'progress.json',`{"format":"junjam-progress","version":1,"saved":${Date.now()},"data":${body}}\n`);
+  LIB.progH=h; store.set('libProgAt',Date.now()); }
+// Bring progress in from the folder when this browser hasn't synced with it (or the folder is newer). true: it reloads
+async function libRestoreProgress(ask=true){
+  const txt=await libText(LIB.root,'progress.json'); if(txt==null) return false;
+  let d; try{ d=JSON.parse(txt); }catch(e){ LIB.notes.push("progress.json can't be read, so nothing was brought in from it."); return false; }
+  if(!d||d.format!=='junjam-progress'||!d.data) return false;
+  const at=store.get('libProgAt',0); if(at&&d.saved<=at+5000) return false;
+  const when=new Date(d.saved).toLocaleString();
+  if(ask&&!confirm(`Your library folder has Jun Jam progress saved ${when} (stars, licks, reviews, Gig charts, settings).\n\nBring it into this browser? It replaces what this browser has. Your transcriptions aren't affected.`)){ store.set('libProgAt',Date.now()); return false; }
+  Object.entries(d.data).forEach(([k,v])=>{ if(!LIB_EXCLUDE.has(k)&&!k.startsWith('lib')) try{ localStorage.setItem('mtc:'+k,JSON.stringify(v)); }catch(e){} });
+  store.set('libProgAt',d.saved); store.set('libLicksHash',''); store.set('libLickIds',[]);
+  location.reload(); return true; }
+// Everything after the folder opens: progress first (it may reload), then licks, then keep both written
+async function libSyncAll(){
+  if(!LIB.on) return;
+  try{ if(await libRestoreProgress()) return; }catch(e){}
+  try{ await libSyncLicks(); }catch(e){ LIB.notes.push(`Couldn't sync your licks with the folder (${e.message}).`); }
+  try{ await libSaveProgress(); }catch(e){}
+  if(!LIB.timer){ LIB.timer=setInterval(()=>libSaveSoon(0),10000);
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden) libSaveSoon(0); }); } }
+// after a change: write what changed (licks right away, progress with it)
+function libSaveSoon(ms=800){ if(!LIB.on) return; clearTimeout(LIB.soon);
+  LIB.soon=setTimeout(async()=>{ try{ if(libLicksJSON(libLicksOf())!==LIB.lastLicks){ await libSyncLicks(); LIB.lastLicks=libLicksJSON(libLicksOf()); } await libSaveProgress(); }catch(e){} },ms); }
+
+/* ---------------- linking from anywhere ----------------
+   Profile shows where things are kept; a small button asks for the folder again after a restart when Chrome needs your OK. */
+function libChip(){ let c=document.getElementById('libChip');
+  if(!LIB.need){ if(c) c.remove(); return; }
+  if(!c){ c=document.createElement('button'); c.id='libChip'; c.className='ghost libchip'; document.body.appendChild(c);
+    c.onclick=async()=>{ if(await libAllow()){ libChip(); await libSyncAll(); if(typeof trLibRender==='function') trLibRender(); } }; }
+  c.textContent='Library folder: click to allow'; c.title='Your transcriptions, licks and progress are kept in your library folder. Chrome needs your OK again after a restart (choose “Allow on every visit” to stop this).'; }
+function libProfileBox(el){ if(!el) return;
+  if(!LIB_OK){ el.innerHTML='<p class="fine">This browser can\'t keep files in a folder, so everything stays inside the browser. Use Chrome to keep a library folder.</p>'; return; }
+  const left=LIB.on?libBrowserOnly().length:0;
+  el.innerHTML=LIB.on?`<p>Kept as files in <b>${trEsc(LIB.pick.name+(LIB.sub?'/'+LIB.sub:''))}</b>: your transcriptions (one folder each), your licks (licks.json) and everything else Jun Jam remembers (progress.json), written a few seconds after each change. The browser keeps a working copy.</p>
+      <div class="erow"><button class="ghost" id="libPNow">Save now</button>${left?`<button class="ghost" id="libPCopy">Copy in the ${left} transcription${left>1?'s':''} kept in the browser</button>`:''}<button class="ghost" id="libPOther">Use a different folder…</button></div>`
+    :LIB.need?`<p>Your library folder needs your OK again.</p><div class="erow"><button class="go" id="libPAllow">Allow</button></div>`
+    :`<p>Everything is kept inside this browser, so clearing Chrome's site data or a computer problem would lose it. Pick the Jun Jam folder and your transcriptions, licks and progress are kept as files in library/ there (git ignores it), so they survive and you can back them up.</p><div class="erow"><button class="go" id="libPLink">Keep them in a folder…</button></div>`;
+  const q=id=>el.querySelector('#'+id), redo=()=>libProfileBox(el), link=async()=>{ const r=await libLink(); if(r){ await libSyncAll(); } redo(); libChip(); };
+  if(q('libPLink')) q('libPLink').onclick=link; if(q('libPOther')) q('libPOther').onclick=link;
+  if(q('libPAllow')) q('libPAllow').onclick=async()=>{ if(await libAllow()) await libSyncAll(); redo(); libChip(); };
+  if(q('libPNow')) q('libPNow').onclick=async()=>{ LIB.progH=null; await libSyncLicks(); await libSaveProgress(); q('libPNow').textContent='Saved ✓'; };
+  if(q('libPCopy')) q('libPCopy').onclick=async()=>{ await libCopyIn(); redo(); }; }
+// at start: open the folder if Chrome still allows it, then sync
+if(LIB_OK) setTimeout(()=>libInit().then(async on=>{ if(on) await libSyncAll(); libChip(); }),0);
