@@ -75,7 +75,7 @@ async function trLibAct(f,msg){ let r; try{ r=await f(); }catch(e){ trMsg(`Could
 function trLibNotes(){ if(LIB.notes.length){ trMsg(LIB.notes.join(' '),LIB.notes.some(n=>/can't|isn't|Using/.test(n))?'no':'ok'); LIB.notes=[]; } }
 function trLibWire(){
   const link=$('trLibLink'), allow=$('trLibAllow'), more=$('trLibMore'), off=$('trLibOff');
-  if(link) link.onclick=async()=>{ trMsg('Choose the Jun Jam folder (they go in library/ inside it), or any folder you like.');
+  if(link) link.onclick=async()=>{ trMsg('In the window: open Jun Jam, click its library folder, then Select.');
     const r=await libLink(); if(r) await libSyncAll(); libChip(); trLibRender(); if(!r){ trMsg(LIB.err||'No folder picked; they stay in the browser.',LIB.err?'no':''); return; }
     trMsg(`Linked. ${r.n?`Copied your ${r.n} transcription${r.n>1?'s':''} into it${r.rec?` (${r.rec} with the recording)`:''}; the browser keeps its copy too.`:'From now on they\'re saved there.'}${r.failed.length?` Couldn't copy: ${r.failed.join(', ')}.`:''}`,r.failed.length?'no':'ok'); trLibNotes(); };
   if(allow) allow.onclick=async()=>{ if(await libAllow()){ await libSyncAll(); libChip(); trLibRender(); trLibNotes(); } else trMsg("Chrome didn't allow it, so the library can't be read yet.",'no'); };
@@ -910,7 +910,7 @@ async function trSave(){
   // No library folder yet: Save links it (Chrome's folder window has to open straight from the click). Pick the Jun Jam
   // folder and library/ is made inside it. Cancel and it saves in the browser, as before, and doesn't ask again this time.
   if(LIB_OK&&!LIB.on&&!LIB.declined){
-    const ask=LIB.need?libAllow():(trMsg('Choose the Jun Jam folder (on your Desktop): your transcriptions go in a library folder inside it.'),libLink());
+    const ask=LIB.need?libAllow():(trMsg('In the window: open Jun Jam, click its library folder, then Select. (Just this once.)'),libLink());
     if(await ask){ await libSyncAll(); libChip(); } else LIB.declined=true; }
   const s=TR.score; if(!s.id) s.id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const at=TR.saved!=null?TRDATA.list.findIndex(t=>t.id===s.id):-1, old=at>=0&&TRDATA.list[at], withMedia=!!(TR.file&&TR.raw&&TR.res);

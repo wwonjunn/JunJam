@@ -8,4 +8,5 @@ transcriptions/
 js/local-kits.js
 js/local/
 # your transcriptions library (files on this computer, not part of Jun Jam)
-library/
+library/*
+!library/README.md
