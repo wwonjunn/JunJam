@@ -4,8 +4,8 @@ const TR_URL='http://127.0.0.1:8771';
 let TRDATA=store.get('trans',{list:[]}); TRDATA.folders=TRDATA.folders||[];
 const trNewId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 TRDATA.list.forEach(t=>{ if(!t.id) t.id=trNewId('t'); });
-// false when the browser's storage is full
-const saveTr=()=>{ try{ localStorage.setItem('mtc:trans',JSON.stringify(TRDATA)); return true; }catch(e){ return false; } };
+// false when the browser's storage is full (with a library folder linked, the folder is written instead, by library.js)
+const saveTr=()=>{ if(typeof LIB!=='undefined'&&LIB.on) return true; try{ localStorage.setItem('mtc:trans',JSON.stringify(TRDATA)); return true; }catch(e){ return false; } };
 /* A saved transcription keeps its recording and the helper's reading too, so it reopens ready to play, hear and re-read
    without importing the audio again. They live in IndexedDB on this computer (audio is too big for localStorage). */
 const trDB=(()=>{ let p; const open=()=>p||(p=new Promise((ok,no)=>{ const r=indexedDB.open('junjam',1);
@@ -53,44 +53,85 @@ async function trOpen(){
   f.onchange=()=>f.files[0]&&trLoad(f.files[0]);
   drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); }; drop.ondragleave=()=>drop.classList.remove('over');
   drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); const file=e.dataTransfer.files[0]; if(file) trLoad(file); };
-  trLibRender();
+  trLibRender(); (LIB.on?libScan().catch(e=>{ LIB.on=false; LIB.err="Couldn't read the library folder (moved or deleted?). Pick it again."; }):libInit()).then(()=>{ trLibRender(); trLibNotes(); });   // read the folder fresh: Finder changes show up
   $('trBody').onclick=e=>{ const c=e.target.closest('[data-copy]');
     if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
     if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trTabRec') trTabRecord(); };
   trCheck();
 }
-/* ---------------- your transcriptions: folders, rename, move, delete (all kept inside Jun Jam) ---------------- */
+/* ---------------- your transcriptions: folders, rename, move, delete ----------------
+   Kept in the browser, or (once you link one) as files in your library folder (library.js): then every change here
+   is a change to those files, and the list is read back from the folder. */
 function trLibCard(t,i){ return `<button class="lick" draggable="true" data-open="${i}" title="Open. Drag onto a folder to move it; right-click for more"><span class="ln">${t.mode==='lead'?'Lead sheet':(TR_INSTRUMENTS[t.instrument]||{}).name+(t.texture==='full'?' with chords':' line')} · ${t.bars} bars</span><span class="lt">${trEsc(t.title)}</span><span class="lst">♩ = ${t.tempo}, ${keyName(t.key.pc,t.key.minor)}${t.media?' · <b title="The recording is saved with it">♫ with recording</b>':''}</span><span class="more" data-more="${i}" title="Rename, move, delete">⋯</span><span class="del" data-del="${i}" title="Delete">×</span></button>`; }
+// Where they're kept, and the link / allow buttons
+function trLibWhere(){
+  if(!LIB_OK) return '';
+  if(LIB.on) return `<div class="trlibwhere fine">Kept as files in <b>${trEsc(libWhereName())}</b><span class="trspace"></span><button class="ghost trsm" id="trLibMore" title="Library folder">Folder ⋯</button></div>`;
+  if(LIB.need) return `<div class="trguide trlibneed"><b>Your library folder needs your OK again</b> (Chrome asks after a restart unless you chose “Allow on every visit”).<div class="erow"><button class="go" id="trLibAllow">Allow</button><button class="ghost" id="trLibMore">Other options</button></div></div>`;
+  if(LIB.err) return `<div class="trguide trlibneed"><b>${trEsc(LIB.err)}</b><div class="erow"><button class="go" id="trLibLink">Pick the folder</button><button class="ghost" id="trLibOff">Keep them in the browser</button></div></div>`;
+  return `<div class="trlibwhere fine">Kept in this browser (clearing Chrome's site data would lose them)<span class="trspace"></span><button class="ghost trsm" id="trLibLink" title="Choose the Jun Jam folder: they go in library/ inside it, as files you can see in Finder">Keep them in a folder…</button></div>`; }
+async function trLibAct(f,msg){ let r; try{ r=await f(); }catch(e){ trMsg(`Couldn't do that in your library folder: ${e.message}`,'no'); await libScan().catch(()=>{}); trLibRender(); return; }
+  trLibRender(); if(r!==false&&msg) trMsg(typeof msg==='function'?msg(r):msg,'ok'); return r; }
+function trLibNotes(){ if(LIB.notes.length){ trMsg(LIB.notes.join(' '),LIB.notes.some(n=>/can't|isn't|Using/.test(n))?'no':'ok'); LIB.notes=[]; } }
+function trLibWire(){
+  const link=$('trLibLink'), allow=$('trLibAllow'), more=$('trLibMore'), off=$('trLibOff');
+  if(link) link.onclick=async()=>{ trMsg('Choose the Jun Jam folder (they go in library/ inside it), or any folder you like.');
+    const r=await libLink(); trLibRender(); if(!r){ trMsg(LIB.err||'No folder picked; they stay in the browser.',LIB.err?'no':''); return; }
+    trMsg(`Linked. ${r.n?`Copied your ${r.n} transcription${r.n>1?'s':''} into it${r.rec?` (${r.rec} with the recording)`:''}; the browser keeps its copy too.`:'From now on they\'re saved there.'}${r.failed.length?` Couldn't copy: ${r.failed.join(', ')}.`:''}`,r.failed.length?'no':'ok'); trLibNotes(); };
+  if(allow) allow.onclick=async()=>{ if(await libAllow()){ trLibRender(); trLibNotes(); } else trMsg("Chrome didn't allow it, so the library can't be read yet.",'no'); };
+  if(off) off.onclick=async()=>{ await libUnlink(); trLibRender(); trMsg('Back to the transcriptions kept in this browser.'); };
+  if(more) more.onclick=e=>{ const left=LIB.on?libBrowserOnly().length:0;
+    trMenu(e,[...(LIB.on?[{t:'Read the folder again',f:()=>trLibAct(libScan,()=>{ trLibNotes(); return 'Read it again.'; })}]:[]),
+      ...(left?[{t:`Copy in the ${left} kept in this browser`,f:()=>trLibAct(libCopyIn,r=>`Copied ${r.n}.`)}]:[]),
+      {t:'Use a different folder…',f:()=>link?link.onclick():(async()=>{ const r=await libLink(); trLibRender(); if(r) trMsg('Linked.','ok'); })()},
+      null,{t:'Stop using the folder (back to the browser)',f:async()=>{ if(!confirm('Go back to the transcriptions kept in this browser? The files stay in the folder; the browser shows what it had when you linked it.')) return; await libUnlink(); trLibRender(); }}]); };
+}
 function trLibRender(){
-  const el=$('trLib'); if(!el) return; const L=TRDATA.list, F=TRDATA.folders, known=new Set(F.map(f=>f.id));
-  if(!L.length&&!F.length){ el.innerHTML=''; return; }
+  const el=$('trLib'); if(!el) return;
+  if(LIB.need||LIB.err){ el.innerHTML=trLibWhere(); trLibWire(); return; }
+  const L=TRDATA.list, F=TRDATA.folders, known=new Set(F.map(f=>f.id)), lib=LIB.on;
+  if(!L.length&&!F.length){ el.innerHTML=trLibWhere(); trLibWire(); return; }
   const cards=fid=>L.map((t,i)=>[t,i]).filter(([t])=>(known.has(t.folder)?t.folder:'')===fid).map(([t,i])=>trLibCard(t,i)).join('');
-  el.innerHTML=`<div class="trlibbar"><span class="sec">Your transcriptions</span><span class="trspace"></span><button class="ghost trsm" id="trNewFolder">+ New folder</button></div>
+  el.innerHTML=`<div class="trlibbar"><span class="sec">Your transcriptions</span><span class="trspace"></span><button class="ghost trsm" id="trNewFolder">+ New folder</button></div>${trLibWhere()}
     ${F.map(f=>{ const n=L.filter(t=>t.folder===f.id).length, c=cards(f.id);
       return `<div class="trfolder" data-drop="${f.id}"><div class="trfhead" data-ftoggle="${f.id}"><span class="trcaret">${f.closed?'▸':'▾'}</span><b>📁 ${trEsc(f.name)}</b><span class="fine">${n||'empty'}</span><span class="trspace"></span>
         <button class="ghost trsm" data-frename="${f.id}">Rename</button><button class="ghost trsm" data-fdel="${f.id}">Delete</button></div>
         ${f.closed?'':c?`<div class="licks">${c}</div>`:'<p class="fine trfempty">Drag transcriptions here, or use ⋯ → Move.</p>'}</div>`; }).join('')}
     <div class="trfolder trtoplevel" data-drop="">${cards('')?`${F.length?'<div class="fine trloose">Not in a folder</div>':''}<div class="licks">${cards('')}</div>`:F.length?'<p class="fine trfempty">Drag a transcription here to take it out of its folder.</p>':''}</div>`;
+  trLibWire();
   const commit=msg=>{ if(!saveTr()) trMsg("Couldn't save that: this browser's storage is full.",'no'); else if(msg) trMsg(msg,'ok'); trLibRender(); };
-  const move=(i,fid)=>{ const t=L[i]; if(!t) return; if(fid) t.folder=fid; else delete t.folder; const f=F.find(x=>x.id===fid); if(f) f.closed=false; commit(`Moved to ${f?f.name:'the top level'}.`); };
-  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete “${t.title}”? This can't be undone.`)) return; L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
-  const rename=i=>{ const t=L[i], n=t&&prompt('Name',t.title); if(n&&n.trim()){ t.title=n.trim(); commit(); } };
+  const move=(i,fid)=>{ const t=L[i]; if(!t) return; const f=F.find(x=>x.id===fid), msg=`Moved to ${f?f.name:'the top level'}.`;
+    if(lib){ if(f) libSetClosed(fid,false); return trLibAct(async()=>{ await libMove(t,fid); await libScan(); },msg); }
+    if(fid) t.folder=fid; else delete t.folder; if(f) f.closed=false; commit(msg); };
+  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete “${t.title}”?${lib?' Its folder and the files in it are deleted too.':''} This can't be undone.`)) return;
+    if(lib) return trLibAct(async()=>{ await libDelete(t.id); await libScan(); },'Deleted.');
+    L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
+  const rename=i=>{ const t=L[i], n=t&&prompt('Name',t.title); if(!(n&&n.trim())) return;
+    if(lib) return trLibAct(async()=>{ await libRename(t,n.trim()); await libScan(); });
+    t.title=n.trim(); commit(); };
+  const newFolder=async name=>lib?libNewFolder(name):(F.push({id:trNewId('f'),name}),F[F.length-1].id);
   const cardMenu=(e,i)=>{ const t=L[i]; trMenu(e,[{t:'Open',f:()=>trOpenSaved(i)},{t:'Rename',f:()=>rename(i)},{t:'Share as a Jun Jam file',f:()=>trShareSaved(i)},null,
     ...F.filter(f=>f.id!==t.folder).map(f=>({t:`Move to 📁 ${trEsc(f.name)}`,f:()=>move(i,f.id)})),...(t.folder&&known.has(t.folder)?[{t:'Move out of the folder',f:()=>move(i,'')}]:[]),
-    {t:'New folder with this in it',f:()=>{ const n=prompt('Folder name'); if(n&&n.trim()){ const f={id:trNewId('f'),name:n.trim()}; F.push(f); move(i,f.id); } }},null,{t:'Delete',f:()=>del(i)}]); };
+    {t:'New folder with this in it',f:async()=>{ const n=prompt('Folder name'); if(n&&n.trim()) move(i,await newFolder(n.trim())); }},null,{t:'Delete',f:()=>del(i)}]); };
   const delFolder=(e,fid)=>{ const f=F.find(x=>x.id===fid), inside=L.filter(t=>t.folder===fid);
-    const drop=keep=>{ if(!keep){ inside.forEach(t=>{ if(t.id) trDB.del(t.id); }); TRDATA.list=L.filter(t=>t.folder!==fid); } else inside.forEach(t=>delete t.folder);
-      TRDATA.folders=F.filter(x=>x!==f); commit(keep?`Folder deleted; its transcriptions are at the top level now.`:'Folder deleted.'); };
+    const drop=keep=>{ const msg=keep?`Folder deleted; its transcriptions are at the top level now.`:'Folder deleted.';
+      if(lib) return trLibAct(async()=>{ await libDeleteFolder(fid,keep); await libScan(); },msg);
+      if(!keep){ inside.forEach(t=>{ if(t.id) trDB.del(t.id); }); TRDATA.list=L.filter(t=>t.folder!==fid); } else inside.forEach(t=>delete t.folder);
+      TRDATA.folders=F.filter(x=>x!==f); commit(msg); };
     if(!inside.length) return drop(true);
     trMenu(e,[{t:`Delete the folder, keep its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>drop(true)},
       {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete “${f.name}” and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
-  $('trNewFolder').onclick=()=>{ const n=prompt('Folder name'); if(n&&n.trim()){ F.push({id:trNewId('f'),name:n.trim()}); commit(); } };
+  $('trNewFolder').onclick=()=>{ const n=prompt('Folder name'); if(!(n&&n.trim())) return;
+    if(lib) return trLibAct(async()=>{ await libNewFolder(n.trim()); await libScan(); });
+    newFolder(n.trim()); commit(); };
   el.onclick=e=>{ const g=k=>e.target.closest(`[data-${k}]`);
     if(g('del')) return del(+g('del').dataset.del);
     if(g('more')) return cardMenu(e,+g('more').dataset.more);
-    if(g('frename')){ const f=F.find(x=>x.id===g('frename').dataset.frename), n=prompt('Folder name',f.name); if(n&&n.trim()){ f.name=n.trim(); commit(); } return; }
+    if(g('frename')){ const f=F.find(x=>x.id===g('frename').dataset.frename), n=prompt('Folder name',f.name); if(!(n&&n.trim())) return;
+      if(lib) return trLibAct(async()=>{ await libRenameFolder(f.id,n.trim()); await libScan(); });
+      f.name=n.trim(); commit(); return; }
     if(g('fdel')) return delFolder(e,g('fdel').dataset.fdel);
-    if(g('ftoggle')){ const f=F.find(x=>x.id===g('ftoggle').dataset.ftoggle); f.closed=!f.closed; commit(); return; }
+    if(g('ftoggle')){ const f=F.find(x=>x.id===g('ftoggle').dataset.ftoggle); f.closed=!f.closed; if(lib){ libSetClosed(f.id,f.closed); trLibRender(); } else commit(); return; }
     if(g('open')) trOpenSaved(+g('open').dataset.open); };
   el.oncontextmenu=e=>{ const c=e.target.closest('[data-open]'); if(c){ e.preventDefault(); cardMenu(e,+c.dataset.open); } };
   // drag a card onto a folder (or below the folders, to take it out)
@@ -867,19 +908,29 @@ function trSheetHead(b){ const sc=$('trScore'); if(!sc||!TR.lines) return;
     if(TR.playing&&trFollow()){ const er=el.getBoundingClientRect(), cr=sc.getBoundingClientRect(); if(er.top<cr.top||er.bottom>cr.bottom) sc.scrollTop+=er.top-cr.top-6; } }); }
 async function trSave(){
   const s=TR.score; if(!s.id) s.id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  const old=TR.saved!=null&&TRDATA.list[TR.saved], withMedia=!!(TR.file&&TR.raw&&TR.res);
-  if(withMedia&&TR.mediaFor!==s.id+'|'+TR.sel){   // the recording goes in once (and again only if the part changed)
+  const at=TR.saved!=null?TRDATA.list.findIndex(t=>t.id===s.id):-1, old=at>=0&&TRDATA.list[at], withMedia=!!(TR.file&&TR.raw&&TR.res);
+  const newMedia=withMedia&&TR.mediaFor!==s.id+'|'+TR.sel;   // the recording goes in once (and again only if the part changed)
+  if(LIB.on){
+    const item={...s,saved:Date.now()}; if(old&&old.folder) item.folder=old.folder; else delete item.folder;
+    try{ item.media=await libSave(item,newMedia?{file:TR.file,sel:TR.sel,raw:TR.raw,shift:TR.shift}:null); }
+    catch(e){ return trMsg(`Couldn't save to your library folder: ${e.message}`,'no'); }
+    if(newMedia) TR.mediaFor=s.id+'|'+TR.sel;
+    if(old) TRDATA.list[at]=item; else TRDATA.list.unshift(item);
+    TR.saved=0; TR.dirty=false; trInfo(); return trMsg(`Saved in your library folder${item.media?', with the recording':''}.`,'ok'); }
+  if(newMedia){
     try{ await trDB.put(s.id,{file:TR.file,sel:TR.sel,raw:TR.raw,shift:TR.shift}); TR.mediaFor=s.id+'|'+TR.sel; navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }
     catch(e){ trMsg("The notes are saved, but there wasn't room to keep the recording with them.",'no'); } }
   const item={...s,saved:Date.now(),media:withMedia&&TR.mediaFor===s.id+'|'+TR.sel||!!(old&&old.media)};
-  const was=old?TRDATA.list[TR.saved]:null;
-  if(old) TRDATA.list[TR.saved]=item; else TRDATA.list.unshift(item);
-  if(!saveTr()){ if(old) TRDATA.list[TR.saved]=was; else TRDATA.list.shift(); return trMsg("Couldn't save: this browser's storage is full. Delete a few transcriptions on the Transcribe page, then try again.",'no'); }
-  if(!old) TR.saved=0; TR.dirty=false; trInfo(); trMsg(item.media?'Saved with the recording. It\'s under Your transcriptions in Transcribe.':'Saved. It\'s under Your transcriptions in Transcribe.','ok');
+  if(old&&old.folder) item.folder=old.folder;
+  if(old) TRDATA.list[at]=item; else TRDATA.list.unshift(item);
+  if(!saveTr()){ if(old) TRDATA.list[at]=old; else TRDATA.list.shift(); return trMsg("Couldn't save: this browser's storage is full. Delete a few transcriptions on the Transcribe page, then try again.",'no'); }
+  TR.saved=0; TR.dirty=false; trInfo(); trMsg(item.media?'Saved with the recording. It\'s under Your transcriptions in Transcribe.':'Saved. It\'s under Your transcriptions in Transcribe.','ok');
 }
 // Reopen a saved one: with its recording when that was kept, so playback, Hear recording and re-reading all work again
 async function trOpenSaved(i){
-  const sc=JSON.parse(JSON.stringify(TRDATA.list[i])), m=sc.id&&sc.media?await trDB.get(sc.id):null;
+  let t=TRDATA.list[i]; if(!t) return;
+  if(LIB.on){ try{ t=await libReload(t.id)||t; TRDATA.list[i]=t; }catch(e){} trLibNotes(); }   // read it fresh: chords.txt may have been fixed meanwhile
+  const sc=JSON.parse(JSON.stringify(t)), m=sc.id&&sc.media?await (LIB.on?libMedia(sc.id):trDB.get(sc.id)):null;
   if(m&&m.file){ try{ trMsg('Opening…'); const buf=await synth.ctx.decodeAudioData(await m.file.arrayBuffer()); if(TR.url) URL.revokeObjectURL(TR.url);
       Object.assign(TR,{buf,file:m.file,url:URL.createObjectURL(m.file),title:sc.title,sel:m.sel,mode:sc.mode,instrument:sc.mode==='lead'?'piano':sc.instrument,texture:sc.texture,raw:m.raw,shift:m.shift,mediaFor:sc.id+'|'+m.sel});
       return trEdit(sc,prepRes(m.raw,sc.anchors||[]),i); }catch(e){ trMsg("Couldn't open its recording, so it opens as notes only.",'no'); } }
@@ -916,13 +967,17 @@ function trSaveAs(data,name,ext,type){ const a=document.createElement('a'); a.hr
   document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
 async function trShareCurrent(){ const media=TR.file&&TR.raw?{file:TR.file,sel:TR.sel,raw:TR.raw,shift:TR.shift}:null;
   trSaveAs(await trJunjam(TR.score,media),TR.score.title,'junjam','application/json'); trMsg(media?'Saved a .junjam file with the recording. Send it to anyone with Jun Jam: they open it on the Transcribe page.':'Saved a .junjam file. Send it to anyone with Jun Jam: they open it on the Transcribe page.','ok'); }
-async function trShareSaved(i){ const t=TRDATA.list[i]; if(!t) return; const m=t.id&&t.media?await trDB.get(t.id):null;
+async function trShareSaved(i){ const t=TRDATA.list[i]; if(!t) return; const m=t.id&&t.media?await (LIB.on?libMedia(t.id):trDB.get(t.id)):null;
   trSaveAs(await trJunjam(t,m),t.title,'junjam','application/json'); trMsg('Saved a .junjam file. Whoever you send it to opens it on their Transcribe page.','ok'); }
 // open one: it joins Your transcriptions (with its recording), then opens
 async function trImport(file){
   let d; try{ d=JSON.parse(await file.text()); }catch(e){ return trMsg("That file isn't a Jun Jam transcription.",'no'); }
   if(!d||d.format!==JJ_FORMAT||!d.score||!Array.isArray(d.score.melody)) return trMsg("That file isn't a Jun Jam transcription.",'no');
   const item={...d.score,id:trNewId('t'),saved:Date.now(),media:false};
+  if(LIB.on){ let m=null; delete item.folder;
+    if(d.media&&d.media.data){ try{ const blob=await (await fetch(d.media.data)).blob(); m={file:new File([blob],d.media.name||'recording',{type:d.media.type||blob.type}),sel:d.media.sel,raw:d.media.raw,shift:d.media.shift}; }catch(e){} }
+    try{ item.media=await libSave(item,m); }catch(e){ return trMsg(`Couldn't add it to your library folder: ${e.message}`,'no'); }
+    TRDATA.list.unshift(item); trLibRender(); await trOpenSaved(0); return trMsg(`Opened “${item.title}”${item.media?' with its recording':''}. It's in your library folder now.`,'ok'); }
   if(d.media&&d.media.data){ try{ const blob=await (await fetch(d.media.data)).blob(), f=new File([blob],d.media.name||'recording',{type:d.media.type||blob.type});
       await trDB.put(item.id,{file:f,sel:d.media.sel,raw:d.media.raw,shift:d.media.shift}); item.media=true; }
     catch(e){ trMsg("Opened the notes, but there wasn't room to keep the recording.",'no'); } }
