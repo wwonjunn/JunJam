@@ -285,7 +285,7 @@ function libChip(){ let c=document.getElementById('libChip');
   if(!LIB.need){ if(c) c.remove(); return; }
   if(!c){ c=document.createElement('button'); c.id='libChip'; c.className='ghost libchip'; document.body.appendChild(c);
     c.onclick=async()=>{ if(await libAllow()){ libChip(); await libSyncAll(); if(typeof trLibRender==='function') trLibRender(); } }; }
-  c.textContent='Library folder: click to allow'; c.title='Your transcriptions, licks and progress are kept in your library folder. Chrome needs your OK again after a restart (choose “Allow on every visit” to stop this).'; }
+  c.textContent='Click anywhere to open your library folder'; c.title='Your transcriptions, licks and progress are kept in your library folder. Chrome needs your OK again after a restart (choose “Allow on every visit” to stop this).'; }
 function libProfileBox(el){ if(!el) return;
   if(!LIB_OK){ el.innerHTML='<p class="fine">This browser can\'t keep files in a folder, so everything stays inside the browser. Use Chrome to keep a library folder.</p>'; return; }
   const left=LIB.on?libBrowserOnly().length:0;
@@ -299,6 +299,10 @@ function libProfileBox(el){ if(!el) return;
   if(q('libPNow')) q('libPNow').onclick=async()=>{ LIB.progH=null; await libSyncLicks(); await libSaveProgress(); q('libPNow').textContent='Saved ✓'; };
   if(q('libPCopy')) q('libPCopy').onclick=async()=>{ await libCopyIn(); redo(); }; }
 // at start: open the folder if Chrome still allows it, then sync
+// the first click or key press of a visit also says yes to the library folder (Chrome only asks from a click), so the
+// same click that turns the sound on opens your files too
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{ if(!LIB.need||LIB.asking) return; LIB.asking=true;
+  libAllow().then(async ok=>{ LIB.asking=false; if(ok){ await libSyncAll(); libChip(); if(typeof trLibRender==='function') trLibRender(); } }); },{capture:true}));
 // at start (after every script has run, so the chord reader and Lines are there): open the folder if Chrome still allows it, then sync
 const libBoot=()=>libInit().then(async on=>{ if(on) await libSyncAll(); libChip(); }).catch(()=>{});
 if(LIB_OK){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',libBoot,{once:true}); else setTimeout(libBoot,0); }

@@ -83,6 +83,7 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble',bw=null})
   const top=staffs[0].y(staffs[0].hi), bottom=grand?yB(18):staffs[0].y(staffs[0].lo);
   s+=`<line class="ln" x1="8" x2="8" y1="${top}" y2="${bottom}"/>`;
   for(let b=4;b<=beats;b+=4){ const x=X0+cum[b]-8; s+=`<line class="ln bl" x1="${x}" x2="${x}" y1="${top}" y2="${bottom}"/>`; }
+  if(chords) s+=`<rect class="crow" x="0" y="${vy}" width="${W}" height="${cy+5-vy}"><title>Click to add a chord here</title></rect>`;   // the chord row: click it to add one
   (chords||[]).forEach(c=>{ if(c.at<beats) s+=`<text class="csym"${c.i!=null?` data-c="${c.i}"`:''} x="${xOf(c.at)-4}" y="${cy}">${symText(c)}</text>`; });
   staffs.forEach(st=>{
     const evs=gsEvents(st.notes,beats), stacks=[];

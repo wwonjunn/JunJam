@@ -541,7 +541,13 @@ function trScoreView(){
   if(s.mode==='lead'&&s.texture!=='full') TR.lines=null; // the lead sheet's staff is drawn by Lines (its own spacing)
   // click the music to put the playhead there
   $('trScore').onclick=e=>{ if(TR.sclickSkip){ TR.sclickSkip=false; return; } const ce=e.target.closest('[data-c]'); if(ce) return trChordEdit(+ce.dataset.c,e);
+    if(e.target.closest('.crow')&&!TR.send){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) return trChordAdd(Math.round(b*2)/2,e); }   // the chord row: a new chord on the nearest half beat
     const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return; TR.posB=b; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
+  // right-click: change or remove a chord, or add one where you clicked
+  $('trScore').oncontextmenu=e=>{ const b=trSheetBeat(e.clientX,e.clientY), ce=e.target.closest('[data-c]'); if(b==null&&!ce) return; e.preventDefault();
+    if(ce){ const i=+ce.dataset.c; return trMenu(e,[{t:'Change this chord',f:()=>trChordEdit(i,e)},{t:'Remove it',f:()=>{ trPush(); TR.score.chords.splice(i,1); trRender(); }}]); }
+    const h=Math.round(b*2)/2, bar=Math.floor(h/4)*4;
+    trMenu(e,[{t:`Add a chord here (${trWhere(h)})`,f:()=>trChordAdd(h,e)},...(h!==bar+2?[{t:`Add a chord on beat 3 of bar ${bar/4+1}`,f:()=>trChordAdd(bar+2,e)}]:[])]); };
   $('trScore').ondblclick=e=>{ if(e.target.closest('[data-c]')) return; const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendPhrase(b); };   // a note's phrase, ready to send to Lines
   $('trScore').onpointerdown=e=>{ if(e.button||e.target.closest('[data-c]')) return; const b0=trSheetBeat(e.clientX,e.clientY); if(b0!=null) TR.sdrag={x:e.clientX,y:e.clientY,b0,moved:false}; };
   trSheetHead(TR.posB||0); trLoopShow(); trSendTint();
