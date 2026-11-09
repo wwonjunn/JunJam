@@ -134,8 +134,12 @@ async function libOpen(){
 async function libLink(){
   let h; try{ h=await window.showDirectoryPicker({id:'junjam-library',mode:'readwrite',startIn:'desktop'}); }catch(e){ return false; }   // Jun Jam usually sits on the Desktop
   if(LIB.pick&&!await LIB.pick.isSameEntry(h).catch(()=>false)) libForget();   // another folder: sync it afresh
-  // whatever you pick, the files go in a library/ folder inside it (made for you); a folder already called library is used as it is
-  LIB.pick=h; LIB.sub=h.name.toLowerCase()==='library'?null:'library'; await trDB.put(LIB_KEY,{handle:h,sub:LIB.sub});
+  // Where the files go: the folder itself when it's already a Jun Jam library (the shipped README, or Jun Jam's files in it);
+  // library/ inside the Jun Jam folder; anywhere else a "Jun Jam Library" folder inside what you picked, easy to find by name
+  // (so picking some other folder called library, like the Mac's own, never fills it with transcriptions)
+  const mine=await libHas(h,'transcriptions','directory')||await libHas(h,'licks.json','file')||(await libText(h,'README.md').catch(()=>null)||'').startsWith('# Your Jun Jam library');
+  const isApp=await libHas(h,'index.html','file')&&await libHas(h,'js','directory');
+  LIB.pick=h; LIB.sub=mine?null:isApp?'library':'Jun Jam Library'; await trDB.put(LIB_KEY,{handle:h,sub:LIB.sub});
   if(!await libOpen()) return false;
   return libCopyIn(); }
 async function libAllow(){
