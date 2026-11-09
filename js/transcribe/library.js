@@ -129,7 +129,7 @@ async function libOpen(){
   try{ LIB.root=LIB.sub?await LIB.pick.getDirectoryHandle(LIB.sub,{create:true}):LIB.pick;
     LIB.tr=await LIB.root.getDirectoryHandle('transcriptions',{create:true});
     LIB.on=true; LIB.need=false; LIB.err=''; await libScan(); return true; }
-  catch(e){ LIB.on=false; LIB.err=e.name==='NotFoundError'?"The library folder isn't there any more (moved or deleted?). Pick it again.":`Couldn't open the library folder (${e.message}).`; return false; } }
+  catch(e){ libFail(); LIB.err=e.name==='NotFoundError'?"The library folder isn't there any more (moved or deleted?). Pick it again.":`Couldn't open the library folder (${e.message}).`; return false; } }
 // From a click: ask for the folder (or for permission again), then bring in what this browser has
 async function libLink(){
   let h; try{ h=await window.showDirectoryPicker({id:'junjam-library',mode:'readwrite',startIn:'documents'}); }catch(e){ return false; }
@@ -145,6 +145,7 @@ async function libAllow(){
 const libForget=()=>{ ['libLicksHash','libLickIds','libProgAt'].forEach(k=>localStorage.removeItem('mtc:'+k)); LIB.progH=null; LIB.lastLicks=null; };   // sync marks belong to one folder
 async function libUnlink(){ libForget(); await trDB.del(LIB_KEY); Object.assign(LIB,{on:false,need:false,err:'',pick:null,sub:null,root:null,tr:null,where:new Map(),notes:[]});
   TRDATA=store.get('trans',{list:[]}); TRDATA.folders=TRDATA.folders||[]; }
+function libFail(){ if(LIB.on){ TRDATA=store.get('trans',{list:[]}); TRDATA.folders=TRDATA.folders||[]; } LIB.on=false; }
 const libWhereName=()=>LIB.sub?`${LIB.pick.name}/${LIB.sub}/transcriptions`:`${LIB.pick?LIB.pick.name:''}/transcriptions`;
 // The ones kept in this browser that the folder doesn't have yet (by id), copied in with their recordings.
 // The browser keeps its copy; nothing there is deleted.
@@ -182,7 +183,10 @@ async function libMedia(id){ const w=LIB.where.get(id); if(!w||!w.rec) return nu
     return {file,sel:r.sel,raw:r.raw,shift:r.shift}; }catch(e){ return null; } }
 // Read one again from its folder (picks up chords.txt or score.json edited since), keeping where it is
 async function libReload(id){ const w=LIB.where.get(id); if(!w) return null; return libReadSong(w.dir,w.name,w.parent,w.folder); }
-async function libDelete(id){ const w=LIB.where.get(id); if(!w) return; await w.parent.removeEntry(w.name,{recursive:true}); LIB.where.delete(id); }
+// Deleting moves it to library/deleted (outside transcriptions/, so it's no longer listed); empty that folder in Finder when you're sure
+async function libBin(parent,name){ const bin=await LIB.root.getDirectoryHandle('deleted',{create:true}), st=new Date().toISOString().slice(0,10);
+  await libMoveDir(parent,name,bin,await libFreeName(bin,`${name} (${st})`)); }
+async function libDelete(id){ const w=LIB.where.get(id); if(!w) return; await libBin(w.parent,w.name); LIB.where.delete(id); }
 async function libRename(item,title){ const w=LIB.where.get(item.id); item.title=title; if(!w) return libSave(item);
   const name=await libFreeName(w.parent,libSafe(title),w.name);
   if(name!==w.name){ w.dir=await libMoveDir(w.parent,w.name,w.parent,name); w.name=name; }
@@ -198,7 +202,7 @@ async function libRenameFolder(fid,name){ const old=libSafe(fid.slice(2)), n=awa
 // keep: its transcriptions move out to the top level first
 async function libDeleteFolder(fid,keep){ const old=libSafe(fid.slice(2));
   if(keep) for(const t of TRDATA.list.filter(t=>t.folder===fid)) await libMove(t,'');
-  await LIB.tr.removeEntry(old,{recursive:true}); }
+  await libBin(LIB.tr,old); }   // even when emptied: anything else in it (a folder Jun Jam couldn't read) is kept, not wiped
 function libSetClosed(fid,closed){ const cl=store.get('trLibClosed',{}), n=libSafe(fid.slice(2)); if(closed) cl[n]=true; else delete cl[n]; store.set('trLibClosed',cl); }
 
 /* ---------------- your licks and your progress ----------------
@@ -225,7 +229,10 @@ function libMergeLicks(file,browser,last,fileChanged){
     else if(b){ if(!(was.has(id)&&fileChanged)) out.push(b); }   // only in the browser: new here, unless the file dropped it since
     else if(!was.has(id)) out.push(f); });                     // only in the file: new there, unless the browser deleted it
   return out; }
-async function libSyncLicks(){
+// one at a time: the timer, a save and a link could otherwise write the same file at once
+const libQueue=f=>(LIB.q=(LIB.q||Promise.resolve()).then(f,f));
+const libSyncLicks=()=>libQueue(libSyncLicks1);
+async function libSyncLicks1(){
   if(!LIB.on||typeof LDATA==='undefined') return;
   const txt=await libText(LIB.root,'licks.json'); let file=null;
   if(txt!=null){ try{ const d=JSON.parse(txt); if(Array.isArray(d.licks)) file=d.licks.filter(l=>l&&l.id&&Array.isArray(l.notes)); }catch(e){} 
@@ -235,7 +242,8 @@ async function libSyncLicks(){
   if(JSON.stringify(merged)!==before){ merged.forEach(l=>{ l.user=true; }); LDATA.user=merged; if(typeof applyRatings==='function') applyRatings([],LDATA.user); saveLines(); }
   const out=libLicksJSON(LDATA.user); if(out!==txt) await libWrite(LIB.root,'licks.json',out);
   store.set('libLicksHash',libHash(out)); store.set('libLickIds',LDATA.user.map(l=>l.id)); }
-async function libSaveProgress(){
+const libSaveProgress=()=>libQueue(libSaveProgress1);
+async function libSaveProgress1(){
   if(!LIB.on) return; const data=libProgress(), body=JSON.stringify(data), h=libHash(body);
   if(h===LIB.progH) return;
   await libWrite(LIB.root,'progress.json',`{"format":"junjam-progress","version":1,"saved":${Date.now()},"data":${body}}\n`);
@@ -247,7 +255,11 @@ async function libRestoreProgress(ask=true){
   if(!d||d.format!=='junjam-progress'||!d.data) return false;
   const at=store.get('libProgAt',0); if(at&&d.saved<=at+5000) return false;
   const when=new Date(d.saved).toLocaleString();
-  if(ask&&!confirm(`Your library folder has Jun Jam progress saved ${when} (stars, licks, reviews, Gig charts, settings).\n\nBring it into this browser? It replaces what this browser has. Your transcriptions aren't affected.`)){ store.set('libProgAt',Date.now()); return false; }
+  if(ask&&!confirm(`Your library folder has Jun Jam progress saved ${when} (stars, licks, reviews, Gig charts, settings).\n\nBring it into this browser? It replaces what this browser has (a copy of that goes in library/backups first). Your transcriptions aren't affected.`)){ store.set('libProgAt',Date.now()); return false; }
+  // what this browser had goes in library/backups first, so saying yes can never lose anything
+  try{ const bk=await LIB.root.getDirectoryHandle('backups',{create:true}), st=new Date().toISOString().slice(0,19).replace(/:/g,'-');
+    await libWrite(bk,`progress before restore ${st}.json`,JSON.stringify({format:'junjam-progress',version:1,saved:Date.now(),data:libProgress()})+'\n'); }
+  catch(e){ LIB.notes.push("Couldn't back up this browser's progress first, so nothing was replaced."); return false; }
   Object.entries(d.data).forEach(([k,v])=>{ if(!LIB_EXCLUDE.has(k)&&!k.startsWith('lib')) try{ localStorage.setItem('mtc:'+k,JSON.stringify(v)); }catch(e){} });
   store.set('libProgAt',d.saved); store.set('libLicksHash',''); store.set('libLickIds',[]);
   location.reload(); return true; }
@@ -283,4 +295,6 @@ function libProfileBox(el){ if(!el) return;
   if(q('libPNow')) q('libPNow').onclick=async()=>{ LIB.progH=null; await libSyncLicks(); await libSaveProgress(); q('libPNow').textContent='Saved ✓'; };
   if(q('libPCopy')) q('libPCopy').onclick=async()=>{ await libCopyIn(); redo(); }; }
 // at start: open the folder if Chrome still allows it, then sync
-if(LIB_OK) setTimeout(()=>libInit().then(async on=>{ if(on) await libSyncAll(); libChip(); }),0);
+// at start (after every script has run, so the chord reader and Lines are there): open the folder if Chrome still allows it, then sync
+const libBoot=()=>libInit().then(async on=>{ if(on) await libSyncAll(); libChip(); }).catch(()=>{});
+if(LIB_OK){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',libBoot,{once:true}); else setTimeout(libBoot,0); }

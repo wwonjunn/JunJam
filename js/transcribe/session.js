@@ -53,7 +53,7 @@ async function trOpen(){
   f.onchange=()=>f.files[0]&&trLoad(f.files[0]);
   drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); }; drop.ondragleave=()=>drop.classList.remove('over');
   drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); const file=e.dataTransfer.files[0]; if(file) trLoad(file); };
-  trLibRender(); (LIB.on?libScan().catch(e=>{ LIB.on=false; LIB.err="Couldn't read the library folder (moved or deleted?). Pick it again."; }):libInit()).then(()=>{ trLibRender(); trLibNotes(); });   // read the folder fresh: Finder changes show up
+  trLibRender(); (LIB.on?libScan().catch(e=>{ libFail(); LIB.err="Couldn't read the library folder (moved or deleted?). Pick it again."; }):libInit()).then(()=>{ trLibRender(); trLibNotes(); });   // read the folder fresh: Finder changes show up
   $('trBody').onclick=e=>{ const c=e.target.closest('[data-copy]');
     if(c){ navigator.clipboard&&navigator.clipboard.writeText($(c.dataset.copy).textContent); c.textContent='Copied'; setTimeout(()=>c.textContent='Copy',1200); return; }
     if(e.target.id==='trRecheck') trCheck(); if(e.target.id==='trTabRec') trTabRecord(); };
@@ -103,7 +103,7 @@ function trLibRender(){
   const move=(i,fid)=>{ const t=L[i]; if(!t) return; const f=F.find(x=>x.id===fid), msg=`Moved to ${f?f.name:'the top level'}.`;
     if(lib){ if(f) libSetClosed(fid,false); return trLibAct(async()=>{ await libMove(t,fid); await libScan(); },msg); }
     if(fid) t.folder=fid; else delete t.folder; if(f) f.closed=false; commit(msg); };
-  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete “${t.title}”?${lib?' Its folder and the files in it are deleted too.':''} This can't be undone.`)) return;
+  const del=i=>{ const t=L[i]; if(!t||!confirm(`Delete “${t.title}”?${lib?' Its folder moves to library/deleted (empty that in Finder when you\'re sure).':' This can\'t be undone.'}`)) return;
     if(lib) return trLibAct(async()=>{ await libDelete(t.id); await libScan(); },'Deleted.');
     L.splice(i,1); if(t.id) trDB.del(t.id); commit('Deleted.'); };
   const rename=i=>{ const t=L[i], n=t&&prompt('Name',t.title); if(!(n&&n.trim())) return;
@@ -120,7 +120,7 @@ function trLibRender(){
       TRDATA.folders=F.filter(x=>x!==f); commit(msg); };
     if(!inside.length) return drop(true);
     trMenu(e,[{t:`Delete the folder, keep its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>drop(true)},
-      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete “${f.name}” and the ${inside.length} transcription${inside.length>1?'s':''} in it? This can't be undone.`)) drop(false); }}]); };
+      {t:`Delete the folder and its ${inside.length} transcription${inside.length>1?'s':''}`,f:()=>{ if(confirm(`Delete “${f.name}” and the ${inside.length} transcription${inside.length>1?'s':''} in it?${lib?' The folder moves to library/deleted.':' This can\'t be undone.'}`)) drop(false); }}]); };
   $('trNewFolder').onclick=()=>{ const n=prompt('Folder name'); if(!(n&&n.trim())) return;
     if(lib) return trLibAct(async()=>{ await libNewFolder(n.trim()); await libScan(); });
     newFolder(n.trim()); commit(); };
