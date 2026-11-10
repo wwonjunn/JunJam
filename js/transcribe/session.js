@@ -318,7 +318,7 @@ function trEdit(score,res,savedIndex){
         <button data-exp="junjam">Share as a Jun Jam file <span class="fine">A .junjam with the recording, for a friend with Jun Jam</span></button><hr>
         <button data-exp="pdf">Export PDF <span class="fine">The sheet music, to print or send</span></button>
         <button data-exp="xml">Export MusicXML <span class="fine">MuseScore, Sibelius, Finale, Dorico</span></button><button data-exp="mid">Export MIDI, on the beat</button>${R?'<button data-exp="midp">Export MIDI, as played</button>':''}<hr>
-        <button id="trLick">Send to Lines <span class="fine">Pick a few notes in the sheet music (double-click one for its phrase), and send them as a lick</span></button>
+        <button id="trLick">Send to Lines <span class="fine">Pick a few notes in the sheet music, and send them as a lick</span></button>
         ${TR.buf&&R?'<button id="trSettings">Settings <span class="fine">What to write, instrument and part</span></button>':''}
         <button id="trHelpBtn">Guide <span class="fine">How everything here works</span></button></div></div></div>
     <div class="trtransport" id="trBar">
@@ -340,7 +340,7 @@ function trEdit(score,res,savedIndex){
       <button class="ghost ic" id="trUndo" title="Undo (${MODK}+Z)">↶</button><button class="ghost ic" id="trRedo" title="Redo (Shift+${MODK}+Z)">↷</button></div>
     <div class="trsend" id="trSend" hidden></div>
     <div class="trscore" id="trScore"></div>
-    <div class="trsplit" id="trSplit" title="Drag to make the piano roll taller or shorter; double-click to hide it"></div>
+    <div class="trsplit" id="trSplit" title="Drag to make the piano roll taller or shorter"></div>
     <div class="trpane" id="trPane"><div class="tredit">
       ${trSeg('tool',[['select','Select','Click notes to select them, drag to move; drag on empty space to select several'],['draw','✎ Draw','Click to add a note, drag to set its length']],TR.tool||'select')}
       <span class="trgrp" title="Where new and moved notes land"><span class="fine">Snap</span>${trSeg('snap',[[1,'♩'],[2,'♪'],[4,'16th'],[8,'32nd'],[3,'Triplet']],TR.snapDiv||4)}</span>
@@ -355,7 +355,6 @@ function trEdit(score,res,savedIndex){
   const applyRoll=()=>{ pane.hidden=split.hidden=!rollOn(); rollBtn.setAttribute('aria-pressed',rollOn()); roll.style.height=rollH(store.get('trRollH',innerHeight*0.3))+'px'; };
   applyRoll();
   rollBtn.onclick=()=>{ store.set('trEditOn',!rollOn()); applyRoll(); if(rollOn()) trRollView(); };
-  split.ondblclick=()=>rollBtn.click();
   split.onpointerdown=e=>{ e.preventDefault(); const y0=e.clientY, h0=roll.offsetHeight; split.setPointerCapture(e.pointerId); split.classList.add('drag');
     split.onpointermove=ev=>{ roll.style.height=rollH(h0-(ev.clientY-y0))+'px'; };
     split.onpointerup=()=>{ split.onpointermove=null; split.classList.remove('drag'); store.set('trRollH',roll.offsetHeight); }; };
@@ -364,7 +363,7 @@ function trEdit(score,res,savedIndex){
   $('trLoopBtn').onclick=trLoopToggle;
   $('trSlower').onclick=()=>trSpeed(-1); $('trFaster').onclick=()=>trSpeed(1); $('trSpeedVal').onclick=()=>trSpeed(0); trSpeedShow();
   $('trSoundBtn').onclick=e=>{ const l=$('trSoundList'); l.hidden=!l.hidden; if(!l.hidden) trSoundMenu(); e.stopPropagation(); };
-  $('trDrumsBtn').onclick=e=>{ const p=$('trBeatPop'); p.hidden=!p.hidden; if(!p.hidden) trBeatMenu(); e.stopPropagation(); };
+  $('trDrumsBtn').onclick=e=>{ const p=$('trBeatPop'); p.hidden=!p.hidden; if(!p.hidden) trDrumsMenu(); e.stopPropagation(); };
   $('trMetro').onclick=()=>{ const on=!store.get('trMetro',false); store.set('trMetro',on); $('trMetro').setAttribute('aria-pressed',on); trResume(); };
   $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); trResume(); };
   $('trUndo').onclick=trUndo; $('trRedo').onclick=trRedo; $('trHelpBtn').onclick=()=>trGuide('start');
@@ -439,12 +438,12 @@ const TR_GUIDE=[
    <li><b>Tempo</b>: if the beat was heard at half or double speed (everything looks twice too fast or too slow), pick Half or Double.</li>
    <li><b>Beat 1</b>: each bar starts on the downbeat that was heard. If the bars go off from some point on:
      <ol><li>Put the playhead on the beat that should be 1 (click the beat numbers or the sheet music).</li><li>Press <b>Here</b>. The bars from there on start there; the ones before stay as they are.</li></ol>
-     Or move them a beat at a time with <b>◀</b> <b>▶</b> (from the playhead's bar on; from the start, all bars). Quicker still: <b>double-click</b> the beat number that should be 1, or right-click it.
+     Or move them a beat at a time with <b>◀</b> <b>▶</b> (from the playhead's bar on; from the start, all bars). Quicker still: right-click the beat number that should be 1 and choose <b>Beat 1 is here</b>.
      A small flag on the beat numbers marks each place you set beat 1. Click a flag to take it away.</li>
    <li><b>Roll</b>: <b>On the beat</b> shows the notes on the grid, like the sheet music. <b>As played</b> shows them where they really were, over the recording's waveform. If something looks right As played but wrong On the beat, it's the beat or beat 1, not the notes.</li></ul>`],
  ['edit','Editing notes',`<p>All note editing happens in the piano roll. The line under it always says what a click or drag will do where your mouse is.</p>
    <ul><li><b>Select</b> tool: click a note to select it (<kbd>Shift</kbd>-click for more), or drag on empty space to draw a box around several. Drag a note to move it: sideways in time, up and down in pitch. Drag its <b>right edge</b> to make it longer or shorter.</li>
-   <li><b>✎ Draw</b> tool: click to add a note, and drag to set its length. (With Select, double-click adds a note.) In a single line, drawing where a note already starts replaces it: the quickest way to fix a wrong note.</li>
+   <li><b>✎ Draw</b> tool: click to add a note, and drag to set its length. (With Select, right-click an empty spot and choose Add a note here.) In a single line, drawing where a note already starts replaces it: the quickest way to fix a wrong note.</li>
    <li><b>Snap</b>: where notes land when you add or move them (quarter, 8th, 16th, 32nd, triplets). Notes in a tuplet beat keep to its spots.</li>
    <li>With notes selected: <b>▲ ▼</b> (<kbd>↑</kbd> <kbd>↓</kbd>) a half step, <b>+8 −8</b> (<kbd>Shift+↑</kbd> <kbd>Shift+↓</kbd>) an octave, <kbd>←</kbd> <kbd>→</kbd> nudge in time, <b>🗑</b> (<kbd>Delete</kbd>) removes.</li>
    <li><b>Right-click</b> a note or a beat for everything you can do there.</li>
@@ -541,14 +540,14 @@ function trScoreView(){
   if(s.mode==='lead'&&s.texture!=='full') TR.lines=null; // the lead sheet's staff is drawn by Lines (its own spacing)
   // click the music to put the playhead there
   $('trScore').onclick=e=>{ if(TR.sclickSkip){ TR.sclickSkip=false; return; } const ce=e.target.closest('[data-c]'); if(ce) return trChordEdit(+ce.dataset.c,e);
-    if(e.target.closest('.crow')&&!TR.send){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) return trChordAdd(Math.round(b*2)/2,e); }   // the chord row: a new chord on the nearest half beat
+    if(e.target.closest('.crow')&&!TR.send){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) return trChordAdd(trChordSnap(b),e); }   // the chord row: a new chord on the nearest half beat
     const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return; TR.posB=b; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
   // right-click: change or remove a chord, or add one where you clicked
   $('trScore').oncontextmenu=e=>{ const b=trSheetBeat(e.clientX,e.clientY), ce=e.target.closest('[data-c]'); if(b==null&&!ce) return; e.preventDefault();
     if(ce){ const i=+ce.dataset.c; return trMenu(e,[{t:'Change this chord',f:()=>trChordEdit(i,e)},{t:'Remove it',f:()=>{ trPush(); TR.score.chords.splice(i,1); trRender(); }}]); }
-    const h=Math.round(b*2)/2, bar=Math.floor(h/4)*4;
+    const h=trChordSnap(b), bar=Math.floor(h/4)*4;
     trMenu(e,[{t:`Add a chord here (${trWhere(h)})`,f:()=>trChordAdd(h,e)},...(h!==bar+2?[{t:`Add a chord on beat 3 of bar ${bar/4+1}`,f:()=>trChordAdd(bar+2,e)}]:[])]); };
-  $('trScore').ondblclick=e=>{ if(e.target.closest('[data-c]')) return; const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendPhrase(b); };   // a note's phrase, ready to send to Lines
+  $('trScore').ondblclick=e=>{ if(!TR.send||e.target.closest('[data-c]')) return; const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendPhrase(b); };   // only while sending to Lines: pick a note's whole phrase
   $('trScore').onpointerdown=e=>{ if(e.button||e.target.closest('[data-c]')) return; const b0=trSheetBeat(e.clientX,e.clientY); if(b0!=null) TR.sdrag={x:e.clientX,y:e.clientY,b0,moved:false}; };
   trSheetHead(TR.posB||0); trLoopShow(); trSendTint();
 }
@@ -645,17 +644,16 @@ function trRollEvents(){
     const beatAt=trBeatAtX;
     if(sEl){ trPush(); const b=+sEl.dataset.solo, sb=s.soloBars||(s.soloBars=[]); sb.includes(b)?sb.splice(sb.indexOf(b),1):sb.push(b); trRender(); return; }
     if(cEl){ trChordEdit(+cEl.dataset.chord,e); return; }
-    if(e.target.closest('.rlane')){ trChordAdd(Math.max(0,Math.floor(beatAt(pt(e,head).x)+1e-6)),e); return; }
+    if(e.target.closest('.rlane')){ trChordAdd(trChordSnap(beatAt(pt(e,head).x)),e); return; }
   };
-  head.ondblclick=e=>{ const rEl=e.target.closest('[data-beat]'); if(rEl) trSetBeat1(+rEl.dataset.beat); };
   head.oncontextmenu=e=>{ e.preventDefault(); const cEl=e.target.closest('[data-chord]');
     if(cEl){ const i=+cEl.dataset.chord; return trMenu(e,[{t:'Change this chord',f:()=>trChordEdit(i,e)},{t:'Remove it',f:()=>{ trPush(); s.chords.splice(i,1); trRender(); }}]); }
     trBeatMenu(e,trBeatAtX(pt(e,head).x)); };
   head.onpointermove=e=>{ if(TR.rdrag) return; const b=trBeatAtX(pt(e,head).x);
     if(e.target.closest('[data-anchor]')) return trHint('Beat 1 was set here by hand — click the flag to take it away');
-    if(e.target.closest('[data-beat]')) return trHint(`${trWhere(b)} — click: play from here · drag: loop · double-click: this is beat 1 · right-click: more`);
+    if(e.target.closest('[data-beat]')) return trHint(`${trWhere(b)} — click: play from here · drag: loop · right-click: beat 1 is here, and more`);
     if(e.target.closest('[data-chord]')) return trHint('Chord — click to change it · right-click to remove it');
-    if(e.target.closest('.rlane')) return trHint(`Chord lane, bar ${Math.floor(Math.max(0,b)/4)+1} — click an empty spot to add a chord on that beat`); };
+    if(e.target.closest('.rlane')) return trHint(`Chord lane, bar ${Math.floor(Math.max(0,b)/4)+1} — click an empty spot to add a chord there`); };
   head.onpointerleave=()=>trHint('');
   svg.onpointerdown=e=>{
     const p=pt(e), nEl=e.target.closest('.rnote');
@@ -668,14 +666,13 @@ function trRollEvents(){
     TR.selected.clear(); TR.drag={mode:'box',p0:p}; e.preventDefault();
   };
   svg.oncontextmenu=e=>{ e.preventDefault(); const nEl=e.target.closest('.rnote'); if(nEl){ const i=+nEl.dataset.i; if(!TR.selected.has(i)) TR.selected=new Set([i]); trRollView(); trNoteMenu(e); }
-    else trBeatMenu(e,trBeatAtX(pt(e).x)); };
+    else { const p=pt(e); trBeatMenu(e,trBeatAtX(p.x),toPitch(p.y),p); } };
   svg.onpointermove=e=>{ if(TR.drag) return; const p=pt(e), nEl=e.target.closest('.rnote');
     if(nEl){ const n=s.melody[+nEl.dataset.i], edge=p.x>TR.roll.X.nx(n)+TR.roll.X.nw(n)-7; svg.style.cursor=edge?'ew-resize':'grab';
       trHint(`${trNoteName(n.midi)} · ${trWhere(n.gat)} — ${edge?'drag to change its length':'drag to move it (up/down: pitch) · right-click for more'}`); }
     else { svg.style.cursor=TR.tool==='draw'?'crosshair':'default'; const b=trBeatAtX(p.x);
-      trHint(`${trNoteName(toPitch(p.y))} · ${trWhere(b)} — ${TR.tool==='draw'?'click to add a note here, drag to set its length':'drag to select notes · double-click to add one · right-click for more'}`); } };
+      trHint(`${trNoteName(toPitch(p.y))} · ${trWhere(b)} — ${TR.tool==='draw'?'click to add a note here, drag to set its length':'drag to select notes · right-click to add a note here, and more'}`); } };
   svg.onpointerleave=()=>trHint('');
-  svg.ondblclick=e=>{ if(e.target.closest('.rnote')||TR.tool==='draw') return; const i=trAddNote(pt(e)); if(i>=0){ TR.selected=new Set([i]); trTidy(); trRender(); } };
 }
 /* ---------------- editing helpers: add, name, hint line, selection, right-click menus ---------------- */
 // a new note where you clicked, on the snap grid (or the beat's tuplet), as long as the last note you drew
@@ -688,6 +685,7 @@ function trAddNote(p){ const s=TR.score, mp=trMaps(), G=TR.snapDiv||4, m=TR.roll
   s.melody.push({midi:m,gat:at,gdur:len,tri:D===3,tup:[1,2,4,8].includes(D)?0:D,sec:Math.round(sec*1000)/1000,dsec:Math.max(.05,Math.round((mp.toSec(at+len)-sec)*1000)/1000)});
   return s.melody.length-1; }
 const trNoteName=m=>plainSpell(m).name+(Math.floor(m/12)-1);
+const trChordSnap=b=>Math.max(0,Math.round(b*2)/2);   // a new chord lands on the nearest half beat, wherever you add it
 const trWhere=b=>{ const bb=Math.max(0,b); return `bar ${Math.floor(bb/4)+1}, beat ${+((bb%4)+1).toFixed(2)}`; };
 function trHint(t){ const h=$('trHintLine'); if(h) h.textContent=t||(TR.selected.size?'':'Hover over the piano roll to see what a click or drag does there.'); }
 function trSelInfo(){ const el=$('trSelInfo'); if(!el) return; const s=TR.score, sel=[...TR.selected].map(i=>s.melody[i]).filter(Boolean).sort((a,b)=>a.gat-b.gat||a.midi-b.midi);
@@ -708,10 +706,10 @@ function trNoteMenu(e){ const n=TR.score.melody[[...TR.selected][0]], b=n?n.gat:
   trMenu(e,[{t:'Play from here',f:()=>{ TR.posB=b; trPlayScore(b); }},{t:many?'Delete these notes':'Delete',k:'Delete',f:()=>trSelAct('del')},null,
     {t:'Up a half step',k:'↑',f:()=>trSelAct('up')},{t:'Down a half step',k:'↓',f:()=>trSelAct('down')},{t:'Up an octave',k:'Shift+↑',f:()=>trSelAct('oup')},{t:'Down an octave',k:'Shift+↓',f:()=>trSelAct('odown')},null,
     {t:'Beat 1 is here (bars from here on)',off:!TR.res,f:()=>trSetBeat1(Math.round(b))}]); }
-function trBeatMenu(e,b){ const bar=Math.floor(Math.max(0,b)/4);
+function trBeatMenu(e,b,pitch=null,at=null){ const bar=Math.floor(Math.max(0,b)/4);   // pitch/at: right-clicked on the roll, where a note can go
   trMenu(e,[{t:'Play from here',f:()=>{ TR.posB=Math.max(0,b); trPlayScore(TR.posB); }},{t:`Loop bar ${bar+1}`,f:()=>{ TR.loop={a:bar*4,b:bar*4+4}; TR.looping=false; trLoopToggle(); }},null,
     {t:'Beat 1 is here (bars from here on)',off:!TR.res,f:()=>trSetBeat1(Math.round(b))},{t:'Bars from here: one beat earlier',off:!TR.res,f:()=>trNudgeBars(-1,b)},{t:'Bars from here: one beat later',off:!TR.res,f:()=>trNudgeBars(1,b)},null,
-    {t:'Add a chord on this beat',f:()=>trChordAdd(Math.max(0,Math.floor(b+1e-6)),e)}]); }
+    {t:`Add a chord here (${trWhere(trChordSnap(b))})`,f:()=>trChordAdd(trChordSnap(b),e)},...(pitch!=null?[{t:`Add a note here (${trNoteName(pitch)})`,f:()=>{ const i=trAddNote(at); if(i>=0){ TR.selected=new Set([i]); trTidy(); trRender(); } }}]:[])]); }
 function trDropAnchor(i){ if(!TR.raw) return; const A=(TR.score.anchors||[]).filter((_,k)=>k!==i);
   TR.res=prepRes(TR.raw,A); trReread({shift:null},'Beat 1 mark removed: those bars follow the detected downbeats again.'); }
 // move the bar lines one beat, from the bar at b on (from the start: all of them)
@@ -828,9 +826,9 @@ function trSoundMenu(){ const l=$('trSoundList'); if(!l) return; const cur=trSou
     if(SMP_MAPS[id]){ b.querySelector('.fine')||b.insertAdjacentHTML('beforeend','<span class="fine">Loading…</span>'); await smpLoad(id); trSoundMenu(); }
     if(TR.playing) trResume(); else { const bus=previewBus(); if(bus){ const t=now()+.05; [67,71,74,72].forEach((m,i)=>trTone(m,t+i*.22,i===3?.6:.2,90,bus)); } } }); }
 // Drums under the transcription: on or off, and its own beat (kept with it: score.drums, score.beat; none: Profile's)
-function trBeatMenu(){ const el=$('trBeatPop'), s=TR.score; if(!el) return;
+function trDrumsMenu(){ const el=$('trBeatPop'), s=TR.score; if(!el) return;
   el.innerHTML=`<div class="erow" style="margin:0 0 8px;align-items:center"><button class="ghost tgl" id="trDrumsOn" aria-pressed="${!!s.drums}">${s.drums?'Drums on':'Drums off'}</button><span class="fine" style="margin:0">The beat for this transcription, saved with it. Sounds: Profile → Sound.</span></div><div></div>`;
-  $('trDrumsOn').onclick=e=>{ e.stopPropagation(); s.drums=!s.drums; trSetDirty(); $('trDrumsBtn').setAttribute('aria-pressed',!!s.drums); trBeatMenu(); trResume(); };
+  $('trDrumsOn').onclick=e=>{ e.stopPropagation(); s.drums=!s.drums; trSetDirty(); $('trDrumsBtn').setAttribute('aria-pressed',!!s.drums); trDrumsMenu(); trResume(); };
   drumBeatEditor(el.lastElementChild,{value:s.beat??null,def:true,mine:'This transcription',live:!!(TR.playing&&s.drums),
     set:v=>{ if(v==null) delete s.beat; else s.beat=v; if(!s.drums){ s.drums=true; $('trDrumsBtn').setAttribute('aria-pressed',true); $('trDrumsOn').setAttribute('aria-pressed',true); $('trDrumsOn').textContent='Drums on'; } trSetDirty(); trResume(); }}); }
 /* ---------------- playback, save, export, to Lines ---------------- */
@@ -939,6 +937,8 @@ async function trSave(){
 }
 // Reopen a saved one: with its recording when that was kept, so playback, Hear recording and re-reading all work again
 async function trOpenSaved(i){
+  if(TR.opening) return; TR.opening=true; try{ return await trOpenSaved1(i); } finally{ TR.opening=false; } }
+async function trOpenSaved1(i){
   let t=TRDATA.list[i]; if(!t) return;
   if(LIB.on){ try{ t=await libReload(t.id)||t; TRDATA.list[i]=t; }catch(e){} trLibNotes(); }   // read it fresh: chords.txt may have been fixed meanwhile
   const sc=JSON.parse(JSON.stringify(t)), m=sc.id&&sc.media?await (LIB.on?libMedia(sc.id):trDB.get(sc.id)):null;
@@ -1069,7 +1069,7 @@ function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r
   const L=trSendLick(), n=L?L.ns.length:0, bars=L?trBars({a:L.start,b:L.end}):'', ok=n>=3&&n<=24;
   if(!r.nameEdited) r.name=`${s.title}${L?`, bar ${bars}`:''}`;
   let preview=''; if(L&&n>=2){ try{ preview=`<div class="lstaff trsendprev">${lineStaffSVG(lickInstance(trSendBuild(L),L.root),-1,false)}</div>`; }catch(e){} }
-  el.innerHTML=`<div class="trsendhead"><b>Send to Lines</b><span class="fine">Drag across notes in the sheet music, or double-click a note for its phrase.</span><span class="trspace"></span><button class="ghost ic" id="trSendX" title="Close (Esc)">✕</button></div>
+  el.innerHTML=`<div class="trsendhead"><b>Send to Lines</b><span class="fine">Drag across notes in the sheet music, or double-click a note for its whole phrase.</span><span class="trspace"></span><button class="ghost ic" id="trSendX" title="Close (Esc)">✕</button></div>
     <div class="trsendmain"><div class="trsendleft">
       <div class="trsendrow"><span class="trsendn">1</span><div><b>${n?`${n} note${n===1?'':'s'}, bar${bars.includes('–')?'s':''} ${bars}`:'No notes picked yet'}</b>
         ${r.idx.length?`<span class="seg trnudge" role="group" title="Move the start or the end by one note"><button data-nudge="s-1" title="Start one note earlier">◂</button><button disabled>Start</button><button data-nudge="s1" title="Start one note later">▸</button></span><span class="seg trnudge" role="group"><button data-nudge="e-1" title="End one note earlier">◂</button><button disabled>End</button><button data-nudge="e1" title="End one note later">▸</button></span>`:''}
