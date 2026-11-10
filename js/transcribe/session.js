@@ -328,7 +328,7 @@ function trEdit(score,res,savedIndex){
       <span class="trgrp trspeed" title="How fast you hear it back (the transcription stays as it is). [ and ] change it"><button class="ghost ic" id="trSlower" title="Slower ([)">−</button><button class="ghost" id="trSpeedVal" title="Back to 100%"></button><button class="ghost ic" id="trFaster" title="Faster (])">+</button></span>
       <div class="trmenu"><button class="ghost" id="trSoundBtn" aria-haspopup="true" title="The sound the transcription plays on, so it's not the same as your keys">Sound ▾</button><div class="trmenulist" id="trSoundList" hidden></div></div>
       <button class="ghost tgl" id="trLoopBtn" aria-pressed="${!!TR.looping}" title="Loop (Shift+L). Drag across bars in the sheet music to choose which">⟳ Loop</button>
-      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button><div class="trmenu"><button class="ghost tgl" id="trDrumsBtn" aria-haspopup="true" aria-pressed="${!!score.drums}" title="Drums under it: on or off, and this transcription's own beat">Drums ▾</button><div class="trmenulist trbeatpop" id="trBeatPop" hidden></div></div><button class="ghost tgl" id="trMetro" aria-pressed="${!!store.get('trMetro',false)}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher. It follows the speed, and the recording's own beat when it plays">Click</button>
+      <button class="ghost tgl" id="trBacking" aria-pressed="${!!TR.backing}" title="Play chords and bass under the notes">Chords</button><button class="ghost" id="trAddChord" title="Add a chord: choose what it is and where it goes (starts at the playhead)">+ Chord</button><div class="trmenu"><button class="ghost tgl" id="trDrumsBtn" aria-haspopup="true" aria-pressed="${!!score.drums}" title="Drums under it: on or off, and this transcription's own beat">Drums ▾</button><div class="trmenulist trbeatpop" id="trBeatPop" hidden></div></div><button class="ghost tgl" id="trMetro" aria-pressed="${!!store.get('trMetro',false)}" title="Metronome: a click on every beat, 1 2 3 4, beat 1 higher. It follows the speed, and the recording's own beat when it plays">Click</button>
       <button class="ghost tgl trrec" id="trRec" aria-pressed="${!!TR.rec}" title="Record: what you play on your keyboard while it plays is written into the transcription">● Rec</button>
       <span class="trhintline" id="trHintLine"></span>
       <div class="trmenu"><button class="ghost" id="trFixBtn" aria-haspopup="true" title="Fix the tempo, where beat 1 is, how many notes it catches">Adjust ▾</button><div class="trmenulist trfixpop" id="trFixPop" hidden><div class="trfix">${R?`<span class="trgrp" title="How sure a note has to be to show. Lower: cleaner, can miss quiet or very fast notes. Higher: catches more, and more stray notes."><span class="fine">Sensitivity</span>${trSeg('sens',TR_SENS_NAMES.map((t,i)=>[i,t]),score.sens??2)}</span>
@@ -364,6 +364,7 @@ function trEdit(score,res,savedIndex){
   $('trSlower').onclick=()=>trSpeed(-1); $('trFaster').onclick=()=>trSpeed(1); $('trSpeedVal').onclick=()=>trSpeed(0); trSpeedShow();
   $('trSoundBtn').onclick=e=>{ const l=$('trSoundList'); l.hidden=!l.hidden; if(!l.hidden) trSoundMenu(); e.stopPropagation(); };
   $('trDrumsBtn').onclick=e=>{ const p=$('trBeatPop'); p.hidden=!p.hidden; if(!p.hidden) trDrumsMenu(); e.stopPropagation(); };
+  $('trAddChord').onclick=e=>{ e.stopPropagation(); trChordAdd(TR.posB||0,e); };
   $('trMetro').onclick=()=>{ const on=!store.get('trMetro',false); store.set('trMetro',on); $('trMetro').setAttribute('aria-pressed',on); trResume(); };
   $('trBacking').onclick=()=>{ TR.backing=!TR.backing; store.set('trBacking',TR.backing); $('trBacking').setAttribute('aria-pressed',TR.backing); trResume(); };
   $('trUndo').onclick=trUndo; $('trRedo').onclick=trRedo; $('trHelpBtn').onclick=()=>trGuide('start');
@@ -443,7 +444,7 @@ const TR_GUIDE=[
    <li><b>Roll</b>: <b>On the beat</b> shows the notes on the grid, like the sheet music. <b>As played</b> shows them where they really were, over the recording's waveform. If something looks right As played but wrong On the beat, it's the beat or beat 1, not the notes.</li></ul>`],
  ['edit','Editing notes',`<p>All note editing happens in the piano roll. The line under it always says what a click or drag will do where your mouse is.</p>
    <ul><li><b>Select</b> tool: click a note to select it (<kbd>Shift</kbd>-click for more), or drag on empty space to draw a box around several. Drag a note to move it: sideways in time, up and down in pitch. Drag its <b>right edge</b> to make it longer or shorter.</li>
-   <li><b>✎ Draw</b> tool: click to add a note, and drag to set its length. (With Select, right-click an empty spot and choose Add a note here.) In a single line, drawing where a note already starts replaces it: the quickest way to fix a wrong note.</li>
+   <li><b>✎ Draw</b> tool: click to add a note, and drag to set its length. (Or right-click and choose Add a note…: pick the note, where it goes and how long; right-click a note and Edit this note… to change it the same way.) In a single line, drawing where a note already starts replaces it: the quickest way to fix a wrong note.</li>
    <li><b>Snap</b>: where notes land when you add or move them (quarter, 8th, 16th, 32nd, triplets). Notes in a tuplet beat keep to its spots.</li>
    <li>With notes selected: <b>▲ ▼</b> (<kbd>↑</kbd> <kbd>↓</kbd>) a half step, <b>+8 −8</b> (<kbd>Shift+↑</kbd> <kbd>Shift+↓</kbd>) an octave, <kbd>←</kbd> <kbd>→</kbd> nudge in time, <b>🗑</b> (<kbd>Delete</kbd>) removes.</li>
    <li><b>Right-click</b> a note or a beat for everything you can do there.</li>
@@ -540,13 +541,12 @@ function trScoreView(){
   if(s.mode==='lead'&&s.texture!=='full') TR.lines=null; // the lead sheet's staff is drawn by Lines (its own spacing)
   // click the music to put the playhead there
   $('trScore').onclick=e=>{ if(TR.sclickSkip){ TR.sclickSkip=false; return; } const ce=e.target.closest('[data-c]'); if(ce) return trChordEdit(+ce.dataset.c,e);
-    if(e.target.closest('.crow')&&!TR.send){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) return trChordAdd(trChordSnap(b),e); }   // the chord row: a new chord on the nearest half beat
+    if(e.target.closest('.crow')&&!TR.send){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) return trChordAdd(b,e); }   // the chord row: a new chord on the nearest half beat
     const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return; TR.posB=b; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
   // right-click: change or remove a chord, or add one where you clicked
   $('trScore').oncontextmenu=e=>{ const b=trSheetBeat(e.clientX,e.clientY), ce=e.target.closest('[data-c]'); if(b==null&&!ce) return; e.preventDefault();
     if(ce){ const i=+ce.dataset.c; return trMenu(e,[{t:'Change this chord',f:()=>trChordEdit(i,e)},{t:'Remove it',f:()=>{ trPush(); TR.score.chords.splice(i,1); trRender(); }}]); }
-    const h=trChordSnap(b), bar=Math.floor(h/4)*4;
-    trMenu(e,[{t:`Add a chord here (${trWhere(h)})`,f:()=>trChordAdd(h,e)},...(h!==bar+2?[{t:`Add a chord on beat 3 of bar ${bar/4+1}`,f:()=>trChordAdd(bar+2,e)}]:[])]); };
+    trMenu(e,[{t:'Add a chord…',f:()=>trChordAdd(b,e)},{t:'Add a note…',f:()=>trNoteNew(e,b)},null,{t:'Play from here',f:()=>{ TR.posB=b; trPlayScore(b); }}]); };
   $('trScore').ondblclick=e=>{ if(!TR.send||e.target.closest('[data-c]')) return; const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendPhrase(b); };   // only while sending to Lines: pick a note's whole phrase
   $('trScore').onpointerdown=e=>{ if(e.button||e.target.closest('[data-c]')) return; const b0=trSheetBeat(e.clientX,e.clientY); if(b0!=null) TR.sdrag={x:e.clientX,y:e.clientY,b0,moved:false}; };
   trSheetHead(TR.posB||0); trLoopShow(); trSendTint();
@@ -644,7 +644,7 @@ function trRollEvents(){
     const beatAt=trBeatAtX;
     if(sEl){ trPush(); const b=+sEl.dataset.solo, sb=s.soloBars||(s.soloBars=[]); sb.includes(b)?sb.splice(sb.indexOf(b),1):sb.push(b); trRender(); return; }
     if(cEl){ trChordEdit(+cEl.dataset.chord,e); return; }
-    if(e.target.closest('.rlane')){ trChordAdd(trChordSnap(beatAt(pt(e,head).x)),e); return; }
+    if(e.target.closest('.rlane')){ trChordAdd(beatAt(pt(e,head).x),e); return; }
   };
   head.oncontextmenu=e=>{ e.preventDefault(); const cEl=e.target.closest('[data-chord]');
     if(cEl){ const i=+cEl.dataset.chord; return trMenu(e,[{t:'Change this chord',f:()=>trChordEdit(i,e)},{t:'Remove it',f:()=>{ trPush(); s.chords.splice(i,1); trRender(); }}]); }
@@ -671,7 +671,7 @@ function trRollEvents(){
     if(nEl){ const n=s.melody[+nEl.dataset.i], edge=p.x>TR.roll.X.nx(n)+TR.roll.X.nw(n)-7; svg.style.cursor=edge?'ew-resize':'grab';
       trHint(`${trNoteName(n.midi)} · ${trWhere(n.gat)} — ${edge?'drag to change its length':'drag to move it (up/down: pitch) · right-click for more'}`); }
     else { svg.style.cursor=TR.tool==='draw'?'crosshair':'default'; const b=trBeatAtX(p.x);
-      trHint(`${trNoteName(toPitch(p.y))} · ${trWhere(b)} — ${TR.tool==='draw'?'click to add a note here, drag to set its length':'drag to select notes · right-click to add a note here, and more'}`); } };
+      trHint(`${trNoteName(toPitch(p.y))} · ${trWhere(b)} — ${TR.tool==='draw'?'click to add a note here, drag to set its length':'drag to select notes · right-click to add a note, and more'}`); } };
   svg.onpointerleave=()=>trHint('');
 }
 /* ---------------- editing helpers: add, name, hint line, selection, right-click menus ---------------- */
@@ -703,13 +703,13 @@ function trMenu(e,items){ document.querySelectorAll('.trctx').forEach(x=>x.remov
   m.querySelectorAll('[data-mi]').forEach(b=>b.onclick=()=>{ m.remove(); items[+b.dataset.mi].f(); });
   setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!m.contains(ev.target)){ m.remove(); document.removeEventListener('pointerdown',f); } }),0); }
 function trNoteMenu(e){ const n=TR.score.melody[[...TR.selected][0]], b=n?n.gat:0, many=TR.selected.size>1;
-  trMenu(e,[{t:'Play from here',f:()=>{ TR.posB=b; trPlayScore(b); }},{t:many?'Delete these notes':'Delete',k:'Delete',f:()=>trSelAct('del')},null,
+  trMenu(e,[...(many?[]:[{t:'Edit this note…',f:()=>trNoteEdit(e,[...TR.selected][0])}]),{t:'Play from here',f:()=>{ TR.posB=b; trPlayScore(b); }},{t:many?'Delete these notes':'Delete',k:'Delete',f:()=>trSelAct('del')},null,
     {t:'Up a half step',k:'↑',f:()=>trSelAct('up')},{t:'Down a half step',k:'↓',f:()=>trSelAct('down')},{t:'Up an octave',k:'Shift+↑',f:()=>trSelAct('oup')},{t:'Down an octave',k:'Shift+↓',f:()=>trSelAct('odown')},null,
     {t:'Beat 1 is here (bars from here on)',off:!TR.res,f:()=>trSetBeat1(Math.round(b))}]); }
 function trBeatMenu(e,b,pitch=null,at=null){ const bar=Math.floor(Math.max(0,b)/4);   // pitch/at: right-clicked on the roll, where a note can go
   trMenu(e,[{t:'Play from here',f:()=>{ TR.posB=Math.max(0,b); trPlayScore(TR.posB); }},{t:`Loop bar ${bar+1}`,f:()=>{ TR.loop={a:bar*4,b:bar*4+4}; TR.looping=false; trLoopToggle(); }},null,
     {t:'Beat 1 is here (bars from here on)',off:!TR.res,f:()=>trSetBeat1(Math.round(b))},{t:'Bars from here: one beat earlier',off:!TR.res,f:()=>trNudgeBars(-1,b)},{t:'Bars from here: one beat later',off:!TR.res,f:()=>trNudgeBars(1,b)},null,
-    {t:`Add a chord here (${trWhere(trChordSnap(b))})`,f:()=>trChordAdd(trChordSnap(b),e)},...(pitch!=null?[{t:`Add a note here (${trNoteName(pitch)})`,f:()=>{ const i=trAddNote(at); if(i>=0){ TR.selected=new Set([i]); trTidy(); trRender(); } }}]:[])]); }
+    {t:'Add a chord…',f:()=>trChordAdd(b,e)},{t:'Add a note…',f:()=>trNoteNew(e,b,pitch)}]); }
 function trDropAnchor(i){ if(!TR.raw) return; const A=(TR.score.anchors||[]).filter((_,k)=>k!==i);
   TR.res=prepRes(TR.raw,A); trReread({shift:null},'Beat 1 mark removed: those bars follow the detected downbeats again.'); }
 // move the bar lines one beat, from the bar at b on (from the start: all of them)
@@ -751,7 +751,25 @@ function trSufState(suf){ const f=(suf||'').replace(/♭/g,'b').replace(/♯/g,'
   const nat=f.replace(/[b#](5|9|11|13)/g,''); ['9','11','13'].forEach(n=>{ if(new RegExp('(^|[^0-9])'+n+'(?![0-9])').test(nat.replace('6/9','9'))) x.add(n); });
   const s=/maj|M7|Δ|\(maj/.test(f)?'maj7':/6/.test(nat)?'6':/add/.test(f)&&!/7/.test(f)?'':/7|9|11|13|alt/.test(nat)||q==='hdim'?'7':'';
   if(q==='dim'&&/7/.test(f)) return {q,s:'7',x}; return {q,s,x}; }
-function trChordPopup(e,c,onSave,onDel,title){
+/* Where, chosen rather than guessed: a bar (‹ ›, or type it) and a spot in it. Chords go on half beats (1 & 2 & 3 & 4 &),
+   notes on 16ths (1 e & a 2 …). What's already there shows on its spot, so you see what you'd replace. A click on the
+   music only suggests where to start. o: {at, lo, hi, step, taken: at=>label or '', onChange(at)}; returns get(). */
+function trWherePick(box,o){
+  const per=Math.round(1/o.step), names=per===2?['','&']:['','e','&','a'], snap=b=>Math.round(b/o.step)*o.step;
+  let at=Math.min(o.hi,Math.max(o.lo,o.at)), onGrid=Math.abs(snap(at)-at)<1e-6;
+  const bars=[Math.floor(o.lo/4)+1,Math.floor(o.hi/4)+1];
+  const draw=()=>{ const bar=Math.floor(at/4+1e-9)+1, b0=(bar-1)*4;
+    const spots=[...Array(4*per)].map((_,k)=>{ const t=b0+k*o.step, out=t<o.lo-1e-6||t>o.hi+1e-6, lab=k%per?names[k%per]:String(k/per+1), here=onGrid&&Math.abs(t-at)<1e-6, tk=o.taken(t);
+      return `<button data-wb="${t}" aria-pressed="${here}"${out?' disabled':''} class="${k%per?'off':''}${tk?' tk':''}" title="${trWhere(t)}${tk?': '+trEsc(tk)+' is here':''}">${lab}${tk?`<i>${trEsc(tk)}</i>`:''}</button>`; }).join('');
+    box.innerHTML=`<div class="tpbar"><span class="fine">Bar</span><button class="ghost ic" data-wbar="-1"${bar<=bars[0]?' disabled':''}>‹</button><input type="number" min="${bars[0]}" max="${bars[1]}" value="${bar}" data-wbarn><button class="ghost ic" data-wbar="1"${bar>=bars[1]?' disabled':''}>›</button>
+      <span class="fine tpwhere">${onGrid?'':`now at ${trWhere(at)} · `}${o.taken(at)&&onGrid?`replaces ${trEsc(o.taken(at))}`:''}</span></div><div class="tpchips tpbeats tpb${per}">${spots}</div>`;
+    box.querySelectorAll('[data-wb]').forEach(b=>b.onclick=()=>{ at=+b.dataset.wb; onGrid=true; draw(); o.onChange&&o.onChange(at); });
+    box.querySelectorAll('[data-wbar]').forEach(b=>b.onclick=()=>go(bar+ +b.dataset.wbar));
+    const n=box.querySelector('[data-wbarn]'); n.onkeydown=ev=>{ ev.stopPropagation(); if(ev.key==='Enter'){ ev.preventDefault(); go(+n.value); } }; n.onchange=()=>go(+n.value); };
+  // another bar: the same spot in it (inside the range)
+  const go=bar=>{ bar=Math.max(bars[0],Math.min(bars[1],Math.round(bar)||bars[0])); const off=at-Math.floor(at/4+1e-9)*4; at=Math.min(o.hi,Math.max(o.lo,(bar-1)*4+(onGrid?off:snap(off)))); onGrid=true; draw(); o.onChange&&o.onChange(at); };
+  draw(); return ()=>at; }
+function trChordPopup(e,c,onSave,onDel,title,where){
   document.querySelectorAll('.trpop').forEach(x=>x.remove());
   const r0=chordRoot(c); let L=r0.l, A=r0.a, st=trSufState(c.suf??(Q[c.qid]||Q.maj7).suf), bass=c.bass?{...c.bass}:null, bus=null;
   const sym=()=>LETTERS[L]+ACC[A]+trSufOf(st)+(bass?'/'+LETTERS[bass.l]+ACC[bass.a]:'');
@@ -764,6 +782,7 @@ function trChordPopup(e,c,onSave,onDel,title){
     <div class="tpline"><span class="fine">6th / 7th</span><div class="tpchips" id="tpS"></div></div>
     <div class="tpline"><span class="fine">Add</span><div class="tpchips tpext" id="tpX"></div></div>
     <div class="tpline"><span class="fine">Bass</span><select id="tpB">${BASSES.map((b,i)=>`<option value="${i}">${b?'/'+LETTERS[b.l]+ACC[b.a]:'Root (no slash)'}</option>`).join('')}</select></div>
+    ${where?'<div class="tpline tpwhereline"><span class="fine">Where</span><div id="tpW"></div></div>':''}
     <div class="tprow"><span class="fine" id="tpMsg"></span><span class="trspace"></span>${onDel?'<button class="ghost" id="tpDel">Remove</button>':''}<button class="go" id="tpOk">OK</button></div>`;
   const $p=sel=>pop.querySelector(sel);
   const fields=()=>{ const t=(typeof gigChord==='function'&&gigChord(sym()))||null, pc=mod12(LETTER_PC[L]+A);
@@ -793,19 +812,72 @@ function trChordPopup(e,c,onSave,onDel,title){
   $p('#tpText').onchange=()=>{ if(!$p('#tpText').classList.contains('bad')) hear(); };
   $p('#tpB').onchange=ev=>{ bass=BASSES[+ev.target.value]; change(); };
   $p('#tpHear').onclick=hear; draw(false);
+  const whereAt=where?trWherePick($p('#tpW'),{step:.5,...where}):()=>null;
   document.body.appendChild(pop);
   const w=pop.offsetWidth, h=pop.offsetHeight; let y=e.clientY+12; if(y+h>innerHeight-8) y=Math.max(8,e.clientY-h-12);
   pop.style.left=Math.max(8,Math.min(innerWidth-w-8,e.clientX-20))+'px'; pop.style.top=y+'px';
   pop.onkeydown=ev=>{ if(ev.key==='Enter'&&ev.target.tagName!=='INPUT'){ ev.preventDefault(); $p('#tpOk').click(); } };
-  $p('#tpOk').onclick=()=>{ const t=$p('#tpText'); if(t.classList.contains('bad')) return; onSave(fields()); pop.remove(); };
+  $p('#tpOk').onclick=()=>{ const t=$p('#tpText'); if(t.classList.contains('bad')) return; onSave(fields(),whereAt()); pop.remove(); };
   $p('#tpText').focus(); $p('#tpText').select();
   if(onDel) $p('#tpDel').onclick=()=>{ onDel(); pop.remove(); };
   setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('pointerdown',f); } }),0);
 }
-function trChordEdit(i,e){ const s=TR.score, c=s.chords[i];
-  trChordPopup(e,c,f=>{ trPush(); const {sp,suf,bass,...rest}=c; s.chords[i]={...rest,...f}; if(!f.bass) delete s.chords[i].bass; trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); },trWhere(c.at)); }
-function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.key.pc,qid:'maj7'};
-  trChordPopup(e,{...prev},f=>{ trPush(); s.chords=s.chords.filter(c=>Math.abs(c.at-at)>1e-6); const nc={at,...f}; if(!f.bass) delete nc.bass; s.chords.push(nc); s.chords.sort((a,b)=>a.at-b.at); trRender(); },null,`New chord, ${trWhere(at)}`); }
+/* A note, chosen: pitch (letter, ♭ ♮ ♯, octave), where (bar and 16th) and length. For a new one the click only suggests
+   them; an existing one can be changed or moved here as well as by dragging. n: the note being changed (or null). */
+const TR_LENS=[[.25,'16th'],[.5,'8th'],[.75,'8th.'],[1,'Quarter'],[1.5,'Quarter.'],[2,'Half'],[3,'Half.'],[4,'Whole']];
+function trNotePopup(e,n,start,onSave,onDel){
+  document.querySelectorAll('.trpop').forEach(x=>x.remove());
+  const s=TR.score, sp=plainSpell(start.midi); let L=sp.l, A=sp.a, oct=Math.floor((start.midi-A-LETTER_PC[L])/12)-1, len=start.len;
+  const midi=()=>(oct+1)*12+LETTER_PC[L]+A, hi=Math.max(s.bars*4-.25,start.at);
+  const pop=document.createElement('div'); pop.className='trpop trchordpop trnotepop'; const $p=q=>pop.querySelector(q);
+  const chips=(k,opts,cur)=>opts.map(([v,l])=>`<button data-${k}="${v}" aria-pressed="${cur(v)}">${l}</button>`).join('');
+  pop.innerHTML=`<div class="tptitle"><b id="tnName"></b><button class="ghost ic" id="tnHear" title="Hear it">▶</button><span class="fine">${n?'Change the note, or move it':'New note: which, where, how long'}</span></div>
+    <div class="tpline"><span class="fine">Note</span><div class="tpchips" id="tnL"></div><div class="tpchips tpacc" id="tnA"></div></div>
+    <div class="tpline"><span class="fine">Octave</span><div class="tpbar"><button class="ghost ic" data-oct="-1">‹</button><b id="tnOct"></b><button class="ghost ic" data-oct="1">›</button><span class="fine" id="tnMid"></span></div></div>
+    <div class="tpline"><span class="fine">Length</span><div class="tpchips" id="tnLen"></div></div>
+    <div class="tpline tpwhereline"><span class="fine">Where</span><div id="tnW"></div></div>
+    <div class="tprow"><span class="fine" id="tnMsg"></span><span class="trspace"></span>${onDel?'<button class="ghost" id="tnDel">Delete</button>':''}<button class="go" id="tnOk">OK</button></div>`;
+  const hear=()=>{ const m=midi(); synth.init(); synth.on(m,85); setTimeout(()=>synth.off(m,.3),350); };
+  const draw=()=>{ const m=midi(); $p('#tnName').textContent=LETTERS[L]+ACC[A]+oct;   // as you spelled it
+    $p('#tnL').innerHTML=chips('nl',LETTERS.map((x,i)=>[i,x]),v=>+v===L); $p('#tnA').innerHTML=chips('na',[[-1,'♭'],[0,'♮'],[1,'♯']],v=>+v===A);
+    $p('#tnOct').textContent=oct; $p('#tnMid').textContent=m===60?'middle C':m<60?'below middle C':'above middle C';
+    const known=TR_LENS.some(([v])=>Math.abs(v-len)<1e-6);
+    $p('#tnLen').innerHTML=chips('nlen',known?TR_LENS:[...TR_LENS,[len,`as is (${+len.toFixed(3)} beats)`]],v=>Math.abs(+v-len)<1e-6);
+    pop.querySelectorAll('[data-nl]').forEach(b=>b.onclick=()=>{ L=+b.dataset.nl; draw(); hear(); });
+    pop.querySelectorAll('[data-na]').forEach(b=>b.onclick=()=>{ A=+b.dataset.na; draw(); hear(); });
+    pop.querySelectorAll('[data-nlen]').forEach(b=>b.onclick=()=>{ len=+b.dataset.nlen; draw(); }); };
+  pop.querySelectorAll('[data-oct]').forEach(b=>b.onclick=()=>{ oct=Math.max(0,Math.min(8,oct+ +b.dataset.oct)); draw(); hear(); });
+  draw();
+  const others=s.melody.filter(x=>x!==n);
+  const at=trWherePick($p('#tnW'),{at:start.at,lo:0,hi,step:.25,taken:t=>{ const o=others.filter(x=>Math.abs(x.gat-t)<1e-6); return o.length?o.map(x=>trNoteName(x.midi)).join(' '):''; }});
+  document.body.appendChild(pop);
+  const w=pop.offsetWidth, h=pop.offsetHeight; let y=e.clientY+12; if(y+h>innerHeight-8) y=Math.max(8,e.clientY-h-12);
+  pop.style.left=Math.max(8,Math.min(innerWidth-w-8,e.clientX-20))+'px'; pop.style.top=y+'px';
+  pop.onkeydown=ev=>{ if(ev.key==='Enter'&&ev.target.tagName!=='INPUT'){ ev.preventDefault(); $p('#tnOk').click(); } if(ev.key==='Escape') pop.remove(); };
+  $p('#tnHear').onclick=hear;
+  $p('#tnOk').onclick=()=>{ const m=midi(); if(m<21||m>108){ $p('#tnMsg').textContent='That\'s off the piano: pick another octave.'; return; } onSave({midi:m,gat:at(),gdur:len}); pop.remove(); };
+  if(onDel) $p('#tnDel').onclick=()=>{ onDel(); pop.remove(); };
+  setTimeout(()=>document.addEventListener('pointerdown',function f(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('pointerdown',f); } }),0);
+}
+// put a note in (or move one): timing as played follows the beat grid, and a single line keeps one note at a time
+function trNotePut(v,n){ const s=TR.score, mp=trMaps(); trPush();
+  const sec=Math.max(0,mp.toSec(v.gat)), nn={...(n||{}),midi:v.midi,gat:v.gat,gdur:v.gdur,tri:false,tup:0,sec:Math.round(sec*1000)/1000,dsec:Math.max(.05,Math.round((mp.toSec(v.gat+v.gdur)-sec)*1000)/1000)};
+  let m=s.melody.filter(x=>x!==n);
+  if(s.texture!=='full'){ const k=m.length; m=m.filter(x=>Math.abs(x.gat-v.gat)>1e-6); if(m.length<k) trMsg(`Replaced the note at ${trWhere(v.gat)}.`); }
+  else m=m.filter(x=>!(x.midi===v.midi&&Math.abs(x.gat-v.gat)<1e-6));
+  m.push(nn); s.melody=m; TR.lastLen=v.gdur; TR.selected=new Set([m.length-1]); trTidy(); trRender(); }
+function trNoteNew(e,at,midi){ const s=TR.score, near=s.melody.reduce((a,x)=>!a||Math.abs(x.gat-at)<Math.abs(a.gat-at)?x:a,null);
+  trNotePopup(e,null,{at:Math.max(0,Math.round(at*4)/4),midi:midi??(near?near.midi:72),len:TR.lastLen||.5},v=>trNotePut(v,null)); }
+function trNoteEdit(e,i){ const n=TR.score.melody[i]; if(!n) return;
+  trNotePopup(e,n,{at:n.gat,midi:n.midi,len:n.gdur},v=>trNotePut(v,n),()=>{ trPush(); TR.score.melody.splice(i,1); TR.selected.clear(); trRender(); }); }
+// the chords in a list, as a Where picker sees them (skip: the one being moved)
+const trChordWhere=(list,at,lo,hi,skip)=>({at,lo,hi,taken:t=>{ const c=list.find(x=>x!==skip&&Math.abs(x.at-t)<1e-6); return c?symText(chordObj(c)):''; }});
+// put a chord at a spot (taking the place of one already there), keeping the list in time order
+const trChordPut=(list,c,at,skip)=>{ const out=list.filter(x=>x!==skip&&Math.abs(x.at-at)>1e-6); const nc={...c,at}; if(!nc.bass) delete nc.bass; out.push(nc); return out.sort((a,b)=>a.at-b.at); };
+function trChordEdit(i,e){ const s=TR.score, c=s.chords[i], hi=Math.max(s.bars*4-.5,c.at);
+  trChordPopup(e,c,(f,at)=>{ trPush(); const {sp,suf,bass,...rest}=c; s.chords=trChordPut(s.chords,{...rest,...f},at,c); trRender(); },()=>{ trPush(); s.chords.splice(i,1); trRender(); },'Change the chord, or move it',trChordWhere(s.chords,c.at,0,hi,c)); }
+function trChordAdd(at,e){ const s=TR.score, prev=scoreChordAt(s,at)||{root:s.key.pc,qid:'maj7'}, hi=Math.max(s.bars*4-.5,0);
+  trChordPopup(e,{...prev},(f,a)=>{ trPush(); s.chords=trChordPut(s.chords,f,a); trRender(); },null,'New chord: what and where',trChordWhere(s.chords,Math.min(hi,trChordSnap(at)),0,hi)); }
 
 /* How fast you hear it back: 25% to 150% in steps of 5 (dir 0: back to 100%). Only the listening changes; the
    transcription's tempo stays. The recording keeps its pitch. The label shows the tempo you'll hear. */
@@ -1091,10 +1163,12 @@ function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r
   if($('trSendReset')) $('trSendReset').onclick=e=>{ e.preventDefault(); r.chs=null; trSendRender(); };
   // the strip: click a chord to change it (the chord picker), an empty spot to add one there
   el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=ev=>{ const L2=trSendLick(), i=+b.dataset.ci, c=L2.chs[i];
-    trChordPopup(ev,c,f=>{ r.chs=L2.chs.map(x=>({...x})); r.chs[i]={at:c.at,...f}; if(!f.bass) delete r.chs[i].bass; trSendRender(); trSendHear(); },
-      L2.chs.length>1?()=>{ r.chs=L2.chs.filter((x,j)=>j!==i); trSendRender(); }:null,`Chord ${i+1} of the lick`); });
+    const hi=Math.max(L2.start,L2.end-.5);
+    trChordPopup(ev,c,(f,at)=>{ const {sp,suf,bass,...rest}=c, cp=L2.chs.map(x=>({...x})); r.chs=trChordPut(cp,{...rest,...f},at,cp[i]); trSendRender(); trSendHear(); },
+      L2.chs.length>1?()=>{ r.chs=L2.chs.filter((x,j)=>j!==i); trSendRender(); }:null,`Chord ${i+1} of the lick: change it, or move it`,trChordWhere(L2.chs,c.at,L2.start,hi,c)); });
   el.querySelectorAll('[data-cb]').forEach(c=>c.onclick=ev=>{ const L2=trSendLick(), at=+c.dataset.cb, prev=L2.chs.filter(x=>x.at<=at+1e-6).pop()||L2.chs[0];
-    trChordPopup(ev,{...prev},f=>{ r.chs=L2.chs.filter(x=>Math.abs(x.at-at)>1e-6).map(x=>({...x})); const nc={at,...f}; if(!f.bass) delete nc.bass; r.chs.push(nc); r.chs.sort((x,y)=>x.at-y.at); trSendRender(); trSendHear(); },null,`New chord, ${trWhere(at)}`); });
+    const hi=Math.max(L2.start,L2.end-.5);
+    trChordPopup(ev,{...prev},(f,a)=>{ r.chs=trChordPut(L2.chs.map(x=>({...x})),f,a); trSendRender(); trSendHear(); },null,'New chord for the lick: what and where',trChordWhere(L2.chs,Math.min(hi,at),L2.start,hi)); });
   $('trSendName').oninput=e=>{ r.name=e.target.value; r.nameEdited=true; }; $('trSendWho').oninput=e=>{ r.player=e.target.value; };
   el.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==='Enter'&&ok) trSendGo(); if(e.key==='Escape') trSendClose(); });   // typing here isn't the computer-keys piano
   $('trSendGo').onclick=trSendGo; }

@@ -61,11 +61,33 @@ async function smpLoad1(id){
       catch(e){ // a file this browser can't read: try the other format once, if we're online; otherwise its neighbours cover it
         if(!smpLocal(id)&&navigator.onLine&&smpExt(id)!=='mp3') try{ const r=await fetch(smpBase(id)+f.split('/').map(encodeURIComponent).join('/')+'.'+(SMP_FMT==='ogg'?'m4a':'ogg')); if(r.ok){ const b=await r.arrayBuffer(); out[f]=await c.decodeAudioData(b.slice(0)); await smpDB.put(id+'/'+f,b); } }catch(e2){} } }
     if(Object.keys(out).length<files.length*0.8) return false;   // too much missing: stay on the synth
-    SMP.buf[id]=out; SMP.ready[id]=true; return true;
+    SMP.buf[id]=out; smpCalibrate(id); SMP.ready[id]=true; return true;
   }catch(e){ return false; } finally{ SMP.loading[id]=false; }
 }
 function smpLoadAll(){ Object.keys(smpHave()).filter(id=>SMP_MAPS[id]&&(!smpLocal(id)||id===keysSoundPick()||id===bassSoundPick()||id===store.get('trSound',null))).forEach(id=>smpLoad(id)); }   // your own: only the ones picked (keys, bass, Transcribe's)
 async function smpForget(id){ for(const f of smpFiles(id)) await smpDB.del(id+'/'+f); const have=smpHave(); delete have[id]; store.set('sounds',have); delete SMP.buf[id]; SMP.ready[id]=false; if(keysSoundPick()===id) store.set('keysSound','synth'); }
+/* Level-matching, measured from each instrument's own recordings when it loads (instead of a gain set by ear): the
+   note near middle C (keys) or low E (bass) at a firm touch is brought to one level, the Steinway's for keys and the
+   upright's for bass, so switching sounds doesn't jump and nothing leans on the output compressor (a sound that hits
+   it hard gets turned down by it, so turning that sound up did nothing).
+   A keys sound recorded at a single soft dynamic, close to a pure tone (some electric pianos), sounds dull and quiet
+   next to a piano at the same level, and its harder notes can't sound harder. Those get a little overdrive per note:
+   gentle notes stay round, firm ones bark, as a real electric piano's pickup and amp do. */
+const SMP_REF={keys:{m:60,v:100,lvl:0.333},bass:{m:40,v:100,lvl:0.315}};   // keys: where the Steinway already sat; bass: the upright's
+SMP.cal={};
+function smpCalibrate(id){ try{
+  const info=SMP_INFO[id], kind=info.bass?'bass':'keys', R=SMP_REF[kind], r=smpRegion(id,R.m,R.v); if(!r) return;
+  const b=SMP.buf[id][r[5]], sr=b.sampleRate, a=Math.floor(.02*sr), z=Math.min(b.length,Math.floor(.5*sr)); if(z-a<sr*.1) return;
+  const chs=[...Array(b.numberOfChannels)].map((_,k)=>b.getChannelData(k)), x=i=>chs.reduce((t,c)=>t+c[i],0)/chs.length;   // the channels mixed, as it's heard
+  let e=0, d=0; for(let i=a+1;i<z;i++){ const v=x(i), df=v-x(i-1); e+=v*v; d+=df*df; }
+  const rms=Math.sqrt(e/(z-a)); if(!(rms>1e-4)) return;
+  const f=440*Math.pow(2,(r[2]+r[3]/100-69)/12), bright=Math.sqrt(d/(z-a))/rms/(2*Math.sin(Math.PI*f/sr));   // 1.0 = a pure tone at its pitch
+  SMP.cal[id]={gain:R.lvl/(rms*Math.pow(10,r[4]/20)),dull:kind==='keys'&&bright<1.15&&SMP_MAPS[id].regions.every(x=>x[6]<=1&&x[7]>=127),bright};   // a near pure tone, one dynamic for every touch
+}catch(e){} }
+const SMP_DRIVE=0.35, SMP_BIAS=0.8, SMP_MAKEUP=1;   // how hard a firm (velocity 100) note pushes the clipper, whatever the instrument's level; the bias makes it lopsided, like a pickup (2nd harmonic)
+const SMP_SLOPE=4*(1-Math.tanh(SMP_BIAS)**2);   // the curve's gain for quiet notes
+let smpCurve=null;
+const smpDriveCurve=()=>smpCurve||(smpCurve=(()=>{ const n=2048, c=new Float32Array(n); for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1; c[i]=Math.tanh(4*x+SMP_BIAS)-Math.tanh(SMP_BIAS); } return c; })());
 // One note from an instrument: the region for that key and velocity (or the nearest), pitched to the exact key
 const smpRate=(r,m)=>Math.pow(2,(m-r[2]-r[3]/100)/12);
 const smpLen=(id,r,m)=>SMP.buf[id][r[5]].duration/smpRate(r,m);   // seconds this file lasts at this pitch
@@ -84,12 +106,17 @@ function smpStart(id,m,vel,t,out){
   const c=synth.ctx, v=Math.max(1,Math.min(127,Math.round(vel))), r=smpRegion(id,m,v); if(!r) return null;
   const b=SMP.buf[id][r[5]];
   const src=c.createBufferSource(), g=c.createGain(); src.buffer=b; src.playbackRate.value=smpRate(r,m);
-  const amp=0.9*SMP_INFO[id].gain*Math.pow(v/127,1.4)*Math.pow(10,r[4]/20);
+  const cal=SMP.cal[id], amp0=0.9*(cal?cal.gain:SMP_INFO[id].gain)*Math.pow(v/127,1.4)*Math.pow(10,r[4]/20);
+  // a dull one: drive the note into a soft clipper by how hard it was played (the envelope then sits after it)
+  let head=src, amp=amp0;
+  if(cal&&cal.dull){ const k=SMP_DRIVE/(0.9*cal.gain*Math.pow(100/127,1.4)), pre=c.createGain(), sh=c.createWaveShaper();   // k: a firm note's peak reaches SMP_DRIVE
+    pre.gain.value=amp0*k; sh.curve=smpDriveCurve(); sh.oversample='2x'; const hp=c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=30;   // the lopsided curve leaves a little DC: no thumps
+    src.connect(pre); pre.connect(sh); sh.connect(hp); head=hp; amp=SMP_MAKEUP/(SMP_SLOPE*k); }   // quiet notes come out as they went in
   // Some recordings are trimmed while still ringing (and a note pitched up plays its file faster, so it ends sooner):
   // fade the last part out instead of letting it stop dead with a click
   const end=t+b.duration/src.playbackRate.value, fs=Math.max(t+0.05,end-Math.min(0.35,(end-t)*0.3));
   g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(amp,t+0.004); g.gain.setValueAtTime(amp,fs); g.gain.linearRampToValueAtTime(0.0001,end);
-  src.connect(g); g.connect(out||synth.master); src.start(t); src.stop(end+0.02);
+  head.connect(g); g.connect(out||synth.master); src.start(t); src.stop(end+0.02);
   return {src,g,id,amp,t0:t,fs,end};
 }
 // The fade starts from the note's own level. (Reading gain.value here is wrong for a release scheduled ahead: it reads the
