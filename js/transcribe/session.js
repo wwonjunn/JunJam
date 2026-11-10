@@ -1117,6 +1117,7 @@ function trSendLick(){ const s=TR.score, r=TR.send; let ns=r.idx.map(i=>s.melody
 function trSendBuild(L){ const r=TR.send, s=TR.score, artist=(r.player||'').trim();
   const lick=Lk('u'+Date.now(),(r.name||'').trim()||`${s.title}, bar ${trBars({a:L.start,b:L.end})}`,2,'Yours',L.over,L.ns.map(n=>[n.midi-60-L.root,n.gdur,Math.round((n.gat-L.start)*1000)/1000]));
   lick.user=true; lick.mainV=1; if(L.nochord) lick.nochord=true; if(artist) lick.artist=artist;
+  if(!L.nochord){ const r0=chordRoot(L.chs[0]); lick.home={l:r0.l,a:r0.a,pc:mod12(L.chs[0].root)}; }   // its key as written (C♯, not D♭): Lines spells it that way there
   lick.tip=`From your transcription of ${s.title}${artist?`, played by ${artist}`:''}.`; applyRatings([],[lick]); return lick; }
 // the transcription's notes in order (what the start / end buttons step through)
 const trSendNotes=()=>visibleMelody(TR.score).map(n=>TR.score.melody.indexOf(n)).sort((x,y)=>TR.score.melody[x].gat-TR.score.melody[y].gat);

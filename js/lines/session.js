@@ -118,7 +118,8 @@ function pickLineKeys(){
 }
 function linesStart(id,rand=0){   // rand: the difficulty, when 🎲 picked it
   const lick=lickById(id); if(!lick) return;
-  Object.assign(LINES,{active:true,lick,keys:pickLineKeys(),round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null,after:null,rand});
+  let keys=pickLineKeys(); if(lick.home) keys=[lick.home.pc,...keys.filter(k=>k!==lick.home.pc)].slice(0,keys.length);   // a lick from a transcription: learn it in its own key first
+  Object.assign(LINES,{active:true,lick,keys,round:0,clean:0,results:[],bus:null,xp:0,advance:0,plan:null,after:null,rand});
   synth.init(); hideOv(); document.body.classList.add('nohud','linesmode'); document.body.classList.remove('menu');
   $('linesStage').hidden=false; $('lResults').hidden=true; $('lPlay').hidden=false;
   linesRound();

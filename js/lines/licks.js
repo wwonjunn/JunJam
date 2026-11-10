@@ -79,7 +79,9 @@ function mainLineKeep(ps){ if(ps.length<4) return ps.map(()=>true);
 // Place a lick on a reference pitch class: real notes, chords with start beats, and spellings
 function lickInstance(l,refPc){
   // a minor key only when the minor chord sits on the reference itself (a ii–V–I starts on a minor ii but is in major)
-  const first=Q[l.ch?l.ch[0][2]:l.over], minorKey=!!(first&&first.minor&&(!l.ch||l.ch[0][1]===0)), k=defaultRoot(refPc,minorKey);
+  const first=Q[l.ch?l.ch[0][2]:l.over], minorKey=!!(first&&first.minor&&(!l.ch||l.ch[0][1]===0));
+  // a lick from a transcription knows how its chords were written; in that key they're spelled just so (C♯7 stays C♯7)
+  const asWritten=!!(l.home&&mod12(refPc)===l.home.pc), k=asWritten?mkRoot(l.home.l,l.home.a):defaultRoot(refPc,minorKey);
   // flat keys and sharp keys, by their signature (C major and A minor go either way: flats, as lead sheets mostly do)
   const keySign=k.a<0||[5,10,3,8,1,6].includes(mod12(refPc+(minorKey?3:0)))?-1:k.a>0||[7,2,9,4,11].includes(mod12(refPc+(minorKey?3:0)))?1:-1;
   // Spell chord roots by letter from the reference, but never with a double sharp or flat (E𝄫7 becomes D7),
@@ -89,7 +91,7 @@ function lickInstance(l,refPc){
     let r=odd?defaultRoot(mod12(refPc+i),false):mkRoot(lt,a);
     // a black-key root is spelled the way its own chord reads with the fewest sharps or flats, as musicians write it:
     // E♭maj7 not D♯maj7, B♭m7 not A♯m7, but C♯m7 and G♯m7; a tie (F♯/G♭) follows the key
-    if(r.a){ const q=Q[qid], sig=(lt,ac)=>Math.abs([0,2,4,-1,1,3,5][lt]+7*ac-(q&&q.minor?3:0));
+    if(r.a&&!(asWritten&&!odd)){ const q=Q[qid], sig=(lt,ac)=>Math.abs([0,2,4,-1,1,3,5][lt]+7*ac-(q&&q.minor?3:0));
       const cands=spellingsFor(r.pc).filter(([lt2,ac])=>Math.abs(ac)===1&&!(ac===1&&(lt2===2||lt2===6))&&!(ac===-1&&(lt2===3||lt2===0)));
       cands.sort((x,y)=>sig(...x)-sig(...y)||((y[1]===keySign)-(x[1]===keySign))); if(cands.length) r=mkRoot(cands[0][0],cands[0][1]); }
     return r;};
