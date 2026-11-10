@@ -412,11 +412,13 @@ function trSheetBeat(x,y){ const el=document.elementFromPoint(x,y), ln=el&&el.cl
   const L=TR.lines[+ln.dataset.line], svg=ln.querySelector('svg'); if(!L||!svg) return null; const r=svg.getBoundingClientRect(), u=(x-r.left)*L.W/r.width-L.X0;
   let i=0; while(i<L.nb*4-1&&L.cum[i+1]<=u) i++; return Math.max(0,L.a+i+Math.max(0,Math.min(1,(u-L.cum[i])/L.bw[i]))); }
 // drag across bars in the sheet to loop them (a plain click still moves the playhead)
-window.addEventListener('pointermove',e=>{ const d=TR.sdrag; if(!d||!TR.active) return; if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<8) return; d.moved=true;
+window.addEventListener('pointermove',e=>{ if(TR.shdrag&&TR.active){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendHandleMove(TR.shdrag.kind,b); return; }
+  const d=TR.sdrag; if(!d||!TR.active) return; if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<8) return; d.moved=true;
   const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return;
   if(TR.send){ trSendDrag(Math.floor(Math.min(d.b0,b)*4)/4,Math.ceil(Math.max(d.b0,b)*4)/4,true); return; }   // sending: the notes you sweep across (bars worked out from them)
   TR.loop={a:Math.floor(Math.min(d.b0,b)/4)*4,b:Math.floor(Math.max(d.b0,b)/4)*4+4}; TR.looping=true; trLoopShow(); });
-window.addEventListener('pointerup',()=>{ const d=TR.sdrag; if(!d) return; TR.sdrag=null; if(!d.moved) return; TR.sclickSkip=true;
+window.addEventListener('pointerup',()=>{ if(TR.shdrag){ TR.shdrag=null; document.body.classList.remove('trshdragging'); TR.sclickSkip=true; trSendRender(); trRollView(); return; }
+  const d=TR.sdrag; if(!d) return; TR.sdrag=null; if(!d.moved) return; TR.sclickSkip=true;
   if(TR.send){ trSendRender(); trRollView(); return; }
   TR.posB=TR.loop.a; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); trRollView(); trMsg(`Looping bar${TR.loop.b-TR.loop.a>4?'s':''} ${trBars(TR.loop)}. Press ⟳ (or Shift+L) to stop looping.`); });
 const trBars=l=>{ const a=Math.floor(l.a/4)+1, b=Math.ceil(l.b/4); return b>a?`${a}–${b}`:`${a}`; };
@@ -552,7 +554,8 @@ function trScoreView(){
     if(ce){ const i=+ce.dataset.c; return trMenu(e,[{t:'Change this chord',f:()=>trChordEdit(i,e)},{t:'Remove it',f:()=>{ trPush(); TR.score.chords.splice(i,1); trRender(); }}]); }
     trMenu(e,[{t:'Add a chord…',f:()=>trChordAdd(b,e)},{t:'Add a note…',f:()=>trNoteNew(e,b)},null,{t:'Play from here',f:()=>{ TR.posB=b; trPlayScore(b); }}]); };
   $('trScore').ondblclick=e=>{ if(!TR.send||e.target.closest('[data-c]')) return; const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) trSendPhrase(b); };   // only while sending to Lines: pick a note's whole phrase
-  $('trScore').onpointerdown=e=>{ if(e.button||e.target.closest('[data-c]')) return; const b0=trSheetBeat(e.clientX,e.clientY); if(b0!=null) TR.sdrag={x:e.clientX,y:e.clientY,b0,moved:false}; };
+  $('trScore').onpointerdown=e=>{ const h=e.target.closest('.trsh'); if(h&&TR.send&&!e.button){ e.preventDefault(); TR.shdrag={kind:h.dataset.sh}; document.body.classList.add('trshdragging'); return; }
+    if(e.button||e.target.closest('[data-c]')) return; const b0=trSheetBeat(e.clientX,e.clientY); if(b0!=null) TR.sdrag={x:e.clientX,y:e.clientY,b0,moved:false}; };
   trSheetHead(TR.posB||0); trLoopShow(); trSendTint();
 }
 // Piano roll with a chord lane; everything editable
@@ -1151,7 +1154,7 @@ function trSendPhrase(b){ const m=TR.score.melody, all=trSendLine(-1e9,1e9).sort
 // a drag across the sheet music: the notes you swept, bars worked out from them
 function trSendDrag(a,z,live){ if(!TR.send) return; const ids=trSendLine(Math.min(a,z),Math.max(a,z)); if(ids.length) trSendFrom(ids); else { const r=TR.send; r.b0=Math.floor(Math.min(a,z)/4); r.b1=Math.max(r.b0,Math.floor((Math.max(a,z)-1e-6)/4)); r.pre=r.post=0; r.add=new Set(); r.drop=new Set(); trSendPick(); } trSendTint(); if(!live) trSendRender(); }
 // the bars tinted on the sheet music, the notes going to Lines in colour
-function trSendTint(){ const sc=$('trScore'); if(!sc) return; sc.querySelectorAll('.trssend').forEach(x=>x.remove()); const r=TR.send;
+function trSendTint(){ const sc=$('trScore'); if(!sc) return; sc.querySelectorAll('.trssend,.trsh').forEach(x=>x.remove()); const r=TR.send;
   const sent=r?trSendSent():new Set(); sc.querySelectorAll('[data-mi]').forEach(x=>x.classList.toggle('picked',sent.has(+x.dataset.mi)));
   sc.classList.toggle('trsending',!!r);
   if(!r||!TR.lines) return; const {F0,F1}=trSendF(r);
@@ -1159,7 +1162,27 @@ function trSendTint(){ const sc=$('trScore'); if(!sc) return; sc.querySelectorAl
     const el=sc.querySelector(`[data-line="${k}"]`), svg=el&&el.querySelector('svg'); if(!svg) return;
     const xb=t=>{ const u=t-L.a, i=Math.min(n-1,Math.floor(u+1e-9)); return L.X0+L.cum[i]+(u-i)*L.bw[i]; };
     const sr=svg.getBoundingClientRect(), er=el.getBoundingClientRect(), k2=sr.width/L.W, d=document.createElement('i');
-    d.className='trssend'; d.style.left=(sr.left-er.left+(xb(a)-10)*k2)+'px'; d.style.width=((xb(b)-xb(a))*k2)+'px'; el.appendChild(d); }); }
+    d.className='trssend'; d.style.left=(sr.left-er.left+(xb(a)-10)*k2)+'px'; d.style.width=((xb(b)-xb(a))*k2)+'px'; el.appendChild(d); });
+  trSendHandles(); }
+/* Handles on the sheet music, to grab and drag: the bars' two edges (they snap to bar lines) and flags on the first and
+   last note going to Lines (they snap note to note, back into the bar before for a pickup). */
+function trSendHandles(){ const sc=$('trScore'), r=TR.send; if(!sc||!r||!TR.lines) return; const {F0,F1}=trSendF(r), m=TR.score.melody;
+  const place=(t,cls,title,label)=>{ const k=TR.lines.findIndex(L=>t>=L.a-1e-6&&t<=L.a+L.nb*4+1e-6&&!(!cls.startsWith('b1')&&Math.abs(t-(L.a+L.nb*4))<1e-6&&TR.lines.some(L2=>Math.abs(L2.a-t)<1e-6))); if(k<0) return;
+    const L=TR.lines[k], n=L.nb*4, el=sc.querySelector(`[data-line="${k}"]`), svg=el&&el.querySelector('svg'); if(!svg) return;
+    const u=t-L.a, i=Math.min(n-1,Math.floor(u+1e-9)), x=L.X0+L.cum[i]+(u-i)*L.bw[i], sr=svg.getBoundingClientRect(), er=el.getBoundingClientRect(), k2=sr.width/L.W;
+    const h=document.createElement('b'); h.className='trsh '+cls; h.title=title; h.dataset.sh=cls.split(' ')[0]; if(label) h.textContent=label;
+    h.style.left=(sr.left-er.left+(x-10)*k2)+'px'; el.appendChild(h); };
+  place(F0,'b0 l','Drag to change the first bar'); place(F1,'b1 r','Drag to change the last bar');
+  const sent=[...trSendSent()].map(i=>m[i]).sort((a,b)=>a.gat-b.gat);
+  if(sent.length){ place(sent[0].gat,'ns','Drag to start the line on another note (back into the bar before for a pickup)','▸'); place(sent[sent.length-1].gat,'ne','Drag to end the line on another note','◂'); } }
+// dragging a handle: bars snap to bar lines, the note flags to the notes of the line
+function trSendHandleMove(kind,b){ const r=TR.send, m=TR.score.melody; if(!r||b==null) return; const last=Math.max(0,TR.score.bars-1);
+  if(kind==='b0') r.b0=Math.max(0,Math.min(r.b1,Math.round(b/4)));
+  else if(kind==='b1') r.b1=Math.max(r.b0,Math.min(last,Math.round(b/4)-1));
+  else { const on=[...new Set(trSendLine(-1e9,1e9).map(i=>Math.round(m[i].gat*1e4)/1e4))].sort((x,y)=>x-y); if(!on.length) return;
+    const t=on.reduce((a,x)=>Math.abs(x-b)<Math.abs(a-b)?x:a,on[0]), {F0,F1}=trSendF(r);
+    if(kind==='ns'){ if(t<F1+r.post-1e-6) r.pre=F0-t; } else { if(t>F0-r.pre-1e-6) r.post=t+1e-3-F1; } }
+  trSendPick(); trSendTint(); }
 /* What will be sent. Times count from O, the beat the first note is in (or the first bar's downbeat), so the rhythm stays
    on its real beat grid; pickup = beats from O to the first bar's downbeat (the first chord starts there). */
 function trSendLick(){ const s=TR.score, r=TR.send; if(!r) return null; const {F0,F1}=trSendF(r);

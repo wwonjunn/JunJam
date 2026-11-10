@@ -984,6 +984,13 @@ h2.egg-died{color:#a3201b;font-family:"Trajan Pro","Cinzel",Georgia,serif;font-w
 .trsendn{width:22px;height:22px;border-radius:50%;background:var(--brass);color:var(--lane);display:grid;place-items:center;font-size:13px;font-weight:700}
 .trsend select,.trsend input{font:inherit;font-size:14px;padding:4px 8px;border:1.5px solid var(--line-strong);border-radius:var(--radius);background:transparent;color:var(--ink)}
 .trsendnames label{display:grid;gap:2px} .trsendnames input{width:min(260px,60vw)} .trsendnames .go{align-self:end}
+.trsh{position:absolute;z-index:3;cursor:ew-resize;touch-action:none;user-select:none}
+.trsh.b0,.trsh.b1{top:0;bottom:0;width:22px;margin-left:-11px;display:flex;justify-content:center}
+.trsh.b0::before,.trsh.b1::before{content:"";width:6px;height:100%;border-radius:3px;background:var(--brass);box-shadow:0 0 0 2px var(--panel)}
+.trsh.b0:hover::before,.trsh.b1:hover::before,.trshdragging .trsh::before{width:8px}
+.trsh.ns,.trsh.ne{bottom:2px;width:26px;height:22px;margin-left:-7px;border-radius:11px;background:var(--ink);color:var(--panel);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.trsh.ne{margin-left:-13px}
+.trshdragging,.trshdragging *{cursor:ew-resize!important;user-select:none}
 .trssend{position:absolute;top:0;bottom:0;background:color-mix(in srgb, var(--brass) 22%, transparent);border-radius:4px;pointer-events:none}
 /* On/off buttons that are on (Loop, Chords, Drums, Click, Rec, Edit notes, Why it works...): filled, so it's plain at a
    glance which are on. html:root wins over every theme's own .ghost look and hover. */
@@ -1010,10 +1017,10 @@ html:root .trtransport .ghost[aria-pressed="true"] .fine{color:inherit;opacity:.
 .trchordpop .tprow{margin-top:4px}
 .tpacc button{font-size:19px;line-height:1;padding:2px 12px;font-family:'Noto Music','Apple Symbols',var(--cond)}
 .trsendmain{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start} .trsendleft{display:grid;gap:8px;flex:1 1 420px;min-width:0}
-.trsendright{flex:0 0 340px;width:340px;max-width:100%;overflow-x:auto;display:grid;gap:2px;align-content:start} .trsendright .fine{margin:0}
+.trsendright{flex:0 0 340px;width:340px;max-width:100%;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent;display:grid;gap:2px;align-content:start} .trsendright .fine{margin:0}
 .trsendprev svg{display:block;height:112px;width:auto;max-width:none} .trprevnone{height:112px;display:flex;align-items:center;min-width:220px;margin:0}
 .trsendlow{display:block;min-height:1.3em} .trnochord{display:block;min-height:34px}
-.trnudge button{padding:2px 8px;font-size:14px} .trnudge button:disabled{opacity:1;cursor:default;font-size:12px;color:var(--muted)}
+.trnudge button{padding:4px 12px;font-size:16px;min-width:34px;min-height:32px} .trnudge button:disabled{opacity:1;cursor:default;font-size:12px;color:var(--muted)}
 .trsendlow{flex-basis:100%}
 /* the lick's chords: a strip across its beats */
 .trsendover{align-items:flex-start!important} .trsendover>b{padding-top:6px}
