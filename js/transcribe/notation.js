@@ -103,8 +103,9 @@ function grandStaffSVG({notes,chords,beats=16,grand=true,clef='treble',bw=null})
       let prev=-99, side=false; const accCols=[];
       k.notes.forEach(n=>{ const di=n.spell.di; side=di-prev===1?!side:false; prev=di;
         const cx=x+(side?(up?11:-11):0), cy=st.y(di);
-        s+=open?`<ellipse cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${ink}" stroke-width="1.8"/>`
-               :`<ellipse cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${ink}"/>`;
+        const mi=n.mi!=null?` class="nh" data-mi="${n.mi}"`:'';   // which note it is (Transcribe: click to pick it for Lines)
+        s+=open?`<ellipse${mi} cx="${cx}" cy="${cy}" rx="6" ry="4.3" transform="rotate(-20 ${cx} ${cy})" fill="none" stroke="${ink}" stroke-width="1.8"/>`
+               :`<ellipse${mi} cx="${cx}" cy="${cy}" rx="6.4" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${ink}"/>`;
         if(k.tieNext&&stacks[i+1]){ const x2=xOf(stacks[i+1].gat)+(side?(up?11:-11):0), ty=cy+(up?7:-7);   // a tie to the next piece, on the side away from the stem
           s+=`<path d="M${cx+5} ${ty} Q${(cx+x2)/2} ${ty+(up?9:-9)} ${x2-5} ${ty}" fill="none" stroke="${ink}" stroke-width="1.5"/>`; }
         if(k.tieIn){ const ty=cy+(up?7:-7); s+=`<path d="M${cx-24} ${ty} Q${cx-14} ${ty+(up?8:-8)} ${cx-5} ${ty}" fill="none" stroke="${ink}" stroke-width="1.5"/>`; }
