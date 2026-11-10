@@ -459,6 +459,9 @@ body.trmode .panel,body.trmode .kbwrap{display:none}
 .trlibbar{display:flex;align-items:center;gap:8px;margin-bottom:6px} .trlibbar .sec{margin:0}
 .libchip{position:fixed;right:14px;top:52px;z-index:60;background:var(--bg,#111)}
 .trsending .nh{cursor:pointer} .nh.picked{fill:var(--brass);stroke:var(--brass)}
+.trsendt{min-width:76px;display:inline-block} .trsendsub{display:block;min-height:2.6em;margin:0}
+.trsendstripline{display:flex;align-items:center;gap:8px;width:100%;margin-top:4px} .trsendstripline .trcstrip{flex:1 1 auto;min-width:200px} .trsendover{display:block!important;flex:1;min-width:0} .trsendnames{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .trsendnames input{flex:1 1 140px;min-width:0}
+.trsend .trsendrow{margin:0} .trsendleft{gap:6px}
 .trcchip.carried{opacity:.75;border-style:dashed} .trsendsteps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
 .crow{fill:transparent;cursor:copy} .crow:hover{fill:var(--line,rgba(127,127,127,.15));opacity:.35}
 .trlibwhere{display:flex;align-items:center;gap:8px;margin:-2px 0 8px} .trlibwhere b{font-weight:600} .trlibneed .erow{margin-top:8px}
@@ -1007,8 +1010,9 @@ html:root .trtransport .ghost[aria-pressed="true"] .fine{color:inherit;opacity:.
 .trchordpop .tprow{margin-top:4px}
 .tpacc button{font-size:19px;line-height:1;padding:2px 12px;font-family:'Noto Music','Apple Symbols',var(--cond)}
 .trsendmain{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start} .trsendleft{display:grid;gap:8px;flex:1 1 420px;min-width:0}
-.trsendright{flex:0 1 auto;max-width:100%;overflow-x:auto;display:grid;gap:2px} .trsendright .fine{margin:0}
-.trsendprev svg{display:block;height:112px;width:auto;max-width:none}
+.trsendright{flex:0 0 340px;width:340px;max-width:100%;overflow-x:auto;display:grid;gap:2px;align-content:start} .trsendright .fine{margin:0}
+.trsendprev svg{display:block;height:112px;width:auto;max-width:none} .trprevnone{height:112px;display:flex;align-items:center;min-width:220px;margin:0}
+.trsendlow{display:block;min-height:1.3em} .trnochord{display:block;min-height:34px}
 .trnudge button{padding:2px 8px;font-size:14px} .trnudge button:disabled{opacity:1;cursor:default;font-size:12px;color:var(--muted)}
 .trsendlow{flex-basis:100%}
 /* the lick's chords: a strip across its beats */

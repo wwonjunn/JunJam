@@ -405,16 +405,19 @@ function trSheetLoop(){ const sc=$('trScore'); if(!sc||!TR.lines) return; sc.que
     const xb=t=>L.X0+(t-L.a>=n?L.cum[n-1]+L.bw[n-1]:L.cum[t-L.a]), sr=svg.getBoundingClientRect(), er=el.getBoundingClientRect(), k2=sr.width/L.W, d=document.createElement('i');
     d.className='trsloop'; d.style.left=(sr.left-er.left+xb(a)*k2)+'px'; d.style.width=((xb(b)-xb(a))*k2)+'px'; el.appendChild(d); }); }
 // the beat under a point in the sheet music (null off the music)
+// the notehead nearest a click, if one is within reach (they're small targets)
+function trNearHead(x,y,reach=13){ let best=null, bd=reach; document.querySelectorAll('#trScore .nh').forEach(e=>{ const r=e.getBoundingClientRect(); if(r.bottom<y-reach||r.top>y+reach) return;
+  const d=Math.hypot(Math.max(r.left-x,0,x-r.right),Math.max(r.top-y,0,y-r.bottom)); if(d<bd){ bd=d; best=e; } }); return best; }
 function trSheetBeat(x,y){ const el=document.elementFromPoint(x,y), ln=el&&el.closest('#trScore [data-line]'); if(!ln||!TR.lines) return null;
   const L=TR.lines[+ln.dataset.line], svg=ln.querySelector('svg'); if(!L||!svg) return null; const r=svg.getBoundingClientRect(), u=(x-r.left)*L.W/r.width-L.X0;
   let i=0; while(i<L.nb*4-1&&L.cum[i+1]<=u) i++; return Math.max(0,L.a+i+Math.max(0,Math.min(1,(u-L.cum[i])/L.bw[i]))); }
 // drag across bars in the sheet to loop them (a plain click still moves the playhead)
 window.addEventListener('pointermove',e=>{ const d=TR.sdrag; if(!d||!TR.active) return; if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<8) return; d.moved=true;
   const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return;
-  if(TR.send){ trSendDrag(Math.floor(Math.min(d.b0,b)*4)/4,Math.ceil(Math.max(d.b0,b)*4)/4); return; }   // sending: the notes you sweep across (bars worked out from them)
+  if(TR.send){ trSendDrag(Math.floor(Math.min(d.b0,b)*4)/4,Math.ceil(Math.max(d.b0,b)*4)/4,true); return; }   // sending: the notes you sweep across (bars worked out from them)
   TR.loop={a:Math.floor(Math.min(d.b0,b)/4)*4,b:Math.floor(Math.max(d.b0,b)/4)*4+4}; TR.looping=true; trLoopShow(); });
 window.addEventListener('pointerup',()=>{ const d=TR.sdrag; if(!d) return; TR.sdrag=null; if(!d.moved) return; TR.sclickSkip=true;
-  if(TR.send){ trRollView(); return; }
+  if(TR.send){ trSendRender(); trRollView(); return; }
   TR.posB=TR.loop.a; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); trRollView(); trMsg(`Looping bar${TR.loop.b-TR.loop.a>4?'s':''} ${trBars(TR.loop)}. Press ⟳ (or Shift+L) to stop looping.`); });
 const trBars=l=>{ const a=Math.floor(l.a/4)+1, b=Math.ceil(l.b/4); return b>a?`${a}–${b}`:`${a}`; };
 // leaving with unsaved edits asks first
@@ -541,7 +544,7 @@ function trScoreView(){
   if(s.mode==='lead'&&s.texture!=='full') TR.lines=null; // the lead sheet's staff is drawn by Lines (its own spacing)
   // click the music to put the playhead there
   $('trScore').onclick=e=>{ if(TR.sclickSkip){ TR.sclickSkip=false; return; } const ce=e.target.closest('[data-c]'); if(ce) return trChordEdit(+ce.dataset.c,e);
-    if(TR.send){ const nh=e.target.closest('[data-mi]'); if(nh) return trSendToggle(+nh.dataset.mi); }   // sending: a note in or out
+    if(TR.send){ const nh=e.target.closest('[data-mi]')||trNearHead(e.clientX,e.clientY); if(nh) return trSendToggle(+nh.dataset.mi); }   // sending: a note in or out (a near miss counts)
     if(e.target.closest('.crow')&&!TR.send){ const b=trSheetBeat(e.clientX,e.clientY); if(b!=null) return trChordAdd(b,e); }   // the chord row: a new chord on the nearest half beat
     const b=trSheetBeat(e.clientX,e.clientY); if(b==null) return; TR.posB=b; if(TR.playing) trPlayScore(TR.posB); else trHead(TR.posB); };
   // right-click: change or remove a chord, or add one where you clicked
@@ -1085,6 +1088,11 @@ function trDownload(data,ext,type){
    TR.send: {b0, b1 (bars, 0-based, inclusive), pre, post, add, drop (your clicks), chs, nochord, keepLow, name, player} */
 const TR_PCN=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
 const trSendF=r=>({F0:r.b0*4,F1:(r.b1+1)*4});   // the frame in beats
+// the chords in the bars (they don't need any notes): the one sounding at the first downbeat (carried: it started earlier),
+// then the changes inside. si: which chord of the timeline (yours, r.chs, or the transcription's) each one is
+function trSendChs(r){ const s=TR.score, {F0,F1}=trSendF(r), tagged=(r.chs||s.chords).map((c,si)=>({...c,si}));
+  const before=tagged.filter(c=>c.at<=F0+1e-6).pop(), c0=before?{...before,at:F0,carried:before.at<F0-1e-6}:{root:s.key.pc,qid:s.key.minor?'min7':'maj7',at:F0,si:-1,carried:true};
+  return {F0,F1,chs:[c0,...tagged.filter(c=>c.at>F0+1e-6&&c.at<F1-1e-6)]}; }
 // the melody candidates in a span: visible notes, and in a full part only the top note of each moment (a lick is one line)
 function trSendLine(a,z){ const s=TR.score, vis=new Set(visibleMelody(s));
   let ids=s.melody.map((n,i)=>i).filter(i=>vis.has(s.melody[i])&&s.melody[i].gat>=a-1e-6&&s.melody[i].gat<z-1e-6);
@@ -1141,7 +1149,7 @@ function trSendPhrase(b){ const m=TR.score.melody, all=trSendLine(-1e9,1e9).sort
   while(hi<all.length-1&&gap(hi,hi+1)<.5&&m[all[hi+1]].gat-m[all[hi]].gat<1.5&&hi-lo<23) hi++;
   if(!TR.send) trSendOpen(); trSendFrom(all.slice(lo,hi+1)); trSendTint(); trSendRender(); trRollView(); }
 // a drag across the sheet music: the notes you swept, bars worked out from them
-function trSendDrag(a,z){ if(!TR.send) return; const ids=trSendLine(Math.min(a,z),Math.max(a,z)); if(ids.length) trSendFrom(ids); else { const r=TR.send; r.b0=Math.floor(Math.min(a,z)/4); r.b1=Math.max(r.b0,Math.floor((Math.max(a,z)-1e-6)/4)); r.pre=r.post=0; r.add=new Set(); r.drop=new Set(); trSendPick(); } trSendTint(); trSendRender(); }
+function trSendDrag(a,z,live){ if(!TR.send) return; const ids=trSendLine(Math.min(a,z),Math.max(a,z)); if(ids.length) trSendFrom(ids); else { const r=TR.send; r.b0=Math.floor(Math.min(a,z)/4); r.b1=Math.max(r.b0,Math.floor((Math.max(a,z)-1e-6)/4)); r.pre=r.post=0; r.add=new Set(); r.drop=new Set(); trSendPick(); } trSendTint(); if(!live) trSendRender(); }
 // the bars tinted on the sheet music, the notes going to Lines in colour
 function trSendTint(){ const sc=$('trScore'); if(!sc) return; sc.querySelectorAll('.trssend').forEach(x=>x.remove()); const r=TR.send;
   const sent=r?trSendSent():new Set(); sc.querySelectorAll('[data-mi]').forEach(x=>x.classList.toggle('picked',sent.has(+x.dataset.mi)));
@@ -1159,10 +1167,7 @@ function trSendLick(){ const s=TR.score, r=TR.send; if(!r) return null; const {F
   const keep=mainLineKeep(ids.map(i=>s.melody[i].midi)).map((k,j)=>k||r.add.has(ids[j])), low=ids.filter((i,j)=>!keep[j]).map(i=>s.melody[i]);   // a note you clicked in always stays
   if(!r.keepLow&&low.length&&ids.length-low.length>=1) ids=ids.filter((i,j)=>keep[j]);
   const ns=ids.map(i=>s.melody[i]), O=Math.min(F0,Math.floor(ns[0].gat+1e-6)), noteEnd=Math.max(...ns.map(n=>n.gat+n.gdur)), end=Math.max(F1,noteEnd);
-  // the chords in the bars: the one sounding at the first downbeat (carried: it started earlier), then the changes inside
-  const src=r.chs||s.chords, tagged=src.map((c,si)=>({...c,si}));
-  const before=tagged.filter(c=>c.at<=F0+1e-6).pop(), c0=before?{...before,at:F0,carried:before.at<F0-1e-6}:{root:s.key.pc,qid:s.key.minor?'min7':'maj7',at:F0,si:-1,carried:true};
-  const chs=[c0,...tagged.filter(c=>c.at>F0+1e-6&&c.at<F1-1e-6)];
+  const {chs}=trSendChs(r);
   const nochord=!!r.nochord, root=nochord?s.key.pc:chs[0].root;
   let over;
   if(nochord) over=s.key.minor?'min7':'maj7';
@@ -1193,20 +1198,16 @@ function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r
   if(!r.nameEdited) r.name=`${s.title}, bar${r.b1>r.b0?'s':''} ${barsTxt}`;
   let preview=''; if(L&&n>=2){ try{ preview=`<div class="lstaff trsendprev">${lineStaffSVG(lickInstance(trSendBuild(L),L.root),-1,false)}</div>`; }catch(e){} }
   const step=(k,lab,tip)=>`<span class="seg trnudge" role="group"><button data-${k}="-1" title="${tip[0]}">◂</button><button disabled>${lab}</button><button data-${k}="1" title="${tip[1]}">▸</button></span>`;
-  el.innerHTML=`<div class="trsendhead"><b>Send to Lines</b><span class="fine">Drag across the music, or double-click a note for its phrase. Then fine-tune below.</span><span class="trspace"></span><button class="ghost ic" id="trSendX" title="Close (Esc)">✕</button></div>
+  const lowTxt=L&&L.low.length?` · ${r.keepLow?`keeping ${L.low.length} low note${L.low.length===1?'':'s'}`:`${L.low.length} low note${L.low.length===1?'':'s'} (bass) left out`} <a href="#" id="trSendKeep">${r.keepLow?'melody only':'keep'}</a>`:'';
+  const warn=n&&!ok?` · <b>${n<3?'pick at least 3 notes':'24 notes at most'}</b>`:'';
+  el.innerHTML=`<div class="trsendhead"><b>Send to Lines</b><span class="fine">Drag across the music or double-click a note for its phrase; click a note to add it or take it out. Notes never move the bars or the chords.</span><span class="trspace"></span><button class="ghost ic" id="trSendX" title="Close (Esc)">✕</button></div>
     <div class="trsendmain"><div class="trsendleft">
-      <div class="trsendrow"><span class="trsendn">1</span><div class="trsendover"><b>Bars ${barsTxt}</b> <span class="fine">where beat 1 is, and the chords under the lick</span>
-        <span class="trsendsteps">${step('bs','From',['Start a bar earlier','Start a bar later'])}${step('be','To',['End a bar earlier','End a bar later'])}${TR.looping&&TR.loop?'<button class="ghost trsm" id="trSendLoop">The looped bars</button>':''}</span>
-        ${L&&!L.nochord?trSendStrip(L):`<span class="fine">${L?'Just the line: Lines plays no chords under it.':''}</span>`}
-        <span class="trsendopts"><span class="fine">Click a chord to change it, an empty spot to add one.</span><button class="ghost tgl trsm" id="trSendNoCh" aria-pressed="${!!r.nochord}" title="Just the line, with no chords under it">No chord</button>${r.chs&&!r.nochord?'<a href="#" id="trSendReset">Back to the transcription\'s chords</a>':''}</span></div></div>
-      <div class="trsendrow"><span class="trsendn">2</span><div><b>${n?`${n} note${n===1?'':'s'}`:'No notes yet'}</b> <span class="fine">${L?trSendSpan(L):'drag across the music, or click notes in it'}</span>
-        <span class="trsendsteps">${step('ns','Start',['One note earlier (reaches into the bar before as a pickup)','One note later'])}${step('ne','End',['One note earlier','One note later (can land past the last bar)'])}${n?'<button class="ghost trsm" id="trSendHear">▶ Hear it</button>':''}</span>
-        <span class="fine">Click any note in the music to add it or take it out (ghost notes, inner voices). Notes never move the bars or the chords.</span>
-        ${L&&L.low.length?`<span class="fine trsendlow">${r.keepLow?`Keeping ${L.low.length} low note${L.low.length===1?'':'s'} under the line.`:`Melody only: ${L.low.length} low note${L.low.length===1?'':'s'} under the line (the bass) left out.`} <a href="#" id="trSendKeep">${r.keepLow?'Melody only':'Keep them'}</a></span>`:''}
-        ${n&&!ok?`<span class="fine trsendlow">${n<3?'Pick at least 3 notes.':'24 notes at most: shorter licks travel better.'}</span>`:''}</div></div>
-      <div class="trsendrow"><span class="trsendn">3</span><div class="trsendnames"><label><span class="fine">Name</span><input id="trSendName" value="${trEsc(r.name)}"></label><label><span class="fine">Player (optional)</span><input id="trSendWho" value="${trEsc(r.player)}" placeholder="e.g. Chick Corea"></label>
-        <button class="go" id="trSendGo"${ok?'':' disabled'}>Send to Lines</button></div></div></div>
-      ${preview?`<div class="trsendright"><span class="fine">How it'll look in Lines</span>${preview}</div>`:''}</div>`;
+      <div class="trsendrow"><span class="trsendn">1</span><div class="trsendover"><div class="trsendsteps"><b class="trsendt" title="Where beat 1 is, and the chords under the lick">Bars ${barsTxt}</b>${step('bs','From',['Start a bar earlier','Start a bar later'])}${step('be','To',['End a bar earlier','End a bar later'])}${TR.looping&&TR.loop?'<button class="ghost trsm" id="trSendLoop">The looped bars</button>':''}</div>
+        <div class="trsendstripline">${!r.nochord?trSendStrip(trSendChs(r)):'<span class="fine trnochord">Just the line: no chords under it.</span>'}<button class="ghost tgl trsm" id="trSendNoCh" aria-pressed="${!!r.nochord}" title="Just the line, with no chords under it">No chord</button>${r.chs&&!r.nochord?'<a href="#" id="trSendReset" class="fine" title="Back to the transcription\'s chords">Reset</a>':''}</div></div></div>
+      <div class="trsendrow"><span class="trsendn">2</span><div><div class="trsendsteps"><b class="trsendt">${n?`${n} note${n===1?'':'s'}`:'No notes'}</b>${step('ns','Start',['One note earlier (reaches into the bar before as a pickup)','One note later'])}${step('ne','End',['One note earlier','One note later (can land past the last bar)'])}<button class="ghost trsm" id="trSendHear"${n?'':' disabled'}>▶ Hear it</button></div>
+        <span class="fine trsendsub">${L?trSendSpan(L):'Drag across the music, or click notes in it.'}${lowTxt}${warn}</span></div></div>
+      <div class="trsendrow"><span class="trsendn">3</span><div class="trsendnames"><input id="trSendName" value="${trEsc(r.name)}" title="Name" aria-label="Name"><input id="trSendWho" value="${trEsc(r.player)}" placeholder="Player (optional)" aria-label="Player"><button class="go" id="trSendGo"${ok?'':' disabled'}>Send to Lines</button></div></div></div>
+      <div class="trsendright"><span class="fine">How it'll look in Lines</span>${preview||'<div class="trsendprev trprevnone fine">Pick some notes to see the lick here.</div>'}</div></div>`;
   $('trSendX').onclick=trSendClose;
   el.querySelectorAll('[data-bs]').forEach(b=>b.onclick=()=>trSendBars(false,+b.dataset.bs));
   el.querySelectorAll('[data-be]').forEach(b=>b.onclick=()=>trSendBars(true,+b.dataset.be));
@@ -1221,7 +1222,7 @@ function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r
   if($('trSendReset')) $('trSendReset').onclick=e=>{ e.preventDefault(); r.chs=null; trSendRender(); };
   // the chords: your copy of the timeline, changed in place (the bars and the notes never touch it)
   const base=()=>(r.chs||TR.score.chords).map(x=>({...x})), lim=L2=>({lo:L2.F0,hi:L2.F1-.5});
-  el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=ev=>{ const L2=trSendLick(), c=L2.chs[+b.dataset.ci], {lo,hi}=lim(L2), {si,carried,...shown}=c;
+  el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=ev=>{ const L2=trSendChs(r), c=L2.chs[+b.dataset.ci], {lo,hi}=lim(L2), {si,carried,...shown}=c;
     const first=+b.dataset.ci===0;
     trChordPopup(ev,shown,(f,at)=>{ if(at==null) at=c.at; const bs=base(), {sp,suf,bass,...rest}=shown, nc={...rest,...f};
         if(carried||si<0) r.chs=trChordPut(bs,nc,at);                       // the chord carried in from before: a new chord here, the earlier bars keep theirs
@@ -1230,7 +1231,7 @@ function trSendRender(){ const el=$('trSend'), r=TR.send, s=TR.score; if(!el||!r
         trSendRender(); trSendHear(); },
       +b.dataset.ci>0&&si>=0?()=>{ const bs=base(); bs.splice(si,1); r.chs=bs; trSendRender(); }:null,   // the first chord of the bars can be changed, not removed (No chord, for none)
       first?'The first chord of the bars: change it (No chord, for none)':'Change, move or remove this chord',first?null:trChordWhere(L2.chs,c.at,lo,hi,c)); });   // the first one stays on the downbeat
-  el.querySelectorAll('[data-cb]').forEach(cell=>cell.onclick=ev=>{ const L2=trSendLick(); if(!L2) return; const at=+cell.dataset.cb, prev=L2.chs.filter(x=>x.at<=at+1e-6).pop()||L2.chs[0], {lo,hi}=lim(L2), {si,carried,...shown}=prev;
+  el.querySelectorAll('[data-cb]').forEach(cell=>cell.onclick=ev=>{ const L2=trSendChs(r); const at=+cell.dataset.cb, prev=L2.chs.filter(x=>x.at<=at+1e-6).pop()||L2.chs[0], {lo,hi}=lim(L2), {si,carried,...shown}=prev;
     trChordPopup(ev,{...shown},(f,a)=>{ r.chs=trChordPut(base(),f,a); trSendRender(); trSendHear(); },null,'New chord: what and where',trChordWhere(L2.chs,Math.min(hi,at),lo,hi)); });
   $('trSendName').oninput=e=>{ r.name=e.target.value; r.nameEdited=true; }; $('trSendWho').oninput=e=>{ r.player=e.target.value; };
   el.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==='Enter'&&ok) trSendGo(); if(e.key==='Escape') trSendClose(); });   // typing here isn't the computer-keys piano
