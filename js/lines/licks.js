@@ -95,13 +95,14 @@ function lickInstance(l,refPc){
       const cands=spellingsFor(r.pc).filter(([lt2,ac])=>Math.abs(ac)===1&&!(ac===1&&(lt2===2||lt2===6))&&!(ac===-1&&(lt2===3||lt2===0)));
       cands.sort((x,y)=>sig(...x)-sig(...y)||((y[1]===keySign)-(x[1]===keySign))); if(cands.length) r=mkRoot(cands[0][0],cands[0][1]); }
     return r;};
-  const times=lickTimes(l), total=Math.max(...times.map(x=>x.at+x.dur));
-  let t=0;
+  // pickup: beats of notes before the first chord and bar line (a line that starts on the & of 4 belongs to the next bar)
+  const pick=l.pickup||0, times=lickTimes(l), noteEnd=Math.max(...times.map(x=>x.at+x.dur));
+  let t=pick;
   // a chord sent from Transcribe may carry its symbol as written (suf: 13♭9, with its tensions in the sound) and a slash
   // bass (bs: [letters, semitones] above its root); both move with the key like the root does
-  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b,suf,bs])=>{ const beats=b||Math.max(2,Math.ceil(total)), root=at(s,i,qid), br=bs?at(s+bs[0],i+bs[1],'maj'):null;
+  const chords=(l.ch||[[0,0,l.over,0]]).map(([s,i,qid,b,suf,bs])=>{ const beats=b||Math.max(2,Math.ceil(noteEnd-pick)), root=at(s,i,qid), br=bs?at(s+bs[0],i+bs[1],'maj'):null;
     const c={root,q:suf&&typeof chordQ==='function'?chordQ({qid,suf}):Q[qid],at:t,beats}; if(suf!=null||br) c.suf=(suf??Q[qid].suf)+(br?'/'+rootName(br):''); if(br) c.bassPc=br.pc; t+=beats; return c; });
-  const R=60+mod12(refPc), grid=gridTimes(times);
+  const total=Math.max(noteEnd,t), R=60+mod12(refPc), grid=gridTimes(times);
   const raw=l.notes.map(([s],i)=>({midi:R+s,...times[i],...grid[i]}));
   // Right-hand register: lowest note from middle C up when it fits, so the comp has room underneath
   const lo=Math.min(...raw.map(n=>n.midi)), hi=Math.max(...raw.map(n=>n.midi));
@@ -113,7 +114,7 @@ function lickInstance(l,refPc){
   const plain=(m,sp)=>{ if(Math.abs(sp.a)<=1) return sp; const opts=spellingsFor(mod12(m)), pk=opts.find(([,a])=>a===0)||opts.find(([,a])=>k.a<0?a<0:a>0)||opts[0];
     const oct=Math.floor((m-pk[1])/12)-1; return {l:pk[0],a:pk[1],oct,di:oct*7+pk[0],name:LETTERS[pk[0]]+ACC[pk[1]]}; };
   const notes=raw.map(n=>{ const m=n.midi+shift, c=chords.filter(c=>c.at<=n.at+1e-6).pop()||chords[0], sp=plain(m,spellNote(m,c.root,qOf(c))); return {...n,midi:m,spell:{...sp,midi:m},name:sp.name}; });
-  return {notes,chords,total,ref:refPc,real:l.notes.some(n=>n.length>2),nochord:!!l.nochord};   // nochord: just the line (sent from Transcribe with No chord)
+  return {notes,chords,total,pickup:pick,ref:refPc,real:l.notes.some(n=>n.length>2),nochord:!!l.nochord};   // nochord: just the line (sent from Transcribe with No chord)
 }
 // Start and length of every note in beats: real starts when the lick has them, otherwise one after another
 function lickTimes(l){ let t=0; return l.notes.map(n=>{ const at=n.length>2?n[2]:t; t=at+n[1]; return {at,dur:n[1]}; }); }

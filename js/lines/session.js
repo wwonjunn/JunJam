@@ -183,7 +183,7 @@ function lineStaffSVG(inst,idx,done){
   let s=`<svg viewBox="0 0 ${W} 140" width="${W}" height="140" aria-label="The lick on a staff">`;
   for(let k=0;k<5;k++) s+=`<line class="ln" x1="8" x2="${W-6}" y1="${y(38-2*k)}" y2="${y(38-2*k)}"/>`;
   s+=`<text class="clef" x="10" y="${y(32)+9}" font-size="44">𝄞</text>`;
-  for(let b=4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b,true)-8}" x2="${xOf(b,true)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
+  for(let b=inst.pickup?inst.pickup:4;b<total-1e-6;b+=4) s+=`<line class="ln" x1="${xOf(b,true)-8}" x2="${xOf(b,true)-8}" y1="${y(38)}" y2="${y(30)}"/>`;
   if(!inst.nochord) inst.chords.forEach(c=>{ if(c.at<total) s+=`<text class="csym" x="${xOf(c.at)-6}" y="14">${symText(c)}</text>`; });
   // beam groups: consecutive notes shorter than a beat inside the same beat
   const groups=[]; let g=null;
