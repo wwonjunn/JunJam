@@ -162,14 +162,16 @@ async function trTabRecord(){
   // music, not a call: no echo cancelling, noise suppression or auto volume (asked for above, and again here in case the
   // browser ignored it there), stereo, and a high bitrate so the top end isn't dulled
   audio.forEach(t=>t.applyConstraints({echoCancellation:false,noiseSuppression:false,autoGainControl:false}).catch(()=>{}));
-  const rec=new MediaRecorder(new MediaStream(audio),{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm',audioBitsPerSecond:320000}), chunks=[];
+  // .m4a (AAC) when Chrome can write it, so the file opens in video editors and QuickTime; webm only as a fallback
+  const fmt=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported(t)), ext=/mp4/.test(fmt)?'m4a':'webm';
+  const rec=new MediaRecorder(new MediaStream(audio),{mimeType:fmt,audioBitsPerSecond:256000}), chunks=[];
   const t0=performance.now(), MAX=6*60*1000;
   rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const finish=()=>{ if(rec.state!=='inactive') rec.stop(); };
   rec.onstop=async()=>{ clearInterval(tick); stream.getTracks().forEach(t=>t.stop()); src.disconnect(); TR.recCancel=null;
     if(!TR.active) return;   // left Transcribe while recording: nothing to load
     const blob=new Blob(chunks,{type:rec.mimeType}); if(blob.size<2000){ trOpen(); return; }
-    const when=new Date(), file=new File([blob],`Tab recording ${when.getHours()}.${String(when.getMinutes()).padStart(2,'0')}.webm`,{type:rec.mimeType});
+    const when=new Date(), file=new File([blob],`Tab recording ${when.getHours()}.${String(when.getMinutes()).padStart(2,'0')}.${ext}`,{type:rec.mimeType});
     await trLoad(file); TR.sel=[0,TR.buf.duration]; trDrawWave(); };
   audio[0].onended=finish; // the person pressed Chrome's own Stop sharing
   // a level meter, so it's obvious the sound is coming through
