@@ -74,7 +74,7 @@ function lpFinish(quit){
   $('lResults').innerHTML=`<h2>${quit?'Session ended':finishedWeek?'All 12 keys: it\'s yours':'Practice done'}</h2>
     <ul class="lkeys">${rows}</ul>
     <p>${finishedWeek?`🏅 <b>${lick(w.id).name}</b> joins your vocabulary. It'll come back for review now and then.`:`Line of the week: ${w.done.length} of ${LP_KEYS} keys.`}${L.planKind==='daily'&&L.results.length?` 🔥 ${streak}-day streak.`:''} +${L.xp} XP.</p>
-    ${more?`<p class="fine">Play any chord for the ${left} key${left>1?'s':''} left of the line of the week.</p><button class="go" id="lMore">All ${left} keys left</button><button class="ghost" id="lBack">Back to Lines</button>`:'<p class="fine">Play any chord to go back.</p><button class="go" id="lBack">Back to Lines</button>'}`;
+    ${more?`<p class="fine">${anyChord()} for the ${left} key${left>1?'s':''} left of the line of the week.</p><button class="go" id="lMore">All ${left} keys left</button><button class="ghost" id="lBack">Back to Lines</button>`:'<p class="fine">'+anyChord()+' to go back.</p><button class="go" id="lBack">Back to Lines</button>'}`;
   $('lBack').onclick=linesToMenu; if(more) $('lMore').onclick=()=>lpStart('weekall'); ($('lMore')||$('lBack')).focus();
   L.after=more?()=>lpStart('weekall'):linesToMenu;   // the next chord you play
 }

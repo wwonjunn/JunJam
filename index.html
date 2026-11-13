@@ -75,7 +75,7 @@
         <div class="ldots" id="lDots"></div>
         <div class="lstaff" id="lStaff"></div>
         <div class="lmsg" id="lMsg"></div>
-        <div class="erow"><button class="ghost" id="lHear">Hear it (R)</button><button class="ghost" id="lShow">Show notes (N)</button><button class="go" id="lNext" hidden>Next (Enter)</button><button class="ghost tgl" id="lLoop" aria-pressed="false" title="Past the five keys for stars, keep going in new keys until you stop">Keep going (L)</button><button class="ghost" id="lQuit">End</button></div>
+        <div class="erow"><button class="ghost" id="lHear">Hear it (R)</button><button class="ghost" id="lShow">Show notes (N)</button><button class="go" id="lNext" hidden>Next (Enter)</button><button class="ghost tgl" id="lLoop" aria-pressed="false" title="Past the five keys for stars, keep going in new keys until you stop">Keep going (I)</button><button class="ghost" id="lQuit">End</button></div>
       </div>
       <div class="card eresults" id="lResults" hidden></div>
     </div>
@@ -136,7 +136,7 @@
     </div>
   </div>
 
-  <div class="kbwrap"><div class="qhint">No MIDI keyboard? Press the letters shown on the keys to pick notes, then <kbd>Enter</kbd> to play the chord. <kbd>Z</kbd> <kbd>X</kbd> move an octave, <kbd>Backspace</kbd> clears. You can click the keys too.</div><svg class="kb" id="kb" role="group" aria-label="Keyboard"></svg></div>
+  <div class="kbwrap"><div class="qhint"><span class="qh-chord">Computer keys: press the letters shown on the keys to pick notes, then <kbd>Enter</kbd> to play the chord. <kbd>Z</kbd> <kbd>X</kbd> move an octave, <kbd>Backspace</kbd> clears. You can click the keys too.</span><span class="qh-one">Computer keys: the letters on the keys play them, <kbd>A</kbd> is C. Each note counts as you press it, in any octave, so there's no Enter. Or click the keys. <kbd>Z</kbd> <kbd>X</kbd> move an octave.</span></div><svg class="kb" id="kb" role="group" aria-label="Keyboard"></svg></div>
 </div>
 
 <script src="js/theory.js"></script>

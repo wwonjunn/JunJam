@@ -309,10 +309,10 @@ function linesFinish(quit){
   const rows=L.results.map((r,i)=>`<li><b>${keyName(r.ref,false).replace(' major','')}</b><em class="${i===0?'lrn':r.clean?'ok':r.revealed?'meh':'no'}">${i===0?'learned':r.clean?'clean':r.revealed?'notes showing':`${r.mistakes} restart${r.mistakes>1?'s':''}`}</em></li>`).join('');
   $('lResults').innerHTML=`<h2>${quit&&!finished?'Session ended':stars===3?'Perfect transfer':'Lick done'}</h2>${learned?`<div class="stars">${starStr(Math.max(stars,prev))}</div>`:''}
     <ul class="lkeys">${rows}</ul>${L.results.length>1+TRANSFER_KEYS?`<p>${L.results.length-1} keys, ${L.results.slice(1).filter(r=>r.clean).length} clean.</p>`:''}<p>+${L.xp} XP.${stars<3&&learned?` Next star: ${stars<2?'four of the five new keys clean.':'all five new keys clean.'}`:''}</p>
-    <p class="fine">Play any chord to go again.</p><button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
+    <p class="fine">${anyChord()} to go again.</p><button class="go" id="lAgain">Again</button><button class="ghost" id="lBack">Back to Lines</button>`;
   const rand=L.rand, next=()=>linesRandom(rand);   // a random lick: a chord brings another of the same difficulty
   $('lAgain').onclick=()=>linesStart(L.lick.id,rand); $('lBack').onclick=linesToMenu; $('lAgain').focus();
-  if(rand){ $('lAgain').insertAdjacentHTML('beforebegin',`<button class="go" id="lRand">🎲 Another ${LDIFF[rand]}</button>`); $('lAgain').className='ghost'; $('lRand').onclick=next; $('lRand').focus(); $('lResults').querySelector('.fine:last-of-type').textContent=`Play any chord for another ${LDIFF[rand]} one.`; }
+  if(rand){ $('lAgain').insertAdjacentHTML('beforebegin',`<button class="go" id="lRand">🎲 Another ${LDIFF[rand]}</button>`); $('lAgain').className='ghost'; $('lRand').onclick=next; $('lRand').focus(); $('lResults').querySelector('.fine:last-of-type').textContent=`${anyChord()} for another ${LDIFF[rand]} one.`; }
   L.after=rand?next:()=>linesStart(L.lick.id);
   if(!quit&&stars===3) eggTitle($('lResults').querySelector('h2'),EGG_LINES_WIN,1/30);
 }
@@ -327,7 +327,7 @@ function linesKey(e){
   if(!$('lResults').hidden) return false;
   if(e.key==='r'||e.key==='R'){ linesPlay(); return true; }
   if(e.key==='n'||e.key==='N'){ LINES.revealed=true; linesRender(); return true; }
-  if((e.key==='l'||e.key==='L')&&!LINES.plan){ linesLoopToggle(); return true; }
+  if((e.key==='i'||e.key==='I')&&!LINES.plan){ linesLoopToggle(); return true; }
   if((e.key==='Enter'||e.key===' ')&&LINES.done){ e.preventDefault(); linesNext(); return true; }
   return false;
 }

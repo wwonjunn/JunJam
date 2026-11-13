@@ -8,7 +8,7 @@ const feelVar=k=>getComputedStyle(document.documentElement).getPropertyValue(k).
 function feelLayer(){ if(!FEEL.layer||!FEEL.layer.isConnected){ const d=document.createElement('div'); d.className='feel'; document.body.appendChild(d); FEEL.layer=d; } return FEEL.layer; }
 const feelAt=t=>{ if(!t) return null; if(!t.getBoundingClientRect) return t; const r=t.getBoundingClientRect(); return r.width||r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null; };
 // the top edge of an on-screen key, where a bolt leaves from
-function feelKeyTop(m){ const el=keyEls[m]; if(!el) return null; const r=el.getBoundingClientRect(); return r.width?{x:r.left+r.width/2,y:r.top+2}:null; }
+function feelKeyTop(m){ const el=kbEl(m); if(!el) return null; const r=el.getBoundingClientRect(); return r.width?{x:r.left+r.width/2,y:r.top+2}:null; }
 // the keys you played light up, low to high
 function feelKeys(notes){ if(feelReduce()||!notes) return;
   [...new Set(notes)].sort((a,b)=>a-b).forEach((m,i)=>{ const k=keyEls[m]; if(!k) return;

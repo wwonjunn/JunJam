@@ -33,7 +33,7 @@ function arcBurst(x,y,n,cols,speed=220,size=3,grav=0){ for(let i=0;i<n;i++){ con
 
 /* ---------------- events from the game ---------------- */
 // a key you played (midi) → where on the lane the bolt starts: straight above that key, at the bottom of the canvas
-function arcKeyX(m){ const F=arcFx, el=keyEls[m]; if(!el||!F.cv) return F.W/2; const r=el.getBoundingClientRect(), c=F.cv.getBoundingClientRect(); return Math.max(8,Math.min(F.W-8,r.left+r.width/2-c.left)); }
+function arcKeyX(m){ const F=arcFx, el=kbEl(m); if(!el||!F.cv) return F.W/2; const r=el.getBoundingClientRect(), c=F.cv.getBoundingClientRect(); return Math.max(8,Math.min(F.W-8,r.left+r.width/2-c.left)); }
 function arcFxHit(o){ // o: {notes, kill, fire, brute, pts, quick}
   const F=arcFx; if(!F.mon&&ARC.mon){ F.mon=ARC.mon; F.disp=ARC.mon.x; F.born=F.t; }   // answered before the frame caught up
   const M=F.mon; if(!M) return;

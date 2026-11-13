@@ -145,7 +145,7 @@ Double-click `Jun Jam.app` to open it in Chrome (no Terminal window). Or open `i
 Chrome or Edge yourself (Web MIDI only works there). No server or build step needed.
 
 Click the **Jun Jam** logo (or use the browser's Back button) to get back to the home screen from anywhere.
-No MIDI keyboard? The on-screen keys show which computer key plays them: press the letters, then Enter.
+No MIDI keyboard? Jun Jam switches to computer keys: the on-screen keyboard zooms to two big octaves you can click, and the letters on them play the notes (A is C; Z and X move an octave). In Lines and Ears a note counts as you press it; for a chord, press the letters, then Enter. Results screens that say "play any chord" take Enter. With a MIDI keyboard plugged in, click its name at the top to use computer keys anyway.
 
 ## Project layout
 ```

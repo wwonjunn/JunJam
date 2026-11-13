@@ -25,7 +25,8 @@ function commitGesture(){
 }
 function toggleDraft(m){
   synth.init();
-  if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec)){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); linesNote(m); return; }
+  if(typeof EARS!=='undefined'&&EARS.active&&EARS.q&&EARS.q.fromMidi){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); if(!EARS.answered) earsNotes([m]); return; }   // a one-note answer (a degree, an interval's second note): it counts as you press it
+  if(typeof LINES!=='undefined'&&(LINES.active||LINES.rec||LINES.after)){ synth.on(m,80); setTimeout(()=>synth.off(m,0.5),400); if(!LINES.after) linesNote(m); return; }
   if(typeof GIG!=='undefined'&&GIG.active){ synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500); return; }
   if(typeof ARC!=='undefined'&&arcClick(m)) return;   // Ears game: a clicked key is a one-note answer
   if(draft.has(m)){draft.delete(m);} else {draft.add(m); synth.on(m,80); setTimeout(()=>synth.off(m,0.6),500);}
@@ -45,12 +46,12 @@ async function initMIDI(){
       const names=[];
       acc.inputs.forEach(inp=>{inp.onmidimessage=onMsg; names.push(inp.name);});
       if(names.length){el.textContent=names[0].replace(/\s*MIDI.*$/i,'')+(names.length>1?` +${names.length-1}`:'');el.className='midi on';}
-      else {el.textContent='No MIDI keyboard found';el.className='midi';}
+      else {el.className='midi';}
       noMidi(!names.length);
     };
     bind(); acc.onstatechange=bind;
   }catch(e){
-    el.textContent='MIDI blocked here. Open the page in its own Chrome tab.'; el.className='midi bad'; noMidi(true);
+    el.className='midi bad'; MIDI_BLOCKED=true; noMidi(true);
   }
 }
 function onMsg(e){
@@ -60,8 +61,25 @@ function onMsg(e){
 }
 const QWERTY={a:0,w:1,s:2,e:3,d:4,f:5,t:6,g:7,y:8,h:9,u:10,j:11,k:12,o:13,l:14,p:15,';':16,"'":17};
 let qOct=60;
-// No MIDI keyboard: the on-screen keys show which computer key plays them, and a hint says how to play a chord
-function noMidi(on){ document.body.classList.toggle('nomidi',on); paintQwerty(); }
+/* Computer keys: with no MIDI keyboard (or switched on from the chip at the top, for a cramped seat with one plugged in)
+   the letters play notes and are shown on the keys, the keyboard zooms to two big octaves you can click, and anything that
+   wants one note (Lines, Ears) takes it as you press it. A chord is picked with the letters or clicks, then Enter.
+   Results screens that say "play any chord" take Enter. */
+let MIDI_MISSING=false, MIDI_BLOCKED=false, qForce=!!store.get('qkeys',false);
+const qKeys=()=>document.body.classList.contains('nomidi');
+const anyChord=()=>qKeys()?'Press Enter':'Play any chord';
+function noMidi(on){ MIDI_MISSING=on; qApply(); }
+function qApply(){
+  const on=MIDI_MISSING||qForce, el=$('midi');
+  document.body.classList.toggle('nomidi',on);
+  if(MIDI_MISSING){ el.textContent=MIDI_BLOCKED?'MIDI blocked here (open the page in its own Chrome tab). Playing with computer keys':'No MIDI keyboard. Playing with computer keys'; el.title=''; }
+  else if(el.className.includes('on')){ el.textContent=el.textContent.replace(/ · computer keys$/,'')+(qForce?' · computer keys':''); el.title=qForce?'Click to play with your MIDI keyboard again':'Click to play with computer keys instead'; }
+  if(kbZoom!==on){ kbZoom=on; buildKeyboard(); } else paintQwerty();
+}
+$('midi').addEventListener('click',()=>{ if(MIDI_MISSING) return; qForce=!qForce; store.set('qkeys',qForce); qApply(); });
+// Enter on a results screen: what "play any chord" would do there
+function qGoAgain(){ if(typeof LINES!=='undefined'&&LINES.after&&!LINES.active){ const f=LINES.after; LINES.after=null; f(); return true; }
+  const b=['arcAgain','lRand','lMore','lAgain','eAgain'].map($).find(b=>b&&b.offsetParent); if(b){ b.click(); return true; } return false; }
 document.addEventListener('keydown',e=>{
   if(typeof TR!=='undefined' && TR.active && trKey(e)) return;
   if(typeof GIG!=='undefined' && GIG.active && gigKey(e)) return;
@@ -79,7 +97,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){ if(G&&G.running) pause(); else if(G&&G.paused) resume(); return; }
   if(e.target && (e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') && (e.key==='Enter'||e.key===' ')) return;
   if(e.key==='?'||e.key==='/'){ if(G&&G.running&&G.enemies.length&&!G.devil){G.combo=0;G.hints++;G.enemies[0].hinted=true;updateHud();showHint(G.enemies[0].t);} e.preventDefault(); return;}
-  if(e.key==='Enter'||e.key===' '){submitDraft();e.preventDefault();return;}
+  if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(!draft.size&&qGoAgain()) return; submitDraft(); return; }
   if(e.key==='Backspace'){draft.clear();paintKeys();return;}
   if(k==='z'){qOct=Math.max(36,qOct-12);paintQwerty();return;}
   if(k==='x'){qOct=Math.min(84,qOct+12);paintQwerty();return;}

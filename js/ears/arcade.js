@@ -303,10 +303,10 @@ function arcOver(quit){
     <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.right}</b>right</div><div><b>${gigAccHTML(arcLevel().name)}</b>reached</div><div><b>${Math.max(prevBest,R.score).toLocaleString()}</b>best</div></div>
     <div class="stars eresults" style="margin:0"><span class="stars">${starStr(arcStars(w))}</span></div>
     ${weak.length?`<p>Most misses: ${weak.map(gigAccHTML).join(', ')}. They came back during the run; they'll keep coming back.</p>`:''}
-    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <p class="arcagain"><b>${anyChord()} to go again.</b></p>
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(w); $('arcMenu').onclick=arcToMenu;
-  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  $('verdict').className='verdict'; $('verdict').textContent=anyChord()+' to go again.'; kbMarks={}; paintKeys();
   if(!quit&&R.lives<=0&&!(R.score>prevBest&&R.score)) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);   // eggs.js
 }
 const arcAgainId=()=>ARC.kind==='world'?ARC.world:ARC.kind==='final'?'final':ARC.kind==='devil'?'devil:'+ARC.world:ARC.kind;
@@ -317,10 +317,10 @@ function arcFinalOver(quit){
   $('arcBody').innerHTML=`<h2>${R.won?'😈 The final boss is down':quit?'Run ended':'The final boss wins'}</h2>
     <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.won?20:20-left} of 20</b>hits</div><div><b>${F.best.toLocaleString()}</b>best${rec&&R.score?' (new)':''}</div></div>
     <p>${R.won?'Every world, beaten in one fight. 🏆':'Questions from every world. Three lives, and beating it is the end of the road.'}</p>
-    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <p class="arcagain"><b>${anyChord()} to go again.</b></p>
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart('final'); $('arcMenu').onclick=arcToMenu;
-  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  $('verdict').className='verdict'; $('verdict').textContent=anyChord()+' to go again.'; kbMarks={}; paintKeys();
   if(!quit&&!R.won) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);
 }
 function arcDevilOver(quit){
@@ -330,10 +330,10 @@ function arcDevilOver(quit){
   $('arcBody').innerHTML=`<h2>${rank?'💀'.repeat(rank)+' ':''}${quit?'Run ended':'The devil wins'}</h2>
     <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${R.kills}</b>down</div><div><b>${Math.max(R.score,prev.best).toLocaleString()}</b>best${rec&&R.score?' (new)':''}</div></div>
     <p>${rank<3?`Next rank at ${ARC_DEVIL[rank]} in one run.`:'Every Devil rank on this world.'}</p>
-    <p class="arcagain"><b>Play any chord to go again.</b></p>
+    <p class="arcagain"><b>${anyChord()} to go again.</b></p>
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(arcAgainId()); $('arcMenu').onclick=arcToMenu;
-  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  $('verdict').className='verdict'; $('verdict').textContent=anyChord()+' to go again.'; kbMarks={}; paintKeys();
 }
 function arcWaveOver(quit){
   const R=ARC, done=R.kills>=R.target&&R.lives>0, daily=R.kind==='daily';
@@ -349,10 +349,10 @@ function arcWaveOver(quit){
   $('arcBody').innerHTML=`<h2>${done?(daily?'Wave cleared':'Boss beaten'):quit?'Run ended':'The wall fell'}</h2>
     <div class="results"><div><b>${R.score.toLocaleString()}</b>score</div><div><b>${Math.min(R.kills,R.target)} of ${R.target}</b>monsters</div><div><b>${R.misses}</b>misses</div>${daily?`<div><b>${ARC_MEDAL[medal]==='·'?'–':ARC_MEDAL[medal]}</b>medal</div>`:''}</div>
     <p>${line}</p>${weak.length?`<p>Most misses: ${weak.map(gigAccHTML).join(', ')}.</p>`:''}
-    <p class="arcagain"><b>Play any chord to go again${daily?' (practice)':''}.</b></p>
+    <p class="arcagain"><b>${anyChord()} to go again${daily?' (practice)':''}.</b></p>
     <div class="erow"><button class="go" id="arcAgain">Again</button><button class="ghost" id="arcMenu">Back to Ears</button></div>`;
   $('arcAgain').onclick=()=>arcStart(R.kind); $('arcMenu').onclick=arcToMenu;
-  $('verdict').className='verdict'; $('verdict').textContent='Play any chord to go again.'; kbMarks={}; paintKeys();
+  $('verdict').className='verdict'; $('verdict').textContent=anyChord()+' to go again.'; kbMarks={}; paintKeys();
   if(!quit&&!done) eggTitle($('arcBody').querySelector('h2'),EGG_EARS_OVER,1/30);
 }
 function arcToMenu(){ arcStop(); arcFxStop(); ARC.active=false; clearDraft(); $('arcStage').hidden=true; document.body.classList.remove('earsmode');

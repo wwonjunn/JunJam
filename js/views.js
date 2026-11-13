@@ -2,10 +2,21 @@
 const KB_LO=36, KB_HI=96, WW=20, WH=86, BW=12, BH=54;
 const isBlack=m=>[1,3,6,8,10].includes(m%12);
 const keyEls={};
+// Computer keys (no MIDI keyboard, or switched on): the keyboard zooms to two big octaves from the octave the letters
+// play (qOct), so the keys are easy to click; Z and X move it. Keys are drawn as wide as the space allows (kbW).
+let kbZoom=false, kbBuiltAt=null;
+function kbW(lo,hi){ if(!kbZoom) return WW; const svg=$('kb'), n=[...Array(hi-lo+1)].filter((_,i)=>!isBlack(lo+i)).length, w=svg.clientWidth||900, h=svg.clientHeight||150;
+  return Math.max(WW,(w/h)*(WH+2)/n); }
+// The on-screen key a note shows on: itself, or (zoomed, when it's outside the two octaves) the same note moved by octaves into them
+function kbEl(m){ m=+m; if(keyEls[m]||!kbZoom) return keyEls[m]; const lo=kbBuiltAt, hi=kbBuiltAt+24;
+  while(m<lo) m+=12; while(m>hi) m-=12; return keyEls[m]; }
 function buildKeyboard(){
   const svg=$('kb'); let x=0, whites=[], blacks=[];
-  for(let m=KB_LO;m<=KB_HI;m++){
-    if(!isBlack(m)){whites.push({m,x});x+=WW;} else blacks.push({m,x:x-BW/2});
+  svg.classList.toggle('zoom',kbZoom);
+  const lo=kbZoom?qOct:KB_LO, hi=kbZoom?qOct+24:KB_HI, ww=kbW(lo,hi), bw=BW*ww/WW; kbBuiltAt=kbZoom?qOct:null;
+  for(const m in keyEls) delete keyEls[m];
+  for(let m=lo;m<=hi;m++){
+    if(!isBlack(m)){whites.push({m,x});x+=ww;} else blacks.push({m,x:x-bw/2});
   }
   svg.setAttribute('viewBox',`0 0 ${x} ${WH+2}`); svg.setAttribute('preserveAspectRatio','none');
   // key gradients: colour stops come from theme variables (--kw*, --kb*, and each mark's colour), so every theme
@@ -16,28 +27,33 @@ function buildKeyboard(){
     +grad('kgB',[[0,'var(--kb1)'],[.7,'var(--kb2)'],[.9,'var(--kb3)'],[1,'var(--kb2)']])
     +grad('kgShine',[[0,'rgba(255,255,255,.28)'],[.45,'rgba(255,255,255,0)']])
     +['root','chord','tension','wrong','brass','muted'].map(v=>grad('kg-'+v,lit('--'+v))).join('')+'</defs>';
-  whites.forEach(k=>{html+=`<rect class="w" data-m="${k.m}" x="${k.x+.5}" y="1" width="${WW-1}" height="${WH}" rx="2"/>`; if(k.m%12===0) html+=`<text x="${k.x+WW/2}" y="${WH-6}" text-anchor="middle">C${k.m/12-1}</text>`;});
-  blacks.forEach(k=>{html+=`<rect class="b" data-m="${k.m}" x="${k.x}" y="1" width="${BW}" height="${BH}" rx="1.5"/><rect class="bshine" x="${k.x+1.5}" y="2" width="${BW-3}" height="${BH*.55}" rx="1"/>`;});
+  whites.forEach(k=>{html+=`<rect class="w" data-m="${k.m}" x="${k.x+.5}" y="1" width="${ww-1}" height="${WH}" rx="2"/>`; if(k.m%12===0) html+=`<text x="${k.x+ww/2}" y="${WH-6}" text-anchor="middle">C${k.m/12-1}</text>`;});
+  blacks.forEach(k=>{html+=`<rect class="b" data-m="${k.m}" x="${k.x}" y="1" width="${bw}" height="${BH}" rx="1.5"/><rect class="bshine" x="${k.x+1.5}" y="2" width="${bw-3}" height="${BH*.55}" rx="1"/>`;});
   svg.innerHTML=html;
   svg.querySelectorAll('rect[data-m]').forEach(r=>{keyEls[r.dataset.m]=r;});
   if(typeof QWERTY!=='undefined') paintQwerty();
-  svg.addEventListener('pointerdown',e=>{const m=e.target.dataset&&e.target.dataset.m; if(m) toggleDraft(+m);});
+  if(!svg._wired){ svg._wired=true; svg.addEventListener('pointerdown',e=>{const m=e.target.dataset&&e.target.dataset.m; if(m) toggleDraft(+m);}); }
+  paintKeys();
 }
+addEventListener('resize',()=>{ if(kbZoom){ clearTimeout(buildKeyboard.t); buildKeyboard.t=setTimeout(buildKeyboard,150); } });
 // the computer key for each on-screen key (A W S E D... from the current octave), shown when there's no MIDI keyboard
 function paintQwerty(){
-  const svg=$('kb'); if(!svg) return; svg.querySelectorAll('.qk').forEach(t=>t.remove());
+  const svg=$('kb'); if(!svg) return;
+  if(kbZoom&&kbBuiltAt!==qOct) return buildKeyboard();   // Z or X moved the letters: move the big keyboard with them
+  svg.querySelectorAll('.qk').forEach(t=>t.remove());
   if(!document.body.classList.contains('nomidi')) return;
   Object.entries(QWERTY).forEach(([k,off])=>{ const el=keyEls[qOct+off]; if(!el) return; const x=+el.getAttribute('x')+(+el.getAttribute('width'))/2, blk=el.classList.contains('b');
     const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('class','qk'+(blk?' qkb':'')); t.setAttribute('x',x); t.setAttribute('y',blk?+el.getAttribute('height')-6:WH-16);
     t.setAttribute('text-anchor','middle'); t.textContent=k==="'"?"'":k.toUpperCase(); svg.appendChild(t); }); }
 let kbMarks={}; // midi -> class
 function paintKeys(){
+  const marks={}; for(const m in kbMarks){ const e=kbEl(m); if(e&&!(e.dataset.m in marks)) marks[e.dataset.m]=kbMarks[m]; }   // zoomed: a mark outside the two octaves shows on the same note inside them
   for(const m in keyEls){
     const el=keyEls[m], base=isBlack(+m)?'b':'w';
     let cls=base;
-    if(kbMarks[m]) cls+=' '+kbMarks[m];
+    if(marks[m]) cls+=' '+marks[m];
     if(draft.has(+m)) cls+=' draft';
-    if(held.has(+m) && !kbMarks[m]) cls+=' held';
+    if(held.has(+m) && !marks[m]) cls+=' held';
     el.setAttribute('class',cls);
   }
 }
