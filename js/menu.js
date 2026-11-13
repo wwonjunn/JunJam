@@ -95,6 +95,7 @@ $('lHear').onclick=()=>linesPlay();
 $('lFav').onclick=()=>{ if(LINES.lick){ toggleFav(LINES.lick.id); linesRender(); } };
 $('lShow').onclick=()=>{ LINES.revealed=true; linesRender(); };
 $('lNext').onclick=()=>linesNext();
+$('lLoop').onclick=()=>linesLoopToggle();
 $('lQuit').onclick=()=>LINES.results.length?linesFinish(true):linesToMenu();
 bindLinesPane(); bindReharmPane(); bindVoicingsPane();
 /* ---------- getting home: the logo, and the browser's Back button ----------
